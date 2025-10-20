@@ -8,6 +8,10 @@
         {
             "src": "/(.*)",
             "dest": "/api/index.php"
+        },
+        {
+            "src": "/build/(.*)",
+            "dest": "/public/build/assets/"
         }
         
     ],
