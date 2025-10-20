@@ -9,23 +9,12 @@
             "src": "/(.*)",
             "dest": "/api/index.php"
         }
-        /*{
-            "src": "/build/(.*)",
-            "dest": "/public/build/assets/"
-        },
-        {
-            "src": "/img/(.*)",
-            "dest": "/public/img/"
-        },
-        {
-            "src": "/js/(.*)",
-            "dest": "/public/js/"
-        }*/
+        
     ],
     "env": {
         "APP_ENV": "production",
         "APP_DEBUG": "true",
-        "APP_URL": "https://xxxxxxx.vercel.app", //RELLENAR
+        "APP_URL": "laravel-umber.vercel.app",
 
         "APP_CONFIG_CACHE": "/tmp/config.php",
         "APP_EVENTS_CACHE": "/tmp/events.php",
@@ -41,10 +30,10 @@
         "MAIL_MAILER": "smtp",
         "MAIL_HOST": "smtp.postmarkapp.com",
         "MAIL_PORT": "2525",
-        "MAIL_USERNAME": "", //RELLENAR
-        "MAIL_PASSWORD": "", //RELLENAR
+        "MAIL_USERNAME": "", 
+        "MAIL_PASSWORD": "", 
         "MAIL_ENCRYPTION": "tls",
-        "MAIL_FROM_ADDRESS": "", //RELLENAR
-        "MAIL_FROM_NAME": "" //RELLENAR
+        "MAIL_FROM_ADDRESS": "", 
+        "MAIL_FROM_NAME": "" 
     }
 }
