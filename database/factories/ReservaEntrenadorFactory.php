@@ -15,7 +15,7 @@ class ReservaEntrenadorFactory extends Factory
     {
         return [
             'entrenador_id' => Entrenador::factory(), // crea entrenador si no existe
-            'reserva_id'    => Reserva::factory(),    // crea reserva si no existe
+            'reserva_id'    => Reserva::factory(),    // crea reserva si no existe  
         ];
     }
 }

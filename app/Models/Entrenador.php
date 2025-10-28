@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Entrenador extends Model
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use  HasFactory, Notifiable;
     
     protected $table = 'entrenadores';
     protected $primaryKey = 'id';

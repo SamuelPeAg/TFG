@@ -7,7 +7,7 @@ use App\Models\Usuario;
 use App\Models\Clase;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class ReservaFactory extends Factory
+class ReservasFactory extends Factory
 {
     protected $model = Reserva::class;
 

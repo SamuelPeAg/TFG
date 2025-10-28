@@ -13,9 +13,6 @@ class UsuarioFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre'   => $this->faker->name(),
-            'email'    => $this->faker->unique()->safeEmail(),
-            'password' => Hash::make('password'),
             'iban'     => $this->faker->iban('ES'),
             'firma'    => null,
         ];
