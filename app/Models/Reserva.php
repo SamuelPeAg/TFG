@@ -2,43 +2,30 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\HorarioClase;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
 
 class Reserva extends Model 
 {
-   use HasFactory;
 
     protected $table = 'reservas';
+    
     protected $fillable = [
-      'id_usuario',
-        'fecha',
-        'hora', 
+        'id_usuario',
+        'id_horario_clase',
         'estado',
-        'id_clase', 
-        'id_reserva_entrenador', 
     ];
 
-    
-
- 
-
-    //Una Reserva pertenece a un Usuario 
+    //Una Reserva pertenece a un User 
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'usuario_id', 'id');
+        return $this->belongsTo(User::class, 'id_usuario', 'id');
     }
 
     // Una Reserva puede pertenecer a un Horario de Clase 
     public function horarioClase()
     {
-        return $this->belongsTo(HorarioClase::class, 'horario_clase_id', 'id');
-    }
-
-    // Una Reserva puede pertenecer a un Reserva de Entrenador 
-    public function ReservaEntrenador()
-    {
-        return $this->belongsTo(ReservaEntrenador::class, 'reserva_entrenador_id', 'id');
+        return $this->belongsTo(HorarioClase::class, 'id_horario_clase', 'id');
     }
 }

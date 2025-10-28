@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -16,17 +15,25 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UsuarioSeeder::class,       
-            CentroSeeder::class,        
-            ClaseSeeder::class,        
-            EntrenadorSeeder::class,    
-            ReservaSeeder::class,      
-            FacturaEntrenadorSeeder::class,
-        ]);
+            // 1. Cuentas y perfiles
+            UserSeeder::class,      // Crea las cuentas de login
+            UsuarioSeeder::class,   // Crea los perfiles de usuario
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            // 2. Datos base
+            CentroSeeder::class,
+            EntrenadorSeeder::class,
+            
+            // 3. Clases y Horarios
+            ClaseSeeder::class,         // Define los tipos de clase (Yoga, Pilates...)
+            ClaseEntrenadorSeeder::class, // Asigna qué entrenador puede dar qué clase
+            HorarioClaseSeeder::class,  // Crea las clases en el calendario (instancias)
+            
+            // 4. Datos adicionales
+            ReservaEntrenadorSeeder::class, // Disponibilidad de entrenadores personales
+            FacturaEntrenadorSeeder::class, // Facturas de ejemplo
+
+            // 5. Reservas (al final)
+            ReservaSeeder::class,       // Usuarios apuntándose a clases
         ]);
     }
 }

@@ -2,29 +2,21 @@
 
 namespace App\Models;
 
-
 use App\Models\Entrenador;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FacturaEntrenador extends Model
 {
-    use HasFactory;
 
-    protected $table = 'facturas_entrenador';
+    protected $table = 'factura_entrenador'; // Corregido
     protected $primaryKey = 'id';
 
     protected $fillable = [
+        'entrenador_id',
         'fecha',
         'importe',
         'estado',
-        'entrenador_id',
     ];
-
- 
 
     // Una Factura pertenece a un Entrenador 
     public function entrenador()

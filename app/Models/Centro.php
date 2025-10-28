@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Centro extends Model
 {
-    use HasFactory;
+    
 
     protected $table = "centros";
     protected $primaryKey = "id";
@@ -18,17 +18,15 @@ class Centro extends Model
         "direccion"
     ];
 
-
     //Un Centro tiene N Clases 
     public function clases()
     {
-        return $this->hasMany(Clase::class, 'centro_id', 'id');
+        return $this->hasMany(Clase::class, 'id_centro', 'id'); // FK 'id_centro'
     }
 
     //Un Centro tiene N HorariosClases
     public function horariosClases()
     {
-        return $this->hasMany(HorarioClase::class, 'centro_id', 'id');
+        return $this->hasMany(HorarioClase::class, 'id_centro', 'id'); // FK 'id_centro'
     }
-
 }

@@ -3,32 +3,38 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model; // Importa Model, no Authenticatable
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Usuario extends Authenticatable 
+class Usuario extends Model 
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use Notifiable, SoftDeletes;
 
     protected $table = 'usuarios';
-    protected $primaryKey = 'id';
 
-  
+    /**
+     * Configuración clave para la relación 1:1
+     * La clave primaria es 'user_id' y no es autoincremental.
+     */
+    protected $primaryKey = 'user_id';
+    public $incrementing = false; 
+
     protected $fillable = [
-
+        'user_id',
         'foto_de_perfil',
         'IBAN',
         'FirmaDigital',
     ];
 
-    protected $hidden = [
-        'contraseña',
-        'remember_token',
-    ];
+    protected $hidden = [];
 
-   
-    public function reservas(){
-        return $this->hasMany(Reserva::class, 'id_usuario', 'id');
+    /**
+     * Relación inversa 1:1.
+     * Permite acceder al User ($usuario->user)
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

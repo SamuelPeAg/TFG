@@ -2,41 +2,28 @@
 
 namespace Database\Seeders;
 
-use App\Models\HorarioClase;
 use App\Models\Reserva;
-use App\Models\ReservaEntrenador;
-use App\Models\Usuario;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ReservaSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    use WithoutModelEvents;
+
     public function run(): void
     {
-        $usuarios = Usuario::all();
-        $horariosClases = HorarioClase::all();
-        $reservasEntrenadores = ReservaEntrenador::all();
-
-        if ($usuarios->isEmpty() || $horariosClases->isEmpty()) {
-            $this->command->info('No hay usuarios o horarios de clases. Ejecuta sus seeders primero.');
-            return;
-        }
-
-
-        $usuario = $usuarios->random();
-        $horarioClase = $horariosClases->random();
-        $reservaEntrenador = $reservasEntrenadores->isNotEmpty() ? $reservasEntrenadores->random() : null;
-
-
+        // El Usuario 1 (test@example.com) reserva la clase de Yoga (Horario 1)
         Reserva::create([
-            'usuario_id' => $usuario->id,
-            'horario_clase_id' => $horarioClase->id,
-            'reserva_entrenador_id' => $reservaEntrenador?->id,
-            'fecha' => now()->addDays(rand(1, 30))->toDateString(),
-            'estado' => ['pagada', 'pendiente', 'confirmado'][rand(0, 2)],
+            'id_usuario' => 1,       // ID del User 1
+            'id_horario_clase' => 1, // ID del HorarioClase 1 (Yoga)
+            'estado' => 'confirmado',
+        ]);
+
+        // El Usuario 2 (ana.lopez@example.com) reserva la clase de Pilates (Horario 2)
+        Reserva::create([
+            'id_usuario' => 2,       // ID del User 2
+            'id_horario_clase' => 2, // ID del HorarioClase 2 (Pilates)
+            'estado' => 'pagada',
         ]);
     }
 }

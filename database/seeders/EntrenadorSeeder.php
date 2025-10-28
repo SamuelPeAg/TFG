@@ -8,14 +8,17 @@ use Illuminate\Database\Seeder;
 
 class EntrenadorSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-      Entrenador::create([
-            'nombre' => 'Juan Pérez',
-            'email' => 'juan.perez@example.com',
-        ]);
+        $entrenadores = [
+            ['nombre' => 'Juan Pérez', 'email' => 'juan.perez@example.com'],
+            ['nombre' => 'Ana García', 'email' => 'ana.garcia@example.com'],
+            ['nombre' => 'Carlos Sánchez', 'email' => 'carlos.sanchez@example.com'],
+        ];
+
+        // Asumimos que los IDs serán 1, 2, 3...
+        foreach ($entrenadores as $entrenador) {
+            Entrenador::create($entrenador);
+        }
     }
 }
