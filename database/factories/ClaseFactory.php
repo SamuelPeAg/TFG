@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Centro;
 use App\Models\Clase;
+use App\Models\Centro;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ClaseFactory extends Factory
@@ -13,11 +13,10 @@ class ClaseFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => fake()->randomElement(['Yoga', 'Spinning', 'Crossfit', 'Boxeo']),
-            'descripcion' => fake()->sentence(),
-            'duracion_minutos' => fake()->randomElement([45, 60, 90]),
-            'nivel' => fake()->randomElement(['facil', 'medio', 'dificil']),
-            'id_centro' => Centro::factory(), 
+            'nombre'      => ucfirst($this->faker->word()) . ' Class',
+            'descripcion' => $this->faker->sentence(8),
+            'duracion'    => $this->faker->numberBetween(30, 90), // minutos
+            'centro_id'   => Centro::factory(), // crea centro si no existe
         ];
     }
 }
