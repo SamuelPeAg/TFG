@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('reservas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_usuario')->constrained();
+            
+            $table->unsignedBigInteger('id_usuario');
+            $table->foreign('id_usuario')->references('id')->on('usuarios')->onDelete('cascade');
+
             $table->date('fecha'); 
             $table->time('hora');
             $table->enum('estado',['pagada','pendiente','confirmado']); 
@@ -22,7 +25,7 @@ return new class extends Migration
             $table->foreign('id_clase')->references('id')->on('clases')->onDelete('cascade');
 
             $table->unsignedBigInteger('id_reserva_entrenador');
-            $table->foreign('id_reserva_entrenador')->references('id')->on('reserva_entrenadors')->onDelete('cascade');
+            $table->foreign('id_reserva_entrenador')->references('id')->on('reserva_entrenador')->onDelete('cascade');
             
             $table->rememberToken();
             $table->timestamps();

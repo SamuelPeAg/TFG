@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('clase_id');
             $table->unsignedBigInteger('horario_id');
+
             $table->foreign('clase_id')->references('id')->on('clases')->onDelete('cascade');
-            $table->foreign('horario_id')->references('id')->on('horarios')->onDelete('cascade');
+            $table->foreign('horario_id')->references('id')->on('horarios_clases')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

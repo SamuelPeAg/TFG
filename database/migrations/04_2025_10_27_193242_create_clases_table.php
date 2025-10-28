@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nombre'); 
             $table->text('descripcion')->nullable(); 
             $table->integer('duracion_minutos')->nullable(); 
+            
             $table->enum('nivel', ['facil', 'medio', 'dificil']); 
 
             $table->unsignedBigInteger('id_centro');
