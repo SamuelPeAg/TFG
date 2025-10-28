@@ -8,33 +8,30 @@ class Clase extends Model
 {
     protected $table = 'clases';
 
-    protected $fillable = [
+ protected $fillable = [
         'nombre',
         'descripcion',
-        'duracion',
+        'duracion_minutos', 
         'nivel',
-        'max_plazas',
-        'centro_id',
+        'id_centro', 
     ];
 
-    /**
-     * RELACIONES
-     */
+  
 
-    // Relación N:1 'Impartir' -> Una Clase pertenece a un Centro 
-    function centro()
+    // Una Clase pertenece a un Centro 
+    public function centro()
     {
         return $this->belongsTo(Centro::class, 'centro_id', 'id');
     }
 
-    // Relación N:N 'Tiene' -> Una Clase es impartida por N Entrenadores 
-    function entrenadores()
+    //Una Clase es impartida por N Entrenadores 
+    public function entrenadores()
     {
         return $this->belongsToMany(Entrenador::class, 'clase_entrenador', 'clase_id', 'entrenador_id');
     }
 
-    // Relación 1:N -> Una Clase (tipo) tiene N Instancias programadas (HorariosClases) 
-    function horariosClases()
+    //Una Clase tiene N HorariosClases
+   public function horariosClases()
     {
         return $this->hasMany(HorarioClase::class, 'clase_id', 'id');
     }

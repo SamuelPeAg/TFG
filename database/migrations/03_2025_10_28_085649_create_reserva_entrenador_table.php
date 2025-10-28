@@ -12,8 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reserva_entrenador', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        $table->unsignedBigInteger('entrenador_id');
+        $table->unsignedBigInteger('centro_id');
+        $table->dateTime('fecha_inicio');
+        $table->dateTime('fecha_fin');
+        $table->boolean('disponible')->default(true);
+        $table->timestamps();
+        $table->softDeletes(); 
+        
+        $table->foreign('entrenador_id')->references('id')->on('entrenadores')->onDelete('cascade');
+        $table->foreign('centro_id')->references('id')->on('centros')->onDelete('cascade');
         });
     }
 

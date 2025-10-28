@@ -18,18 +18,15 @@ class Centro extends Model
         "direccion"
     ];
 
-    /**
-     * RELACIONES
-     */
 
-    // Relación 1:N 'Impartir' -> Un Centro tiene N Clases (tipos) 
-    function clases()
+    //Un Centro tiene N Clases 
+    public function clases()
     {
         return $this->hasMany(Clase::class, 'centro_id', 'id');
     }
 
-    // Relación 1:N -> Un Centro tiene N HorariosClases (instancias) 
-    function horariosClases()
+    //Un Centro tiene N HorariosClases
+    public function horariosClases()
     {
         return $this->hasMany(HorarioClase::class, 'centro_id', 'id');
     }

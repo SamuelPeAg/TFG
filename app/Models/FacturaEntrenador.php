@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class FacturaEntrenador extends Authenticatable
+class FacturaEntrenador extends Model
 {
     use HasFactory;
 
@@ -24,12 +24,10 @@ class FacturaEntrenador extends Authenticatable
         'entrenador_id',
     ];
 
-    /**
-     * RELACIONES
-     */
+ 
 
-    // Relación N:1 'Tiene' -> Una Factura pertenece a un Entrenador 
-    function entrenador()
+    // Una Factura pertenece a un Entrenador 
+    public function entrenador()
     {
         return $this->belongsTo(Entrenador::class, 'entrenador_id', 'id');
     }

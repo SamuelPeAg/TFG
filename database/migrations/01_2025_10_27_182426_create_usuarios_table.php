@@ -14,6 +14,9 @@ public function up(): void
     {
         Schema::create('usuarios', function (Blueprint $table) {
             $table->id();
+            $table->string('nombre');
+            $table->string('email')->unique();
+            $table->string('contraseña');
             $table->string('foto_de_perfil')->nullable();
             $table->string('IBAN')->nullable()->unique(); 
             $table->text('FirmaDigital')->nullable();

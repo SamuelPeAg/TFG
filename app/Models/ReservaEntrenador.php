@@ -10,7 +10,6 @@ class ReservaEntrenador extends Model
 {
     use HasFactory;
 
-    // Modelo para la entidad 'Reserva_Entrenador' del ERD 
     protected $table = 'reserva_entrenador';
     protected $primaryKey = 'id';
 
@@ -25,24 +24,22 @@ class ReservaEntrenador extends Model
 
  
 
-    /**
-     * RELACIONES
-     */
 
-    // Relación N:1 'Tiene' -> Este Reserva pertenece a un Entrenador 
-    function entrenador()
+
+    // Este Reserva pertenece a un Entrenador 
+    public function entrenador()
     {
         return $this->belongsTo(Entrenador::class, 'entrenador_id', 'id');
     }
 
-    // Relación N:1 -> Este Reserva se ofrece en un Centro 
-    function centro()
+    // Este Reserva se ofrece en un Centro 
+    public function centro()
     {
         return $this->belongsTo(Centro::class, 'centro_id', 'id');
     }
 
-    // Relación 1:N 'Tiene' -> Este Reserva puede tener N reservas 
-    function reservas()
+    //Este Reserva puede tener N reservas 
+    public function reservas()
     {
         return $this->hasMany(Reserva::class, 'Reserva_entrenador_id', 'id');
     }

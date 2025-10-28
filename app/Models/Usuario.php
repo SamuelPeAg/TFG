@@ -2,47 +2,35 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Usuario extends Authenticatable
+class Usuario extends Authenticatable 
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $table = 'usuarios';
     protected $primaryKey = 'id';
 
-
+  
     protected $fillable = [
         'nombre',
         'email',
         'contraseña',
-        'foto_perfil',
+        'foto_de_perfil',
         'IBAN',
-        'fecha_registro',
-        'firma_digital',
+        'FirmaDigital',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'contraseña',
         'remember_token',
     ];
 
-   function reservas(){
-    return $this->hasMany(Reserva::class, 'usuario_id', 'id');
-   }
+   
+    public function reservas(){
+        return $this->hasMany(Reserva::class, 'id_usuario', 'id');
+    }
 }

@@ -12,33 +12,32 @@ class Reserva extends Model
 
     protected $table = 'reservas';
     protected $fillable = [
+      'id_usuario',
         'fecha',
+        'hora', 
         'estado',
-        'usuario_id',
-        'horario_clase_id',
-        'reserva_entrenador_id',
+        'id_clase', 
+        'id_reserva_entrenador', 
     ];
 
     
 
-    /**
-     * RELACIONES
-     */
+ 
 
-    // Relación N:1 'Realizar' -> Una Reserva pertenece a un Usuario 
-    function usuario()
+    //Una Reserva pertenece a un Usuario 
+    public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id', 'id');
     }
 
-    // Relación N:1 'Tener' -> Una Reserva puede pertenecer a una Instancia de Clase 
-    function horarioClase()
+    // Una Reserva puede pertenecer a un Horario de Clase 
+    public function horarioClase()
     {
         return $this->belongsTo(HorarioClase::class, 'horario_clase_id', 'id');
     }
 
-    // Relación N:1 'Tiene' -> Una Reserva puede pertenecer a un Reserva de Entrenador 
-    function ReservaEntrenador()
+    // Una Reserva puede pertenecer a un Reserva de Entrenador 
+    public function ReservaEntrenador()
     {
         return $this->belongsTo(ReservaEntrenador::class, 'reserva_entrenador_id', 'id');
     }

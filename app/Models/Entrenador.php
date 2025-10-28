@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class Entrenador extends Authenticatable
+class Entrenador extends Model
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory, Notifiable;
     
     protected $table = 'entrenadores';
     protected $primaryKey = 'id';
@@ -19,18 +20,14 @@ class Entrenador extends Authenticatable
         'email',
     ];
 
-    /**
-     * RELACIONES
-     */
-
-    // Relación N:N 'Tiene' -> Un Entrenador imparte N Clases 
-    function clases()
+    //Un Entrenador imparte N Clases 
+    public function clases()
     {
         return $this->belongsToMany(Clase::class, 'clase_entrenador', 'entrenador_id', 'clase_id');
     }
 
-    // Relación 1:N 'Tiene' -> Un Entrenador tiene N Facturas 
-    function facturas()
+    //Un Entrenador tiene N Facturas 
+    public function facturas()
     {
         return $this->hasMany(FacturaEntrenador::class, 'entrenador_id', 'id');
     }
