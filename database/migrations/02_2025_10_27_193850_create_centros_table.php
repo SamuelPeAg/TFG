@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string("nombre");
             $table->string("direccion");
             $table->timestamps();
-            $table->rememberToken();
             $table->softDeletes();
         });
     }

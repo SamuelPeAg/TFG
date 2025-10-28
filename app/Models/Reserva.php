@@ -6,20 +6,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class Reserva extends Authenticatable 
+class Reserva extends Model 
 {
-    use HasFactory;
+   use HasFactory;
 
     protected $table = 'reservas';
-    protected $primaryKey = 'id';
-
     protected $fillable = [
         'fecha',
         'estado',
         'usuario_id',
-        'horario_clase_id', // Reserva de clase
-        'reserva_entrenador_id', // Reserva de entrenador
+        'horario_clase_id',
+        'reserva_entrenador_id',
     ];
+
+    
 
     /**
      * RELACIONES

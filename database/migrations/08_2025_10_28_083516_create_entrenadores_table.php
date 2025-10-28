@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('entrenadores', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->string('email');
             
             $table->unsignedBigInteger('id_clase')->nullable();
             $table->foreign('id_clase')->references('id')->on('clases')->onDelete('set null');
-            
+
             $table->softDeletes();
             $table->timestamps();
         });

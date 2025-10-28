@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class ReservaEntrenador extends Authenticatable
+class ReservaEntrenador extends Model
 {
     use HasFactory;
 

@@ -14,7 +14,7 @@ class FacturaEntrenador extends Authenticatable
 {
     use HasFactory;
 
-    protected $table = 'facturas_entrenadores';
+    protected $table = 'facturas_entrenador';
     protected $primaryKey = 'id';
 
     protected $fillable = [
