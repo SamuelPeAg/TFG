@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreign('clase_id')->references('id')->on('clases')->onDelete('cascade');
             $table->foreign('horario_id')->references('id')->on('horarios_clases')->onDelete('cascade');
 
+            $table->softDeletes();
             $table->timestamps();
         });
     }
