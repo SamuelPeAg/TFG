@@ -11,15 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('horarios_clases', function (Blueprint $table) {
+        Schema::create('reserva_entrenador', function (Blueprint $table) {
             $table->id();
-            $table->date('fecha');
-            $table->time('hora');
-            $table->string('centro'); 
-            $table->integer('capacidad'); 
             $table->timestamps();
-            $table->rememberToken();
-            $table->softDeletes();
         });
     }
 
@@ -28,7 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('horarios_clases');
-
+        Schema::dropIfExists('reserva_entrenador');
     }
 };

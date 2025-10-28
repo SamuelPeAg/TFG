@@ -11,15 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('horarios_clases', function (Blueprint $table) {
+        Schema::create('clase_horario', function (Blueprint $table) {
             $table->id();
-            $table->date('fecha');
-            $table->time('hora');
-            $table->string('centro'); 
-            $table->integer('capacidad'); 
+            $table->unsignedBigInteger('clase_id');
+            $table->unsignedBigInteger('horario_id');
+            $table->foreign('clase_id')->references('id')->on('clases')->onDelete('cascade');
+            $table->foreign('horario_id')->references('id')->on('horarios')->onDelete('cascade');
             $table->timestamps();
-            $table->rememberToken();
-            $table->softDeletes();
         });
     }
 
@@ -28,7 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('horarios_clases');
-
+        Schema::dropIfExists('clase_horario');
     }
 };

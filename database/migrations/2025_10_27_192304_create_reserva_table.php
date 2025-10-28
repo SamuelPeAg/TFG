@@ -17,8 +17,13 @@ return new class extends Migration
             $table->date('fecha'); 
             $table->time('hora');
             $table->enum('estado',['pagada','pendiente','confirmado']); 
-            $table->foreignId('id_clase')->constrained(); 
-            $table->foreignId('id_reserva_entrenador')->constrained(); 
+
+            $table->unsignedBigInteger('id_clase');
+            $table->foreign('id_clase')->references('id')->on('clases')->onDelete('cascade');
+
+            $table->unsignedBigInteger('id_reserva_entrenador');
+            $table->foreign('id_reserva_entrenador')->references('id')->on('reserva_entrenadors')->onDelete('cascade');
+            
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

@@ -17,7 +17,10 @@ return new class extends Migration
             $table->text('descripcion')->nullable(); 
             $table->integer('duracion_minutos')->nullable(); 
             $table->enum('nivel', ['facil', 'medio', 'dificil']); 
-            $table->foreignId('id_centro')->constrained();
+
+            $table->unsignedBigInteger('id_centro');
+            $table->foreign('id_centro')->references('id')->on('centros')->onDelete('cascade');
+            
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
