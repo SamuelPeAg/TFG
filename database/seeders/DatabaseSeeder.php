@@ -17,7 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // 1. Cuentas y perfiles
             UserSeeder::class,      // Crea las cuentas de login
-            UsuarioSeeder::class,   // Crea los perfiles de usuario
 
             // 2. Datos base
             CentroSeeder::class,
