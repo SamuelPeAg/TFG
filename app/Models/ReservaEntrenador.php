@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Models\Centro;
 use App\Models\Entrenador;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ReservaEntrenador extends Model
 {
-
+    use HasFactory;
     protected $table = 'reserva_entrenador';
     protected $primaryKey = 'id';
 

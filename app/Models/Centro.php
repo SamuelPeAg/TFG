@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Centro extends Model
 {
-    
+    use HasFactory;
 
     protected $table = "centros";
     protected $primaryKey = "id";

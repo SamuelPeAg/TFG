@@ -5,9 +5,11 @@ namespace Database\Factories;
 use App\Models\User; // Añadido
 use App\Models\Usuario;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class UsuarioFactory extends Factory
 {
+    use HasFactory;
     protected $model = Usuario::class;
 
     public function definition(): array

@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Models\HorarioClase;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Reserva extends Model 
 {
+    use HasFactory;
 
     protected $table = 'reservas';
     

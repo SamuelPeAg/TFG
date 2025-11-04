@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Models\Entrenador;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class FacturaEntrenador extends Model
 {
+    use HasFactory;
 
     protected $table = 'factura_entrenador'; // Corregido
     protected $primaryKey = 'id';

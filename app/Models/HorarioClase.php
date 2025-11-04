@@ -6,10 +6,12 @@ use App\Models\Clase;
 use App\Models\Centro;
 use App\Models\Reserva;
 use App\Models\Entrenador;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class HorarioClase extends Model
 {
+    use HasFactory;
 
     protected $table = 'horarios_clases';
     protected $primaryKey = 'id';

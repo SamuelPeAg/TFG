@@ -6,12 +6,14 @@ use App\Models\Clase;
 use App\Models\HorarioClase;
 use App\Models\FacturaEntrenador;
 use App\Models\ReservaEntrenador;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
 class Entrenador extends Model
 {
-    use Notifiable;
+    
+    use Notifiable, HasFactory;
     
     protected $table = 'entrenadores';
     protected $primaryKey = 'id';
