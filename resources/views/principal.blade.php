@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Factomove</title>
-    <link rel="stylesheet" href="{{ asset('../resources/css/principal.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/principal.css') }}" />
 </head>
 <body>
 
