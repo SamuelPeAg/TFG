@@ -1,5 +1,5 @@
 
-@extends('components.footer_contacto')
+@extends('components.header_contacto')
 <!doctype html>
 <html lang="es">
 <head>
@@ -79,7 +79,7 @@
         </div>
 
     </div>
-
+@include('components.footer_contacto')
 </body>
 </html>
 

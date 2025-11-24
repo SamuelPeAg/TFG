@@ -1,12 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\UserController;
 
 // Tus rutas existentes...
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 Route::resource('users', UserController::class);
 
 
@@ -41,5 +42,6 @@ Route::get('/contacto', function () {
 Route::get('/admin/sesiones', function () {
     return view('admin.sesiones.index');
 })->name('sesiones.index');
+
 ?>
 

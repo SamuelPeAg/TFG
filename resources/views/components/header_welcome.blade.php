@@ -45,8 +45,8 @@
 </head>
 <body class="text-darkText bg-gray-50 overflow-x-hidden">
 
-    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-sm transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-sm transition-all duration-300 **top-0**"></nav>  
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex-shrink-0 flex items-center gap-2">
                     <img src="{{ asset('img/logopng.png') }}" alt="Factomove Logo Blanco" class="h-10 w-auto">
@@ -54,8 +54,8 @@
                 </div>
 
                 <div class="hidden md:flex space-x-6 items-center">
-                    <a href="#roles" class="text-gray-600 hover:text-brandTeal font-medium transition">Roles</a>
-                    <a href="#features" class="text-gray-600 hover:text-brandTeal font-medium transition">Ventajas</a>
+                    <a href="{{ route('contact') }}" class="text-gray-600 hover:text-brandTeal font-medium transition">Contactanos</a>
+                    
                     
                     <div class="flex items-center gap-4 ml-4 border-l pl-6 border-gray-200">
                         @if (Route::has('login'))

@@ -1,3 +1,8 @@
+
+@extends('components.header-login')
+
+@section('content')
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
