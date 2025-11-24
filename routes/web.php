@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -14,14 +15,16 @@ Route::resource('users', UserController::class);
 
 // 1. Ruta para VER el login
 // Cambiamos 'auth.login' por 'login' porque no tienes carpeta auth
+
+
+//el login//
+
 Route::get('/login', function () {
     return view('login'); 
 })->name('login'); 
 
-// 2. Ruta FALSA para procesar el login (para que no de error al dar click)
-Route::post('/login', function () {
-    return "Login procesado (Falta lógica)";
-});
+Route::post("/login", [LoginController::class, "login"]);
+
 
 
 

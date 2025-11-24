@@ -26,17 +26,9 @@
                 @csrf
                 
                 <div class="input-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Ingresa tu correo" required autofocus>
-                    @error('email')
-                        <span class="error-message">{{ $message }}</span>
-                    @enderror
-                </div>
-                
-                <div class="input-group">
-                    <label for="username">Usuario</label>
-                    <input type="text" id="username" name="username" value="{{ old('username') }}" placeholder="Ingresa tu nombre de usuario">
-                    @error('username')
+                    <label for="name">Usuario</label>
+                    <input type="text" id="name" name="name" value="{{ old('name') }}" placeholder="Ingresa tu nombre de usuario" required autofocus>
+                    @error('name')
                         <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
@@ -49,18 +41,11 @@
                     @enderror
                 </div>
 
-                <div class="form-links">
-                    @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="forgot-password">
-                            ¿Olvidaste tu contraseña?
-                        </a>
-                    @endif
-                </div>
-
                 <button type="submit" class="login-button">
                     ACCEDER
                 </button>
             </form>
+
 
             <div class="social-login">
                 <p>O inicia sesión con</p>
