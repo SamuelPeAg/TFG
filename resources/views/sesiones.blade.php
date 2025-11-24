@@ -25,7 +25,7 @@
 
         <div class="header-controls">
             <div class="title-section">
-                <h1>Historial de Clases</h1>
+                <h1>Historial de Sesiones</h1>
             </div>
 
             <div class="controls-bar">

@@ -6,16 +6,16 @@
 
     <nav class="main-menu">
         <a href="#" class="menu-item">
-            <i class="fa-solid fa-users"></i> USUARIOS
-        </a>
-        <a href="#" class="menu-item">
             <i class="fa-solid fa-dumbbell"></i> ENTRENADORES
         </a>
         <a href="#" class="menu-item">
-            <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN
+            <i class="fa-solid fa-users"></i> USUARIOS
+        </a>
+        <a href="#" class="menu-item">
+            <i class="fa-solid fa-calendar-check"></i> SESIONES
         </a>
         <a href="#" class="menu-item active">
-            <i class="fa-solid fa-calendar-check"></i> SESIONES
+            <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN
         </a>
     </nav>
 
