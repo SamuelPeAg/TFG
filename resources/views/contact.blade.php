@@ -1,3 +1,5 @@
+
+@extends('components.footer_contacto')
 <!doctype html>
 <html lang="es">
 <head>
