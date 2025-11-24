@@ -8,11 +8,11 @@ Route::get('/', function () {
     return view('principal');
 });
 Route::resource('users', UserController::class);
-Route::get('/usuarios', function () {
-    return view('usuarios');
+Route::get('/sesiones', function () {
+    return view('sesiones');
 });
 
 // Endpoint to fetch reservations for a user (used by usuarios calendar)
-Route::get('/usuarios/reservas', [UserReservationController::class, 'search']);
+// Route::get('/usuarios/reservas', [UserReservationController::class, 'search']);
 
 

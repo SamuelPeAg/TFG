@@ -1,14 +1,28 @@
 /* --- 1. Variables y Reset Básico --- */
 :root {
-    --color-sidebar-bg: #2c3e50; /* Azul oscuro del sidebar izquierdo */
-    --color-sidebar-text: #ccc;
-    --color-sidebar-active: #3498db; /* Azul claro para el elemento activo/resaltado */
-    --color-main-bg: #f5f7fa; /* Fondo gris claro del contenido principal */
-    --color-primary-button: #007bff; /* Azul Primario */
-    --color-info-button: #17a2b8; /* Azul Claro/Info */
-    --color-border: #dee2e6;
-    --color-text-header: #6c757d;
+    /* COLORES BASE */
+    --color-primary: #4BB7AE;      /* Turquesa */
+    --color-accent: #EF5D7A;       /* Rojo claro */
+    --color-soft-bg: #A5EFE2;      /* Verde clarito para fondos suaves */
+    --color-dark: #53565A;         /* Gris elegante */
+
+    /* SIDEBAR */
+    --color-sidebar-bg: #53565A;   /* Sidebar gris oscuro (mucho más profesional) */
+    --color-sidebar-text: #A5EFE2; /* Verde claro para texto (legible) */
+    --color-sidebar-active: #4BB7AE; /* Turquesa para destacar */
+
+    /* CONTENIDO PRINCIPAL */
+    --color-main-bg: #F4F9F9; /* Usamos un fondo neutro (casi blanco) para no saturar */
+
+    /* BOTONES */
+    --color-primary-button: #4BB7AE;
+    --color-info-button: #EF5D7A;
+
+    /* DETALLES */
+    --color-border: #d7d7d7;
+    --color-text-header: #53565A;
 }
+
 
 * {
     box-sizing: border-box;
@@ -53,24 +67,47 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    background: linear-gradient(
+        180deg,
+        #4BB7AE 0%,
+        #53565A 100%
+    );
+    padding: 1.2rem;
 }
+
+.sidebar a, 
+.sidebar span, 
+.sidebar .nav-link {
+    color: #ffffff !important;
+    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.4);
+    font-weight: 600;
+}
+
 
 .logo {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: 0 20px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 10px;
+    gap: 10px;
+    padding: 20px 0;
+    text-align: center;
 }
 
-.logo i {
-    font-size: 1.5rem;
-    margin-right: 10px;
+.logo img {
+    width: 80px;          /* tamaño del logo */
+    height: 80px;         /* que no se deforme */
+    object-fit: contain;  /* mantiene proporciones */
+    border-radius: 12px;  /* borde redondeado elegante */
+    background: rgba(255, 255, 255, 0.25); /* glow muy suave */
+    padding: 8px;
+    backdrop-filter: blur(4px);
 }
 
 .logo h2 {
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #ffffff;  /* o negro según tu sidebar */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.4);
     margin: 0;
 }
 

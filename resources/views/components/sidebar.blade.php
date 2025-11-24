@@ -1,6 +1,6 @@
 <aside class="sidebar">
     <div class="logo">
-        <i class="fa-solid fa-money-bill-transfer"></i>
+        <img src="{{ asset('img/logopng.png') }}" alt="">
         <h2>Factomove</h2>
     </div>
 
@@ -13,15 +13,6 @@
         </a>
         <a href="#" class="menu-item">
             <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN
-        </a>
-        <a href="#" class="menu-item">
-            <i class="fa-solid fa-tags"></i> PRECIOS
-        </a>
-        <a href="#" class="menu-item">
-            <i class="fa-solid fa-credit-card"></i> PAGO
-        </a>
-        <a href="#" class="menu-item">
-            <i class="fa-solid fa-clock"></i> HORARIOS
         </a>
         <a href="#" class="menu-item active">
             <i class="fa-solid fa-calendar-check"></i> SESIONES
