@@ -1,6 +1,4 @@
-
-
-    <!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
     <meta charset="utf-8" />
@@ -12,7 +10,6 @@
 
     <x-header />
     <main class="landing">
-        <!-- HERO PRINCIPAL -->
         <section class="hero">
             <div class="hero__content">
                 <p class="hero__badge">Bienvenido a Factomove</p>
@@ -24,8 +21,8 @@
                 </p>
 
                 <div class="hero__buttons">
-                    <a href="#" class="btn btn--primary">Crear cuenta</a>
-                    <a href="#" class="btn btn--outline">Iniciar sesión</a>
+                    <a href="{{ route('register') }}" class="btn btn--primary">Crear cuenta</a>
+                    <a href="{{ route('login') }}" class="btn btn--outline">Iniciar sesión</a>
                 </div>
 
                 <p class="hero__info">
@@ -37,15 +34,12 @@
             </div>
 
             <div class="hero__image">
-                <!-- ZONA PARA IMAGEN PRINCIPAL -->
-                <!-- Sustituye el div por un <img> cuando tengas la imagen -->
                 <div class="image-placeholder">
                     <span>Espacio para imagen principal<br>(entrenamiento / salud / movimiento)</span>
                 </div>
             </div>
         </section>
 
-        <!-- BLOQUE DE MODOS / ROLES -->
         <section class="roles">
             <header class="section-header">
                 <h2>Una experiencia adaptada a cada rol</h2>
@@ -63,7 +57,6 @@
                         Recibe recordatorios y seguimiento de tus entrenadores.
                     </p>
                     <div class="role-card__image">
-                        <!-- ZONA PARA IMAGEN -->
                         <span>Imagen cliente</span>
                     </div>
                 </article>
@@ -75,7 +68,6 @@
                         la asistencia y resultados, todo desde un panel único.
                     </p>
                     <div class="role-card__image">
-                        <!-- ZONA PARA IMAGEN -->
                         <span>Imagen entrenador</span>
                     </div>
                 </article>
@@ -87,14 +79,12 @@
                         para tomar mejores decisiones.
                     </p>
                     <div class="role-card__image">
-                        <!-- ZONA PARA IMAGEN -->
                         <span>Imagen admin</span>
                     </div>
                 </article>
             </div>
         </section>
 
-        <!-- SECCIÓN DE TEXTO / PRESENTACIÓN EXTRA -->
         <section class="about">
             <div class="about__text">
                 <h2>Factomove simplifica la gestión del movimiento</h2>
@@ -110,14 +100,12 @@
             </div>
 
             <div class="about__image">
-                <!-- ZONA PARA OTRA IMAGEN O MOCKUP DE LA APP -->
                 <div class="image-placeholder image-placeholder--light">
                     <span>Espacio para mockup de la app<br>en móvil o escritorio</span>
                 </div>
             </div>
         </section>
 
-        <!-- SECCIÓN DESTACADOS / BENEFICIOS -->
         <section class="highlights">
             <header class="section-header">
                 <h2>¿Por qué Factomove?</h2>
@@ -151,13 +139,6 @@
         </section>
     </main>
 
-    <!-- AQUÍ IRÍA TU FOOTER COMO COMPONENTE -->
-    <!-- @include('components.footer') --> 
     <x-footer />
 </body>
 </html>
-
-
-    
-   
-

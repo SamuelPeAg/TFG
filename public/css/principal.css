@@ -358,3 +358,495 @@ body {
 .highlight-card--accent-red {
     border-top: 4px solid var(--color-rojo-claro);
 }
+
+
+/* LOGIN */
+/* -------------------------------------------------- */
+/* 1. Definición de Variables y Colores Factomove     */
+/* -------------------------------------------------- */
+:root {
+    /* Colores primarios del logo Factomove */
+    --color-primary: #1fd8b8;   /* Verde azulado */
+    --color-secondary: #00bcd4; /* Turquesa */
+    --color-accent: #ff6f61;    /* Coral/Rosa */
+    
+    /* Color de fondo para el body */
+    --color-body-bg: #f0f2f5; 
+    
+    --color-text-dark: #374151;
+    --color-text-light: #6b7280;
+    --color-white: #ffffff;
+    --color-input-border: #cccccc;
+    --color-error: #ef4444; /* Agregado para mensajes de error de Laravel */
+}
+
+/* -------------------------------------------------- */
+/* 2. Estilos Generales y Contenedor Principal        */
+/* -------------------------------------------------- */
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--color-body-bg); 
+    overflow: hidden;
+}
+
+.login-wrapper {
+    display: flex;
+    width: 100%;
+    max-width: 1000px; 
+    min-height: 600px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); 
+    background-color: var(--color-white); 
+}
+
+/* -------------------------------------------------- */
+/* 3. Columna Izquierda (Visual con Degradado de Fondo) */
+/* -------------------------------------------------- */
+.left-panel {
+    flex: 1;
+    /* RUTA CORREGIDA PARA LARAVEL (desde public/img) */
+    background-image: url('/img/gradient_1080_1920.png'); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    position: relative;
+    color: var(--color-white);
+    text-align: center;
+}
+
+.left-panel .logo-img {
+    width: 150px; 
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.left-panel h2 {
+    font-size: 2.2em;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.left-panel p {
+    font-size: 1.1em;
+    opacity: 0.8;
+    max-width: 300px;
+}
+
+/* -------------------------------------------------- */
+/* 4. Columna Derecha (Formulario)                    */
+/* -------------------------------------------------- */
+.right-panel {
+    flex: 1;
+    background-color: var(--color-white);
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+}
+
+/* Curva decorativa */
+.right-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -50px; 
+    width: 100px;
+    height: 100%;
+    background-color: var(--color-white);
+    border-radius: 0 0 100% 0 / 0 0 50% 0;
+    z-index: -1;
+    transform: skewY(-10deg);
+}
+
+.form-header-logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.form-header-logo img {
+    width: 80px;
+    height: auto;
+}
+
+/* Estilos de los campos de entrada */
+.input-group {
+    position: relative;
+    margin-bottom: 30px;
+}
+.input-group label {
+    display: block;
+    font-size: 1.05em;
+    color: var(--color-text-dark);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+.input-group input {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 1px solid var(--color-input-border);
+    background: transparent;
+    font-size: 1.1em;
+    color: var(--color-text-dark);
+    box-sizing: border-box;
+}
+.input-group input:focus {
+    outline: none;
+    border-bottom-color: var(--color-primary);
+}
+
+/* Estilos para errores de validación */
+.error-message {
+    color: var(--color-error);
+    font-size: 0.85em;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Enlace de Olvidé Contraseña */
+.form-links {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: -15px; 
+    margin-bottom: 30px;
+}
+.forgot-password {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.2s ease-in-out;
+}
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Botón de Login (con Degradado) */
+.login-button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--color-white);
+    
+    /* Aplicación del Degradado */
+    background: linear-gradient(
+        45deg,
+        var(--color-secondary),
+        var(--color-primary),
+        var(--color-accent)
+    );
+
+    transition: opacity 0.3s ease;
+    box-shadow: 0 8px 15px rgba(31, 216, 184, 0.4); 
+}
+.login-button:hover {
+    opacity: 0.9;
+}
+
+/* Opciones de Login Social */
+.social-login {
+    text-align: center;
+    margin-top: 40px;
+}
+.social-login p {
+    color: var(--color-text-light);
+    margin-bottom: 20px;
+}
+.social-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+.social-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 30px;
+    text-decoration: none;
+    color: var(--color-text-dark);
+    font-size: 0.95em;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.social-button:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+.social-button img {
+    width: 20px;
+    height: 20px;
+}
+
+/* -------------------------------------------------- */
+/* 5. Estilos Responsivos                             */
+/* -------------------------------------------------- */
+@media (max-width: 768px) {
+    body {
+        /* Ruta corregida para móvil */
+        background-image: url('/img/gradient_1080_1920.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    .login-wrapper {
+        flex-direction: column;
+        max-width: 90%;
+        min-height: unset;
+        height: auto;
+        box-shadow: none; 
+    }
+    .left-panel {
+        padding: 30px 20px;
+        order: 2;
+        border-radius: 0 0 15px 15px;
+        background-image: none; 
+        background-color: transparent;
+    }
+    .right-panel {
+        padding: 40px 30px;
+        order: 1;
+        border-radius: 15px 15px 0 0;
+    }
+    .right-panel::before {
+        display: none;
+    }
+}
+
+
+
+/* register */
+
+
+/* --- AÑADIR AL FINAL DE public/css/principal.css --- */
+
+/* Cabecera del formulario de registro */
+.register-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.register-header h3 {
+    font-size: 1.5em;
+    color: var(--color-text-dark);
+    margin-bottom: 15px;
+}
+/* Icono de perfil genérico */
+.profile-icon-placeholder {
+    width: 80px;
+    height: 80px;
+    background-color: #e0e0e0; /* Gris claro */
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    color: white;
+    background: linear-gradient(45deg, var(--color-secondary), var(--color-primary)); /* Usamos tus colores */
+}
+
+/* Ajuste para el scroll en el panel derecho si el formulario es muy largo */
+.right-panel {
+    overflow-y: auto; /* Permite scroll si los campos no caben */
+    max-height: 100vh; /* Altura máxima */
+}
+
+/* Estilo para el grupo del checkbox */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.95em;
+    color: var(--color-text-dark);
+}
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary); /* Color del checkbox al marcarlo */
+    cursor: pointer;
+}
+.checkbox-group label a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+.checkbox-group label a:hover {
+    text-decoration: underline;
+}
+
+/* Ajuste para el enlace inferior "Ya tengo cuenta" */
+.bottom-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.95em;
+}
+.bottom-link a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+.bottom-link a:hover {
+    text-decoration: underline;
+}
+
+
+/* CONTACT */
+/* =========================================
+   PÁGINA DE CONTACTO FULL-SCREEN (SIN HEADER/FOOTER)
+   ========================================= */
+
+/* Contenedor principal que ocupa toda la pantalla */
+.contact-fullscreen-wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh; /* Altura mínima de la ventana */
+    overflow-x: hidden;
+}
+
+/* --- COLUMNA IZQUIERDA: CONTENIDO Y FORMULARIO (50% ancho) --- */
+.contact-content-side {
+    flex: 1; /* Ocupa el espacio disponible */
+    padding: 60px 80px; /* Espaciado interno generoso */
+    background-color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto; /* Scroll si la pantalla es muy bajita */
+}
+
+/* Cabecera interna del contacto */
+.contact-hero-inline {
+    margin-bottom: 40px;
+}
+.contact-hero-inline h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-text-dark);
+    margin-bottom: 10px;
+    line-height: 1;
+}
+/* Texto con degradado en el título para mantener identidad Factomove */
+.text-gradient {
+    background: linear-gradient(45deg, var(--color-secondary), var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.contact-hero-inline p {
+    font-size: 1.1rem;
+    color: var(--color-text-light);
+    max-width: 600px;
+}
+
+/* Formulario */
+.contact-form-full {
+    max-width: 600px; /* Para que los inputs no sean infinitos en pantallas grandes */
+    width: 100%;
+}
+
+.contact-form-full label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.9em;
+    margin-bottom: 8px;
+    color: var(--color-text-dark);
+}
+.contact-form-full label span { color: var(--color-accent); }
+
+/* Inputs planos grisáceos */
+.input-flat {
+    width: 100%;
+    background-color: #f3f4f6;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 25px;
+    transition: all 0.3s;
+}
+.input-flat:focus {
+    outline: none;
+    background-color: #fff;
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+textarea.input-flat { min-height: 150px; resize: vertical; }
+
+/* Info adicional debajo del formulario */
+.contact-extra-info {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 40px;
+    font-size: 0.95em;
+    color: var(--color-text-light);
+}
+.info-item h4 { color: var(--color-text-dark); margin-bottom: 5px; }
+.info-item a { color: var(--color-accent); font-weight: 600; text-decoration: none; }
+
+
+/* --- COLUMNA DERECHA: MAPA (50% ancho) --- */
+.contact-map-side {
+    flex: 1; /* Ocupa el otro 50% */
+    position: relative;
+    min-height: 100vh;
+    background-color: #e5e7eb; /* Color de carga mientras sale el mapa */
+}
+
+/* El iframe del mapa ocupará todo el contenedor */
+.contact-map-side iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    filter: grayscale(20%); /* Opcional: Desatura un poco el mapa para que sea más elegante */
+}
+
+/* Botón flotante para volver (ya que quitamos el header) */
+.back-home-btn {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    background: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    font-weight: 600;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-text-dark);
+    z-index: 10;
+    transition: transform 0.2s;
+}
+.back-home-btn:hover { transform: translateY(-2px); color: var(--color-primary); }
+
+
+/* RESPONSIVE: En móvil, una columna debajo de otra */
+@media (max-width: 900px) {
+    .contact-fullscreen-wrapper { flex-direction: column; }
+    .contact-content-side { padding: 80px 30px 40px; order: 2; } /* Orden 2: formulario abajo */
+    .contact-map-side { height: 400px; min-height: 400px; order: 1; } /* Orden 1: Mapa arriba */
+}
