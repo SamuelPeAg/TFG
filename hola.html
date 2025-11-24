@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factomove - Gestión de Usuarios Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandTeal: '#4BB7AE',    // Turquesa (Botones principales, subtítulos)
+                        brandCoral: '#EF5D7A',   // Rosa (Acción fuerte, destacados)
+                        brandAqua: '#A5EFE2',    // Aqua Claro (Fondos, decoraciones)
+                        darkText: '#2D3748',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Clases para animación al hacer scroll */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Decoración de fondo suave */
+        .blob-bg {
+            background-image: radial-gradient(#A5EFE2 20%, transparent 20%), radial-gradient(#A5EFE2 20%, transparent 20%);
+            background-color: #ffffff;
+            background-position: 0 0, 50px 50px;
+            background-size: 100px 100px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body class="text-darkText bg-gray-50 overflow-x-hidden">
+
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <i class="fa-solid fa-cube text-brandTeal text-3xl"></i>
+                    <span class="font-bold text-2xl text-gray-800">Factomove</span>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#features" class="text-gray-600 hover:text-brandTeal font-medium transition">Funcionalidades</a>
+                    <a href="#pricing" class="text-gray-600 hover:text-brandTeal font-medium transition">Precios</a>
+                    <a href="#" class="text-brandTeal font-bold hover:underline">Iniciar Sesión</a>
+                    <a href="#" class="bg-brandTeal text-white px-5 py-2.5 rounded-full font-bold shadow-lg hover:bg-opacity-90 hover:shadow-xl transition transform hover:-translate-y-0.5">
+                        Agendar Demo
+                    </a>
+                </div>
+                <div class="md:hidden flex items-center">
+                    <button class="text-gray-600 hover:text-brandTeal focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-brandAqua blur-3xl opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 rounded-full bg-brandAqua blur-3xl opacity-50"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <span class="inline-block py-1 px-3 rounded-full bg-brandAqua/30 text-brandTeal font-bold text-sm mb-6 reveal">
+                🚀 La nueva era en gestión
+            </span>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 reveal">
+                Gestiona tus usuarios <br>
+                <span class="text-brandCoral relative">
+                    sin complicaciones
+                    <svg class="absolute w-full h-3 -bottom-1 left-0 text-brandAqua" viewBox="0 0 200 9" fill="currentColor" preserveAspectRatio="none"><path d="M2.00025 6.99998C25.5394 5.26383 52.6581 3.17505 99.6151 2.06582C143.507 1.02881 176.703 4.32645 198.001 7.00002" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                </span>
+            </h1>
+            <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600 mb-10 reveal">
+                Centraliza perfiles, automatiza accesos y controla la facturación en una sola plataforma dinámica. Potencia tu equipo con <span class="font-bold text-brandTeal">Factomove</span>.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-4 reveal">
+                <a href="#" class="bg-brandCoral text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-opacity-90 hover:shadow-brandCoral/50 transition transform hover:-translate-y-1">
+                    Empezar Prueba Gratis
+                </a>
+                <a href="#features" class="border-2 border-brandTeal text-brandTeal px-8 py-4 rounded-full font-bold text-lg hover:bg-brandTeal hover:text-white transition">
+                    Ver Funcionalidades
+                </a>
+            </div>
+
+            <div class="mt-16 relative max-w-5xl mx-auto reveal">
+                <div class="rounded-2xl shadow-2xl border-4 border-white bg-white overflow-hidden">
+                    <div class="bg-gray-100 h-64 md:h-96 flex items-center justify-center relative overflow-hidden group">
+                        <div class="absolute inset-0 blob-bg"></div>
+                        <span class="text-gray-400 font-bold text-xl relative z-10">
+                            [Vista del Dashboard de Factomove]
+                        </span>
+                        <div class="absolute inset-0 bg-brandTeal/10 opacity-0 group-hover:opacity-100 transition duration-500"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="py-20 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-brandTeal font-bold tracking-wide uppercase text-sm">Características Principales</h2>
+                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                    Todo lo que necesitas en un solo lugar
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="bg-gray-50 p-8 rounded-2xl hover:shadow-xl transition duration-300 border border-transparent hover:border-brandAqua reveal">
+                    <div class="w-14 h-14 rounded-xl bg-brandTeal/10 flex items-center justify-center mb-6 text-brandTeal">
+                        <i class="fa-solid fa-users text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Gestión de Perfiles</h3>
+                    <p class="text-gray-600">Crea, edita y organiza usuarios con campos personalizados. Filtra tu base de datos en segundos.</p>
+                </div>
+
+                <div class="bg-gray-50 p-8 rounded-2xl hover:shadow-xl transition duration-300 border border-transparent hover:border-brandAqua reveal">
+                    <div class="w-14 h-14 rounded-xl bg-brandCoral/10 flex items-center justify-center mb-6 text-brandCoral">
+                        <i class="fa-solid fa-chart-pie text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Analíticas en Tiempo Real</h3>
+                    <p class="text-gray-600">Visualiza el crecimiento y la actividad de tus usuarios con gráficos dinámicos y reportes exportables.</p>
+                </div>
+
+                <div class="bg-gray-50 p-8 rounded-2xl hover:shadow-xl transition duration-300 border border-transparent hover:border-brandAqua reveal">
+                    <div class="w-14 h-14 rounded-xl bg-brandTeal/10 flex items-center justify-center mb-6 text-brandTeal">
+                        <i class="fa-solid fa-shield-halved text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Seguridad Avanzada</h3>
+                    <p class="text-gray-600">Control de roles, permisos granulares y logs de auditoría para mantener tus datos protegidos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-brandAqua/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center reveal">
+                <div>
+                    <div class="text-4xl font-extrabold text-brandTeal">10k+</div>
+                    <div class="text-sm font-semibold text-gray-600 mt-2">Usuarios Gestionados</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-extrabold text-brandCoral">99.9%</div>
+                    <div class="text-sm font-semibold text-gray-600 mt-2">Uptime Garantizado</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-extrabold text-brandTeal">24/7</div>
+                    <div class="text-sm font-semibold text-gray-600 mt-2">Soporte Técnico</div>
+                </div>
+                <div>
+                    <div class="text-4xl font-extrabold text-brandCoral">500+</div>
+                    <div class="text-sm font-semibold text-gray-600 mt-2">Empresas Felices</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 relative overflow-hidden">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center reveal">
+            <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl mb-6">
+                ¿Listo para optimizar tu gestión?
+            </h2>
+            <p class="text-xl text-gray-600 mb-10">
+                Únete a Factomove hoy y toma el control total de tu administración de usuarios.
+            </p>
+            <button class="bg-brandCoral text-white text-xl font-bold py-4 px-10 rounded-full shadow-lg hover:shadow-2xl hover:scale-105 transition transform duration-200">
+                Comenzar Ahora Gratis
+            </button>
+            <p class="mt-4 text-sm text-gray-500">No se requiere tarjeta de crédito • Cancelación en cualquier momento</p>
+        </div>
+    </section>
+
+    <footer class="bg-gray-900 text-white py-12 border-t-4 border-brandTeal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-cube text-brandCoral text-2xl"></i>
+                    <span class="font-bold text-xl">Factomove</span>
+                </div>
+                <p class="text-gray-400 text-sm">
+                    La solución definitiva para la gestión de usuarios moderna.
+                </p>
+            </div>
+            <div>
+                <h4 class="font-bold text-brandAqua mb-4">Producto</h4>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a href="#" class="hover:text-brandCoral transition">Funcionalidades</a></li>
+                    <li><a href="#" class="hover:text-brandCoral transition">Integraciones</a></li>
+                    <li><a href="#" class="hover:text-brandCoral transition">Precios</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-brandAqua mb-4">Compañía</h4>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a href="#" class="hover:text-brandCoral transition">Sobre Nosotros</a></li>
+                    <li><a href="#" class="hover:text-brandCoral transition">Blog</a></li>
+                    <li><a href="#" class="hover:text-brandCoral transition">Contacto</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-brandAqua mb-4">Legal</h4>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a href="#" class="hover:text-brandCoral transition">Privacidad</a></li>
+                    <li><a href="#" class="hover:text-brandCoral transition">Términos</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-gray-800 text-center text-gray-500 text-sm">
+            &copy; 2023 Factomove. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <script>
+        // Script simple para detectar el scroll y activar animaciones
+        window.addEventListener('scroll', reveal);
+
+        function reveal() {
+            var reveals = document.querySelectorAll('.reveal');
+
+            for(var i = 0; i < reveals.length; i++) {
+                var windowheight = window.innerHeight;
+                var revealtop = reveals[i].getBoundingClientRect().top;
+                var revealpoint = 150;
+
+                if(revealtop < windowheight - revealpoint) {
+                    reveals[i].classList.add('active');
+                } else {
+                    reveals[i].classList.remove('active');
+                }
+            }
+        }
+        
+        // Activar animación inicial
+        reveal();
+    </script>
+</body>
+</html>

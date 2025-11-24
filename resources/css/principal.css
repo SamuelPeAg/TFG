@@ -1,360 +1,241 @@
-/* estilos header */
+/* =========================================
+   ESTILOS DE LA PÁGINA PRINCIPAL (LANDING)
+   ========================================= */
 
-header {
-    background: #222;
-    color: white;
-    padding: 15px;
-    text-align: center;
-}
-
-header nav a {
-    color: white;
-    margin-right: 15px;
-    text-decoration: none;
-}
-
-header nav a:hover {
-    text-decoration: underline;
-}
-
-/* Estilos para el footer */
-.site-footer {
-    background-color: #333;
-    color: white;
-    padding: 20px;
-    text-align: center;
-}
-
-.site-footer p {
-    margin: 10px 0;
-}
-
-.footer-link {
-    color: white;
-    text-decoration: none;
-}
-
-.footer-link:hover {
-    text-decoration: underline;
-}
-
-
-/* Estilos para el body */
-/* ==============================
-   Paleta de colores
-   ============================== */
-:root {
-    --color-turquesa: #4BB7AE;
-    --color-rojo-claro: #EF5D7A;
-    --color-verde-claro: #A5EFE2;
-    --color-gris: #959697;
-    --color-blanco: #FFFFFF;
-
-    --color-fondo: #F5F7F9;
-    --color-texto: #8b8b8b;
-
-    --radius-lg: 18px;
-    --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.08);
-}
-
-/* Reset básico */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-    background-color: var(--color-fondo);
-    color: var(--color-texto);
-    line-height: 1.6;
-}
-
-/* Para que el contenido no se pegue al header/footer de tus componentes */
-.landing {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 4rem 1.5rem 5rem;
-}
-
-/* ==============================
-   HERO
-   ============================== */
-
+/* --- HERO SECTION (Cabecera Principal) --- */
 .hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    gap: 3rem;
+    display: flex;
     align-items: center;
-    margin-bottom: 4rem;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 20px;
+    gap: 50px;
+}
+
+.hero__content {
+    flex: 1;
+    max-width: 600px;
 }
 
 .hero__badge {
     display: inline-block;
-    padding: 0.2rem 0.75rem;
-    border-radius: 999px;
-    background: var(--color-verde-claro);
-    color: var(--color-gris);
-    font-size: 0.85rem;
-    margin-bottom: 0.75rem;
+    background-color: rgba(31, 216, 184, 0.1); /* Color primario muy suave */
+    color: var(--color-primary);
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.hero h1 {
-    font-size: clamp(2.4rem, 4vw, 3rem);
-    color: var(--color-turquesa);
-    margin-bottom: 0.75rem;
+.hero__content h1 {
+    font-size: 3.5em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: var(--color-text-dark);
 }
 
 .hero__subtitle {
-    font-size: 1rem;
-    color: var(--color-gris);
-    margin-bottom: 1.5rem;
+    font-size: 1.2em;
+    color: var(--color-text-light);
+    margin-bottom: 35px;
+    line-height: 1.6;
 }
 
 .hero__buttons {
     display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 15px;
+    margin-bottom: 30px;
 }
 
-/* Botones */
+/* Botones específicos del Hero */
 .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-    border-radius: 999px;
+    padding: 12px 35px;
+    border-radius: 30px;
     font-weight: 600;
     text-decoration: none;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease,
-        background-color 0.15s ease, color 0.15s ease;
-    font-size: 0.95rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-size: 1.05em;
 }
 
 .btn--primary {
-    background-color: var(--color-turquesa);
-    color: var(--color-blanco);
-    box-shadow: var(--shadow-soft);
-    border: 1px solid var(--color-turquesa);
+    background: linear-gradient(45deg, var(--color-secondary), var(--color-primary));
+    color: white;
+    box-shadow: 0 4px 15px rgba(31, 216, 184, 0.3);
 }
 
 .btn--primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 20px 40px rgba(75, 183, 174, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(31, 216, 184, 0.4);
 }
 
 .btn--outline {
-    background-color: transparent;
-    border: 1px solid var(--color-gris);
-    color: var(--color-gris);
+    border: 2px solid var(--color-text-dark);
+    color: var(--color-text-dark);
 }
 
 .btn--outline:hover {
-    background-color: var(--color-gris);
-    color: var(--color-blanco);
+    background-color: var(--color-text-dark);
+    color: white;
 }
 
-/* Info de roles */
 .hero__info {
-    font-size: 0.9rem;
-    color: var(--color-gris);
+    font-size: 0.9em;
+    color: var(--color-text-light);
+    border-top: 1px solid #eee;
+    padding-top: 20px;
 }
 
 .tag {
-    display: inline-block;
-    padding: 0.1rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-inline: 0.1rem;
-    color: var(--color-gris);
-    background-color: var(--color-verde-claro);
+    font-weight: 700;
 }
+.tag--cliente { color: var(--color-secondary); }
+.tag--entrenador { color: var(--color-primary); }
+.tag--admin { color: var(--color-accent); }
 
-.tag--cliente {
-    background-color: var(--color-verde-claro);
-}
-
-.tag--entrenador {
-    background-color: rgba(79, 183, 174, 0.25);
-}
-
-.tag--admin {
-    background-color: rgba(83, 86, 90, 0.2);
-}
-
-/* Imagen hero */
 .hero__image {
+    flex: 1;
     display: flex;
     justify-content: center;
 }
 
+/* Placeholder para imágenes (cajas grises bonitas) */
 .image-placeholder {
     width: 100%;
-    aspect-ratio: 4 / 3;
-    border-radius: var(--radius-lg);
-    border: 2px dashed rgba(83, 86, 90, 0.35);
+    aspect-ratio: 4/3;
+    background-color: #e5e7eb;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
+    color: #9ca3af;
+    font-weight: 600;
     text-align: center;
-    font-size: 0.9rem;
-    color: var(--color-gris);
-    background: linear-gradient(
-        135deg,
-        rgba(75, 183, 174, 0.08),
-        rgba(165, 239, 226, 0.15)
-    );
+    border: 2px dashed #d1d5db;
 }
 
-.image-placeholder--light {
-    background: rgba(255, 255, 255, 0.7);
+/* --- SECCIÓN DE ROLES --- */
+.roles {
+    background-color: #fff;
+    padding: 80px 20px;
 }
-
-/* ==============================
-   Secciones generales
-   ============================== */
 
 .section-header {
     text-align: center;
-    margin-bottom: 2rem;
-    border-radius: 10px;
+    max-width: 700px;
+    margin: 0 auto 60px;
 }
 
 .section-header h2 {
-    font-size: 1.6rem;
-    color: var(--color-gris);
-    margin-bottom: 0.5rem;
-}
-
-.section-header p {
-    max-width: 600px;
-    margin: 0.25rem auto 0;
-    color: #6b6f75;
-    font-size: 0.95rem;
-}
-
-/* ==============================
-   Roles / Modos
-   ============================== */
-
-.roles {
-    margin-bottom: 4rem;
+    font-size: 2.5em;
+    color: var(--color-text-dark);
+    margin-bottom: 15px;
 }
 
 .roles__grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .role-card {
-    background-color: var(--color-blanco);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-soft);
-    border: 1px solid rgba(83, 86, 90, 0.06);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 15px;
+    padding: 30px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.role-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+    border-color: var(--color-primary);
 }
 
 .role-card h3 {
-    color: var(--color-turquesa);
-    font-size: 1.1rem;
-}
-
-.role-card p {
-    font-size: 0.9rem;
-    color: #666b72;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    color: var(--color-text-dark);
 }
 
 .role-card__image {
-    flex: 1;
-    border-radius: 12px;
-    border: 1px dashed rgba(83, 86, 90, 0.3);
+    height: 150px;
+    background-color: #f3f4f6;
+    border-radius: 10px;
+    margin-top: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
-    color: var(--color-gris);
-    padding: 0.75rem;
+    color: #9ca3af;
+    font-size: 0.9em;
 }
 
-/* ==============================
-   About / Presentación extra
-   ============================== */
-
+/* --- SECCIÓN ABOUT (Texto + Mockup) --- */
 .about {
-    display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: 2.5rem;
+    display: flex;
     align-items: center;
-    margin-bottom: 4rem;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 100px 20px;
+    gap: 60px;
 }
+
+.about__text { flex: 1; }
+.about__image { flex: 1; }
 
 .about__text h2 {
-    font-size: 1.5rem;
-    color: var(--color-gris);
-    margin-bottom: 1rem;
+    font-size: 2.5em;
+    margin-bottom: 25px;
+    background: linear-gradient(45deg, var(--color-text-dark), var(--color-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.about__text p {
-    font-size: 0.95rem;
-    color: #5f646b;
-    margin-bottom: 0.75rem;
-}
-
-.about__image {
-    display: flex;
-    justify-content: center;
-}
-
-/* ==============================
-   Highlights / Beneficios
-   ============================== */
-
+/* --- SECCIÓN HIGHLIGHTS (Beneficios) --- */
 .highlights {
-    margin-bottom: 2rem;
+    background-color: #fafafa;
+    padding: 80px 20px;
 }
 
 .highlights__grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .highlight-card {
-    background-color: var(--color-blanco);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    border: 1px solid rgba(83, 86, 90, 0.05);
-    box-shadow: var(--shadow-soft);
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    border-left: 5px solid var(--color-secondary);
 }
+
+.highlight-card--accent-green { border-left-color: var(--color-primary); }
+.highlight-card--accent-red { border-left-color: var(--color-accent); }
 
 .highlight-card h3 {
-    font-size: 1.05rem;
-    color: var(--color-gris);
-    margin-bottom: 0.5rem;
+    font-size: 1.3em;
+    margin-bottom: 10px;
+    color: var(--color-text-dark);
 }
 
-.highlight-card p {
-    font-size: 0.9rem;
-    color: #646971;
-}
-
-/* Acentos con verde y rojo (uso moderado) */
-.highlight-card--accent-green {
-    border-top: 4px solid var(--color-verde-claro);
-}
-
-.highlight-card--accent-red {
-    border-top: 4px solid var(--color-rojo-claro);
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+    .hero, .about {
+        flex-direction: column;
+        text-align: center;
+    }
+    .hero__content, .about__text { max-width: 100%; }
+    .hero__buttons { justify-content: center; }
+    .hero__image, .about__image { width: 100%; }
+    .hero h1 { font-size: 2.5em; }
 }

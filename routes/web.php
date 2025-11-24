@@ -5,7 +5,7 @@ use App\Http\Controllers\UserController;
 
 // Tus rutas existentes...
 Route::get('/', function () {
-    return view('principal');
+    return view('welcome');
 });
 Route::resource('users', UserController::class);
 
@@ -23,10 +23,6 @@ Route::post('/login', function () {
     return "Login procesado (Falta lógica)";
 });
 
-// 3. Ruta para recuperar contraseña (necesaria para el enlace del formulario)
-Route::get('/forgot-password', function () {
-    return "Recuperar contraseña";
-})->name('password.request');
 
 
 Route::get('/register', function () {
@@ -39,5 +35,11 @@ Route::get('/register', function () {
 Route::get('/contacto', function () {
     return view('contact');
 })->name('contact');
+
+
+
+Route::get('/admin/sesiones', function () {
+    return view('admin.sesiones.index');
+})->name('sesiones.index');
 ?>
 
