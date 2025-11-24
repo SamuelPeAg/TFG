@@ -1,0 +1,212 @@
+/* ================================
+   Paleta y reglas base
+================================*/
+:root {
+    --color-turquesa: #4BB7AE;
+    --color-rojo-claro: #EF5D7A;
+    --color-verde-claro: #A5EFE2;
+    --color-gris: #959697;
+    --color-blanco: #FFFFFF;
+
+    --color-fondo: #F5F7F9;
+    --color-texto: #555;
+
+    --radius-lg: 18px;
+    --radius-md: 10px;
+
+    --shadow-soft: 0 18px 35px rgba(0, 0, 0, 0.08);
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+    padding: 2rem;
+    line-height: 1.6;
+}
+
+/* ================================
+   CONTENEDOR PRINCIPAL
+================================*/
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+h2 {
+    color: var(--color-turquesa);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+/* ================================
+   SELECTOR DE SECCIÓN
+================================*/
+form .form-label {
+    color: var(--color-gris);
+    font-weight: 600;
+}
+
+.form-select {
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid #d4d4d4;
+    background: var(--color-blanco);
+    color: var(--color-texto);
+    font-size: 0.95rem;
+}
+
+/* ================================
+   ALERTAS
+================================*/
+.alert-success {
+    background: var(--color-verde-claro);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+    color: var(--color-gris);
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-soft);
+}
+
+/* ================================
+   FORMULARIO CREAR USUARIO
+================================*/
+.card {
+    background-color: var(--color-blanco);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    padding: 1.5rem;
+    border: 1px solid rgba(83, 86, 90, 0.05);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid #d4d4d4;
+    background-color: var(--color-blanco);
+    transition: 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-turquesa);
+    box-shadow: 0 0 0 3px rgba(75, 183, 174, 0.25);
+}
+
+/* ================================
+   BOTONES
+================================*/
+.btn {
+    padding: 0.6rem 1.4rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+/* Verde claro = nuevo usuario */
+.btn-success {
+    background-color: var(--color-turquesa);
+    color: var(--color-blanco);
+    box-shadow: var(--shadow-soft);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 40px rgba(75, 183, 174, 0.25);
+}
+
+/* Azul = guardar */
+.btn-primary {
+    background-color: var(--color-gris);
+    color: var(--color-blanco);
+}
+
+.btn-primary:hover {
+    background-color: #7b7c7d;
+}
+
+/* Rojo = eliminar */
+.btn-danger {
+    background-color: var(--color-rojo-claro);
+    color: var(--color-blanco);
+}
+
+.btn-danger:hover {
+    background-color: #d54c60;
+}
+
+/* ================================
+   TABLAS
+================================*/
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--color-blanco);
+    box-shadow: var(--shadow-soft);
+}
+
+.table th {
+    background: var(--color-turquesa);
+    color: var(--color-blanco);
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+}
+
+.table-striped tbody tr:nth-child(even) {
+    background: #f3f6f7;
+}
+
+.align-middle {
+    vertical-align: middle;
+}
+
+.d-flex {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* ================================
+   INPUTS EN TABLA
+================================*/
+.table input.form-control {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+/* ================================
+   ESPACIADO GENERAL
+================================*/
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.py-5 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}

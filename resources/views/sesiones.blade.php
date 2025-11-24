@@ -19,7 +19,7 @@
 <div class="dashboard-container">
 
     {{-- Sidebar (reutilizamos componente si lo tienes) --}}
-    @include('components.sidebar')
+    @include('components.sidebar_sesiones')
 
     <main class="main-content">
 
