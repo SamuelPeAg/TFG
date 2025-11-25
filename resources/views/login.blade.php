@@ -1,3 +1,4 @@
+@section('content')
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,6 +10,7 @@
     <link rel="stylesheet" href="{{ asset('css/principal.css') }}">
 </head>
 <body>
+    <x-header-login />
 
     <div class="login-wrapper">
         <div class="left-panel">
@@ -63,5 +65,4 @@
 
 </body>
 </html>
-
 

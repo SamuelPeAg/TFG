@@ -1,46 +1,9 @@
-@extends('layouts.landing')
+@extends('components.footer_welcome')
+@extends('components.header_welcome')
 
 @section('content')
 
-    <header class="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden">
-        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-brandAqua blur-3xl opacity-50"></div>
-        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 rounded-full bg-brandAqua blur-3xl opacity-50"></div>
-
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            
-            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 reveal">
-                Bienvenido a <span class="text-brandTeal">Factomove</span>
-            </h1>
-            
-            <p class="mt-4 max-w-3xl mx-auto text-xl text-gray-600 mb-10 reveal">
-                La plataforma que conecta a <span class="font-bold text-brandCoral">clientes</span>, 
-                <span class="font-bold text-brandCoral">entrenadores</span> y 
-                <span class="font-bold text-brandCoral">administradores</span> en un mismo lugar. 
-                Gestiona sesiones, datos y progreso de forma sencilla.
-            </p>
-
-            <div class="flex flex-col sm:flex-row justify-center gap-4 mb-16 reveal">
-                @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="bg-brandCoral text-white px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-opacity-90 hover:shadow-brandCoral/50 transition transform hover:-translate-y-1">
-                        Crear cuenta
-                    </a>
-                @endif
-                @if (Route::has('login'))
-                    <a href="{{ route('login') }}" class="border-2 border-brandTeal text-brandTeal px-8 py-4 rounded-full font-bold text-lg hover:bg-brandTeal hover:text-white transition">
-                        Iniciar sesión
-                    </a>
-                @endif
-            </div>
-
-            <div class="relative max-w-5xl mx-auto reveal">
-                <div class="aspect-video rounded-2xl border-4 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center text-gray-400 group hover:border-brandTeal hover:bg-brandTeal/5 transition-colors duration-300">
-                    <i class="fa-solid fa-image text-5xl mb-4 group-hover:scale-110 transition-transform"></i>
-                    <span class="font-bold text-lg">[Espacio para imagen principal]</span>
-                    <span class="text-sm mt-2">(Entrenamiento / Salud / Movimiento)</span>
-                </div>
-            </div>
-        </div>
-    </header>
+  
 
     <section id="roles" class="py-20 bg-white relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +13,7 @@
                     Una experiencia adaptada a cada rol
                 </p>
                 <p class="mt-4 max-w-2xl mx-auto text-gray-500">
-                    Factomove se adapta al tipo de usuario que accede al sistema, ofreciendo herramientas específicas para cada necesidad.
+                    Factomove se adapta al tipo de usuario que accede al sisema, ofreciendo herramientas específicas para cada necesidad.
                 </p>
             </div>
 
@@ -178,4 +141,5 @@
             </div>
         </div>
     </section>
+  
 @endsection

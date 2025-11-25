@@ -4,14 +4,47 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Contacto - Factomove</title>
+
     <link rel="stylesheet" href="{{ asset('css/principal.css') }}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandTeal: '#4BB7AE',
+                        brandCoral: '#EF5D7A',
+                        brandAqua: '#A5EFE2',
+                        darkText: '#2D3748',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Importamos la fuente Inter y otras clases base */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Aseguramos que el contenedor de contenido principal tenga un relleno de 80px 
+           para evitar la superposición con el header fijo (h-20) */
+        .contact-fullscreen-wrapper {
+             padding-top: 80px !important; 
+        }
+    </style>
 </head>
 <body>
+    <x-header-contacto/>
 
     <div class="contact-fullscreen-wrapper">
         
-        <a href="/" class="back-home-btn">
-            <span>←</span> Volver al inicio
+        <a href="/" class="back-home-btn mt-4"> 
         </a>
 
         <div class="contact-content-side">
@@ -80,4 +113,3 @@
 
 </body>
 </html>
-

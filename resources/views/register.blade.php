@@ -1,3 +1,6 @@
+
+
+@section('content')
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -9,6 +12,8 @@
     <link rel="stylesheet" href="{{ asset('css/principal.css') }}">
 </head>
 <body>
+        <x-header_register />
+
 
     <div class="login-wrapper">
         <div class="left-panel">
