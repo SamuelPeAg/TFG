@@ -1,8 +1,4 @@
-
-
-
 @section('content')
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -31,7 +27,7 @@
             <form method="POST" action="{{ route('login') }}">
                 @csrf
                 
-                <div class="input-group">
+                 <div class="input-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Ingresa tu correo" required autofocus>
                     @error('email')
@@ -84,5 +80,4 @@
 
 </body>
 </html>
-
 
