@@ -13,9 +13,10 @@ Route::get('/', function () {
 
 
 Route::resource('users', UserController::class);
+
 Route::get('/sesiones', function () {
     return view('sesiones');
-});
+})->name("sesiones");
 
 // Endpoint to fetch reservations for a user (used by usuarios calendar)
 // Route::get('/usuarios/reservas', [UserReservationController::class, 'search']);
@@ -48,12 +49,6 @@ Route::get('/register', function () {
 Route::get('/contacto', function () {
     return view('contact');
 })->name('contact');
-
-
-
-Route::get('/admin/sesiones', function () {
-    return view('admin.sesiones.index');
-})->name('sesiones.index');
 
 ?>
 
