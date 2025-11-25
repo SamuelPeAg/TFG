@@ -25,9 +25,11 @@
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-3">Modo Cliente</h3>
                     <p class="text-gray-600 mb-6">Visualiza tus rutinas, sesiones y progreso de forma clara. Recibe recordatorios y seguimiento de tus entrenadores.</p>
-                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-sm">
-                        [Imagen Cliente]
+
+                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 overflow-hidden">
+                        <img src="{{ asset('img/cliente.png') }}" alt="Cliente" class="w-full h-full object-cover">
                     </div>
+
                 </div>
 
                 <div class="bg-gray-50 p-6 rounded-2xl hover:shadow-xl transition duration-300 border border-transparent hover:border-brandAqua reveal group" style="transition-delay: 100ms;">
@@ -36,8 +38,8 @@
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-3">Modo Entrenador</h3>
                     <p class="text-gray-600 mb-6">Gestiona tus clientes, crea planes de entrenamiento y controla la asistencia y resultados, todo desde un panel único.</p>
-                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-sm">
-                        [Imagen Entrenador]
+                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 overflow-hidden">
+                        <img src="{{ asset('img/entrenador.png') }}" alt="Entrenador" class="w-full h-full object-cover">
                     </div>
                 </div>
 
@@ -47,8 +49,8 @@
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-3">Modo Admin</h3>
                     <p class="text-gray-600 mb-6">Administra usuarios, permisos y estadísticas globales de la plataforma para tomar mejores decisiones.</p>
-                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 flex items-center justify-center text-gray-500 text-sm">
-                        [Imagen Admin]
+                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 overflow-hidden">
+                        <img src="{{ asset('img/admin.png') }}" alt="Admin" class="w-full h-full object-cover">
                     </div>
                 </div>
 
