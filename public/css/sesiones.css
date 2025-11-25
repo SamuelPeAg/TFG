@@ -717,3 +717,20 @@ body {
     display: block;
 }
 
+/* estilos para botón Sesiones */
+.btn.sesiones{
+  background-color: #40e0d0; /* turquesa */
+  color: #fff;
+  border-color: #40e0d0;
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+/* hover / focus - efecto parecido a los otros botones (oscurecer + sombra) */
+.btn.sesiones:hover,
+.btn.sesiones:focus{
+  background-color: #34cfc6; /* tono ligeramente más oscuro */
+  border-color: #34cfc6;
+  color: #fff;
+  text-decoration: none;
+}
+
