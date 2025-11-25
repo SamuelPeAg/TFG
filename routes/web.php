@@ -4,6 +4,7 @@ use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserReservationController;
 
 // Tus rutas existentes...
 Route::get('/', function () {
@@ -12,6 +13,12 @@ Route::get('/', function () {
 
 
 Route::resource('users', UserController::class);
+Route::get('/sesiones', function () {
+    return view('sesiones');
+});
+
+// Endpoint to fetch reservations for a user (used by usuarios calendar)
+// Route::get('/usuarios/reservas', [UserReservationController::class, 'search']);
 
 
 // --- PEGA ESTO EXACTAMENTE ASÍ ---
