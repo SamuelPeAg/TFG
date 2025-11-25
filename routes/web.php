@@ -50,5 +50,10 @@ Route::get('/contacto', function () {
     return view('contact');
 })->name('contact');
 
+
+Route::get('/facturas', function () {
+    return view('facturas');
+})->name('facturas');
+
 ?>
 

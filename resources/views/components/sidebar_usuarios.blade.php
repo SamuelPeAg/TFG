@@ -14,7 +14,7 @@
         <a href="{{ route("sesiones") }}" class="menu-item">
             <i class="fa-solid fa-calendar-check"></i> SESIONES
         </a>
-        <a href="#" class="menu-item">
+        <a href="{{ route ("facturas")}}" class="menu-item">
             <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN
         </a>
     </nav>
