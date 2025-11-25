@@ -1,5 +1,4 @@
 
-@extends('components.header_register')
 
 @section('content')
 <!DOCTYPE html>
@@ -13,6 +12,8 @@
     <link rel="stylesheet" href="{{ asset('css/principal.css') }}">
 </head>
 <body>
+        <x-header_register />
+
 
     <div class="login-wrapper">
         <div class="left-panel">

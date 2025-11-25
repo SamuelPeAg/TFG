@@ -1,5 +1,5 @@
 
-@extends('components.header-login')
+
 
 @section('content')
 
@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/principal.css') }}">
 </head>
 <body>
+    <x-header-login />
 
     <div class="login-wrapper">
         <div class="left-panel">

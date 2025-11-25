@@ -21,6 +21,6 @@ class header_contacto extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.header_contacto');
+        return view('components.header-contacto');
     }
 }
