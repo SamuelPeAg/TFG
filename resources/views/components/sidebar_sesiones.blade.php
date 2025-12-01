@@ -21,6 +21,6 @@
 
     <div class="utility-links">
         <a href="#" class="menu-item"><i class="fa-solid fa-comment-dots"></i> MESSAGES</a>
-        <a href="#" class="menu-item"><i class="fa-solid fa-gear"></i> HELP CENTRE</a>
+        <a href="#" class="menu-item"><i class="fa-solid fa-gear"></i> HELP CENTER</a>
     </div>
 </aside>

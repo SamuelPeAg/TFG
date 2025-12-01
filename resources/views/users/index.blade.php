@@ -116,14 +116,14 @@
                             </td>
 
                             <td class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                                <button type="submit" class="btn btn-primary btn-sm"><img width="20px" src="./img/guardar.webp" alt="guardar"></button>
                         </form>
 
                         {{-- Form eliminar --}}
                         <form action="{{ route('users.destroy', $user->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                <button type="submit" class="btn btn-danger btn-sm"><img  width="20px" src="./img/borrar.webp" alt="eliminar"></button>
                         </form>
                             </td>
                     </tr>

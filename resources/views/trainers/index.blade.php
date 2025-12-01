@@ -91,17 +91,17 @@
                             </td>
 
                             <td class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                                <button type="submit" class="btn btn-primary btn-sm"><img width="20px" src="./img/guardar.webp" alt="guardar"></button>
                         </form>
 
                         {{-- Form eliminar --}}
                         <form action="{{ route('trainers.destroy', $trainer->id) }}" method="POST">
                             @csrf
                             @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                <button type="submit" class="btn btn-danger btn-sm"><img  width="20px" src="./img/borrar.webp" alt="eliminar"></button>
                         </form>
-                        <a href="{{ route('sesiones', $trainer->id) }}" class="btn btn-sm sesiones">
-                           Sesiones
+                        <a href="{{ route('sesiones', $trainer->id) }}" class="btn btn-sm sesiones"><img width="20px" src="./img/sesiones.webp" alt="sesiones">
+
                         </a>
                             </td>
                     </tr>
