@@ -51,12 +51,12 @@
                     <input type="password" name="password_confirmation" placeholder="Repetir Contraseña" required>
                 </div>
 
-                <div class="checkbox-group">
+                <!-- <div class="checkbox-group">
                     <input type="checkbox" id="terms" name="terms" required>
                     <label for="terms">
                         He leído y acepto los <a href="#">términos y condiciones</a>.
                     </label>
-                </div>
+                </div> -->
                  @error('terms') <span class="error-message" style="display:block; margin-bottom:15px;">{{ $message }}</span> @enderror
 
                 <button type="submit" class="login-button">
