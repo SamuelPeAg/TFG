@@ -38,24 +38,10 @@
                 </div>
 
                 <div class="input-group">
-                    <input type="text" name="surname" value="{{ old('surname') }}" placeholder="Apellidos">
-                     @error('surname') <span class="error-message">{{ $message }}</span> @enderror
-                </div>
-                
-                <div class="input-group">
-                    <input type="text" name="username" value="{{ old('username') }}" placeholder="ID de Usuario / Username">
-                    @error('username') <span class="error-message">{{ $message }}</span> @enderror
-                </div>
-
-                <div class="input-group">
                     <input type="email" name="email" value="{{ old('email') }}" placeholder="Correo Electrónico" required>
                     @error('email') <span class="error-message">{{ $message }}</span> @enderror
                 </div>
-                
-                 <div class="input-group">
-                    <input type="email" name="recovery_email" value="{{ old('recovery_email') }}" placeholder="Correo de Recuperación (Opcional)">
-                </div>
-
+            
                 <div class="input-group">
                     <input type="password" name="password" placeholder="Contraseña" required autocomplete="new-password">
                     @error('password') <span class="error-message">{{ $message }}</span> @enderror
