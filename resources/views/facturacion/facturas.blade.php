@@ -202,7 +202,7 @@
 @endphp
 
 <div class="dashboard-container">
-    @include('components.sidebar_facturacion')
+    @include('components.sidebars.sidebar_facturacion')
 
     <main class="main-content">
         <div class="header-controls">

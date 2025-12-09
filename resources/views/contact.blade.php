@@ -40,7 +40,7 @@
     </style>
 </head>
 <body>
-    <x-header-contacto/>
+    <x-headers.header-contacto/>
 
     <div class="contact-fullscreen-wrapper">
         

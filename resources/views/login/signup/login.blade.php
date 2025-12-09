@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{ asset('css/principal.css') }}">
 </head>
 <body>
-    <x-header-login />
+    <x-headers.header-login />
 
     <div class="login-wrapper">
         <div class="left-panel">

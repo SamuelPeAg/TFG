@@ -1,5 +1,5 @@
-@extends('components.footer_welcome')
-@extends('components.header_welcome')
+@extends('components.footers.footer_welcome')
+@extends('components.headers.header_welcome')
 
 @section('content')
 

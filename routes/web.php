@@ -15,7 +15,7 @@ Route::resource('trainers', TrainerController::class);
 Route::resource('users', UserController::class);
 
 Route::get('/sesiones', function () {
-    return view('sesiones');
+    return view('sessions.sesiones');
 })->name("sesiones");
 
 // Endpoint to fetch reservations for a user (used by usuarios calendar)
@@ -31,7 +31,7 @@ Route::get('/sesiones', function () {
 //el login//
 
 Route::get('/login', function () {
-    return view('login'); 
+    return view('login.signup.login'); 
 })->name('login'); 
 
 Route::post("/login", [LoginController::class, "login"]);
@@ -40,7 +40,7 @@ Route::post("/login", [LoginController::class, "login"]);
 
 
 Route::get('/register', function () {
-    return view('register');
+    return view('login.signup.register');
 })->name('register');
 
 
@@ -52,7 +52,7 @@ Route::get('/contacto', function () {
 
 
 Route::get('/facturas', function () {
-    return view('facturas');
+    return view('facturacion.facturas');
 })->name('facturas');
 
 ?>

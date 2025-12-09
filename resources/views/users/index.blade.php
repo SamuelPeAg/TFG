@@ -19,7 +19,7 @@
 <div class="dashboard-container">
 
     {{-- Sidebar reutilizable --}}
-    @include('components.sidebar_usuarios')
+    @include('components.sidebars.sidebar_usuarios')
 
     <main class="main-content">
 

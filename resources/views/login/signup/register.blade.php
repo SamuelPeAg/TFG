@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="{{ asset('css/principal.css') }}">
 </head>
 <body>
-        <x-header_register />
+        <x-headers.header_register />
 
 
     <div class="login-wrapper">
