@@ -1,0 +1,130 @@
+/* tabla estilo excel */
+.excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 20px; /* separación del título */
+    font-size: 16px; /* letras más grandes */
+}
+
+.excel-table th {
+    background: #4BB7AE;
+    color: white;
+    font-weight: bold;
+    text-align: left;
+    padding: 12px;
+}
+
+.excel-table td {
+    padding: 10px;
+    vertical-align: middle;
+}
+
+.table-input {
+    border: none;
+    width: 100%;
+    background: transparent;
+    padding: 5px;
+    font-size: 17px;
+}
+
+.table-input:focus {
+    outline: 2px solid #4BB7AE;
+    background: #e8fffb;
+}
+
+/* filas tipo Excel */
+.excel-table tr:nth-child(even) {
+    background: #f7f7f7;
+}
+
+.excel-table tr:hover {
+    background: #d8fff6;
+}
+
+/* layout */
+.main-content {
+    padding: 0px;
+}
+
+.content-wrapper {
+    width: 100%;
+    padding: 0;
+}
+
+/* botón */
+.btn-success {
+    background-color: #4BB7AE !important; 
+    border: none !important;
+    padding: 10px 20px !important;
+    font-weight: 600;
+    border-radius: 10px !important;
+    color: white !important;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    transition: 0.2s;
+}
+
+.btn-success:hover {
+    background-color: #3da094 !important;
+    transform: translateY(-2px);
+}
+
+/* ======================================== */
+/* CONTENEDOR DE ACCIONES                    */
+/* ======================================== */
+.actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Espaciado entre iconos */
+}
+
+/* Botón de icono */
+.icon-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tamaño uniforme de iconos */
+.action-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+/* ======================================== */
+/* 1️⃣ FONDO GRIS ICONO GUARDAR             */
+/* ======================================== */
+.save-btn {
+    background: #e6e6e6;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.save-btn:hover {
+    background: #d6d6d6;
+}
+
+/* ======================================== */
+/* 2️⃣ PAPELERA ROJA                         */
+/* ======================================== */
+.delete-btn .action-icon {
+    filter: brightness(0) saturate(100%) invert(21%) sepia(96%) saturate(7490%) hue-rotate(357deg) brightness(91%) contrast(108%);
+}
+
+/* ======================================== */
+/* 3️⃣ ICONO SESIONES COLOR #4BB7AE          */
+/* ======================================== */
+.sessions-btn .action-icon {
+    filter: brightness(0) saturate(100%) invert(67%) sepia(26%) saturate(748%) hue-rotate(118deg) brightness(95%) contrast(94%);
+}
+
+/* Hover general */
+.icon-btn:hover {
+    transform: scale(1.12);
+    transition: 0.15s ease;
+}

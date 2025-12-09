@@ -1,7 +1,6 @@
 <table class="excel-table">
     <thead>
         <tr>
-            <th>ID</th>
             <th>Nombre</th>
             <th>Email</th>
             <th width="150px">Acciones</th>
@@ -11,8 +10,6 @@
     <tbody>
         @foreach($trainers as $trainer)
         <tr>
-
-            <td>{{ $trainer->id }}</td>
 
             <td>
                 <form action="{{ route('trainers.update', $trainer->id) }}" method="POST">
@@ -25,23 +22,28 @@
                     <input type="email" name="email" value="{{ $trainer->email }}" class="table-input">
             </td>
 
-            <td class="d-flex gap-2 align-items-center actions-cell">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <img src="/img/guardar.webp" width="20">
-                    </button>
+            <td class="actions-cell">
+
+                <!-- Guardar -->
+                <button type="submit" class="icon-btn save-btn">
+                    <img src="/img/guardar.webp" class="action-icon save-icon">
+                </button>
                 </form>
 
+                <!-- Borrar -->
                 <form action="{{ route('trainers.destroy', $trainer->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm">
-                        <img src="/img/borrar.webp" width="20">
+                    <button type="submit" class="icon-btn delete-btn">
+                        <img src="/img/borrar.webp" class="action-icon delete-icon">
                     </button>
                 </form>
 
-                <a href="{{ route('sesiones', $trainer->id) }}" class="btn btn-sm sesiones">
-                    <img src="/img/sesiones.webp" width="20">
+                <!-- Sesiones -->
+                <a href="{{ route('sesiones', $trainer->id) }}" class="icon-btn sessions-btn">
+                    <img src="/img/sesiones.webp" class="action-icon sessions-icon">
                 </a>
+
             </td>
 
         </tr>
