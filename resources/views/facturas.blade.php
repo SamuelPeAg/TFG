@@ -5,17 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facturación - Sesiones Individuales</title>
 
-    {{-- Layout original --}}
     <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
-    
-    {{-- FontAwesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    {{-- Bootstrap 5 --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
-        /* COLOR PERSONALIZADO */
         :root {
             --custom-teal: #5BA8A0;
             --custom-teal-dark: #4A8F88;
@@ -23,49 +17,44 @@
             --custom-text-teal: #00695C;
         }
 
-        /* LAYOUT DE 3 COLUMNAS */
-        /* LAYOUT DE 3 COLUMNAS: Ajustamos el ancho de la columna 1 si es necesario */
         .facturacion-dashboard {
             padding: 20px;
             display: grid;
-            /* Reducimos el ancho de la primera columna de 220px a 180px */
-            grid-template-columns: 180px 1fr 300px; 
+            grid-template-columns: 180px 1fr;
             gap: 25px;
             min-height: 600px; 
         }
 
-        /* --- COLUMNA 1: BOTÓN DE REPORTE (A TAMAÑO REDUCIDO) --- */
         .btn-big-teal {
-            background-color: white; /* Color de fondo a blanco (menos importancia) */
-            border: 1px solid var(--custom-teal-light); /* Borde suave */
-            color: var(--custom-text-teal); /* Color del texto turquesa */
+            background-color: white;
+            border: 1px solid var(--custom-teal-light);
+            color: var(--custom-text-teal);
             width: 100%;
-            height: 150px; /* Reducimos la altura drásticamente (de 400px a 150px) */
+            height: 150px;
             border-radius: 10px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 0.9rem; /* Reducimos el tamaño de la fuente */
+            font-size: 0.9rem;
             font-weight: 600;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05); /* Sombra muy sutil */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             transition: transform 0.2s, background-color 0.2s;
             cursor: pointer;
         }
 
         .btn-big-teal:hover {
-            background-color: var(--custom-teal-light); /* Fondo suave al pasar el ratón */
-            transform: translateY(-2px); /* Un pequeño levantamiento al pasar el ratón */
+            background-color: var(--custom-teal-light);
+            transform: translateY(-2px);
             color: var(--custom-text-teal);
         }
 
         .btn-big-teal i {
-            font-size: 2rem; /* Reducimos el tamaño del icono */
-            margin-bottom: 8px; /* Reducimos el margen */
-            color: var(--custom-teal); /* Aseguramos que el icono mantenga el color principal */
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: var(--custom-teal);
         }
 
-        /* --- COLUMNA 2: DETALLE POR CLIENTE --- */
         .centros-stack { display: flex; flex-direction: column; gap: 20px; }
 
         .centro-card {
@@ -82,24 +71,23 @@
             padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 0.9rem;
         }
         
-        /* Estilos de la tabla de 31 días (como en tu imagen) */
         .detalle-table-container {
             overflow-x: auto;
             max-width: 100%;
         }
         .tabla-dias-sesion {
             width: 100%;
-            min-width: 1000px; /* Asegura que la tabla no se colapse en pantallas pequeñas */
+            min-width: 1000px;
             table-layout: fixed;
             border-collapse: collapse;
-            font-size: 0.7rem; /* Fuente más pequeña para que quepa todo */
+            font-size: 0.7rem;
             margin-top: 10px;
         }
         .tabla-dias-sesion th {
             text-align: center;
             padding: 3px 2px;
             font-weight: 500;
-            background-color: #e9ecef; /* Fondo claro para los encabezados de días */
+            background-color: #e9ecef;
             border: 1px solid #ddd;
         }
         .tabla-dias-sesion td {
@@ -110,118 +98,97 @@
             text-align: center;
         }
         .sesion-activa {
-            background-color: #FF5757; /* Fondo rojo para el día activo, como en tu imagen */
+            background-color: #FF5757;
             color: white;
             font-weight: bold;
         }
-
-
-        /* --- COLUMNA 3: TOP ENTRENADORES --- */
-        .top-card {
-            background: white; border-radius: 10px; border: 1px solid #eee;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content;
+        
+        /* Estilo para el resumen de entrenador DENTRO del detalle de centro */
+        .trainer-summary-card {
+            border: 1px solid #ddd;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #f7f7f7;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .top-header {
-            background: #333; color: white; padding: 15px; border-radius: 10px 10px 0 0;
-            font-weight: bold; display: flex; align-items: center; gap: 10px;
+        .trainer-summary-header {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #333;
         }
-        .ranking-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 15px; border-bottom: 1px solid #f0f0f0;
+        .trainer-client-list {
+            /* Eliminado: Ya no se lista el detalle del cliente */
         }
-        .ranking-item:last-child { border-bottom: none; }
-        .rank-number {
-            background: var(--custom-teal); color: white; width: 25px; height: 25px;
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            font-size: 0.8rem; font-weight: bold; margin-right: 10px;
+        /* Nueva clase para la lista de entrenadores */
+        .trainer-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
         }
-        .trainer-info { display: flex; align-items: center; }
 
     </style>
 </head>
 <body>
 
-{{-- ================================================= --}}
-{{-- BLOQUE DE DATOS PHP SIMULADOS (Facturación por Cliente) --}}
-{{-- ================================================= --}}
 @php
     $centros_simulados = [
         [
-            'nombre' => 'CLINICA', // Nombre del centro
+            'nombre' => 'CLINICA',
             'clientes' => [
-                [
-                    'nombre' => 'Moises Godoy', 
-                    'entrenador' => 'Carlos', 
-                    'tipo_cobro' => 'TPV',
-                    'precio_sesion' => 25.00,
-                    'sesiones_mes' => 4,
-                    'sesiones_dias' => [4, 6, 22, 24], 
-                    'precio_total' => 100.00
-                ],
-                [
-                    'nombre' => 'EMILIO Diaz', 
-                    'entrenador' => 'Carlos',
-                    'tipo_cobro' => 'TPV',
-                    'precio_sesion' => 25.00,
-                    'sesiones_mes' => 4,
-                    'sesiones_dias' => [4, 6, 22, 26],
-                    'precio_total' => 100.00
-                ],
-                [
-                    'nombre' => 'Jose Albornoz', 
-                    'entrenador' => 'Ana',
-                    'tipo_cobro' => 'TPV',
-                    'precio_sesion' => 32.00,
-                    'sesiones_mes' => 2,
-                    'sesiones_dias' => [4, 6],
-                    'precio_total' => 64.00
-                ],
-                [
-                    'nombre' => 'Ana Salto', 
-                    'entrenador' => 'Ana',
-                    'tipo_cobro' => 'TPV',
-                    'precio_sesion' => 30.00,
-                    'sesiones_mes' => 1,
-                    'sesiones_dias' => [4],
-                    'precio_total' => 30.00
-                ]
+                ['nombre' => 'Moises Godoy', 'entrenador' => 'Carlos', 'tipo_cobro' => 'TPV', 'precio_sesion' => 25.00, 'sesiones_mes' => 4, 'sesiones_dias' => [4, 6, 22, 24], 'precio_total' => 100.00, 'centro' => 'CLINICA'],
+                ['nombre' => 'EMILIO Diaz', 'entrenador' => 'Carlos', 'tipo_cobro' => 'TPV', 'precio_sesion' => 25.00, 'sesiones_mes' => 4, 'sesiones_dias' => [4, 6, 22, 26], 'precio_total' => 100.00, 'centro' => 'CLINICA'],
+                ['nombre' => 'Jose Albornoz', 'entrenador' => 'Ana', 'tipo_cobro' => 'TPV', 'precio_sesion' => 32.00, 'sesiones_mes' => 2, 'sesiones_dias' => [4, 6], 'precio_total' => 64.00, 'centro' => 'CLINICA'],
+                ['nombre' => 'Ana Salto', 'entrenador' => 'Ana', 'tipo_cobro' => 'TPV', 'precio_sesion' => 30.00, 'sesiones_mes' => 1, 'sesiones_dias' => [4], 'precio_total' => 30.00, 'centro' => 'CLINICA']
+            ]
+        ],
+        [
+            'nombre' => 'AIRA',
+            'clientes' => [
+                ['nombre' => 'Luis Perez', 'entrenador' => 'Laura', 'tipo_cobro' => 'BIZUM', 'precio_sesion' => 45.00, 'sesiones_mes' => 4, 'sesiones_dias' => [2, 9, 16, 23], 'precio_total' => 180.00, 'centro' => 'AIRA'],
+                ['nombre' => 'Elena Soto', 'entrenador' => 'Carlos', 'tipo_cobro' => 'TPV', 'precio_sesion' => 35.00, 'sesiones_mes' => 3, 'sesiones_dias' => [3, 10, 17], 'precio_total' => 105.00, 'centro' => 'AIRA']
+            ]
+        ],
+        [
+            'nombre' => 'OPEN',
+            'clientes' => [
+                ['nombre' => 'Pedro Jimenez', 'entrenador' => 'Ana', 'tipo_cobro' => 'TRANSFERENCIA', 'precio_sesion' => 28.00, 'sesiones_mes' => 8, 'sesiones_dias' => [1, 2, 8, 9, 15, 16, 22, 23], 'precio_total' => 224.00, 'centro' => 'OPEN'],
+                ['nombre' => 'Sofia Vidal', 'entrenador' => 'Laura', 'tipo_cobro' => 'BIZUM', 'precio_sesion' => 30.00, 'sesiones_mes' => 4, 'sesiones_dias' => [5, 12, 19, 26], 'precio_total' => 120.00, 'centro' => 'OPEN']
             ]
         ],
         [
             'nombre' => 'VIRTUAL',
             'clientes' => [
-                [
-                    'nombre' => 'Laura García', 
-                    'entrenador' => 'Laura', 
-                    'tipo_cobro' => 'BIZUM',
-                    'precio_sesion' => 40.00,
-                    'sesiones_mes' => 5,
-                    'sesiones_dias' => [1, 5, 10, 15, 20], 
-                    'precio_total' => 200.00
-                ]
+                ['nombre' => 'Laura García', 'entrenador' => 'Laura', 'tipo_cobro' => 'BIZUM', 'precio_sesion' => 40.00, 'sesiones_mes' => 5, 'sesiones_dias' => [1, 5, 10, 15, 20], 'precio_total' => 200.00, 'centro' => 'VIRTUAL']
             ]
         ]
     ];
 
-    // CÁLCULO DEL RANKING (Acumulado por Entrenador)
-    $ranking = [];
+    $ranking_y_sesiones = [];
+    $entrenadores_unicos = [];
     foreach($centros_simulados as $centro) {
         foreach($centro['clientes'] as $cliente) {
             $nombre = $cliente['entrenador'];
-            if (!isset($ranking[$nombre])) {
-                $ranking[$nombre] = 0;
+            if (!isset($ranking_y_sesiones[$nombre])) {
+                $ranking_y_sesiones[$nombre] = ['facturacion' => 0, 'sesiones' => 0];
+                $entrenadores_unicos[$nombre] = $nombre;
             }
-            $ranking[$nombre] += $cliente['precio_total'];
+            $ranking_y_sesiones[$nombre]['facturacion'] += $cliente['precio_total'];
+            $ranking_y_sesiones[$nombre]['sesiones'] += $cliente['sesiones_mes'];
         }
     }
+    
+    $ranking = array_map(fn($item) => $item['facturacion'], $ranking_y_sesiones);
     arsort($ranking);
+    ksort($entrenadores_unicos);
 @endphp
 
-{{-- ================================================= --}}
-{{-- CUERPO PRINCIPAL DEL DASHBOARD --}}
-{{-- ================================================= --}}
 <div class="dashboard-container">
-    {{-- SIDEBAR DE NAVEGACION (CONSERVADO) --}}
     @include('components.sidebar_facturacion')
 
     <main class="main-content">
@@ -233,7 +200,6 @@
 
         <div class="facturacion-dashboard">
             
-            {{-- COLUMNA 1: BOTÓN IZQUIERDA --}}
             <div class="action-col">
                 <button class="btn-big-teal">
                     <i class="fa-solid fa-file-invoice"></i>
@@ -241,12 +207,8 @@
                 </button>
             </div>
 
-            {{-- ================================================= --}}
-            {{-- COLUMNA 2: FILTRO, SELECT Y DETALLE POR CLIENTE --}}
-            {{-- ================================================= --}}
             <div class="centros-stack">
                 
-                {{-- 1. FILTRO DE RANGO DE FECHAS --}}
                 <div class="card p-3 shadow-sm">
                     <label class="form-label fw-bold" style="color: var(--custom-text-teal);">
                         <i class="fa-solid fa-calendar-alt me-2"></i>Filtrar por Período
@@ -268,73 +230,52 @@
                     </div>
                 </div>
 
-                {{-- 2. EL CONTROL SELECT (Desplegable) --}}
                 <div class="card p-3 shadow-sm">
                     <label for="centro-selector" class="form-label fw-bold" style="color: var(--custom-text-teal);">
                         <i class="fa-solid fa-location-dot me-2"></i>Selecciona el Centro
                     </label>
                     <select class="form-select" id="centro-selector" onchange="mostrarDetalleCentro(this.value)">
-                        <option value="" selected>-- Ver Todos los Centros --</option>
+                        <option value="todos" selected>-- TODOS LOS CENTROS --</option> 
                         @foreach($centros_simulados as $index => $centro)
                             <option value="{{ $index }}">{{ $centro['nombre'] }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                {{-- 3. EL CONTENEDOR DONDE SE MOSTRARÁ LA TABLA POR CLIENTE --}}
-                <div id="detalle-facturacion-entrenadores">
+                <div class="card p-3 shadow-sm">
+                    <label for="entrenador-selector" class="form-label fw-bold" style="color: var(--custom-text-teal);">
+                        <i class="fa-solid fa-person-running me-2"></i>Selecciona el Entrenador
+                    </label>
+                    <select class="form-select" id="entrenador-selector" onchange="mostrarDetalleEntrenador(this.value)">
+                        <option value="" selected>-- Ver Todos los Entrenadores --</option>
+                        @foreach($entrenadores_unicos as $entrenador)
+                            <option value="{{ $entrenador }}">{{ $entrenador }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div id="detalle-facturacion">
                     <p class="text-muted text-center mt-5">
-                        <i class="fa-solid fa-arrow-up"></i> Selecciona un centro para ver las sesiones individuales por cliente.
+                        <i class="fa-solid fa-arrow-up"></i> Selecciona un centro o un entrenador para ver los detalles de facturación.
                     </p>
                 </div>
             </div>
 
-            {{-- COLUMNA 3: TOP ENTRENADORES --}}
-            <div class="top-col">
-                <div class="top-card">
-                    <div class="top-header">
-                        <i class="fa-solid fa-trophy"></i>
-                        TOP Entrenadores (Fact. Total)
-                    </div>
-                    <div>
-                        @php $rank = 1; @endphp
-                        @foreach($ranking as $nombre => $facturado)
-                            <div class="ranking-item">
-                                <div class="trainer-info">
-                                    <span class="rank-number">{{ $rank++ }}</span>
-                                    {{ $nombre }}
-                                </div>
-                                <div class="fw-bold">
-                                    {{ number_format($facturado, 2, ',', '.') }} €
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            
         </div>
     </main>
 </div>
 
-{{-- ================================================= --}}
-{{-- LÓGICA JAVASCRIPT --}}
-{{-- ================================================= --}}
 <script>
     const centrosData = @json($centros_simulados);
+    const rankingYsesionesData = @json($ranking_y_sesiones);
 
-    /**
-     * Genera la tabla de 31 días y marca los días activos.
-     */
+    // Esta función ya no se usa en el detalle de centro, pero se mantiene si se necesita en otro contexto
     function generarTablaDias(dias) {
         let diasHtml = '';
         for (let i = 1; i <= 31; i++) {
-            // Marca con la clase 'sesion-activa' si el día está en la lista
             const clase = dias.includes(i) ? 'sesion-activa' : '';
             diasHtml += `<td class="${clase}"></td>`;
         }
-
-        // Generar encabezados de días (1 a 31)
         let encabezadoDias = '';
         for (let i = 1; i <= 31; i++) {
             encabezadoDias += `<th>${i}</th>`;
@@ -355,44 +296,174 @@
     }
 
     /**
-     * Muestra la lista de clientes/sesiones para el centro seleccionado.
+     * Muestra la facturación agrupada SOLAMENTE por entrenador para el centro (o todos) seleccionado.
      */
     function mostrarDetalleCentro(index) {
-        const contenedor = document.getElementById('detalle-facturacion-entrenadores');
-        contenedor.innerHTML = ''; 
+        const contenedor = document.getElementById('detalle-facturacion');
+        const selectorEntrenador = document.getElementById('entrenador-selector');
 
-        if (index === "" || index === null) {
-            contenedor.innerHTML = `<p class="text-muted text-center mt-5"><i class="fa-solid fa-arrow-up"></i> Selecciona un centro para ver las sesiones individuales por cliente.</p>`;
+        contenedor.innerHTML = ''; 
+        selectorEntrenador.value = "";
+
+        if (index === "") {
+            contenedor.innerHTML = `<p class="text-muted text-center mt-5"><i class="fa-solid fa-arrow-up"></i> Selecciona un centro o un entrenador para ver los detalles de facturación.</p>`;
             return;
         }
 
-        const centroSeleccionado = centrosData[index];
-        let htmlContent = '';
+        let clientesDelCentro = [];
+        let tituloResumen = "";
+        let totalCentroFacturacion = 0;
 
-        centroSeleccionado.clientes.forEach(cliente => {
+        if (index === "todos") {
+            tituloResumen = "TODOS LOS CENTROS";
+            centrosData.forEach(centro => {
+                clientesDelCentro.push(...centro.clientes);
+                centro.clientes.forEach(cliente => {
+                    totalCentroFacturacion += cliente.precio_total;
+                });
+            });
+        } else {
+            const centroSeleccionado = centrosData[index];
+            tituloResumen = "CENTRO: " + centroSeleccionado.nombre;
+            clientesDelCentro = centroSeleccionado.clientes;
+            clientesDelCentro.forEach(cliente => {
+                totalCentroFacturacion += cliente.precio_total;
+            });
+        }
+        
+        const totalFacturacionFormato = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2 }).format(totalCentroFacturacion);
+        
+        // 1. AGRUPAR CLIENTES POR ENTRENADOR Y SUMAR TOTALES
+        const facturacionPorEntrenador = {};
+        clientesDelCentro.forEach(cliente => {
+            const entrenador = cliente.entrenador;
+            if (!facturacionPorEntrenador[entrenador]) {
+                facturacionPorEntrenador[entrenador] = {
+                    total: 0,
+                    sesiones: 0
+                };
+            }
+            facturacionPorEntrenador[entrenador].total += cliente.precio_total;
+            facturacionPorEntrenador[entrenador].sesiones += cliente.sesiones_mes;
+        });
+        
+        let htmlContent = `
+            <div class="centro-card mb-4" style="border: 2px solid var(--custom-teal);">
+                <div class="centro-header" style="background-color: var(--custom-teal-dark); color: white; display: flex; justify-content: space-between; align-items: center;">
+                    <span class="centro-name text-white">
+                        <i class="fa-solid fa-building me-2"></i> RESUMEN ${tituloResumen.toUpperCase()}
+                    </span>
+                    <span class="badge-total" style="background-color: white; color: var(--custom-text-teal);">
+                        TOTAL GLOBAL: ${totalFacturacionFormato} €
+                    </span>
+                </div>
+                <div class="p-3 small text-muted">
+                    <p class="mb-2"><i class="fa-solid fa-info-circle me-1"></i> Resumen de la facturación por entrenador en ${tituloResumen}.</p>
+                </div>
+            </div>
+            
+            <div class="trainer-list-container">
+        `;
+
+        // 2. ITERAR POR ENTRENADOR Y MOSTRAR SOLO EL RESUMEN
+        for (const [entrenador, data] of Object.entries(facturacionPorEntrenador)) {
+            const totalEntrenadorFormato = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2 }).format(data.total);
+
+            htmlContent += `
+                <div class="trainer-summary-card card shadow-sm">
+                    <div class="trainer-summary-header">
+                        <i class="fa-solid fa-person-running me-2" style="color: var(--custom-text-teal);"></i> 
+                        ENTRENADOR: ${entrenador.toUpperCase()}
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge badge-total" style="background-color: #d1e7dd; color: #0f5132;">
+                            SESIONES: ${data.sesiones}
+                        </span>
+                        <span class="badge-total" style="background-color: var(--custom-teal-light); color: var(--custom-text-teal);">
+                            FACTURACIÓN: ${totalEntrenadorFormato} €
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        htmlContent += `</div>`; // Cierre trainer-list-container
+
+
+        contenedor.innerHTML = htmlContent;
+    }
+    
+    // El filtro por entrenador lateral se mantiene, mostrando el detalle por cliente
+    function mostrarDetalleEntrenador(entrenador) {
+        const contenedor = document.getElementById('detalle-facturacion');
+        const selectorCentro = document.getElementById('centro-selector');
+
+        contenedor.innerHTML = ''; 
+        selectorCentro.value = "todos";
+
+        if (entrenador === "" || entrenador === null) {
+            contenedor.innerHTML = `<p class="text-muted text-center mt-5"><i class="fa-solid fa-arrow-up"></i> Selecciona un centro o un entrenador para ver los detalles de facturación.</p>`;
+            return;
+        }
+
+        const datosEntrenador = rankingYsesionesData[entrenador];
+        const totalFacturacion = datosEntrenador.facturacion;
+        const totalSesiones = datosEntrenador.sesiones;
+
+        const totalFacturacionFormato = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2 }).format(totalFacturacion);
+
+        let clientesDelEntrenador = [];
+        centrosData.forEach(centro => {
+            centro.clientes.forEach(cliente => {
+                if (cliente.entrenador === entrenador) {
+                    clientesDelEntrenador.push(cliente); 
+                }
+            });
+        });
+
+        let htmlContent = `
+            <div class="centro-card mb-4" style="border: 2px solid var(--custom-teal);">
+                <div class="centro-header" style="background-color: var(--custom-teal-dark); color: white; display: flex; justify-content: space-between; align-items: center;">
+                    <span class="centro-name text-white">
+                        <i class="fa-solid fa-person-running me-2"></i> RESUMEN ENTRENADOR: ${entrenador.toUpperCase()}
+                    </span>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge badge-total" style="background-color: white; color: var(--custom-text-teal); padding: 5px 15px;">
+                            SESIONES TOTALES: ${totalSesiones}
+                        </span>
+                        <span class="badge badge-total" style="background-color: white; color: var(--custom-text-teal);">
+                            TOTAL GLOBAL: ${totalFacturacionFormato} €
+                        </span>
+                    </div>
+                </div>
+                <div class="p-3 small text-muted">
+                    <p class="mb-2"><i class="fa-solid fa-info-circle me-1"></i> Se muestran todos los clientes asociados a este entrenador en todos los centros.</p>
+                </div>
+            </div>
+        `;
+
+        clientesDelEntrenador.forEach(cliente => {
             const diasSesiones = cliente.sesiones_dias;
             const precioTotalFormato = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2 }).format(cliente.precio_total);
             const precioSesionFormato = new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2 }).format(cliente.precio_sesion);
-
-            // Generar la fila de la tabla de clientes con el calendario
+            
             htmlContent += `
                 <div class="centro-card mb-3">
-                    <div class="centro-header">
-                        <span class="centro-name">
-                            <i class="fa-solid fa-user me-2"></i> ${cliente.nombre.toUpperCase()}
+                    <div class="centro-header" style="background-color: #f0fff0;">
+                        <span class="centro-name" style="color: #4A8F88;">
+                            <i class="fa-solid fa-user me-2"></i> CLIENTE: ${cliente.nombre.toUpperCase()}
                         </span>
                         <span class="badge-total">
-                            Total: ${precioTotalFormato} €
+                            Total Cliente: ${precioTotalFormato} €
                         </span>
                     </div>
                     
                     <div class="p-3">
                         <div class="row align-items-center mb-2 small">
-                            <div class="col-2"><span class="fw-bold">Centro:</span> ${centroSeleccionado.nombre}</div>
+                            <div class="col-2"><span class="fw-bold">Centro:</span> ${cliente.centro}</div>
                             <div class="col-2"><span class="fw-bold">Cobro:</span> ${cliente.tipo_cobro}</div>
-                            <div class="col-2"><span class="fw-bold">Precio/Promo:</span> ${precioSesionFormato} €</div>
+                            <div class="col-2"><span class="fw-bold">Precio/Ses:</span> ${precioSesionFormato} €</div>
                             <div class="col-2 text-center"><span class="fw-bold">Ses/Mes:</span> ${cliente.sesiones_mes}</div>
-                            <div class="col-2 text-center"><span class="fw-bold">Entrenador:</span> ${cliente.entrenador}</div>
                         </div>
 
                         <label class="form-label small fw-bold text-muted mt-2">FECHAS SESIONES:</label>
@@ -404,18 +475,21 @@
 
         contenedor.innerHTML = htmlContent;
     }
-    
+
     function aplicarFiltro() {
         const fechaDesde = document.getElementById('fecha-desde').value;
         const fechaHasta = document.getElementById('fecha-hasta').value;
 
         if (fechaDesde && fechaHasta) {
             alert(`Filtro aplicado: Desde ${fechaDesde} hasta ${fechaHasta}.\n\n(En un entorno real, esta acción enviaría estas fechas al servidor para que el controlador filtre los datos de facturación.)`);
-            // Código real: Aquí se ejecutaría la lógica de recarga/filtrado de datos
         } else {
             alert("Por favor, selecciona las fechas 'Desde' y 'Hasta'.");
         }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        mostrarDetalleCentro('todos');
+    });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
