@@ -27,9 +27,7 @@
                 <img src="{{ asset('img/logopng.png') }}" alt="Factomove Logo"> 
             </div>
             
-          
-
-                <form method="POST" action="{{ route('register') }}">
+            <form method="POST" action="{{ route('register') }}">
                 @csrf
                 
                 <div class="input-group">

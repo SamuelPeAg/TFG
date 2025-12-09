@@ -8,7 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserReservationController;
 use App\Http\Controllers\TrainerController;
 
-// Tus rutas existentes...
+
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -27,9 +27,11 @@ Route::get('/login', function () {
 
 Route::post("/login", [LoginController::class, "login"]);
 
-Route::post('/register', [RegisterController::class, 'store'])->name('register');
 
-Route::get('/register', [RegisterController::class, 'show'])->name('register.form');
+Route::get('/register', [RegisterController::class, 'show'])->name('register');
+Route::post('/register', [RegisterController::class, 'store']);
+
+
 
 
 
