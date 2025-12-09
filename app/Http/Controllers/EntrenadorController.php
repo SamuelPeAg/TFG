@@ -28,15 +28,15 @@ class EntrenadorController extends Controller
         return redirect()->route('entrenadores.index')->with('success', 'Entrenador creado correctamente.');
     }
 
-    public function update(Request $request, Entrenador $trainer)
+    public function update(Request $request, Entrenador $entrenador)
     {
         $request->validate([
             'nombre' => 'required',
-            'email' => 'required|email|unique:entrenadores,email,' . $trainer->id,
+            'email' => 'required|email|unique:entrenadores,email,' . $entrenador->id,
 
         ]);
 
-        $trainer->update([
+        $entrenador->update([
             'nombre' => $request->nombre,
             'email' => $request->email,
 
@@ -45,10 +45,12 @@ class EntrenadorController extends Controller
         return redirect()->route('entrenadores.index')->with('success', 'Entrenador actualizado correctamente.');
     }
 
-    public function destroy(Entrenador $trainer)
+    public function destroy(Entrenador $entrenador)
     {
-        $trainer->delete();
-        return redirect()->route('entrenadores.index')->with('success', 'Entrenador eliminado correctamente.');
+        $entrenador->delete();
+        return redirect()->route('entrenadores.index')
+            ->with('success', 'Entrenador eliminado correctamente.');
     }
+
 
 }
