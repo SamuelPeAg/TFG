@@ -36,11 +36,11 @@
             @endif
 
             <div id="crearUsuarioBox" class="card p-3 mb-4 shadow-sm" style="display: none;">
-                <form action="{{ route('trainers.store') }}" method="POST">
+                <form action="{{ route('entrenadores.store') }}" method="POST">
                     @csrf
                     <div class="row g-3">
                         <div class="col-md-2">
-                            <input type="text" name="name" class="form-control" placeholder="Nombre" required>
+                            <input type="text" name="nombre" class="form-control" placeholder="Nombre" required>
                         </div>
                         <div class="col-md-2">
                             <input type="email" name="email" class="form-control" placeholder="Email" required>
@@ -52,7 +52,7 @@
                 </form>
             </div>
 
-            <x-trainers-table :trainers="$trainers" />
+           <x-trainers-table :entrenadores="$entrenadores" />
 
         </div>
     </main>

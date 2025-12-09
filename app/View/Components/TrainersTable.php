@@ -8,11 +8,11 @@ use Illuminate\View\Component;
 
 class TrainersTable extends Component
 {
-    public $trainers;
+    public $entrenadores;
 
-    public function __construct($trainers)
+    public function __construct($entrenadores)
     {
-        $this->trainers = $trainers;
+        $this->entrenadores = $entrenadores;
     }
 
     public function render(): View|Closure|string

@@ -1,17 +1,18 @@
 <?php
 
+use App\Http\Controllers\EntrenadorController;
 use App\Http\Controllers\LoginController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserReservationController;
-use App\Http\Controllers\TrainerController;
 
 // Tus rutas existentes...
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
-Route::resource('trainers', TrainerController::class);
+Route::resource('entrenadores', EntrenadorController::class)
+     ->parameters(['entrenadores' => 'entrenador']);
+
 Route::resource('users', UserController::class);
 
 Route::get('/sesiones', function () {

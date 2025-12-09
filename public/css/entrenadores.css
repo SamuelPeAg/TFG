@@ -128,3 +128,59 @@
     transform: scale(1.12);
     transition: 0.15s ease;
 }
+
+/* ======================================== */
+/* FORMULARIO DESPLEGABLE (AÑADIR ENTRENADOR) */
+/* ======================================== */
+
+#crearUsuarioBox {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 25px;
+    max-width: 350px;
+    margin-top: 18px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    animation: fadeDown 0.25s ease-out;
+}
+
+/* Inputs estilizados */
+#crearUsuarioBox input.form-control {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #cfcfcf;
+    font-size: 15px;
+}
+
+#crearUsuarioBox input.form-control:focus {
+    border-color: #4BB7AE;
+    box-shadow: 0 0 4px rgba(75, 183, 174, 0.4);
+}
+
+/* Botón Crear */
+#crearUsuarioBox button {
+    width: 100%;
+    border-radius: 10px !important;
+    padding: 10px !important;
+    font-size: 15px;
+}
+
+/* Botón “Añadir Entrenador” (separado del título) */
+.controls-bar button {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Animación suave */
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

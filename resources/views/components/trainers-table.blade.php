@@ -8,30 +8,32 @@
     </thead>
 
     <tbody>
-        @foreach($trainers as $trainer)
+        @foreach($entrenadores as $trainer)
         <tr>
 
-            <td>
-                <form action="{{ route('trainers.update', $trainer->id) }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <input type="text" name="name" value="{{ $trainer->name }}" class="table-input">
-            </td>
+            <form action="{{ route('entrenadores.update', $trainer->id) }}" method="POST">
+                @csrf
+                @method('PUT')
 
-            <td>
+                <td>
+                    <input type="text" name="nombre" value="{{ $trainer->nombre }}" class="table-input">
+                </td>
+
+                <td>
                     <input type="email" name="email" value="{{ $trainer->email }}" class="table-input">
-            </td>
+                </td>
 
-            <td class="actions-cell">
+                <td class="actions-cell">
 
-                <!-- Guardar -->
-                <button type="submit" class="icon-btn save-btn">
-                    <img src="/img/guardar.webp" class="action-icon save-icon">
-                </button>
-                </form>
+                    <!-- Guardar -->
+                    <button type="submit" class="icon-btn save-btn">
+                        <img src="/img/guardar.webp" class="action-icon save-icon">
+                    </button>
+
+            </form>
 
                 <!-- Borrar -->
-                <form action="{{ route('trainers.destroy', $trainer->id) }}" method="POST">
+                <form action="{{ route('entrenadores.destroy', $trainer->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="icon-btn delete-btn">
@@ -44,9 +46,10 @@
                     <img src="/img/sesiones.webp" class="action-icon sessions-icon">
                 </a>
 
-            </td>
+                </td>
 
         </tr>
         @endforeach
     </tbody>
 </table>
+
