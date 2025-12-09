@@ -5,47 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - Factomove</title>
 
-    {{-- CSS principal de esta vista --}}
-    <link href="{{ asset('css/ususarios.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/usuarios.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    {{-- Flatpickr para el calendario --}}
-
 </head>
 <body>
 
 <div class="dashboard-container">
 
-    {{-- Sidebar reutilizable --}}
     @include('components.sidebar_entrenadores')
 
     <main class="main-content">
 
-        {{-- Cabecera de la vista --}}
         <div class="header-controls">
             <div class="title-section">
                 <h1>Gestión de Entrenadores</h1>
             </div>
 
             <div class="controls-bar">
-                {{-- Botón para mostrar/ocultar formulario de alta --}}
                 <button id="toggleCrearUsuario" class="btn btn-success">
-                 Añadir Entrenador
+                    Añadir Entrenador
                 </button>
             </div>
         </div>
 
-        {{-- Contenido principal --}}
-        <div class="container py-5">
+        <div class="content-wrapper">
 
-            {{-- Mensaje de éxito --}}
             @if(session('success'))
                 <div class="alert alert-success text-center">{{ session('success') }}</div>
             @endif
 
-            {{-- Formulario crear usuario (oculto por defecto) --}}
             <div id="crearUsuarioBox" class="card p-3 mb-4 shadow-sm" style="display: none;">
                 <form action="{{ route('trainers.store') }}" method="POST">
                     @csrf
@@ -63,57 +52,12 @@
                 </form>
             </div>
 
-            {{-- Tabla de usuarios --}}
-            <table class="table table-striped align-middle shadow-sm">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($trainers as $trainer)
-                    <tr>
-                        {{-- Form actualizar --}}
-                        <form action="{{ route('trainers.update', $trainer->id) }}" method="POST">
-                            @csrf
-                            @method('PUT')
+            <x-trainers-table :trainers="$trainers" />
 
-                            <td>{{ $trainer->id }}</td>
-
-                            <td>
-                                <input type="text" name="name" value="{{ $trainer->name }}" class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="email" name="email" value="{{ $trainer->email }}" class="form-control">
-                            </td>
-
-                            <td class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary btn-sm"><img width="20px" src="./img/guardar.webp" alt="guardar"></button>
-                        </form>
-
-                        {{-- Form eliminar --}}
-                        <form action="{{ route('trainers.destroy', $trainer->id) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm"><img  width="20px" src="./img/borrar.webp" alt="eliminar"></button>
-                        </form>
-                        <a href="{{ route('sesiones', $trainer->id) }}" class="btn btn-sm sesiones"><img width="20px" src="./img/sesiones.webp" alt="sesiones">
-
-                        </a>
-                            </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-        </div> {{-- /.container --}}
+        </div>
     </main>
 </div>
 
-{{-- JS para mostrar / ocultar el formulario de creación --}}
 <script>
 document.getElementById('toggleCrearUsuario').addEventListener('click', () => {
     const box = document.getElementById('crearUsuarioBox');

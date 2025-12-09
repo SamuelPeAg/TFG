@@ -1,0 +1,68 @@
+/* tabla estilo excel */
+.excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-top: 20px; /* separación del título */
+}
+
+.excel-table th {
+    background: #4BB7AE;
+    color: white;
+    font-weight: bold;
+    text-align: left;
+    padding: 12px;
+}
+
+.excel-table td {
+    padding: 10px;
+    vertical-align: middle;
+}
+
+.table-input {
+    border: none;
+    width: 100%;
+    background: transparent;
+    padding: 5px;
+}
+
+.table-input:focus {
+    outline: 2px solid #4BB7AE;
+    background: #e8fffb;
+}
+
+/* filas tipo Excel */
+.excel-table tr:nth-child(even) {
+    background: #f7f7f7;
+}
+
+.excel-table tr:hover {
+    background: #d8fff6;
+}
+
+/* layout */
+.main-content {
+    padding: 40px;
+}
+
+.content-wrapper {
+    width: 100%;
+    padding: 0;
+}
+
+/* botón */
+.btn-success {
+    background-color: #4BB7AE !important; 
+    border: none !important;
+    padding: 10px 20px !important;
+    font-weight: 600;
+    border-radius: 10px !important;
+    color: white !important;
+    box-shadow: 0px 3px 10px rgba(0,0,0,0.15);
+    transition: 0.2s;
+}
+
+.btn-success:hover {
+    background-color: #3da094 !important;
+    transform: translateY(-2px);
+}
