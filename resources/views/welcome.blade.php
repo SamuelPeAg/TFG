@@ -79,21 +79,21 @@
             </div>
 
             <div class="md:w-1/2 w-full reveal">
-                <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl flex flex-col justify-center items-center">
-                    <div class="h-[32px] w-[3px] bg-gray-800 absolute -left-[17px] top-[72px] rounded-l-lg"></div>
-                    <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
-                    <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[178px] rounded-l-lg"></div>
-                    <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
-                    
-                    <div class="rounded-[2rem] overflow-hidden w-full h-full bg-white flex flex-col items-center justify-center text-center p-4">
-                        <div class="bg-gray-100 p-6 rounded-full mb-4">
-                            <i class="fa-solid fa-mobile-screen text-4xl text-brandTeal"></i>
-                        </div>
-                        <span class="font-bold text-gray-400">[Mockup de la App]</span>
-                        <span class="text-xs text-gray-400 mt-2">Móvil o Escritorio</span>
-                    </div>
-                </div>
-            </div>
+    <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl flex flex-col justify-center items-center">
+        <div class="h-[32px] w-[3px] bg-gray-800 absolute -left-[17px] top-[72px] rounded-l-lg"></div>
+        <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
+        <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[178px] rounded-l-lg"></div>
+        <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
+        
+        <div class="rounded-[2rem] overflow-hidden w-full h-full bg-white relative">
+            
+            <img src="{{ asset('img/mockup.png') }}" 
+                 alt="App Mockup" 
+                 class="w-full h-full object-cover">
+                 
+        </div>
+    </div>
+</div>
 
         </div>
     </section>
