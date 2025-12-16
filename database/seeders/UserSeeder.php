@@ -22,6 +22,17 @@ class UserSeeder extends Seeder
             ]
         );
 
+        User::firstOrCreate(
+            ['email' => 'Pacopepe@example.com'],
+            [
+                'name' => 'Paco Pepe',
+                'password' => Hash::make('password'),
+                'foto_de_perfil' => 'perfill_test.jpg',
+                'IBAN' => 'ES12345678901234545689012',
+                'FirmaDigital' => 'firma_digitall_test',
+            ]
+        );
+
         // Usuario 2
         User::firstOrCreate(
             ['email' => 'ana.lopez@example.com'],

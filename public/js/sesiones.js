@@ -122,3 +122,5 @@ document.addEventListener('DOMContentLoaded', function() {
     if(searchInput) searchInput.addEventListener('input', debounce(e=>fetchAndRender(e.target.value.trim()),300));
 
 });
+
+

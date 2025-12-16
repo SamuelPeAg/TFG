@@ -62,5 +62,12 @@ Route::get('/politica-privacidad', function () {
 Route::get('/politica-cookies', function () {
     return view('legal.cookies');
 })->name('cookies.policy');
+
+
+Route::post('/logout', function () {
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/'); // O redirige a login con: return redirect()->route('login');
+})->name('logout');
 ?>
 
