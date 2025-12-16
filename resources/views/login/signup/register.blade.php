@@ -1,75 +1,136 @@
-
+@extends('components.headers.header_welcome') 
 
 @section('content')
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - Factomove</title>
-    
-    {{-- Enlace al archivo CSS externo --}}
-    <link rel="stylesheet" href="{{ asset('css/principal.css') }}">
-</head>
-<body>
-        <x-headers.header_register />
 
+    {{-- CONTENEDOR PRINCIPAL --}}
+    <div class="flex flex-col min-h-[calc(100vh-80px)]">
 
-    <div class="login-wrapper">
-        <div class="left-panel">
-            <img src="{{ asset('img/logopng.png') }}" alt="Factomove Logo Blanco" class="logo-img">
-            <h2>Bienvenido a Factomove</h2>
-            <p>Donde cada movimiento cuenta. Inicia sesión para acceder a tu plataforma de gestión.</p>
-        </div>
-
-        <div class="right-panel">
-            <div class="form-header-logo">
-                <img src="{{ asset('img/logopng.png') }}" alt="Factomove Logo"> 
-            </div>
+        {{-- === ÁREA CENTRAL (FONDO + FORMULARIO) === --}}
+        <div class="flex-grow flex items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-white via-brandTeal/30 to-brandCoral/40">
             
-            <form method="POST" action="{{ route('register') }}">
-                @csrf
+            {{-- TARJETA DE REGISTRO --}}
+            <div class="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/60">
                 
-                <div class="input-group">
-                    <input type="text" name="name" value="{{ old('name') }}" placeholder="Nombre" required autofocus>
-                    @error('name') <span class="error-message">{{ $message }}</span> @enderror
+                {{-- ENCABEZADO DE LA TARJETA --}}
+                <div class="px-8 pt-10 pb-4 text-center">
+                    <img src="{{ asset('img/logopng.png') }}" 
+                         alt="Factomove Logo" 
+                         class="h-28 w-auto mx-auto mb-6 transform hover:scale-105 transition duration-300">
+                    
+                    <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Únete a Factomove</h2>
+                    <p class="mt-2 text-sm text-gray-500">
+                        Crea tu cuenta y empieza a gestionar el movimiento.
+                    </p>
                 </div>
 
-                <div class="input-group">
-                    <input type="email" name="email" value="{{ old('email') }}" placeholder="Correo Electrónico" required>
-                    @error('email') <span class="error-message">{{ $message }}</span> @enderror
+                {{-- FORMULARIO --}}
+                <div class="px-8 pb-10">
+                    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+                        @csrf
+                        
+                        {{-- 1. NOMBRE --}}
+                        <div class="group">
+                            <label for="name" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Nombre Completo</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-user text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
+                                </div>
+                                {{-- CAMBIO: focus:ring-brandTeal -> focus:ring-green-500 --}}
+                                <input type="text" name="name" value="{{ old('name') }}" 
+                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
+                                    placeholder="Ej. María García" required autofocus>
+                            </div>
+                            @error('name') <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- 2. EMAIL --}}
+                        <div class="group">
+                            <label for="email" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Correo Electrónico</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-envelope text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
+                                </div>
+                                {{-- CAMBIO: focus:ring-brandTeal -> focus:ring-green-500 --}}
+                                <input type="email" name="email" value="{{ old('email') }}" 
+                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
+                                    placeholder="tucorreo@ejemplo.com" required>
+                            </div>
+                            @error('email') <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- 3. CONTRASEÑA --}}
+                        <div class="group">
+                            <label for="password" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Contraseña</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-lock text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
+                                </div>
+                                {{-- CAMBIO: focus:ring-brandTeal -> focus:ring-green-500 --}}
+                                <input type="password" name="password" 
+                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
+                                    placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
+                            </div>
+                            @error('password') <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- 4. REPETIR CONTRASEÑA --}}
+                        <div class="group">
+                            <label for="password_confirmation" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Confirmar Contraseña</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-check-double text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
+                                </div>
+                                {{-- CAMBIO: focus:ring-brandTeal -> focus:ring-green-500 --}}
+                                <input type="password" name="password_confirmation" 
+                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
+                                    placeholder="Repite tu contraseña" required>
+                            </div>
+                        </div>
+
+                        {{-- 5. TÉRMINOS Y CONDICIONES --}}
+                        <div class="flex items-start mt-2">
+                            <div class="flex items-center h-5">
+                                {{-- CAMBIO: focus:ring-brandTeal/30 text-brandTeal -> focus:ring-green-500/30 text-green-600 --}}
+                                <input id="terms" name="terms" type="checkbox" required 
+                                    class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-green-500/30 text-green-600 cursor-pointer">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="terms" class="font-medium text-gray-600">
+                                    He leído y acepto los <a href="{{ route('legal.notice') }}" class="text-brandTeal hover:underline font-bold">Términos y Condiciones</a>
+                                </label>
+                            </div>
+                        </div>
+                        @error('terms') <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p> @enderror
+
+                        {{-- BOTÓN REGISTRAR (Gradiente Cian -> Coral) --}}
+                        <button type="submit" class="w-full flex justify-center py-3.5 px-4 mt-6 border border-transparent rounded-xl shadow-lg shadow-brandCoral/30 text-sm font-bold text-white bg-gradient-to-r from-brandTeal to-brandCoral hover:shadow-xl hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brandTeal transition transform hover:-translate-y-0.5 duration-200">
+                            CREAR CUENTA
+                        </button>
+                    </form>
+
+                    {{-- ENLACE INICIAR SESIÓN --}}
+                    <div class="mt-8 relative">
+                        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                            <div class="w-full border-t border-gray-200"></div>
+                        </div>
+                        <div class="relative flex justify-center">
+                            <span class="px-4 bg-white text-xs text-gray-400 uppercase font-bold tracking-wider">¿Ya tienes cuenta?</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <a href="{{ route('login') }}" class="inline-block text-brandTeal font-bold hover:text-teal-800 transition underline decoration-2 decoration-transparent hover:decoration-brandTeal">
+                            Inicia sesión aquí
+                        </a>
+                    </div>
+
                 </div>
-            
-                <div class="input-group">
-                    <input type="password" name="password" placeholder="Contraseña" required autocomplete="new-password">
-                    @error('password') <span class="error-message">{{ $message }}</span> @enderror
-                </div>
-
-                <div class="input-group">
-                    <input type="password" name="password_confirmation" placeholder="Repetir Contraseña" required>
-                </div>
-
-                <!-- <div class="checkbox-group">
-                    <input type="checkbox" id="terms" name="terms" required>
-                    <label for="terms">
-                        He leído y acepto los <a href="#">términos y condiciones</a>.
-                    </label>
-                </div> -->
-                 @error('terms') <span class="error-message" style="display:block; margin-bottom:15px;">{{ $message }}</span> @enderror
-
-                <button type="submit" class="login-button">
-                    REGISTRARSE
-                </button>
-            </form>
-
-            <div class="bottom-link">
-                ¿Ya tienes una cuenta? <a href="{{ route('login') }}">Inicia sesión aquí</a>
             </div>
-
-           
         </div>
+        
+        {{-- FOOTER GLOBAL --}}
+        <x-footers.footer_welcome />
+
     </div>
 
-</body>
-</html>
-
+@endsection

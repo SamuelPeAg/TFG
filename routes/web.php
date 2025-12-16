@@ -44,5 +44,23 @@ Route::get('/facturas', function () {
     return view('facturacion.facturas');
 })->name('facturas');
 
+// -----------------------------------------------------------------------------
+// RUTAS LEGALES (Footer)
+// -----------------------------------------------------------------------------
+
+// 1. Aviso Legal
+Route::get('/aviso-legal', function () {
+    return view('legal.notice');
+})->name('legal.notice');
+
+// 2. Política de Privacidad
+Route::get('/politica-privacidad', function () {
+    return view('legal.privacy');
+})->name('privacy.policy');
+
+// 3. Política de Cookies
+Route::get('/politica-cookies', function () {
+    return view('legal.cookies');
+})->name('cookies.policy');
 ?>
 

@@ -49,8 +49,9 @@
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <div class="flex-shrink-0 flex items-center gap-2">
-                    <img src="{{ asset('img/logopng.png') }}" alt="Factomove Logo Blanco" class="h-10 w-auto">
-                    <span>Factomove</span>
+<a href="{{ url('/') }}">
+    <img src="{{ asset('img/logopng.png') }}" alt="Factomove Logo Blanco" class="h-10 w-auto">
+</a>                    <span>Factomove</span>
                 </div>
 
                 <div class="hidden md:flex space-x-6 items-center">

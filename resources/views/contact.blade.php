@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Contacto - Factomove</title>
 
-    <link rel="stylesheet" href="{{ asset('css/principal.css') }}" />
+    {{-- Tailwind CSS CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {{-- FontAwesome --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script>
         tailwind.config = {
@@ -27,89 +28,119 @@
         }
     </script>
     
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* Importamos la fuente Inter y otras clases base */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        
-        /* Aseguramos que el contenedor de contenido principal tenga un relleno de 80px 
-           para evitar la superposición con el header fijo (h-20) */
-        .contact-fullscreen-wrapper {
-             padding-top: 80px !important; 
-        }
     </style>
 </head>
-<body>
+<body class="bg-white text-darkText">
+
+    {{-- HEADER --}}
     <x-headers.header-contacto/>
 
-    <div class="contact-fullscreen-wrapper">
+    {{-- CONTENEDOR PRINCIPAL --}}
+    <main class="min-h-screen pt-20 grid grid-cols-1 lg:grid-cols-2">
         
-        <a href="/" class="back-home-btn mt-4"> 
-        </a>
+        {{-- COLUMNA IZQUIERDA: CONTENIDO Y FORMULARIO --}}
+        <div class="px-6 py-12 md:px-12 lg:px-20 lg:py-16 flex flex-col justify-center order-1 lg:order-1">
+            
+            {{-- (Botón 'Volver al inicio' ELIMINADO) --}}
 
-        <div class="contact-content-side">
-            <div class="contact-hero-inline">
-                <h1>Hablemos de <br><span class="text-gradient">Movimiento</span></h1>
-                <p>
+            {{-- Título --}}
+            <div class="mb-10">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
+                    Hablemos de <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandTeal to-brandCoral">
+                        Movimiento
+                    </span>
+                </h1>
+                <p class="text-lg text-gray-600 max-w-lg">
                     ¿Tienes dudas sobre Factomove o quieres empezar un plan personalizado? 
                     Rellena el formulario y nos pondremos en marcha.
                 </p>
             </div>
 
-            <form action="#" method="POST" class="contact-form-full">
+            {{-- Formulario --}}
+            <form action="#" method="POST" class="space-y-6 max-w-lg">
                 @csrf
                 
-                <label for="name">Nombre Completo <span>*</span></label>
-                <input type="text" id="name" name="name" class="input-flat" placeholder="Tu nombre" required>
+                {{-- Nombre --}}
+                <div>
+                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo <span class="text-brandCoral">*</span></label>
+                    <input type="text" id="name" name="name" 
+                        class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-brandTeal focus:border-brandTeal outline-none transition" 
+                        placeholder="Tu nombre completo" required>
+                </div>
 
-                <div style="display: flex; gap: 20px;">
-                    <div style="flex:1">
-                        <label for="email">Email <span>*</span></label>
-                        <input type="email" id="email" name="email" class="input-flat" placeholder="tucorreo@ejemplo.com" required>
+                {{-- Email y Teléfono --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">Email <span class="text-brandCoral">*</span></label>
+                        <input type="email" id="email" name="email" 
+                            class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-brandTeal focus:border-brandTeal outline-none transition" 
+                            placeholder="hola@ejemplo.com" required>
                     </div>
-                    <div style="flex:1">
-                        <label for="phone">Teléfono</label>
-                        <input type="tel" id="phone" name="phone" class="input-flat" placeholder="+34...">
+                    <div>
+                        <label for="phone" class="block text-sm font-semibold text-gray-700 mb-1">Teléfono</label>
+                        <input type="tel" id="phone" name="phone" 
+                            class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-brandTeal focus:border-brandTeal outline-none transition" 
+                            placeholder="+34 600 000 000">
                     </div>
                 </div>
 
-                <label for="company">Empresa / Organización</label>
-                <input type="text" id="company" name="company" class="input-flat" placeholder="Opcional">
+                {{-- Empresa --}}
+                <div>
+                    <label for="company" class="block text-sm font-semibold text-gray-700 mb-1">Empresa / Organización</label>
+                    <input type="text" id="company" name="company" 
+                        class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-brandTeal focus:border-brandTeal outline-none transition" 
+                        placeholder="Opcional">
+                </div>
 
-                <label for="message">¿En qué podemos ayudarte? <span>*</span></label>
-                <textarea id="message" name="message" class="input-flat" placeholder="Cuéntanos sobre tu proyecto..." required></textarea>
+                {{-- Mensaje --}}
+                <div>
+                    <label for="message" class="block text-sm font-semibold text-gray-700 mb-1">¿En qué podemos ayudarte? <span class="text-brandCoral">*</span></label>
+                    <textarea id="message" name="message" rows="4" 
+                        class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-brandTeal focus:border-brandTeal outline-none transition resize-none" 
+                        placeholder="Cuéntanos sobre tu proyecto o duda..." required></textarea>
+                </div>
 
-                <button type="submit" class="login-button" style="width: auto; padding: 15px 50px;">
+                {{-- Botón Enviar --}}
+                <button type="submit" class="bg-brandTeal text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:bg-teal-600 hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200">
                     ENVIAR MENSAJE
                 </button>
             </form>
 
-            <div class="contact-extra-info">
-                <div class="info-item">
-                    <h4>Email</h4>
-                    <a href="mailto:hola@factomove.com">hola@factomove.com</a>
+            {{-- Información Extra --}}
+            <div class="mt-12 pt-8 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                    <h4 class="font-bold text-gray-900 mb-1">Email</h4>
+                    <a href="mailto:hola@factomove.com" class="text-brandTeal hover:underline text-sm">hola@factomove.com</a>
                 </div>
-                <div class="info-item">
-                    <h4>Teléfono</h4>
-                    <a href="tel:+34912345678">+34 912 345 678</a>
+                <div>
+                    <h4 class="font-bold text-gray-900 mb-1">Teléfono</h4>
+                    <a href="tel:+34912345678" class="text-brandTeal hover:underline text-sm">+34 912 345 678</a>
                 </div>
-                <div class="info-item">
-                    <h4>Oficina</h4>
-                    <p>Madrid, España</p>
+                <div>
+                    <h4 class="font-bold text-gray-900 mb-1">Oficina</h4>
+                    <p class="text-gray-600 text-sm">Madrid, España</p>
                 </div>
             </div>
         </div>
 
-        <div class="contact-map-side">
+        {{-- COLUMNA DERECHA: MAPA --}}
+        <div class="relative w-full h-96 lg:h-auto bg-gray-200 order-2 lg:order-2">
             <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3149.3041899124273!2d-4.7975379!3d37.876568299999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6d210ee12d99e3%3A0x2e64896407139591!2sMoverte%20da%20vida%20-%20centro%20de%20salud%20y%20ejercicio!5e0!3m2!1ses!2ses!4v1763946481606!5m2!1ses!2ses" 
+                class="absolute inset-0 w-full h-full"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d194347.3838384282!2d-3.8196223126966667!3d40.43813107933183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd422997800a3c81%3A0xc436dec1618c2269!2sMadrid!5e0!3m2!1ses!2ses!4v1710000000000!5m2!1ses!2ses" 
+                style="border:0;" 
                 allowfullscreen="" 
                 loading="lazy" 
                 referrerpolicy="no-referrer-when-downgrade">
             </iframe>
+            
         </div>
 
-    </div>
+    </main>
 
 </body>
 </html>

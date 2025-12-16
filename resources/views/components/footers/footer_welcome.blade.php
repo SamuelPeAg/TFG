@@ -24,7 +24,9 @@
         <div>
             <h4 class="font-bold text-brand-aqua mb-4">Legal</h4>
             <ul class="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" class="hover:text-brand-coral transition">Privacidad</a></li>
+                <li><a href="{{ route('cookies.policy') }}" class="hover:text-brand-coral transition">Política de Cookies</a></li>
+                <li><a href="{{ route('privacy.policy') }}" class="hover:text-brand-coral transition">Política de Privacidad</a></li>
+                <li><a href="{{ route('legal.notice') }}" class="hover:text-brand-coral transition">Aviso Legal</a></li>
             </ul>
         </div>
     </div>
