@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Usuarios - Factomove</title>
+    <title>Gestión de Entrenadores - Factomove</title>
 
     <link href="{{ asset('css/entrenadores.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
