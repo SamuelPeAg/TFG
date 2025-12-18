@@ -25,74 +25,79 @@
 
                 {{-- FORMULARIO --}}
                 <div class="px-8 pb-10">
-                    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+                    {{-- Hemos añadido 'novalidate' para que Laravel tome el control del color rojo --}}
+                    <form method="POST" action="{{ route('register') }}" class="space-y-4" novalidate>
                         @csrf
                         
-                        {{-- 1. NOMBRE --}}
+                        {{-- 1. NOMBRE (PUEDE REPETIRSE - NO ÚNICO) --}}
                         <div class="group">
                             <label for="name" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Nombre Completo</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-user text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                                 </div>
-                                {{-- CAMBIO: focus:ring-brandTeal -> focus:ring-green-500 --}}
                                 <input type="text" name="name" value="{{ old('name') }}" 
-                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
-                                    placeholder="Ej. María García" required autofocus>
+                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl outline-none transition duration-200 sm:text-sm font-medium text-gray-800 
+                                    {{ $errors->has('name') ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-200 focus:ring-2 focus:ring-green-500' }}" 
+                                    placeholder="Ej. MariaGarcia" required
+                                    aria-label="Introduce tu nombre de usuario, entre 3 y 20 caracteres"> {{-- Aplicando ARIA Label --}}
                             </div>
                             @error('name') <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p> @enderror
                         </div>
 
-                        {{-- 2. EMAIL --}}
+                        {{-- 2. EMAIL (DEBE SER ÚNICO) --}}
                         <div class="group">
                             <label for="email" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Correo Electrónico</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-envelope text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                                 </div>
-                                {{-- CAMBIO: focus:ring-brandTeal -> focus:ring-green-500 --}}
                                 <input type="email" name="email" value="{{ old('email') }}" 
-                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
-                                    placeholder="tucorreo@ejemplo.com" required>
+                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl outline-none transition duration-200 sm:text-sm font-medium text-gray-800
+                                    {{ $errors->has('email') ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-200 focus:ring-2 focus:ring-green-500' }}" 
+                                    placeholder="tucorreo@ejemplo.com" required
+                                    aria-label="Introduce tu correo electrónico único">
                             </div>
                             @error('email') <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p> @enderror
                         </div>
 
-                        {{-- 3. CONTRASEÑA --}}
+                        {{-- 3. CONTRASEÑA (MÍNIMO 8 CARACTERES) --}}
                         <div class="group">
                             <label for="password" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Contraseña</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-lock text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                                 </div>
-                                {{-- CAMBIO: focus:ring-brandTeal -> focus:ring-green-500 --}}
                                 <input type="password" name="password" 
-                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
-                                    placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
+                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl outline-none transition duration-200 sm:text-sm font-medium text-gray-800
+                                    {{ $errors->has('password') ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-200 focus:ring-2 focus:ring-green-500' }}" 
+                                    placeholder="Mínimo 8 caracteres" required autocomplete="new-password"
+                                    aria-label="Crea una contraseña de al menos 8 caracteres">
                             </div>
                             @error('password') <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p> @enderror
                         </div>
 
-                        {{-- 4. REPETIR CONTRASEÑA --}}
+                        {{-- 4. REPETIR CONTRASEÑA (USA EL ERROR DE PASSWORD) --}}
                         <div class="group">
                             <label for="password_confirmation" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Confirmar Contraseña</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-check-double text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                                 </div>
-                                {{-- CAMBIO: focus:ring-brandTeal -> focus:ring-green-500 --}}
                                 <input type="password" name="password_confirmation" 
-                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
-                                    placeholder="Repite tu contraseña" required>
+                                    class="block w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl outline-none transition duration-200 sm:text-sm font-medium text-gray-800
+                                    {{ $errors->has('password') ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-200 focus:ring-2 focus:ring-green-500' }}" 
+                                    placeholder="Repite tu contraseña" required
+                                    aria-label="Confirma tu contraseña">
                             </div>
                         </div>
 
                         {{-- 5. TÉRMINOS Y CONDICIONES --}}
                         <div class="flex items-start mt-2">
                             <div class="flex items-center h-5">
-                                {{-- CAMBIO: focus:ring-brandTeal/30 text-brandTeal -> focus:ring-green-500/30 text-green-600 --}}
                                 <input id="terms" name="terms" type="checkbox" required 
-                                    class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-green-500/30 text-green-600 cursor-pointer">
+                                    class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-green-500/30 text-green-600 cursor-pointer"
+                                    aria-label="Aceptar términos y condiciones">
                             </div>
                             <div class="ml-3 text-sm">
                                 <label for="terms" class="font-medium text-gray-600">
@@ -102,7 +107,7 @@
                         </div>
                         @error('terms') <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p> @enderror
 
-                        {{-- BOTÓN REGISTRAR (Gradiente Cian -> Coral) --}}
+                        {{-- BOTÓN REGISTRAR --}}
                         <button type="submit" class="w-full flex justify-center py-3.5 px-4 mt-6 border border-transparent rounded-xl shadow-lg shadow-brandCoral/30 text-sm font-bold text-white bg-gradient-to-r from-brandTeal to-brandCoral hover:shadow-xl hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brandTeal transition transform hover:-translate-y-0.5 duration-200">
                             CREAR CUENTA
                         </button>
