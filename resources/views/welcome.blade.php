@@ -1,158 +1,177 @@
 @extends('components.headers.header_welcome')
-{{-- Nota: No hace falta poner dos @extends, con el del header y llamando al footer abajo suele bastar, o usar un layout maestro --}}
 
 @section('content')
 
-    {{-- SECCIÓN ROLES --}}
-    <section id="roles" class="py-12 md:py-20 bg-white relative">
+    {{-- 1. HERO SECTION --}}
+    <section class="relative pt-20 pb-20 md:pt-32 md:pb-32 bg-white overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-30">
+            <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-brandAqua/30 blur-3xl"></div>
+            <div class="absolute top-1/2 -left-24 w-72 h-72 rounded-full bg-brandTeal/10 blur-3xl"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+            <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight mb-6">
+                El movimiento <span class="text-brandCoral">es medicina</span>, <br>
+                el movimiento <span class="text-brandTeal">da vida</span>.
+            </h1>
+            <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600">
+                No estamos diseñados para estar quietos. Tu salud empieza con tu próxima decisión.
+            </p>
+        </div>
+    </section>
+
+    {{-- 2. SECCIÓN FILOSOFÍA --}}
+    <section class="py-12 md:py-20 bg-gray-50 relative border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12 md:mb-16 reveal">
-                <h2 class="text-brandTeal font-bold tracking-wide uppercase text-xs md:text-sm">Roles del sistema</h2>
-                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                    Una experiencia adaptada a cada rol
-                </p>
-                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-500">
-                    Factomove se adapta al tipo de usuario que accede al sistema, ofreciendo herramientas específicas para cada necesidad.
-                </p>
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-brandTeal font-bold tracking-wide uppercase text-xs md:text-sm">Nuestra Filosofía</h2>
+                <h3 class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                    Más allá de la estética
+                </h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10">
-                
-                {{-- Card Cliente --}}
-                <div class="bg-gray-50 p-6 rounded-2xl hover:shadow-xl transition duration-300 border border-transparent hover:border-brandAqua reveal group">
-                    <div class="w-14 h-14 rounded-xl bg-brandTeal/10 flex items-center justify-center mb-6 text-brandTeal">
-                        <i class="fa-solid fa-user text-2xl"></i>
+                {{-- Beneficio 1 --}}
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 border-t-4 border-brandTeal reveal group">
+                    <div class="w-16 h-16 rounded-full bg-brandTeal/10 flex items-center justify-center mb-6 text-brandTeal group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-heart-pulse text-3xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Modo Cliente</h3>
-                    <p class="text-gray-600 mb-6 text-sm md:text-base">Visualiza tus rutinas, sesiones y progreso de forma clara. Recibe recordatorios y seguimiento de tus entrenadores.</p>
-
-                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 overflow-hidden relative">
-                        {{-- Añadido 'object-top' para que si se corta la imagen, se vea la parte de arriba --}}
-                        <img src="{{ asset('img/cliente.png') }}" alt="Cliente" class="w-full h-full object-cover object-top">
-                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 mb-4">Salud Metabólica</h4>
+                    <p class="text-gray-600">
+                        El movimiento regula tus hormonas, mejora tu sensibilidad a la insulina y mantiene tu corazón fuerte.
+                    </p>
                 </div>
 
-                {{-- Card Entrenador --}}
-                <div class="bg-gray-50 p-6 rounded-2xl hover:shadow-xl transition duration-300 border border-transparent hover:border-brandAqua reveal group" style="transition-delay: 100ms;">
-                    <div class="w-14 h-14 rounded-xl bg-brandCoral/10 flex items-center justify-center mb-6 text-brandCoral">
-                        <i class="fa-solid fa-stopwatch text-2xl"></i>
+                {{-- Beneficio 2 --}}
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 border-t-4 border-brandCoral reveal group" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 rounded-full bg-brandCoral/10 flex items-center justify-center mb-6 text-brandCoral group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-brain text-3xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Modo Entrenador</h3>
-                    <p class="text-gray-600 mb-6 text-sm md:text-base">Gestiona tus clientes, crea planes de entrenamiento y controla la asistencia y resultados, todo desde un panel único.</p>
-                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 overflow-hidden relative">
-                        <img src="{{ asset('img/entrenador.png') }}" alt="Entrenador" class="w-full h-full object-cover object-top">
-                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 mb-4">Claridad Mental</h4>
+                    <p class="text-gray-600">
+                        Al moverte, liberas neurotransmisores que reducen el estrés y la ansiedad. Una mente en movimiento es resiliente.
+                    </p>
                 </div>
 
-                {{-- Card Admin --}}
-                <div class="bg-gray-50 p-6 rounded-2xl hover:shadow-xl transition duration-300 border border-transparent hover:border-brandAqua reveal group" style="transition-delay: 200ms;">
-                    <div class="w-14 h-14 rounded-xl bg-gray-200 flex items-center justify-center mb-6 text-gray-700">
-                        <i class="fa-solid fa-lock text-2xl"></i>
+                {{-- Beneficio 3 --}}
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition duration-300 border-t-4 border-brandAqua reveal group" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 rounded-full bg-brandAqua/10 flex items-center justify-center mb-6 text-brandTeal group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-person-running text-3xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Modo Admin</h3>
-                    <p class="text-gray-600 mb-6 text-sm md:text-base">Administra usuarios, permisos y estadísticas globales de la plataforma para tomar mejores decisiones.</p>
-                    <div class="h-40 bg-gray-200 rounded-lg border-2 border-dashed border-gray-400 overflow-hidden relative">
-                        <img src="{{ asset('img/admin.png') }}" alt="Admin" class="w-full h-full object-cover object-top">
-                    </div>
+                    <h4 class="text-xl font-bold text-gray-900 mb-4">Funcionalidad</h4>
+                    <p class="text-gray-600">
+                        Entrenamos para la vida real. Para que puedas cargar la compra o jugar con tus hijos sin fatiga.
+                    </p>
                 </div>
-
             </div>
         </div>
     </section>
 
-    {{-- SECCIÓN INFO + MOCKUP --}}
-    <section class="py-12 md:py-20 bg-brandAqua/20 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-12">
+    {{-- 3. NUEVO BLOQUE "DISCRETO" DE RESERVA --}}
+    {{-- Diseño tipo "Barra Flotante" limpia --}}
+    <section class="relative z-20 -mt-8 md:-mt-10 px-4 reveal">
+        <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-xl border border-gray-100 p-6 md:p-8">
             
-            {{-- Texto --}}
-            <div class="w-full md:w-1/2 reveal text-center md:text-left">
-                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl mb-6 leading-tight">
-                    Factomove simplifica la <br><span class="text-brandTeal">gestión del movimiento</span>
-                </h2>
-                <p class="text-lg text-gray-700 mb-6">
-                    Diseñada para centros deportivos, entrenadores personales y personas que quieren mejorar su salud. Toda la información se organiza por roles, ofreciendo una experiencia clara y adaptada.
-                </p>
-                <div class="flex items-start gap-4 mb-4 justify-center md:justify-start">
-                    <i class="fa-solid fa-check-circle text-brandCoral mt-1 shrink-0"></i>
-                    <p class="text-gray-600 text-left">Desde el panel de inicio podrás ver los datos más importantes de un vistazo.</p>
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+                
+                {{-- Título / Icono --}}
+                <div class="flex items-center gap-4 w-full lg:w-auto border-b lg:border-b-0 border-gray-100 pb-4 lg:pb-0">
+                    <div class="w-12 h-12 rounded-full bg-brandTeal/10 flex items-center justify-center text-brandTeal shrink-0">
+                        <i class="fa-regular fa-calendar-check text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 whitespace-nowrap">Agenda tu Sesión</h3>
                 </div>
-                <div class="flex items-start gap-4 justify-center md:justify-start">
-                    <i class="fa-solid fa-check-circle text-brandCoral mt-1 shrink-0"></i>
-                    <p class="text-gray-600 text-left">Sesiones próximas, progreso, avisos y estadísticas al alcance de tu mano.</p>
-                </div>
-            </div>
 
-            {{-- Mockup Teléfono --}}
-            <div class="w-full md:w-1/2 reveal flex justify-center mt-8 md:mt-0">
-                {{-- Añadida transformación scale para que en móviles pequeños no ocupe tanto --}}
-                <div class="transform scale-90 md:scale-100 origin-center">
-                    <div class="relative mx-auto border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-2xl flex flex-col justify-center items-center">
-                        <div class="h-[32px] w-[3px] bg-gray-800 absolute -left-[17px] top-[72px] rounded-l-lg"></div>
-                        <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
-                        <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[178px] rounded-l-lg"></div>
-                        <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
-                        
-                        <div class="rounded-[2rem] overflow-hidden w-full h-full bg-white relative">
-                            <img src="{{ asset('img/mockup.png') }}" 
-                                 alt="App Mockup" 
-                                 class="w-full h-full object-cover">
+                {{-- Formulario Horizontal --}}
+                <div class="flex flex-col md:flex-row w-full gap-4">
+                    
+                    {{-- Campo: Fecha (Calendario Desplegable) --}}
+                    <div class="relative w-full">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-regular fa-calendar text-gray-400"></i>
+                        </div>
+                        <input type="date" 
+                               class="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg leading-5 bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-brandTeal focus:border-brandTeal sm:text-sm transition duration-150 ease-in-out cursor-pointer"
+                               placeholder="Selecciona fecha">
+                    </div>
+
+                    {{-- Campo: Actividad (Select) --}}
+                    <div class="relative w-full">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-dumbbell text-gray-400"></i>
+                        </div>
+                        <select class="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg leading-5 bg-gray-50 text-gray-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-brandTeal focus:border-brandTeal sm:text-sm appearance-none transition duration-150 ease-in-out cursor-pointer">
+                            <option value="" disabled selected>Selecciona actividad</option>
+                            <option value="crossfit">CrossFit</option>
+                            <option value="entrenamiento_personal">Entrenamiento Personal</option>
+                            <option value="spinning">Spinning</option>
+                        </select>
+                        {{-- Flecha custom --}}
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="fa-solid fa-chevron-down text-xs"></i>
                         </div>
                     </div>
-                </div>
-            </div>
 
-        </div>
-    </section>
+                    {{-- Botón: Buscar --}}
+                    <a href="{{ route('booking.view') }}" class="w-full md:w-auto bg-brandTeal text-white font-bold py-3 px-8 rounded-lg shadow-md hover:bg-opacity-90 hover:shadow-lg transition flex items-center justify-center whitespace-nowrap">
+                        Buscar Horarios
+                    </a>
 
-    {{-- SECCIÓN FEATURES --}}
-    <section id="features" class="py-12 md:py-20 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-3xl font-extrabold text-center text-gray-900 mb-12 reveal">
-                ¿Por qué Factomove?
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <div class="text-center p-6 reveal">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brandTeal/10 text-brandTeal mb-6">
-                        <i class="fa-solid fa-layer-group text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Todo en un mismo lugar</h3>
-                    <p class="text-gray-600">
-                        Centraliza la gestión de usuarios, sesiones y pagos sin perder tiempo en hojas de cálculo o múltiples herramientas.
-                    </p>
                 </div>
 
-                <div class="text-center p-6 reveal" style="transition-delay: 100ms;">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brandCoral/10 text-brandCoral mb-6">
-                        <i class="fa-solid fa-chart-line text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Seguimiento real del progreso</h3>
-                    <p class="text-gray-600">
-                        Registra entrenamientos, objetivos y mejoras para que cada cliente vea cómo avanza día a día.
-                    </p>
-                </div>
-
-                <div class="text-center p-6 reveal" style="transition-delay: 200ms;">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 text-gray-700 mb-6">
-                        <i class="fa-solid fa-user-shield text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">Roles y accesos seguros</h3>
-                    <p class="text-gray-600">
-                        Cada usuario ve solo lo que necesita gracias a un sistema de roles basado en el correo con el que inicia sesión.
-                    </p>
-                </div>
-            </div>
-            
-            <div class="mt-16 text-center reveal">
-                <a href="{{ route('register') }}" class="inline-block bg-brandCoral text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg hover:shadow-2xl hover:scale-105 transition transform duration-200 w-full sm:w-auto">
-                    Comenzar Ahora
-                </a>
             </div>
         </div>
     </section>
-  
-    {{-- AQUI AÑADIMOS EL FOOTER --}}
+
+    {{-- 4. SECCIÓN IMAGEN + TEXTO (ZIG-ZAG) --}}
+    <section class="py-12 md:py-24 bg-brandAqua/20 overflow-hidden mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-12 md:gap-20">
+            <div class="w-full md:w-1/2 reveal">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl transform md:-rotate-2 hover:rotate-0 transition duration-500">
+                    <img src="{{ asset('img/entrenador.png') }}" 
+                         alt="Estilo de vida activo" 
+                         class="w-full h-[400px] object-cover"
+                         onerror="this.src='https://images.unsplash.com/photo-1552674605-469555942c77?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+                        <p class="text-white font-bold text-lg">"Tu cuerpo es tu vehículo más importante"</p>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full md:w-1/2 reveal text-center md:text-left">
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl mb-6 leading-tight">
+                    Rompe con el <br><span class="text-brandCoral">sedentarismo</span>
+                </h2>
+                <p class="text-lg text-gray-700 mb-6 leading-relaxed">
+                    Vivimos en una sociedad que nos empuja a estar sentados. En Factomove no solo te damos una rutina de gimnasio; te damos las herramientas para monitorizar tu actividad diaria y cambiar tus hábitos.
+                </p>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4 justify-center md:justify-start bg-white/50 p-4 rounded-lg">
+                        <i class="fa-solid fa-check text-brandTeal text-xl"></i>
+                        <span class="text-gray-800 font-medium">Monitorización de actividad diaria</span>
+                    </div>
+                    <div class="flex items-center gap-4 justify-center md:justify-start bg-white/50 p-4 rounded-lg">
+                        <i class="fa-solid fa-check text-brandTeal text-xl"></i>
+                        <span class="text-gray-800 font-medium">Planes adaptados a tu ritmo de vida</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- CTA FINAL --}}
+    <section class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 text-center reveal">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">¿Listo para darle vida a tus años?</h2>
+            <p class="text-xl text-gray-500 mb-10">
+                No esperes al lunes. El mejor momento para empezar a cuidar de tu cuerpo es ahora mismo.
+            </p>
+            <a href="{{ route('booking.view') }}" class="inline-flex items-center justify-center bg-brandCoral text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg hover:bg-opacity-90 hover:shadow-2xl hover:-translate-y-1 transition transform duration-200">
+                <span>Empezar a Entrenar Hoy</span>
+                <i class="fa-solid fa-calendar-check ml-3"></i>
+            </a>
+        </div>
+    </section>
+
     <x-footers.footer_welcome />
 
 @endsection

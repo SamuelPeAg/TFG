@@ -69,5 +69,14 @@ Route::post('/logout', function () {
     request()->session()->regenerateToken();
     return redirect('/'); // O redirige a login con: return redirect()->route('login');
 })->name('logout');
+
+
+// Ruta sencilla para ver el calendario
+Route::get('/calendario', function () {
+    return view('booking.calendar'); // Asegúrate de que tu archivo esté en resources/views/booking/calendar.blade.php
+})->middleware('auth')->name('booking.view'); 
+
+// Nota: Le he dejado el middleware 'auth' para que al menos te pida login. 
+// Si quieres que sea pública (visible sin login), quita ->middleware('auth').
 ?>
 
