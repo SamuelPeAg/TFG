@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sesiones - Factomove</title>
 
-    {{-- CSS PRINCIPAL (Asegúrate de que este archivo exista o usa tus estilos globales) --}}
-    {{-- <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}"> --}}
-    
     {{-- FONTAWESOME --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
@@ -18,46 +15,86 @@
         /* =========================================
            1. ESTILOS GENERALES Y LAYOUT
            ========================================= */
+        :root {
+            --primary-color: #3c8d89; /* Color azulado del sidebar */
+            --primary-dark: #327673;  /* Tono más oscuro para hover/active */
+            --text-light: #e0f2f1;    /* Texto claro para el sidebar */
+            --bg-light: #f4f6f8;      /* Fondo principal */
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            background-color: #f4f6f8;
+            background-color: var(--bg-light);
             color: #333;
+            height: 100vh; /* Asegura que el cuerpo ocupe toda la altura */
         }
 
         .dashboard-container {
             display: flex;
-            min-height: 100vh;
+            height: 100vh; /* Ocupa toda la altura de la ventana */
+            overflow: hidden; /* Evita scrolls dobles */
         }
 
-        /* SIDEBAR (Estilos básicos para que se vea bien si no carga el CSS externo) */
+        /* --- SIDEBAR AZULADO --- */
         .sidebar {
             width: 250px;
-            background-color: #1e1e2d; /* Color oscuro ejemplo */
+            background-color: var(--primary-color); /* Color principal */
             color: white;
             flex-shrink: 0;
-        }
-        .logo { padding: 20px; text-align: center; }
-        .logo img { max-width: 50px; }
-        .main-menu { display: flex; flex-direction: column; }
-        .menu-item {
-            padding: 15px 20px;
-            color: #a2a3b7;
-            text-decoration: none;
-            transition: 0.3s;
-            display: block;
-        }
-        .menu-item:hover, .menu-item.active {
-            background-color: #1b1b28;
-            color: #00897b;
-            border-left: 3px solid #00897b;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
 
-        /* CONTENIDO PRINCIPAL */
+        .logo {
+            padding: 25px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo img { max-width: 60px; margin-bottom: 10px; }
+        .logo h2 { margin: 0; font-size: 1.5rem; font-weight: 600; }
+
+        .main-menu {
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+        }
+        .menu-item {
+            padding: 15px 25px;
+            color: var(--text-light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            border-left: 4px solid transparent; /* Borde invisible por defecto */
+        }
+        .menu-item i {
+            margin-right: 15px;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+        .menu-item:hover {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+        .menu-item.active {
+            background-color: var(--primary-dark);
+            color: white;
+            border-left-color: white; /* Borde blanco para el activo */
+        }
+
+        /* --- CONTENIDO PRINCIPAL --- */
         .main-content {
             flex-grow: 1;
             padding: 30px;
-            overflow-y: auto;
+            overflow-y: auto; /* Scroll solo en el contenido si es necesario */
+            display: flex;
+            flex-direction: column;
         }
 
         .header-controls {
@@ -65,25 +102,157 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+            flex-shrink: 0; /* No encoger el header */
         }
+        .title-section h1 { margin: 0; font-size: 1.8rem; color: #333; }
 
         .search-box {
             background: white;
-            padding: 10px 15px;
-            border-radius: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
             display: flex;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
         }
+        .search-box i { color: #999; }
         .search-box input {
             border: none;
             outline: none;
             margin-left: 10px;
             font-size: 14px;
+            width: 200px;
         }
 
         /* =========================================
-           2. ESTILOS DEL POPUP (MODAL)
+           2. ESTILOS DEL CALENDARIO (GRANDE Y CENTRADO)
+           ========================================= */
+        .calendar-layout {
+            flex-grow: 1; /* Ocupa el espacio restante */
+            display: flex;
+            justify-content: center; /* Centrado horizontal */
+            align-items: center;     /* Centrado vertical */
+            padding: 20px;           /* Espacio alrededor */
+        }
+
+        .calendar-panel {
+            width: 100%;
+            max-width: 1200px; /* Ancho máximo para pantallas muy grandes */
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* Intenta ocupar toda la altura disponible */
+            max-height: 800px; /* Altura máxima para no ser excesivo */
+        }
+
+        .calendar-container {
+            flex-grow: 1; /* El calendario ocupa el espacio disponible en el panel */
+            width: 100%;
+            min-height: 500px; /* Altura mínima para que se vea grande */
+        }
+
+        /* --- FLATPICKR MODIFICADO --- */
+        .flatpickr-calendar.inline {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        .flatpickr-months {
+            margin-bottom: 20px !important;
+        }
+        .flatpickr-current-month {
+            font-size: 1.5rem !important;
+            padding-top: 0 !important;
+        }
+        .flatpickr-weekdays {
+            margin-bottom: 10px !important;
+        }
+        .flatpickr-weekday {
+            font-size: 1rem !important;
+            color: #666 !important;
+        }
+
+        .flatpickr-innerContainer, .flatpickr-rContainer, .flatpickr-days {
+            width: 100% !important;
+            height: calc(100% - 80px) !important; /* Ajuste para la cabecera */
+        }
+
+        .dayContainer {
+            width: 100% !important;
+            min-width: 100% !important;
+            max-width: none !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            justify-content: space-around !important;
+            align-content: stretch !important; /* Estira las filas para ocupar la altura */
+        }
+
+        .flatpickr-day {
+            width: 14.28% !important; /* 100% / 7 días */
+            height: auto !important;
+            flex-grow: 1 !important; /* Crece para llenar la fila */
+            margin: 2px !important;
+            border-radius: 15px !important;
+            border: none !important;
+            font-size: 1.3rem !important; /* Números más grandes */
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            position: relative;
+        }
+
+        .flatpickr-day:hover {
+            background: #f0f0f0 !important;
+        }
+
+        .flatpickr-day.selected {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        .flatpickr-day.today {
+            border: 2px solid var(--primary-color) !important;
+        }
+        
+        .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay {
+            color: #ccc !important;
+        }
+
+        /* INDICADOR (PUNTO) */
+        .event-dot {
+            position: absolute;
+            bottom: 15px; /* Un poco más arriba por el tamaño del día */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px; /* Punto más grande */
+            height: 10px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: block;
+            border: 2px solid white; /* Borde blanco para resaltar */
+        }
+        
+        .flatpickr-day.tiene-sesion.selected .event-dot {
+             background-color: white;
+             border-color: var(--primary-color);
+        }
+
+        #calendar-summary p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 20px;
+        }
+
+        /* =========================================
+           3. ESTILOS DEL POPUP (MODAL)
            ========================================= */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0;
@@ -94,110 +263,70 @@
         .modal-overlay.active { display: flex; opacity: 1; }
 
         .modal-box {
-            background: white; padding: 30px; border-radius: 15px;
-            width: 90%; max-width: 500px; /* Un poco más ancho para listas */
+            background: white; padding: 30px; border-radius: 20px;
+            width: 90%; max-width: 500px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            transform: scale(0.9); transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(0.95); transition: transform 0.3s ease;
         }
         .modal-overlay.active .modal-box { transform: scale(1); }
 
         .modal-box h2 {
-            color: #00897b; margin-bottom: 20px; font-size: 24px;
-            border-bottom: 2px solid #e0f2f1; padding-bottom: 10px;
+            color: var(--primary-color); margin-bottom: 25px; font-size: 1.8rem;
+            border-bottom: 2px solid #e0f2f1; padding-bottom: 15px;
         }
         
-        /* Contenedor scrolleable para las sesiones */
         .modal-details { 
             text-align: left; 
-            margin-bottom: 20px;
-            max-height: 400px; /* Limite de altura */
-            overflow-y: auto;  /* Scroll si hay muchas sesiones */
-            padding-right: 5px;
+            margin-bottom: 25px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
         }
         
         .sesion-card {
-            background-color: #fafafa;
-            border-radius: 8px;
-            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 12px;
+            padding: 20px;
             margin-bottom: 15px;
-            border-left: 4px solid #00897b;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .detail-item {
             display: flex; justify-content: space-between;
-            padding: 5px 0; font-size: 15px;
+            padding: 8px 0; font-size: 1rem;
+            align-items: center;
+        }
+        .detail-item i {
+            color: var(--primary-color);
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
         }
         
         .btn-close {
-            background: #00897b; color: white; border: none;
-            padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold;
+            background: var(--primary-color); color: white; border: none;
+            padding: 12px 35px; border-radius: 30px; cursor: pointer;
+            font-weight: bold; font-size: 1rem;
+            transition: background 0.3s ease;
         }
+        .btn-close:hover { background: var(--primary-dark); }
+
         .close-icon {
-            position: absolute; top: 15px; right: 20px;
-            font-size: 24px; cursor: pointer; color: #aaa;
+            position: absolute; top: 20px; right: 25px;
+            font-size: 28px; cursor: pointer; color: #aaa;
+            transition: color 0.3s ease;
         }
-
-        /* =========================================
-           3. ESTILOS CALENDARIO (WIDE CLEAN)
-           ========================================= */
-        .calendar-container {
-            width: 100%;
-            margin-top: 20px;
-            background: white; /* Fondo blanco para resaltar */
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-
-        .flatpickr-calendar.inline {
-            width: 100% !important;
-            max-width: none !important;
-            box-shadow: none !important;
-            border: none !important;
-        }
-
-        .flatpickr-day {
-            height: 90px !important;
-            line-height: 90px !important;
-            font-size: 16px !important;
-            border-radius: 10px !important;
-            margin: 2px !important;
-            width: 13.5% !important; /* Ajuste para espaciado */
-        }
-
-        .flatpickr-day.selected {
-            background: #e0f2f1 !important;
-            color: #00897b !important;
-            border: 2px solid #00897b !important;
-        }
-
-        /* INDICADOR (PUNTO VERDE) */
-        .event-dot {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 8px;
-            background-color: #00897b;
-            border-radius: 50%;
-            display: block;
-        }
-        
-        .flatpickr-day.tiene-sesion {
-            font-weight: bold;
-            background-color: #fafffe;
-        }
+        .close-icon:hover { color: #666; }
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
 
-    {{-- SIDEBAR --}}
-    <aside class="sidebar" style="display: flex; flex-direction: column; height: 100vh;">
+    {{-- SIDEBAR AZULADO --}}
+    <aside class="sidebar">
         <div class="logo">
             <img src="{{ asset('img/logopng.png') }}" alt="Logo">
             <h2>Factomove</h2>
@@ -211,22 +340,24 @@
         
         {{-- FOOTER SIDEBAR --}}
         <div style="flex-grow: 1;"></div>
-        <div style="display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; gap: 10px; margin-bottom: 15px;">
-            <div style="display: flex; flex-direction: column; text-align: right; line-height: 1.3;">
-                <span style="font-weight: 700; color: #ffffff; font-size: 14px;">{{ auth()->user()->name ?? 'Usuario' }}</span>
-                <span style="font-size: 11px; color: #e0f2f1; opacity: 0.8;">Panel de Gestión</span>
+        <div style="padding: 20px; color: var(--text-light);">
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+                <div style="text-align: right; line-height: 1.3;">
+                    <span style="font-weight: 700; display: block; font-size: 1.1rem;">{{ auth()->user()->name ?? 'Usuario' }}</span>
+                    <span style="font-size: 0.9rem; opacity: 0.8;">Panel de Gestión</span>
+                </div>
+                <div style="width: 45px; height: 45px; background-color: white; color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+                    {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
+                </div>
             </div>
-            <div style="width: 40px; height: 40px; background-color: #ffffff; color: #00897b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
-                {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;">
+            <div class="utility-links">
+                <a href="#" class="menu-item"><i class="fa-solid fa-circle-question"></i> AYUDA</a>
+                <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">@csrf</form>
+                <a href="#" class="menu-item" onclick="event.preventDefault(); if(confirm('¿Cerrar sesión?')) { document.getElementById('logout-form').submit(); }">
+                    <i class="fa-solid fa-right-from-bracket"></i> SALIR
+                </a>
             </div>
-        </div>
-        
-        {{-- LOGOUT --}}
-        <div class="utility-links" style="padding: 20px;">
-            <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">@csrf</form>
-            <a href="#" class="menu-item" onclick="event.preventDefault(); if(confirm('¿Cerrar sesión?')) { document.getElementById('logout-form').submit(); }">
-                <i class="fa-solid fa-right-from-bracket"></i> SALIR
-            </a>
         </div>
     </aside>
 
@@ -238,8 +369,8 @@
             </div>
             <div class="controls-bar">
                 <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass" style="color: #999;"></i>
-                    <input type="text" id="search-user" placeholder="Escribe para buscar usuario...">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-user" placeholder="Buscar usuario...">
                 </div>
             </div>
         </div>
@@ -249,8 +380,8 @@
                 <div class="calendar-container">
                     <div id="user-calendar"></div>
                 </div>
-                <div id="calendar-summary" style="margin-top: 20px; text-align: center; color: #666;">
-                    <p><i class="fa-solid fa-circle-info"></i> Busca un usuario y selecciona los días con punto (<span style="color:#00897b; font-size: 20px;">•</span>)</p>
+                <div id="calendar-summary" style="text-align: center;">
+                    <p><i class="fa-solid fa-circle-info"></i> Busca un usuario y selecciona los días con punto (<span style="color:var(--primary-color); font-size: 24px;">•</span>)</p>
                 </div>
             </div>
         </div>
@@ -258,13 +389,12 @@
 
 </div>
 
-{{-- POPUP (MODAL) ADAPTADO PARA LISTAS --}}
+{{-- POPUP (MODAL) --}}
 <div id="infoPopup" class="modal-overlay">
     <div class="modal-box">
         <span class="close-icon" onclick="cerrarPopup()">&times;</span>
         <h2 id="modal-fecha-titulo">Detalles del Día</h2>
         
-        {{-- Aquí se inyectan las tarjetas de sesión dinámicamente --}}
         <div id="lista-sesiones" class="modal-details">
             </div>
 
@@ -295,6 +425,12 @@
             dateFormat: "Y-m-d",
             disableMobile: true, // Importante para ver los puntos
             
+            onReady: function(d, s, instance) {
+                // Forzar que el calendario ocupe el 100% del contenedor
+                instance.calendarContainer.style.width = "100%";
+                instance.calendarContainer.style.height = "100%";
+            },
+
             // Función para pintar los puntos en los días con datos
             onDayCreate: function(dObj, dStr, fp, dayElem) {
                 var fechaCelda = fp.formatDate(dayElem.dateObj, "Y-m-d");
@@ -302,7 +438,7 @@
                 // Verificamos si hay datos en el array para esa fecha
                 if (datosSesiones[fechaCelda] && datosSesiones[fechaCelda].length > 0) {
                     dayElem.classList.add('tiene-sesion');
-                    // Inyectamos el punto verde
+                    // Inyectamos el punto
                     dayElem.innerHTML += "<span class='event-dot'></span>";
                 }
             },
@@ -336,8 +472,6 @@
                     
                     // Redibujamos el calendario para mostrar los nuevos puntos
                     calendario.redraw();
-                    
-                    console.log("Datos recibidos:", data); // Para depurar en consola
                 })
                 .catch(error => console.error('Error al buscar:', error));
             } else if (texto.length === 0) {
@@ -354,7 +488,10 @@
     function mostrarPopup(listaDeSesiones, fecha) {
         
         // Título del Modal
-        document.getElementById('modal-fecha-titulo').textContent = "Sesiones: " + fecha;
+        // Formatear fecha para que se vea más bonita (ej: 15 de Enero, 2026)
+        const fechaObj = new Date(fecha);
+        const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('modal-fecha-titulo').textContent = fechaObj.toLocaleDateString('es-ES', opciones);
         
         const contenedor = document.getElementById('lista-sesiones');
         contenedor.innerHTML = ''; // Limpiamos lo que hubiera antes
@@ -365,24 +502,24 @@
             let htmlSesion = `
                 <div class="sesion-card">
                     <div class="detail-item">
-                        <strong><i class="fa-solid fa-building"></i> Centro:</strong> 
+                        <div><i class="fa-solid fa-building"></i> <strong>Centro:</strong></div>
                         <span>${sesion.centro}</span>
                     </div>
                     <div class="detail-item">
-                        <strong><i class="fa-solid fa-dumbbell"></i> Clase:</strong> 
+                        <div><i class="fa-solid fa-dumbbell"></i> <strong>Clase:</strong></div>
                         <span>${sesion.clase}</span>
                     </div>
                     <div class="detail-item">
-                        <strong><i class="fa-solid fa-user-tie"></i> Entrenador:</strong> 
+                        <div><i class="fa-solid fa-user-tie"></i> <strong>Entrenador:</strong></div>
                         <span>${sesion.entrenador}</span>
                     </div>
                     <div class="detail-item">
-                        <strong><i class="fa-regular fa-clock"></i> Hora:</strong> 
+                        <div><i class="fa-regular fa-clock"></i> <strong>Hora:</strong></div>
                         <span>${sesion.hora}</span>
                     </div>
-                    <div class="detail-item" style="border-top: 1px dashed #ddd; margin-top:5px; padding-top:5px;">
-                        <strong><i class="fa-solid fa-euro-sign"></i> Precio:</strong> 
-                        <span style="color: #00897b; font-weight: 800;">${sesion.precio}</span>
+                    <div class="detail-item" style="border-top: 1px dashed #ddd; margin-top:10px; padding-top:10px;">
+                        <div><i class="fa-solid fa-euro-sign"></i> <strong>Precio:</strong></div>
+                        <span style="color: var(--primary-color); font-weight: 800; font-size: 1.2rem;">${sesion.precio}</span>
                     </div>
                 </div>
             `;
