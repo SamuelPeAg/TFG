@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserReservationController;
 use App\Http\Controllers\TrainerController;
-
+use App\Http\Controllers\SessionesController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -15,12 +15,15 @@ Route::get('/', function () {
 Route::resource('trainers', TrainerController::class);
 Route::resource('users', UserController::class);
 
-Route::get('/sesiones', function () {
-    return view('sessions.sesiones');
-})->name("sesiones");
 
 
 
+// 1. Ruta para ver la página del calendario
+Route::get('/sesiones', [SessionesController::class, 'index'])->name('sesiones');
+
+// 2. RUTA DEL BUSCADOR (¡Esta es la que te falta!)
+Route::get('/prueba-db', [SessionesController::class, 'buscarPorUsuario']);
+    
 Route::get('/login', function () {
     return view('login.signup.login'); 
 })->name('login'); 
