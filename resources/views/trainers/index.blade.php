@@ -13,7 +13,7 @@
 
 <div class="dashboard-container">
 
-    @include('components.sidebar_entrenadores')
+    @include('components.sidebars.sidebar_entrenadores')
 
     <main class="main-content">
 

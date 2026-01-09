@@ -206,7 +206,7 @@
             <h2>Factomove</h2>
         </div>
         <nav class="main-menu">
-            <a href="{{ route('trainers.index') }}" class="menu-item"><i class="fa-solid fa-dumbbell"></i> ENTRENADORES</a>
+            <a href="{{ route('entrenadores.index') }}" class="menu-item"><i class="fa-solid fa-dumbbell"></i> ENTRENADORES</a>
             <a href="{{ route('users.index') }}" class="menu-item"><i class="fa-solid fa-users"></i> USUARIOS</a>
             <a href="{{ route('sesiones') }}" class="menu-item active"><i class="fa-solid fa-calendar-check"></i> SESIONES</a>
             <a href="{{ route('facturas') }}" class="menu-item"><i class="fa-solid fa-file-invoice"></i> FACTURACIÓN</a>
@@ -214,11 +214,10 @@
         <div style="flex-grow: 1;"></div>
         <div style="display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; gap: 10px; margin-bottom: 15px;">
             <div style="display: flex; flex-direction: column; text-align: right; line-height: 1.3;">
-                <span style="font-weight: 700; color: #ffffff; font-size: 14px;">{{ auth()->user()->name }}</span>
+                <span style="font-weight: 700; color: #ffffff; font-size: 14px;"></span>
                 <span style="font-size: 11px; color: #e0f2f1; opacity: 0.8;">Panel de Gestión</span>
             </div>
             <div style="width: 40px; height: 40px; background-color: #ffffff; color: #00897b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
-                {{ substr(auth()->user()->name, 0, 1) }}
             </div>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 0 20px 20px 20px;">
