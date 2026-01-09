@@ -5,47 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - Factomove</title>
 
-    {{-- CSS principal de esta vista --}}
-    <link href="{{ asset('css/ususarios.css') }}" rel="stylesheet">
+    {{-- Reutilizamos el CSS tipo Excel --}}
+    <link href="{{ asset('css/entrenadores.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    {{-- Flatpickr para el calendario --}}
-
 </head>
 <body>
 
 <div class="dashboard-container">
 
-    {{-- Sidebar reutilizable --}}
-    @include('components.sidebars.sidebar_usuarios')
+    @include('components.sidebar_usuarios')
 
     <main class="main-content">
 
-        {{-- Cabecera de la vista --}}
         <div class="header-controls">
             <div class="title-section">
                 <h1>Gestión de Usuarios</h1>
             </div>
 
             <div class="controls-bar">
-                {{-- Botón para mostrar/ocultar formulario de alta --}}
                 <button id="toggleCrearUsuario" class="btn btn-success">
-                 Añadir usuario
+                    Añadir usuario
                 </button>
             </div>
         </div>
 
-        {{-- Contenido principal --}}
-        <div class="container py-5">
+        <div class="content-wrapper">
 
-            {{-- Mensaje de éxito --}}
             @if(session('success'))
-                <div class="alert alert-success text-center">{{ session('success') }}</div>
+                <div class="alert alert-success text-center">
+                    {{ session('success') }}
+                </div>
             @endif
 
-            {{-- Formulario crear usuario (oculto por defecto) --}}
+            {{-- Formulario crear usuario --}}
             <div id="crearUsuarioBox" class="card p-3 mb-4 shadow-sm" style="display: none;">
                 <form action="{{ route('users.store') }}" method="POST">
                     @csrf
@@ -66,80 +59,27 @@
                             <input type="text" name="firma_digital" class="form-control" placeholder="Firma Digital">
                         </div>
                         <div class="col-md-2 d-grid">
-                            <button type="submit" class="btn btn-success">Crear</button>
+                            <button type="submit" class="btn btn-success">
+                                Crear
+                            </button>
                         </div>
                     </div>
                 </form>
             </div>
 
-            {{-- Tabla de usuarios --}}
-            <table class="table table-striped align-middle shadow-sm">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Contraseña (hash)</th>
-                        <th>IBAN</th>
-                        <th>Firma Digital</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($users as $user)
-                    <tr>
-                        {{-- Form actualizar --}}
-                        <form action="{{ route('users.update', $user->id) }}" method="POST">
-                            @csrf
-                            @method('PUT')
+            {{-- TABLA COMO COMPONENTE --}}
+            <x-users_table :users="$users" />
 
-                            <td>{{ $user->id }}</td>
-
-                            <td>
-                                <input type="text" name="name" value="{{ $user->name }}" class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="email" name="email" value="{{ $user->email }}" class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="text" value="{{ $user->password }}" class="form-control" readonly>
-                            </td>
-
-                            <td>
-                                <input type="text" name="IBAN" value="{{ $user->IBAN }}" class="form-control">
-                            </td>
-
-                            <td>
-                                <input type="text" name="firma_digital" value="{{ $user->firma_digital }}" class="form-control">
-                            </td>
-
-                            <td class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary btn-sm"><img width="20px" src="./img/guardar.webp" alt="guardar"></button>
-                        </form>
-
-                        {{-- Form eliminar --}}
-                        <form action="{{ route('users.destroy', $user->id) }}" method="POST">
-                            @csrf
-                            @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm"><img  width="20px" src="./img/borrar.webp" alt="eliminar"></button>
-                        </form>
-                            </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-        </div> {{-- /.container --}}
+        </div>
     </main>
 </div>
 
-{{-- JS para mostrar / ocultar el formulario de creación --}}
 <script>
 document.getElementById('toggleCrearUsuario').addEventListener('click', () => {
     const box = document.getElementById('crearUsuarioBox');
-    box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+    box.style.display = (box.style.display === 'none' || box.style.display === '') 
+        ? 'block' 
+        : 'none';
 });
 </script>
 

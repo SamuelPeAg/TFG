@@ -47,7 +47,7 @@ body {
     display: flex;
     flex-direction: column;
     flex-grow: 1; 
-    padding: 20px 40px; 
+    padding: 10px 20px; 
     margin-left: 250px; /* Espacio para el sidebar izquierdo */
     background-color: var(--color-main-bg); 
 }
