@@ -105,7 +105,6 @@
             flex-shrink: 0; /* No encoger el header */
         }
         
-        /* Modificado para incluir el botón */
         .title-section {
             display: flex;
             align-items: center;
@@ -113,7 +112,7 @@
         }
         .title-section h1 { margin: 0; font-size: 1.8rem; color: #333; }
 
-        /* NUEVO: Botón de añadir clase */
+        /* Botón de añadir clase */
         .btn-add-class {
             background-color: var(--primary-color);
             color: white;
@@ -278,6 +277,132 @@
             margin-top: 20px;
         }
 
+    /* 1. AJUSTES GENERALES */
+    :root { --primary-color: #3c8d89; --bg-light: #f4f6f8; }
+    body { background-color: var(--bg-light); margin: 0; font-family: sans-serif; height: 100vh; overflow: hidden; }
+    
+    /* 2. LAYOUT */
+    .dashboard-container { display: flex; height: 100vh; width: 100vw; }
+    .sidebar { width: 250px; background: var(--primary-color); color: white; flex-shrink: 0; display: flex; flex-direction: column; }
+    .main-content { flex-grow: 1; display: flex; flex-direction: column; padding: 20px; overflow: hidden; }
+
+    /* 3. CONTENEDOR DEL CALENDARIO (ESTIRADO AL MÁXIMO) */
+    .calendar-layout {
+        flex-grow: 1;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; /* Importante */
+    }
+
+    .calendar-container {
+        flex-grow: 1; /* Ocupa todo el alto disponible */
+        width: 100%;
+        display: flex; /* Para que flatpickr se expanda */
+    }
+
+    /* 4. FORZAR A FLATPICKR A SER GIGANTE (La parte importante) */
+    .flatpickr-calendar {
+        width: 100% !important;
+        max-width: none !important; /* Quitar límite de ancho */
+        height: 100% !important;
+        max-height: none !important;
+        box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    .flatpickr-innerContainer {
+        flex-grow: 1 !important;
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    .flatpickr-rContainer {
+        width: 100% !important;
+        flex-grow: 1 !important;
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    .flatpickr-days {
+        width: 100% !important;
+        flex-grow: 1 !important;
+        border: none !important;
+        display: flex !important;
+        align-items: stretch !important; /* Estira a lo alto */
+    }
+
+    .dayContainer {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: none !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        align-content: stretch !important; /* Clave para llenar altura */
+    }
+
+    /* LOS CUADRADITOS DE LOS DÍAS */
+    .flatpickr-day {
+        width: 14.28% !important; /* 100% entre 7 días */
+        max-width: none !important;
+        height: auto !important; /* Deja que flex-grow decida la altura */
+        flex-grow: 1 !important; /* Ocupar espacio vertical */
+        margin: 0 !important;
+        border: 1px solid #f0f0f0 !important; /* Bordes para que parezca grilla */
+        border-radius: 0 !important; /* Cuadrados, no redondos */
+        display: flex !important;
+        flex-direction: column;
+        justify-content: flex-start !important; /* Número arriba */
+        align-items: flex-end !important; /* Número a la derecha */
+        padding: 10px !important;
+        font-size: 1.1rem !important;
+    }
+
+    .flatpickr-day.selected, .flatpickr-day:hover {
+        background: #e0f2f1 !important;
+        border-color: var(--primary-color) !important;
+        color: #333 !important;
+    }
+    
+    .flatpickr-day.today {
+        background: #fff !important;
+        border: 2px solid var(--primary-color) !important;
+        font-weight: bold;
+    }
+
+    /* Ocultar días del mes anterior/siguiente para limpiar la vista (opcional) */
+    .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay {
+        background-color: #fafafa !important;
+        color: #ddd !important;
+    }
+    
+    /* El punto indicador */
+    .event-dot {
+        align-self: center;
+        width: 12px; height: 12px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        margin-top: auto; /* Empuja el punto hacia abajo */
+        margin-bottom: 10px;
+    }
+
+    /* Estilos Header y Sidebar (Mantenidos básicos) */
+    .header-controls { display: flex; justify-content: space-between; margin-bottom: 20px; }
+    .menu-item { display: block; padding: 15px; color: #fff; text-decoration: none; }
+    .menu-item:hover { background: rgba(0,0,0,0.1); }
+    
+    /* Modales */
+    .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99; justify-content:center; align-items:center; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: white; padding: 30px; border-radius: 10px; width: 400px; position: relative; }
+    .close-icon { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 20px; }
+
         /* =========================================
            3. ESTILOS DE LOS MODALES
            ========================================= */
@@ -401,10 +526,12 @@
     {{-- SIDEBAR AZULADO --}}
     <aside class="sidebar">
         <div class="logo">
+            {{-- Asegúrate de que esta imagen exista --}}
             <img src="{{ asset('img/logopng.png') }}" alt="Logo">
             <h2>Factomove</h2>
         </div>
         <nav class="main-menu">
+            {{-- Estas rutas deben existir en tu web.php con resource o get --}}
             <a href="{{ route('trainers.index') }}" class="menu-item"><i class="fa-solid fa-dumbbell"></i> ENTRENADORES</a>
             <a href="{{ route('users.index') }}" class="menu-item"><i class="fa-solid fa-users"></i> USUARIOS</a>
             <a href="{{ route('sesiones') }}" class="menu-item active"><i class="fa-solid fa-calendar-check"></i> SESIONES</a>
@@ -472,7 +599,8 @@
         <h2 id="modal-fecha-titulo">Detalles del Día</h2>
         
         <div id="lista-sesiones" class="modal-details">
-            </div>
+            {{-- Aquí se inyectan las sesiones vía JS --}}
+        </div>
 
         <button class="btn-close" onclick="cerrarPopup()">Cerrar</button>
     </div>
@@ -484,8 +612,10 @@
         <span class="close-icon" onclick="cerrarModalNuevaClase()">&times;</span>
         <h2><i class="fa-solid fa-calendar-plus"></i> Agendar Nueva Clase</h2>
         
+        {{-- AQUÍ ESTABA TU ERROR ANTERIOR: Ahora apunta a la ruta 'sesiones.store' --}}
         <form action="{{ route('sesiones.store') }}" method="POST">
-            @csrf <div class="form-group">
+            @csrf 
+            <div class="form-group">
                 <label>🏢 Centro:</label>
                 <input type="text" name="centro" class="form-input" placeholder="Ej: Factomove Centro" required>
             </div>
@@ -499,9 +629,16 @@
                 <label>👤 Entrenador:</label>
                 <select name="entrenador_id" class="form-input" required>
                     <option value="">Selecciona entrenador</option>
-                    {{-- Aquí idealmente cargarías con @foreach --}}
-                    <option value="1">Carlos López</option>
-                    <option value="2">Ana García</option>
+                    {{-- Si pasas $trainers desde el controller, usa esto: --}}
+                    @if(isset($trainers))
+                        @foreach($trainers as $trainer)
+                             <option value="{{ $trainer->id }}">{{ $trainer->name }}</option>
+                        @endforeach
+                    @else
+                        {{-- Opciones hardcoded por defecto si no hay datos --}}
+                        <option value="1">Carlos López</option>
+                        <option value="2">Ana García</option>
+                    @endif
                 </select>
             </div>
 
@@ -573,31 +710,33 @@
         // 2. Lógica del Buscador (AJAX)
         const inputBuscador = document.getElementById('search-user');
         
-        inputBuscador.addEventListener('keyup', function(e) {
-            let texto = e.target.value;
+        if(inputBuscador) {
+            inputBuscador.addEventListener('keyup', function(e) {
+                let texto = e.target.value;
 
-            // Esperar a que escriba al menos 2 letras
-            if(texto.length >= 2) {
-                // Hacemos la petición a tu ruta de Laravel
-                fetch('/prueba-db?q=' + texto)
-                .then(response => {
-                    if (!response.ok) throw new Error("Error en la red");
-                    return response.json();
-                })
-                .then(data => {
-                    // Actualizamos los datos globales
-                    datosSesiones = data;
-                    
-                    // Redibujamos el calendario para mostrar los nuevos puntos
+                // Esperar a que escriba al menos 2 letras
+                if(texto.length >= 2) {
+                    // Hacemos la petición a tu ruta de Laravel
+                    fetch('/prueba-db?q=' + texto)
+                    .then(response => {
+                        if (!response.ok) throw new Error("Error en la red");
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Actualizamos los datos globales
+                        datosSesiones = data;
+                        
+                        // Redibujamos el calendario para mostrar los nuevos puntos
+                        calendario.redraw();
+                    })
+                    .catch(error => console.error('Error al buscar:', error));
+                } else if (texto.length === 0) {
+                    // Si borra todo, limpiamos el calendario
+                    datosSesiones = {};
                     calendario.redraw();
-                })
-                .catch(error => console.error('Error al buscar:', error));
-            } else if (texto.length === 0) {
-                // Si borra todo, limpiamos el calendario
-                datosSesiones = {};
-                calendario.redraw();
-            }
-        });
+                }
+            });
+        }
     });
 
     // ------------------------------------------------------------------
