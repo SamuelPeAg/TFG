@@ -14,8 +14,8 @@ class SessionesController extends Controller
      */
     public function index()
     {
-        // Verifica que tu archivo blade esté en resources/views/sessions/sesiones.blade.php
-        return view('sessions.sesiones');
+         $users = User::orderBy('name')->get(); // o select('id','name')
+        return view('sessions.sesiones', compact('users'));
     }
 
     /**
@@ -23,37 +23,40 @@ class SessionesController extends Controller
      */
     public function buscarPorUsuario(Request $request)
     {
-        $nombre = $request->input('q');
+    $nombre = $request->input('q');
 
-        // Si el buscador está vacío, no devolvemos nada
-        if(!$nombre) return response()->json([]);
+        // Si el buscador está vacío
+        if (!$nombre) {
+            return response()->json(['events' => []]);
+        }
 
-        // 1. Buscamos en la base de datos
-        $sesiones = Sessiones::with('user') 
-            ->whereHas('user', function($query) use ($nombre) {
+        $sesiones = Sessiones::with('user')
+            ->whereHas('user', function ($query) use ($nombre) {
                 $query->where('name', 'LIKE', "%{$nombre}%");
             })
             ->get();
 
-        // 2. Agrupamos los resultados por fecha para el calendario
-        $datosParaCalendario = $sesiones->mapToGroups(function ($sesion) {
-            
-            // Aseguramos que Fecharegistro sea una fecha válida
+        // Formato que tu JS necesita: [{ fecha, hora, clase, descripcion, coste, pago, centro }]
+        $events = $sesiones->map(function ($sesion) {
             $fecha = Carbon::parse($sesion->Fecharegistro);
-            
-            return [
-                // La fecha es la clave (YYYY-MM-DD)
-                $fecha->format('Y-m-d') => [
-                    'centro'     => 'Factomove Center', 
-                    'clase'      => 'Entrenamiento',
-                    'entrenador' => 'Staff', // Puedes cambiar esto si tienes el dato real
-                    'hora'       => $fecha->format('H:i'), 
-                    'precio'     => number_format($sesion->Pago, 2) . '€',
-                ]
-            ];
-        });
 
-        // 3. Devolvemos el JSON limpio
-        return response()->json($datosParaCalendario);
+            return [
+                'fecha' => $fecha->format('Y-m-d'),
+                'hora'  => $fecha->format('H:i'),
+
+                // Ajusta estos campos si existen en tu tabla:
+                'clase' => $sesion->clase ?? 'Entrenamiento',
+                'descripcion' => $sesion->descripcion ?? '',
+                'coste' => $sesion->Pago ?? null,
+
+                // si tienes método de pago en la tabla, cambia 'metodo_pago' por el nombre real
+                'pago' => $sesion->metodo_pago ?? null,
+
+                // si tienes centro en la tabla, cambia 'centro' por el nombre real
+                'centro' => $sesion->centro ?? null,
+            ];
+        })->values();
+
+        return response()->json(['events' => $events]);
     }
 }

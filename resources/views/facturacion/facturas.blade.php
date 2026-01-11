@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facturación - Sesiones Individuales</title>
 
-    <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/global.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
 
     <style>
         :root {
@@ -121,9 +121,6 @@
             font-size: 0.9rem;
             color: #333;
         }
-        .trainer-client-list {
-            /* Eliminado: Ya no se lista el detalle del cliente */
-        }
         /* Nueva clase para la lista de entrenadores */
         .trainer-list-container {
             display: flex;
@@ -131,6 +128,117 @@
             gap: 10px;
             margin-top: 20px;
         }
+        /* --- helpers de texto --- */
+        .text-white { color: #fff !important; }
+        .text-muted { color: rgba(0,0,0,.55) !important; }
+        .text-center { text-align: center !important; }
+        .small { font-size: .875rem !important; }
+
+        /* --- spacing (solo los que usas) --- */
+        .mb-0 { margin-bottom: 0 !important; }
+        .mb-2 { margin-bottom: .5rem !important; }
+        .mb-3 { margin-bottom: 1rem !important; }
+        .mb-4 { margin-bottom: 1.5rem !important; }
+        .mt-2 { margin-top: .5rem !important; }
+        .mt-5 { margin-top: 3rem !important; }
+
+        .me-1 { margin-right: .25rem !important; }
+        .me-2 { margin-right: .5rem !important; }
+
+        .w-100 { width: 100% !important; }
+
+        /* --- flex helpers --- */
+        .align-items-end { align-items: flex-end !important; }
+        .align-items-center { align-items: center !important; }
+
+        /* --- grid (row + columnas col-2 / col-4) --- */
+        .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-left: -8px;
+        margin-right: -8px;
+        }
+
+        .row > [class^="col-"] {
+        padding-left: 8px;
+        padding-right: 8px;
+        }
+
+        .col-2 { flex: 0 0 auto; width: 16.6667%; }
+        .col-4 { flex: 0 0 auto; width: 33.3333%; }
+
+        /* gaps g-2 (solo el que usas) */
+        .g-2 { gap: .5rem; }
+
+        /* --- labels --- */
+        .form-label {
+        display: inline-block;
+        margin-bottom: .35rem;
+        font-weight: 600;
+        }
+
+        /* --- inputs (por si no heredan de tu global) --- */
+        .form-control {
+        width: 100%;
+        padding: .55rem .8rem;
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.16);
+        background: #fff;
+        font-size: .95rem;
+        }
+
+        .form-control-sm {
+        padding: .45rem .7rem;
+        font-size: .875rem;
+        }
+
+        /* --- SELECT bonito (el “Carlos”) --- */
+        .form-select {
+        width: 100%;
+        padding: .6rem 2.2rem .6rem .9rem;
+        border-radius: 10px;
+        border: 1px solid rgba(0,0,0,0.16);
+        background-color: #fff;
+        color: #333;
+        font-size: .95rem;
+        line-height: 1.2;
+
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        /* flecha del select */
+        background-image:
+            linear-gradient(45deg, transparent 50%, #666 50%),
+            linear-gradient(135deg, #666 50%, transparent 50%);
+        background-position:
+            calc(100% - 18px) 50%,
+            calc(100% - 12px) 50%;
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
+        }
+
+        .form-select:focus,
+        .form-control:focus {
+        outline: none;
+        border-color: var(--custom-teal);
+        box-shadow: 0 0 0 3px rgba(91,168,160,.25);
+        }
+
+        /* --- fw-bold --- */
+        .fw-bold { font-weight: 700 !important; }
+
+        /* --- badge (por si usas .badge) --- */
+        .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: .85rem;
+        line-height: 1;
+        }
+
 
     </style>
 </head>
@@ -492,6 +600,6 @@
     });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

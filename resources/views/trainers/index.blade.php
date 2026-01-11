@@ -6,7 +6,7 @@
     <title>Gestión de Usuarios - Factomove</title>
 
     {{-- CSS principal de esta vista --}}
-    <link href="{{ asset('css/ususarios.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/global.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
