@@ -13,7 +13,8 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 Route::resource('trainers', TrainerController::class);
-Route::resource('users', UserController::class);
+
+Route::resource('users', UserController::class)->middleware('auth');
 
 
 
