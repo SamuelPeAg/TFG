@@ -2,11 +2,18 @@
 
 @section('content')
 
-    {{-- CONTENEDOR PRINCIPAL --}}
-    <div class="flex flex-col min-h-[calc(100vh-80px)]">
+    {{-- 
+        CAMBIOS APLICADOS:
+        1. 'min-h-screen' para altura completa.
+        2. 'pt-24 lg:pt-28' para empujar el contenido debajo del header.
+        3. El 'bg-gradient...' se movió aquí para evitar la franja blanca superior.
+    --}}
+    <div class="flex flex-col min-h-screen pt-24 lg:pt-28 bg-gradient-to-br from-white via-brandTeal/30 to-brandCoral/40">
 
-        {{-- === ÁREA CENTRAL (FONDO + FORMULARIO) === --}}
-        <div class="flex-grow flex items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-white via-brandTeal/30 to-brandCoral/40">
+        {{-- 
+            CAMBIO: Se eliminó el gradiente de aquí (ya está en el padre)
+        --}}
+        <div class="flex-grow flex items-center justify-center p-4 sm:p-8">
             
             {{-- TARJETA DE REGISTRO --}}
             <div class="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/60">

@@ -16,6 +16,41 @@
 
     <style>
         /* =========================================
+           ESTILOS DE ESTRUCTURA (Para que se vea el Sidebar)
+           ========================================= */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Evita doble scroll */
+        }
+
+        .dashboard-container {
+            display: flex;      /* Vital para poner sidebar y contenido lado a lado */
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Estilo base del Sidebar (ancho fijo) */
+        .sidebar {
+            width: 260px;       /* Ancho del menú */
+            flex-shrink: 0;     /* No permitas que se encoja */
+            background-color: #004d40; /* Color de fondo provisional por si falla el CSS externo */
+            color: white;
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Estilo del contenido principal */
+        .main-content {
+            flex-grow: 1;       /* Ocupa el resto del espacio */
+            overflow-y: auto;   /* Scroll solo en el contenido, no en el menú */
+            padding: 20px;
+            background-color: #f4f6f8;
+        }
+
+        /* =========================================
            1. ESTILOS DEL POPUP (MODAL)
            ========================================= */
         .modal-overlay {
@@ -53,17 +88,13 @@
         }
 
         /* =========================================
-           2. ESTILO EXACTO DE TU IMAGEN (WIDE CLEAN)
+           2. ESTILOS DEL CALENDARIO
            ========================================= */
-        
-        /* Contenedor principal del calendario: transparente para que parezca limpio */
         .calendar-container {
             width: 100%;
             margin-top: 20px;
-            background: transparent; /* Transparente como en tu foto */
+            background: transparent;
         }
-
-        /* Forzar ancho completo y quitar bordes/sombras del plugin */
         .flatpickr-calendar.inline {
             width: 100% !important;
             max-width: none !important;
@@ -71,12 +102,10 @@
             border: none !important;
             background: transparent !important;
         }
-
         .flatpickr-innerContainer, .flatpickr-rContainer, .flatpickr-days {
             width: 100% !important;
             overflow: visible !important;
         }
-
         .dayContainer {
             width: 100% !important;
             min-width: 100% !important;
@@ -85,145 +114,109 @@
             justify-content: space-around;
             padding: 0 !important;
         }
-
-        /* --- CABECERA (MES Y AÑO) --- */
         .flatpickr-months {
             position: relative !important;
             background: transparent !important;
             margin-bottom: 40px !important;
             height: 50px !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
-
-        /* El contenedor del texto Mes/Año centrado */
         .flatpickr-current-month {
-            position: absolute !important;
-            width: auto !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            padding: 0 !important;
-            font-size: 1.5rem !important; /* Tamaño grande */
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
+            position: absolute !important; width: auto !important;
+            left: 50% !important; transform: translateX(-50%) !important;
+            padding: 0 !important; font-size: 1.5rem !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
         }
-
-        /* Texto del Mes y Año en NEGRO/GRIS (no azul) */
-        .flatpickr-current-month span.cur-month {
-            font-weight: normal !important;
-            color: #333 !important;
-            margin-right: 8px !important;
-        }
+        .flatpickr-current-month span.cur-month, 
         .flatpickr-current-month input.cur-year {
-            font-weight: normal !important;
-            color: #333 !important;
+            font-weight: normal !important; color: #333 !important;
         }
-
-        /* Flechas de navegación: A LOS EXTREMOS */
         .flatpickr-prev-month, .flatpickr-next-month {
-            position: absolute !important;
-            top: 50% !important;
+            position: absolute !important; top: 50% !important;
             transform: translateY(-50%) !important;
-            height: 40px !important;
-            width: 40px !important;
-            padding: 0 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            z-index: 10;
+            height: 40px !important; width: 40px !important;
+            padding: 0 !important; display: flex !important;
+            align-items: center !important; justify-content: center !important; z-index: 10;
         }
-        
         .flatpickr-prev-month { left: 0 !important; }
         .flatpickr-next-month { right: 0 !important; }
-
         .flatpickr-prev-month svg, .flatpickr-next-month svg {
-            fill: #000 !important; /* Flechas negras */
-            width: 16px;
-            height: 16px;
+            fill: #000 !important; width: 16px; height: 16px;
         }
         .flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg {
             fill: #00897b !important;
         }
-
-        /* --- DÍAS DE LA SEMANA (Mon, Tue...) --- */
-        .flatpickr-weekdays {
-            width: 100% !important;
-            margin-bottom: 20px !important;
-        }
+        .flatpickr-weekdays { width: 100% !important; margin-bottom: 20px !important; }
         .flatpickr-weekday {
-            font-size: 16px !important;
-            color: #333 !important; /* Color oscuro */
-            font-weight: normal !important;
-            background: transparent !important;
-            text-align: center !important;
+            font-size: 16px !important; color: #333 !important;
+            font-weight: normal !important; background: transparent !important; text-align: center !important;
         }
-
-        /* --- DÍAS DEL MES (NÚMEROS) --- */
         .flatpickr-day {
-            height: 90px !important;       /* Mucha altura vertical */
-            line-height: 90px !important;  /* Centrado vertical */
-            width: 14.28% !important;      /* 100 / 7 = 14.28% exacto */
-            max-width: none !important;
-            font-size: 16px !important;
-            color: #333 !important;
-            margin: 0 !important;
-            border: none !important;
-            border-radius: 0 !important;   /* Cuadrados o ligeramente redondeados si prefieres */
-            background: transparent !important;
+            height: 90px !important; line-height: 90px !important;
+            width: 14.28% !important; max-width: none !important;
+            font-size: 16px !important; color: #333 !important;
+            margin: 0 !important; border: none !important;
+            border-radius: 0 !important; background: transparent !important;
         }
-
-        /* Efecto Hover */
-        .flatpickr-day:hover {
-            background: #f0f0f0 !important;
-            border-radius: 10px !important;
-        }
-
-        /* Día seleccionado */
+        .flatpickr-day:hover { background: #f0f0f0 !important; border-radius: 10px !important; }
         .flatpickr-day.selected {
-            background: transparent !important; /* En tu foto no parece tener fondo de color fuerte */
-            color: #00897b !important;
-            font-weight: bold !important;
-            border: 1px solid #00897b !important; /* Solo un borde fino */
-            border-radius: 10px !important;
+            background: transparent !important; color: #00897b !important;
+            font-weight: bold !important; border: 1px solid #00897b !important; border-radius: 10px !important;
         }
-        
-        /* Días de otros meses (gris claro) */
-        .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay {
-            color: #ccc !important;
-        }
+        .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: #ccc !important; }
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
 
-    {{-- SIDEBAR --}}
-    <aside class="sidebar" style="display: flex; flex-direction: column; height: 100vh;">
+    {{-- SIDEBAR: Ahora está DENTRO del body y dentro del contenedor flex --}}
+    <aside class="sidebar">
         <div class="logo">
-            <img src="{{ asset('img/logopng.png') }}" alt="">
-            <h2>Factomove</h2>
+            <img src="{{ asset('img/logopng.png') }}" alt="Logo" style="max-width: 100px;"> <h2 style="color: white; margin-left: 10px;">Factomove</h2>
         </div>
+
         <nav class="main-menu">
-            <a href="{{ route('entrenadores.index') }}" class="menu-item"><i class="fa-solid fa-dumbbell"></i> ENTRENADORES</a>
-            <a href="{{ route('users.index') }}" class="menu-item"><i class="fa-solid fa-users"></i> USUARIOS</a>
-            <a href="{{ route('sesiones') }}" class="menu-item active"><i class="fa-solid fa-calendar-check"></i> SESIONES</a>
-            <a href="{{ route('facturas') }}" class="menu-item"><i class="fa-solid fa-file-invoice"></i> FACTURACIÓN</a>
+            <a href="{{ route('entrenadores.index') }}" class="menu-item">
+                <i class="fa-solid fa-dumbbell"></i> ENTRENADORES
+            </a>
+            <a href="{{ route('users.index') }}" class="menu-item">
+                <i class="fa-solid fa-users"></i> USUARIOS
+            </a>
+            <a href="{{ route('sesiones') }}" class="menu-item active">
+                <i class="fa-solid fa-calendar-check"></i> SESIONES
+            </a>
+            <a href="{{ route('facturas') }}" class="menu-item">
+                <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN
+            </a>
         </nav>
+
         <div style="flex-grow: 1;"></div>
+
         <div style="display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; gap: 10px; margin-bottom: 15px;">
             <div style="display: flex; flex-direction: column; text-align: right; line-height: 1.3;">
-                <span style="font-weight: 700; color: #ffffff; font-size: 14px;"></span>
-                <span style="font-size: 11px; color: #e0f2f1; opacity: 0.8;">Panel de Gestión</span>
+                <span style="font-weight: 700; color: #ffffff; font-size: 14px;">
+                    {{ auth()->user()->name ?? 'Usuario' }}
+                </span>
+                <span style="font-size: 11px; color: #e0f2f1; opacity: 0.8;">
+                    Panel de Gestión
+                </span>
             </div>
+            
             <div style="width: 40px; height: 40px; background-color: #ffffff; color: #00897b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
+                {{ substr(auth()->user()->name ?? 'U', 0, 1) }} 
             </div>
         </div>
-        <hr style="border: 0; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 0 20px 20px 20px;">
+
         <div class="utility-links" style="margin-bottom: 20px;">
-            <a href="#" class="menu-item"><i class="fa-solid fa-circle-question"></i> AYUDA</a>
-            <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">@csrf</form>
+            <a href="#" class="menu-item">
+                <i class="fa-solid fa-circle-question"></i> AYUDA
+            </a>
+
+            <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
+                @csrf
+            </form>
+
             <a href="#" class="menu-item" onclick="event.preventDefault(); if(confirm('¿Seguro que deseas cerrar sesión?')) { document.getElementById('logout-form').submit(); }">
                 <i class="fa-solid fa-right-from-bracket"></i> SALIR
             </a>
@@ -237,9 +230,9 @@
                 <h1>Historial de Sesiones</h1>
             </div>
             <div class="controls-bar">
-                <div class="search-box">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-user" placeholder="Buscar usuario...">
+                <div class="search-box" style="background: white; padding: 10px; border-radius: 8px; display: flex; align-items: center;">
+                    <i class="fa-solid fa-magnifying-glass" style="color: #666; margin-right: 10px;"></i>
+                    <input type="text" id="search-user" placeholder="Buscar usuario..." style="border: none; outline: none;">
                 </div>
             </div>
         </div>

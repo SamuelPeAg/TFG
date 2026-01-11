@@ -5,13 +5,13 @@
     </div>
 
     <nav class="main-menu">
-        <a href="{{ route("trainers.index") }}"  class="menu-item">
+        <a href="{{ route("entrenadores.index") }}"  class="menu-item">
             <i class="fa-solid fa-dumbbell"></i> ENTRENADORES
         </a>
-        <a href="{{ route("users.index") }}" class="menu-item">
+        <a href="{{ route("users.index") }}" class="menu-item active">
             <i class="fa-solid fa-users"></i> USUARIOS
         </a>
-        <a href="{{ route("sesiones") }}" class="menu-item active">
+        <a href="{{ route("sesiones") }}" class="menu-item">
             <i class="fa-solid fa-calendar-check"></i> SESIONES
         </a>
         <a href="{{ route ("facturas")}}" class="menu-item">
@@ -32,7 +32,7 @@
         </div>
         
         <div style="width: 40px; height: 40px; background-color: #ffffff; color: #00897b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
-            {{ substr(auth()->user()->name, 0, 1) }}
+            {{ substr(auth()->user()->name, 0, 1) }} 
         </div>
     </div>
 

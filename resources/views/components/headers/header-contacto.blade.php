@@ -11,7 +11,10 @@
                 <a href="{{ route('contact') }}" class="text-gray-600 hover:text-brandTeal font-medium transition"> Contactanos</a>
                 
                 <div class="hidden md:flex space-x-6 items-center">
-                    <a href="{{ route('welcome') }}" class="text-gray-600 hover:text-brandTeal font-medium transition"> Inicio</a>
+                    <a href="{{ route('booking.view') }}" class="flex items-center gap-2 text-gray-800 font-bold hover:text-brandTeal transition group">
+                        <i class="fa-regular fa-calendar-check text-brandTeal group-hover:scale-110 transition-transform"></i>
+                        Reservas
+                    </a>
                     <div class="flex items-center gap-4 ml-4 border-l pl-6 border-gray-200">
                         @if (Route::has('login'))
                             <a href="{{ route('login') }}" class="text-gray-700 font-bold hover:text-brandTeal transition">
