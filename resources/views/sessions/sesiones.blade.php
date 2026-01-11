@@ -104,7 +104,34 @@
             margin-bottom: 30px;
             flex-shrink: 0; /* No encoger el header */
         }
+        
+        /* Modificado para incluir el botón */
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
         .title-section h1 { margin: 0; font-size: 1.8rem; color: #333; }
+
+        /* NUEVO: Botón de añadir clase */
+        .btn-add-class {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-add-class:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
 
         .search-box {
             background: white;
@@ -252,7 +279,7 @@
         }
 
         /* =========================================
-           3. ESTILOS DEL POPUP (MODAL)
+           3. ESTILOS DE LOS MODALES
            ========================================= */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0;
@@ -268,14 +295,17 @@
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             transform: scale(0.95); transition: transform 0.3s ease;
+            position: relative;
         }
         .modal-overlay.active .modal-box { transform: scale(1); }
 
         .modal-box h2 {
             color: var(--primary-color); margin-bottom: 25px; font-size: 1.8rem;
             border-bottom: 2px solid #e0f2f1; padding-bottom: 15px;
+            margin-top: 0;
         }
         
+        /* ESTILOS PARA LA LISTA DE DETALLES */
         .modal-details { 
             text-align: left; 
             margin-bottom: 25px;
@@ -306,19 +336,62 @@
         }
         
         .btn-close {
-            background: var(--primary-color); color: white; border: none;
+            background: #999; color: white; border: none;
             padding: 12px 35px; border-radius: 30px; cursor: pointer;
             font-weight: bold; font-size: 1rem;
             transition: background 0.3s ease;
         }
-        .btn-close:hover { background: var(--primary-dark); }
+        .btn-close:hover { background: #777; }
 
         .close-icon {
-            position: absolute; top: 20px; right: 25px;
+            position: absolute; top: 15px; right: 20px;
             font-size: 28px; cursor: pointer; color: #aaa;
             transition: color 0.3s ease;
         }
         .close-icon:hover { color: #666; }
+
+        /* ESTILOS ESPECÍFICOS PARA EL FORMULARIO */
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .btn-submit {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+        .btn-submit:hover {
+            background: var(--primary-dark);
+        }
+
     </style>
 </head>
 <body>
@@ -366,6 +439,9 @@
         <div class="header-controls">
             <div class="title-section">
                 <h1>Historial de Sesiones</h1>
+                <button onclick="abrirModalNuevaClase()" class="btn-add-class">
+                    <i class="fa-solid fa-plus"></i> Nueva Clase
+                </button>
             </div>
             <div class="controls-bar">
                 <div class="search-box">
@@ -389,7 +465,7 @@
 
 </div>
 
-{{-- POPUP (MODAL) --}}
+{{-- POPUP 1: DETALLES DEL DÍA (SOLO LECTURA) --}}
 <div id="infoPopup" class="modal-overlay">
     <div class="modal-box">
         <span class="close-icon" onclick="cerrarPopup()">&times;</span>
@@ -399,6 +475,48 @@
             </div>
 
         <button class="btn-close" onclick="cerrarPopup()">Cerrar</button>
+    </div>
+</div>
+
+{{-- POPUP 2: FORMULARIO NUEVA CLASE (ESCRITURA) --}}
+<div id="modalNuevaClase" class="modal-overlay">
+    <div class="modal-box">
+        <span class="close-icon" onclick="cerrarModalNuevaClase()">&times;</span>
+        <h2><i class="fa-solid fa-calendar-plus"></i> Agendar Nueva Clase</h2>
+        
+        <form action="{{ route('sesiones.store') }}" method="POST">
+            @csrf <div class="form-group">
+                <label>🏢 Centro:</label>
+                <input type="text" name="centro" class="form-input" placeholder="Ej: Factomove Centro" required>
+            </div>
+
+            <div class="form-group">
+                <label>🏋️ Clase:</label>
+                <input type="text" name="nombre_clase" class="form-input" placeholder="Ej: Pilates, Crossfit..." required>
+            </div>
+
+            <div class="form-group">
+                <label>👤 Entrenador:</label>
+                <select name="entrenador_id" class="form-input" required>
+                    <option value="">Selecciona entrenador</option>
+                    {{-- Aquí idealmente cargarías con @foreach --}}
+                    <option value="1">Carlos López</option>
+                    <option value="2">Ana García</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>🕒 Hora y Fecha:</label>
+                <input type="datetime-local" name="fecha_hora" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label>💶 Precio (€):</label>
+                <input type="number" name="precio" step="0.01" class="form-input" placeholder="0.00" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Guardar Clase</button>
+        </form>
     </div>
 </div>
 
@@ -483,7 +601,7 @@
     });
 
     // ------------------------------------------------------------------
-    // FUNCIONES DEL POPUP
+    // FUNCIONES DEL POPUP DETALLES (VER)
     // ------------------------------------------------------------------
     function mostrarPopup(listaDeSesiones, fecha) {
         
@@ -535,10 +653,24 @@
         document.getElementById('infoPopup').classList.remove('active');
     }
 
-    // Cerrar si se hace click fuera de la cajita blanca
+    // ------------------------------------------------------------------
+    // FUNCIONES DEL MODAL NUEVA CLASE (CREAR)
+    // ------------------------------------------------------------------
+    function abrirModalNuevaClase() {
+        document.getElementById('modalNuevaClase').classList.add('active');
+    }
+
+    function cerrarModalNuevaClase() {
+        document.getElementById('modalNuevaClase').classList.remove('active');
+    }
+
+    // Cerrar si se hace click fuera de la cajita blanca (Maneja ambos modales)
     window.onclick = function(event) {
-        const modal = document.getElementById('infoPopup');
-        if (event.target === modal) cerrarPopup();
+        const modalDetalles = document.getElementById('infoPopup');
+        const modalFormulario = document.getElementById('modalNuevaClase');
+        
+        if (event.target === modalDetalles) cerrarPopup();
+        if (event.target === modalFormulario) cerrarModalNuevaClase();
     }
 </script>
 
