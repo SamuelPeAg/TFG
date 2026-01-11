@@ -11,8 +11,8 @@ use App\Http\Controllers\UserController;
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
-Route::resource('entrenadores', EntrenadorController::class)
-     ->parameters(['entrenadores' => 'entrenador']);
+
+Route::resource('entrenadores', EntrenadorController::class);
 
 Route::resource('users', UserController::class);
 
