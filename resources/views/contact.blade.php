@@ -63,14 +63,6 @@
             {{-- Formulario --}}
             <form action="#" method="POST" class="space-y-6 max-w-lg">
                 @csrf
-                
-                {{-- Nombre --}}
-                <div>
-                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Nombre Completo <span class="text-brandCoral">*</span></label>
-                    <input type="text" id="name" name="name" 
-                        class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-brandTeal focus:border-brandTeal outline-none transition" 
-                        placeholder="Tu nombre completo" required>
-                </div>
 
                 {{-- Email y Teléfono --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -88,17 +80,9 @@
                     </div>
                 </div>
 
-                {{-- Empresa --}}
-                <div>
-                    <label for="company" class="block text-sm font-semibold text-gray-700 mb-1">Empresa / Organización</label>
-                    <input type="text" id="company" name="company" 
-                        class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-brandTeal focus:border-brandTeal outline-none transition" 
-                        placeholder="Opcional">
-                </div>
-
                 {{-- Mensaje --}}
                 <div>
-                    <label for="message" class="block text-sm font-semibold text-gray-700 mb-1">¿En qué podemos ayudarte? <span class="text-brandCoral">*</span></label>
+                    <label for="message" class="block text-sm font-semibold text-gray-700 mb-1">Definición <span class="text-brandCoral">*</span></label>
                     <textarea id="message" name="message" rows="4" 
                         class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-brandTeal focus:border-brandTeal outline-none transition resize-none" 
                         placeholder="Cuéntanos sobre tu proyecto o duda..." required></textarea>

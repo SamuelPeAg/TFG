@@ -34,7 +34,7 @@ Route::post('/register', [RegisterController::class, 'store']);
 
 
 
-
+Route::view('/configuracion', 'configuracion.configuracion')->name('configuracion');
 
 Route::get('/contacto', function () {
     return view('contact');
