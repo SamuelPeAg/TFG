@@ -112,16 +112,17 @@
         </div>
 
         {{-- COLUMNA DERECHA: MAPA --}}
-        <div class="relative w-full h-96 lg:h-auto bg-gray-200 order-2 lg:order-2">
-            <iframe 
-                class="absolute inset-0 w-full h-full"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d194347.3838384282!2d-3.8196223126966667!3d40.43813107933183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd422997800a3c81%3A0xc436dec1618c2269!2sMadrid!5e0!3m2!1ses!2ses!4v1710000000000!5m2!1ses!2ses" 
-                style="border:0;" 
-                allowfullscreen="" 
-                loading="lazy" 
-                referrerpolicy="no-referrer-when-downgrade">
-            </iframe>
-            
+        <div class="relative w-full h-96 lg:h-[calc(100vh-80px)] bg-gray-200 order-2 lg:order-2">
+        <iframe
+            class="absolute inset-0 w-full h-full"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d46049.212576370854!2d-4.825685003215558!3d37.89153722046277!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6cdf26f95e0aef%3A0x4df1d2e8108456c3!2zQ8OzcmRvYmE!5e1!3m2!1ses!2ses!4v1768208827341!5m2!1ses!2ses"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+        </div>
+
         </div>
 
     </main>
