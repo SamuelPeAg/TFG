@@ -1,316 +1,160 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sesiones - Factomove</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sesiones - Factomove</title>
 
-    {{-- CSS PRINCIPAL --}}
-    <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
-    
-    {{-- FONTAWESOME --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
-    {{-- FLATPICKR CSS --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="{{ asset('css/global.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
 
-    <style>
-        /* =========================================
-           ESTILOS DE ESTRUCTURA (Para que se vea el Sidebar)
-           ========================================= */
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Evita doble scroll */
-        }
-
-        .dashboard-container {
-            display: flex;      /* Vital para poner sidebar y contenido lado a lado */
-            width: 100vw;
-            height: 100vh;
-        }
-
-        /* Estilo base del Sidebar (ancho fijo) */
-        .sidebar {
-            width: 260px;       /* Ancho del menú */
-            flex-shrink: 0;     /* No permitas que se encoja */
-            background-color: #004d40; /* Color de fondo provisional por si falla el CSS externo */
-            color: white;
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        /* Estilo del contenido principal */
-        .main-content {
-            flex-grow: 1;       /* Ocupa el resto del espacio */
-            overflow-y: auto;   /* Scroll solo en el contenido, no en el menú */
-            padding: 20px;
-            background-color: #f4f6f8;
-        }
-
-        /* =========================================
-           1. ESTILOS DEL POPUP (MODAL)
-           ========================================= */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6);
-            z-index: 9999; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.3s ease;
-        }
-        .modal-overlay.active { display: flex; opacity: 1; }
-
-        .modal-box {
-            background: white; padding: 30px; border-radius: 15px;
-            width: 90%; max-width: 450px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            transform: scale(0.9); transition: transform 0.3s ease;
-        }
-        .modal-overlay.active .modal-box { transform: scale(1); }
-
-        .modal-box h2 {
-            color: #00897b; margin-bottom: 20px; font-size: 24px;
-            border-bottom: 2px solid #e0f2f1; padding-bottom: 10px;
-        }
-        .modal-details { text-align: left; margin-bottom: 20px; }
-        .detail-item {
-            display: flex; justify-content: space-between;
-            padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 16px;
-        }
-        .btn-close {
-            background: #00897b; color: white; border: none;
-            padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold;
-        }
-        .close-icon {
-            position: absolute; top: 15px; right: 20px;
-            font-size: 24px; cursor: pointer; color: #aaa;
-        }
-
-        /* =========================================
-           2. ESTILOS DEL CALENDARIO
-           ========================================= */
-        .calendar-container {
-            width: 100%;
-            margin-top: 20px;
-            background: transparent;
-        }
-        .flatpickr-calendar.inline {
-            width: 100% !important;
-            max-width: none !important;
-            box-shadow: none !important;
-            border: none !important;
-            background: transparent !important;
-        }
-        .flatpickr-innerContainer, .flatpickr-rContainer, .flatpickr-days {
-            width: 100% !important;
-            overflow: visible !important;
-        }
-        .dayContainer {
-            width: 100% !important;
-            min-width: 100% !important;
-            max-width: none !important;
-            display: flex;
-            justify-content: space-around;
-            padding: 0 !important;
-        }
-        .flatpickr-months {
-            position: relative !important;
-            background: transparent !important;
-            margin-bottom: 40px !important;
-            height: 50px !important;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .flatpickr-current-month {
-            position: absolute !important; width: auto !important;
-            left: 50% !important; transform: translateX(-50%) !important;
-            padding: 0 !important; font-size: 1.5rem !important;
-            display: flex !important; align-items: center !important; justify-content: center !important;
-        }
-        .flatpickr-current-month span.cur-month, 
-        .flatpickr-current-month input.cur-year {
-            font-weight: normal !important; color: #333 !important;
-        }
-        .flatpickr-prev-month, .flatpickr-next-month {
-            position: absolute !important; top: 50% !important;
-            transform: translateY(-50%) !important;
-            height: 40px !important; width: 40px !important;
-            padding: 0 !important; display: flex !important;
-            align-items: center !important; justify-content: center !important; z-index: 10;
-        }
-        .flatpickr-prev-month { left: 0 !important; }
-        .flatpickr-next-month { right: 0 !important; }
-        .flatpickr-prev-month svg, .flatpickr-next-month svg {
-            fill: #000 !important; width: 16px; height: 16px;
-        }
-        .flatpickr-prev-month:hover svg, .flatpickr-next-month:hover svg {
-            fill: #00897b !important;
-        }
-        .flatpickr-weekdays { width: 100% !important; margin-bottom: 20px !important; }
-        .flatpickr-weekday {
-            font-size: 16px !important; color: #333 !important;
-            font-weight: normal !important; background: transparent !important; text-align: center !important;
-        }
-        .flatpickr-day {
-            height: 90px !important; line-height: 90px !important;
-            width: 14.28% !important; max-width: none !important;
-            font-size: 16px !important; color: #333 !important;
-            margin: 0 !important; border: none !important;
-            border-radius: 0 !important; background: transparent !important;
-        }
-        .flatpickr-day:hover { background: #f0f0f0 !important; border-radius: 10px !important; }
-        .flatpickr-day.selected {
-            background: transparent !important; color: #00897b !important;
-            font-weight: bold !important; border: 1px solid #00897b !important; border-radius: 10px !important;
-        }
-        .flatpickr-day.prevMonthDay, .flatpickr-day.nextMonthDay { color: #ccc !important; }
-    </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
+  <div class="dashboard-container">
+    @include('components.sidebars.sidebar_sesiones')
 
-<div class="dashboard-container">
-
-    {{-- SIDEBAR: Ahora está DENTRO del body y dentro del contenedor flex --}}
-    <aside class="sidebar">
-        <div class="logo">
-            <img src="{{ asset('img/logopng.png') }}" alt="Logo" style="max-width: 100px;"> <h2 style="color: white; margin-left: 10px;">Factomove</h2>
-        </div>
-
-        <nav class="main-menu">
-            <a href="{{ route('entrenadores.index') }}" class="menu-item">
-                <i class="fa-solid fa-dumbbell"></i> ENTRENADORES
-            </a>
-            <a href="{{ route('users.index') }}" class="menu-item">
-                <i class="fa-solid fa-users"></i> USUARIOS
-            </a>
-            <a href="{{ route('sesiones') }}" class="menu-item active">
-                <i class="fa-solid fa-calendar-check"></i> SESIONES
-            </a>
-            <a href="{{ route('facturas') }}" class="menu-item">
-                <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN
-            </a>
-        </nav>
-
-        <div style="flex-grow: 1;"></div>
-
-        <div style="display: flex; align-items: center; justify-content: flex-end; padding: 0 20px; gap: 10px; margin-bottom: 15px;">
-            <div style="display: flex; flex-direction: column; text-align: right; line-height: 1.3;">
-                <span style="font-weight: 700; color: #ffffff; font-size: 14px;">
-                    {{ auth()->user()->name ?? 'Usuario' }}
-                </span>
-                <span style="font-size: 11px; color: #e0f2f1; opacity: 0.8;">
-                    Panel de Gestión
-                </span>
-            </div>
-            
-            <div style="width: 40px; height: 40px; background-color: #ffffff; color: #00897b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
-                {{ substr(auth()->user()->name ?? 'U', 0, 1) }} 
-            </div>
-        </div>
-
-        <div class="utility-links" style="margin-bottom: 20px;">
-            <a href="#" class="menu-item">
-                <i class="fa-solid fa-circle-question"></i> AYUDA
-            </a>
-
-            <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
-                @csrf
-            </form>
-
-            <a href="#" class="menu-item" onclick="event.preventDefault(); if(confirm('¿Seguro que deseas cerrar sesión?')) { document.getElementById('logout-form').submit(); }">
-                <i class="fa-solid fa-right-from-bracket"></i> SALIR
-            </a>
-        </div>
-    </aside>
-
-    {{-- CONTENIDO PRINCIPAL --}}
     <main class="main-content">
-        <div class="header-controls">
-            <div class="title-section">
-                <h1>Historial de Sesiones</h1>
-            </div>
-            <div class="controls-bar">
-                <div class="search-box" style="background: white; padding: 10px; border-radius: 8px; display: flex; align-items: center;">
-                    <i class="fa-solid fa-magnifying-glass" style="color: #666; margin-right: 10px;"></i>
-                    <input type="text" id="search-user" placeholder="Buscar usuario..." style="border: none; outline: none;">
-                </div>
-            </div>
+
+      <div class="header-controls">
+        <div class="title-section">
+          <h1>Historial de Sesiones</h1>
+
+          <button type="button" class="btn-add-class" id="btnNuevaClase">
+            <i class="fa-solid fa-plus"></i>
+            Nueva Clase
+          </button>
         </div>
 
-        <div class="calendar-layout">
-            <div class="calendar-panel" style="width: 100%;">
-                <div class="calendar-container">
-                    <div id="user-calendar"></div>
-                </div>
-                <div id="calendar-summary" class="calendar-summary" style="margin-top: 50px; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); text-align: left;">
-                    <p style="color: #666; font-size: 14px; margin: 0;">La información de la sesión seleccionada aparecerá aquí.</p>
-                </div>
-            </div>
+        <div class="controls-bar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-user" placeholder="Buscar usuario..." autocomplete="off">
+          </div>
         </div>
+      </div>
+
+      <section class="calendar-layout" aria-label="Calendario de sesiones">
+        <div class="calendar-panel">
+          <div class="calendar-container">
+            <!-- Aquí el JS artesanal renderiza el calendario -->
+            <div id="user-calendar" class="custom-calendar"></div>
+          </div>
+
+          <div id="calendar-summary" class="calendar-summary">
+            <p>
+              <i class="fa-solid fa-circle-info"></i>
+              Busca un usuario y selecciona días marcados
+              (<span class="legend-dot">•</span>)
+            </p>
+          </div>
+        </div>
+      </section>
+
     </main>
+  </div>
 
-</div>
-
-{{-- POPUP --}}
-<div id="infoPopup" class="modal-overlay">
+  <!-- MODAL: Detalles del día -->
+  <div id="infoPopup" class="modal-overlay" aria-hidden="true">
     <div class="modal-box">
-        <span class="close-icon" onclick="cerrarPopup()">&times;</span>
-        <h2>Detalles de la Sesión</h2>
-        <div class="modal-details">
-            <div class="detail-item"><strong><i class="fa-solid fa-building"></i> Centro:</strong> <span id="pop-centro">--</span></div>
-            <div class="detail-item"><strong><i class="fa-solid fa-dumbbell"></i> Clase:</strong> <span id="pop-clase">--</span></div>
-            <div class="detail-item"><strong><i class="fa-solid fa-user-tie"></i> Entrenador:</strong> <span id="pop-entrenador">--</span></div>
-            <div class="detail-item"><strong><i class="fa-regular fa-clock"></i> Fecha y Hora:</strong> <span id="pop-fecha-hora">--</span></div>
-            <div class="detail-item"><strong><i class="fa-solid fa-euro-sign"></i> Precio:</strong> <span id="pop-precio" style="color: #00897b; font-weight: 800;">--</span></div>
-        </div>
-        <button class="btn-close" onclick="cerrarPopup()">Cerrar</button>
+      <button type="button" class="close-icon" id="btnCerrarPopup" aria-label="Cerrar">&times;</button>
+      <h2 id="modal-fecha-titulo">Detalles del Día</h2>
+      <div id="lista-sesiones" class="modal-details"></div>
+      <button type="button" class="btn-close" id="btnCerrarPopup2">Cerrar</button>
     </div>
-</div>
+  </div>
 
-{{-- JS --}}
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://npmcdn.com/flatpickr/dist/l10n/es.js"></script>
-<script>
-    // DATOS DE PRUEBA
-    const datosSesiones = {
-        '2025-12-18': { centro: 'Factomove Central', clase: 'Crossfit Avanzado', entrenador: 'Carlos Pérez', hora: '10:00 AM', precio: '15,00€' },
-        '2025-12-20': { centro: 'Factomove Norte', clase: 'Yoga Flex', entrenador: 'Ana López', hora: '18:30 PM', precio: '12,00€' }
-    };
+  <!-- MODAL: Nueva Clase -->
+  {{-- MODAL 2: Formulario nueva clase --}}
+  <div
+    id="modalNuevaClase"
+    class="modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="titulo-nueva-clase"
+    >
+  <div class="modal-box">
+    <button type="button" class="close-icon" id="btnCerrarNuevaClase" aria-label="Cerrar">&times;</button>
 
-    document.addEventListener('DOMContentLoaded', function() {
-        flatpickr("#user-calendar", {
-            inline: true,
-            locale: "es",
-            dateFormat: "Y-m-d",
-            onReady: function(d, s, instance) {
-                instance.calendarContainer.style.width = "100%"; 
-            },
-            onChange: function(selectedDates, dateStr, instance) {
-                if (datosSesiones[dateStr]) {
-                    mostrarPopup(datosSesiones[dateStr], dateStr);
-                }
-            }
-        });
-    });
+    <h2 id="titulo-nueva-clase">
+      <i class="fa-solid fa-calendar-plus"></i>
+      Agendar Nueva Clase
+    </h2>
 
-    function mostrarPopup(datos, fecha) {
-        document.getElementById('pop-centro').textContent = datos.centro;
-        document.getElementById('pop-clase').textContent = datos.clase;
-        document.getElementById('pop-entrenador').textContent = datos.entrenador;
-        document.getElementById('pop-precio').textContent = datos.precio;
-        document.getElementById('pop-fecha-hora').textContent = fecha + ' - ' + datos.hora;
-        document.getElementById('infoPopup').classList.add('active');
-    }
+    <form action="{{ route('sesiones.store') }}" method="POST">
+      @csrf
 
-    function cerrarPopup() {
-        document.getElementById('infoPopup').classList.remove('active');
-    }
+      <div class="form-group">
+        <label for="centro">🏢 Centro:</label>
+        <select id="centro" name="centro" class="form-input" required>
+            <option value="">Selecciona centro</option>
+            <option value="OPEN">OPEN</option>
+            <option value="AIRA">AIRA</option>
+            <option value="CLINICA">CLINICA</option>
+        </select>
+        </div>
 
-    window.onclick = function(event) {
-        const modal = document.getElementById('infoPopup');
-        if (event.target === modal) cerrarPopup();
-    }
+
+      <div class="form-group">
+        <label for="nombre_clase">🏋️ Clase:</label>
+        <input id="nombre_clase" type="text" name="nombre_clase" class="form-input" placeholder="Ej: Pilates, Crossfit..." required>
+      </div>
+
+      {{-- CAMBIO 1: Usuario (antes entrenador) --}}
+      <div class="form-group">
+        <label for="user_id">👤 Usuario:</label>
+        <select id="user_id" name="user_id" class="form-input" required>
+          <option value="">Selecciona usuario</option>
+
+          {{-- Pásale $users desde el controlador --}}
+          @if(isset($users))
+            @foreach($users as $user)
+              <option value="{{ $user->id }}">{{ $user->name }}</option>
+            @endforeach
+          @endif
+        </select>
+      </div>
+
+      {{-- CAMBIO 2: Método de pago --}}
+      <div class="form-group">
+        <label for="metodo_pago">💳 Método de pago:</label>
+        <select id="metodo_pago" name="metodo_pago" class="form-input" required>
+          <option value="">Selecciona método</option>
+          <option value="TPV">TPV</option>
+          <option value="EF">EF</option>
+          <option value="DD">DD</option>
+          <option value="CC">CC</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="fecha_hora">🕒 Hora y Fecha:</label>
+        <input id="fecha_hora" type="datetime-local" name="fecha_hora" class="form-input" required>
+      </div>
+
+      <div class="form-group">
+        <label for="precio">💶 Precio (€):</label>
+        <input id="precio" type="number" name="precio" step="0.01" class="form-input" placeholder="0.00" required>
+      </div>
+
+      <button type="submit" class="btn-submit">Guardar Clase</button>
+    </form>
+  </div> <!-- cierre de dashboard-container o lo que toque -->
+
+<script type="application/json" id="sesiones-data">
+  @json($datosSesiones ?? [])
 </script>
 
+<script>
+  window.SESIONES_CONFIG = window.SESIONES_CONFIG || {};
+  window.SESIONES_CONFIG.datosSesiones =
+    JSON.parse(document.getElementById('sesiones-data').textContent);
+</script>
+
+
+<script src="{{ asset('js/sesiones.js') }}"></script>
 </body>
+
 </html>

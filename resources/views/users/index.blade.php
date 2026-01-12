@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - Factomove</title>
 
-    {{-- Reutilizamos el CSS tipo Excel --}}
-    <link href="{{ asset('css/entrenadores.css') }}" rel="stylesheet">
+    {{-- CSS principal de esta vista --}}
+    <link href="{{ asset('css/global.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>

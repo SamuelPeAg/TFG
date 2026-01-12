@@ -7,19 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Sessiones extends Model
 {
-    /** @use HasFactory<\Database\Factories\SessionesFactory> */
     use HasFactory;
 
-    protected $table = 'sessiones'; // si quieres otro nombre, dímelo
+    protected $table = 'sessiones';
 
     protected $fillable = [
         'user_id',
         'IBAN',
         'Pago',
         'Fecharegistro',
+        'centro',
+        'nombre_clase',
+        'metodo_pago',
     ];
 
-    // Relación con User
+    protected $casts = [
+        'Fecharegistro' => 'datetime',
+        'Pago'          => 'float',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
