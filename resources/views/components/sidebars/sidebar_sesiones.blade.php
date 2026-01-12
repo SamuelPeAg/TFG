@@ -8,10 +8,10 @@
         <a href="{{ route("entrenadores.index") }}"  class="menu-item">
             <i class="fa-solid fa-dumbbell"></i> ENTRENADORES
         </a>
-        <a href="{{ route("users.index") }}" class="menu-item active">
+        <a href="{{ route("users.index") }}" class="menu-item">
             <i class="fa-solid fa-users"></i> USUARIOS
         </a>
-        <a href="{{ route("sesiones") }}" class="menu-item">
+        <a href="{{ route("sesiones") }}" class="menu-item active">
             <i class="fa-solid fa-calendar-check"></i> SESIONES
         </a>
         <a href="{{ route ("facturas")}}" class="menu-item">
