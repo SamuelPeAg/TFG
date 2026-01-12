@@ -18,8 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const summaryEl = document.getElementById('calendar-summary');
 
   // ====== DATOS ======
-  // Formato recomendado en JS:
-  // clases = [{ fecha:"2026-01-05", hora:"10:00", clase:"Pilates", descripcion:"...", coste:25, pago:"TPV" }]
   let clases = Array.isArray(window.SESIONES_CONFIG?.datosSesiones)
     ? window.SESIONES_CONFIG.datosSesiones
     : [];
@@ -37,6 +35,28 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.setAttribute('aria-hidden', 'true');
   };
 
+  const debounce = (fn, delay = 300) => {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), delay);
+    };
+  };
+
+  const fmtMonthTitle = (year, month) => {
+    const d = new Date(year, month, 1);
+    return d.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+  };
+
+  const normalize = (s) =>
+    (s || '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+
+  // ====== CIERRE DE MODALES ======
   // Cerrar modal al click fuera (overlay)
   [modalNueva, modalInfo].forEach((m) => {
     if (!m) return;
@@ -61,18 +81,119 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCerrarInfo1) btnCerrarInfo1.addEventListener('click', () => closeModal(modalInfo));
   if (btnCerrarInfo2) btnCerrarInfo2.addEventListener('click', () => closeModal(modalInfo));
 
-  const fmtMonthTitle = (year, month) => {
-    const d = new Date(year, month, 1);
-    return d.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
-  };
+  // =========================================================
+  // AUTOCOMPLETE USUARIOS (input + lista clickable)
+  // Requisitos HTML:
+  // - <input id="user_search" ...>
+  // - <input type="hidden" name="user_id" id="user_id" required>
+  // - <div id="user_suggestions" hidden></div>
+  // - <script type="application/json" id="users_json">@json([...])</script>
+  // =========================================================
+  const userSearchInput = document.getElementById('user_search');
+  const userIdHidden = document.getElementById('user_id');
+  const suggestionsBox = document.getElementById('user_suggestions');
+  const usersJsonEl = document.getElementById('users_json');
 
-  const debounce = (fn, delay = 300) => {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), delay);
-    };
-  };
+  let USERS = [];
+  try {
+    USERS = usersJsonEl ? JSON.parse(usersJsonEl.textContent || '[]') : [];
+  } catch (e) {
+    USERS = [];
+  }
+
+  function showSuggestions(list) {
+    if (!suggestionsBox) return;
+
+    if (!list.length) {
+      suggestionsBox.hidden = true;
+      suggestionsBox.innerHTML = '';
+      return;
+    }
+
+    suggestionsBox.innerHTML = list
+      .map((u) => `
+        <div class="item" data-id="${u.id}" data-name="${u.name}">
+          ${u.name}
+        </div>
+      `)
+      .join('');
+
+    suggestionsBox.hidden = false;
+  }
+
+  function filterUsers(qRaw) {
+    const q = normalize(qRaw);
+
+    // si borras texto -> invalida el id (hasta que elijas)
+    if (userIdHidden) userIdHidden.value = '';
+
+    if (!q) {
+      showSuggestions([]);
+      return;
+    }
+
+    const matches = USERS
+      .filter((u) => normalize(u.name).startsWith(q)) // empieza por...
+      // si quieres "contiene", cambia a: .includes(q)
+      // .filter((u) => normalize(u.name).includes(q))
+      .slice(0, 12);
+
+    showSuggestions(matches);
+  }
+
+  // Escribir -> filtrar
+  if (userSearchInput) {
+    userSearchInput.addEventListener(
+      'input',
+      debounce((e) => filterUsers(e.target.value), 120)
+    );
+
+    // Focus -> si ya hay texto, re-mostrar
+    userSearchInput.addEventListener('focus', () => {
+      const q = userSearchInput.value;
+      if (q) filterUsers(q);
+    });
+  }
+
+  // Click en sugerencia -> autocompleta y guarda id
+  if (suggestionsBox) {
+    suggestionsBox.addEventListener('mousedown', (e) => {
+      // mousedown > click: evita que el blur del input cierre antes de seleccionar
+      const item = e.target.closest('.item');
+      if (!item) return;
+
+      const id = item.dataset.id;
+      const name = item.dataset.name;
+
+      if (userSearchInput) userSearchInput.value = name;
+      if (userIdHidden) userIdHidden.value = id;
+
+      suggestionsBox.hidden = true;
+      suggestionsBox.innerHTML = '';
+    });
+  }
+
+  // Click fuera -> cierra sugerencias
+  document.addEventListener('click', (e) => {
+    if (!suggestionsBox || suggestionsBox.hidden) return;
+    const inside =
+      e.target.closest('#user_suggestions') || e.target.closest('#user_search');
+    if (!inside) {
+      suggestionsBox.hidden = true;
+    }
+  });
+
+  // Al abrir modal Nueva Clase -> limpia input y id y sugerencias
+  if (btnNueva) {
+    btnNueva.addEventListener('click', () => {
+      if (userSearchInput) userSearchInput.value = '';
+      if (userIdHidden) userIdHidden.value = '';
+      if (suggestionsBox) {
+        suggestionsBox.hidden = true;
+        suggestionsBox.innerHTML = '';
+      }
+    });
+  }
 
   // ====== CALENDARIO ARTESANAL ======
   function renderCalendar(year, month) {
@@ -91,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Weekdays
     const weekdays = document.createElement('div');
     weekdays.className = 'cal-grid cal-weekdays';
-    const wd = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    const wd = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
     wd.forEach((d) => {
       const el = document.createElement('div');
       el.className = 'cal-weekday';
@@ -116,7 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(
+        d
+      ).padStart(2, '0')}`;
 
       const cell = document.createElement('div');
       cell.className = 'cal-day';
@@ -127,16 +250,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (items.length) cell.classList.add('event');
 
       cell.addEventListener('click', () => {
-        document.querySelectorAll('.cal-day.selected').forEach((x) => x.classList.remove('selected'));
+        document
+          .querySelectorAll('.cal-day.selected')
+          .forEach((x) => x.classList.remove('selected'));
         cell.classList.add('selected');
 
-        // Si hay sesiones ese día, abre modal y muestra detalles (y también summary)
         if (items.length) {
           renderDayDetails(dateStr, items);
           openModal(modalInfo);
         } else {
-          // Si no hay, solo actualiza el summary
-          if (summaryEl) summaryEl.innerHTML = `<p>No hay sesiones para ${dateStr}.</p>`;
+          if (summaryEl)
+            summaryEl.innerHTML = `<p>No hay sesiones para ${dateStr}.</p>`;
         }
       });
 
@@ -163,65 +287,75 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tituloFechaEl) tituloFechaEl.textContent = `Detalles del Día: ${dateStr}`;
 
     if (listaSesionesEl) {
-      listaSesionesEl.innerHTML = items.map((i) => {
-        const coste = (i.coste ?? i.precio ?? null);
-        const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
-        const pago = i.pago || i.estado || 'N/D';
+      listaSesionesEl.innerHTML = items
+        .map((i) => {
+          const coste = i.coste ?? i.precio ?? null;
+          const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
+          const pago = i.pago || i.estado || 'N/D';
 
-        return `
-          <div class="sesion-card">
-            <div class="detail-item"><strong>Hora:</strong> <span>${i.hora || 'N/D'}</span></div>
-            <div class="detail-item"><strong>Clase:</strong> <span>${i.clase || i.nombre_clase || 'N/D'}</span></div>
-            <div class="detail-item"><strong>Descripción:</strong> <span>${i.descripcion || ''}</span></div>
-            <div class="detail-item"><strong>Coste:</strong> <span>${costeTxt}</span></div>
-            <div class="detail-item"><strong>Pago:</strong> <span>${pago}</span></div>
-          </div>
-        `;
-      }).join('');
+          return `
+            <div class="sesion-card">
+              <div class="detail-item"><strong>Hora:</strong> <span>${i.hora || 'N/D'}</span></div>
+              <div class="detail-item"><strong>Clase:</strong> <span>${i.clase || i.nombre_clase || 'N/D'}</span></div>
+              <div class="detail-item"><strong>Descripción:</strong> <span>${i.descripcion || ''}</span></div>
+              <div class="detail-item"><strong>Coste:</strong> <span>${costeTxt}</span></div>
+              <div class="detail-item"><strong>Pago:</strong> <span>${pago}</span></div>
+            </div>
+          `;
+        })
+        .join('');
     }
 
     if (summaryEl) {
-      summaryEl.innerHTML = items.map((i) => {
-        const coste = (i.coste ?? i.precio ?? null);
-        const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
-        const pago = i.pago || i.estado || 'N/D';
-        return `<p><strong>${i.hora || 'N/D'}</strong> — ${i.clase || i.nombre_clase || 'N/D'} <em>(${costeTxt}, ${pago})</em></p>`;
-      }).join('');
+      summaryEl.innerHTML = items
+        .map((i) => {
+          const coste = i.coste ?? i.precio ?? null;
+          const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
+          const pago = i.pago || i.estado || 'N/D';
+          return `<p><strong>${i.hora || 'N/D'}</strong> — ${
+            i.clase || i.nombre_clase || 'N/D'
+          } <em>(${costeTxt}, ${pago})</em></p>`;
+        })
+        .join('');
     }
   }
 
-  // ====== BUSCADOR (si tienes endpoint) ======
+  // ====== BUSCADOR (sesiones) ======
   async function fetchAndRender(q) {
     if (!q) {
       clases = [];
       const today = new Date();
       renderCalendar(today.getFullYear(), today.getMonth());
-      if (summaryEl) summaryEl.innerHTML = `<p><i class="fa-solid fa-circle-info"></i> Busca un usuario para ver sesiones.</p>`;
+      if (summaryEl) {
+        summaryEl.innerHTML = `<p><i class="fa-solid fa-circle-info"></i> Busca un usuario para ver sesiones.</p>`;
+      }
       return;
     }
 
-    // Si tienes un endpoint real, úsalo aquí:
-    // EJ: /usuarios/reservas?q=...
     try {
       const res = await fetch(`/usuarios/reservas?q=${encodeURIComponent(q)}`);
       const data = await res.json();
 
-      // Esperamos { events: [...] }
       clases = Array.isArray(data.events) ? data.events : [];
       const today = new Date();
       renderCalendar(today.getFullYear(), today.getMonth());
 
-      if (summaryEl) summaryEl.innerHTML = `<p>Resultados cargados. Haz clic en un día marcado.</p>`;
+      if (summaryEl)
+        summaryEl.innerHTML = `<p>Resultados cargados. Haz clic en un día marcado.</p>`;
     } catch (e) {
       console.error(e);
-      if (summaryEl) summaryEl.innerHTML = `<p>No se pudo cargar el historial (error de red o JSON).</p>`;
+      if (summaryEl)
+        summaryEl.innerHTML = `<p>No se pudo cargar el historial (error de red o JSON).</p>`;
     }
   }
 
   if (searchInput) {
-    searchInput.addEventListener('input', debounce((e) => {
-      fetchAndRender(e.target.value.trim());
-    }, 300));
+    searchInput.addEventListener(
+      'input',
+      debounce((e) => {
+        fetchAndRender(e.target.value.trim());
+      }, 300)
+    );
   }
 
   // ====== INIT ======

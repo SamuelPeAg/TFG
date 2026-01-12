@@ -103,19 +103,31 @@
       </div>
 
       {{-- CAMBIO 1: Usuario (antes entrenador) --}}
-      <div class="form-group">
-        <label for="user_id">👤 Usuario:</label>
-        <select id="user_id" name="user_id" class="form-input" required>
-          <option value="">Selecciona usuario</option>
+    <div class="form-group">
+    <label for="user_search">👤 Usuario:</label>
 
-          {{-- Pásale $users desde el controlador --}}
-          @if(isset($users))
-            @foreach($users as $user)
-              <option value="{{ $user->id }}">{{ $user->name }}</option>
-            @endforeach
-          @endif
-        </select>
-      </div>
+    <!-- INPUT visible -->
+    <input
+      id="user_search"
+      type="text"
+      class="form-input"
+      placeholder="Escribe para buscar (ej: Ana)"
+      autocomplete="off"
+    >
+
+    <!-- Campo REAL que se envía: el user_id -->
+    <input type="hidden" name="user_id" id="user_id" required>
+
+    <!-- Lista de sugerencias (se rellena por JS) -->
+    <div id="user_suggestions" class="suggestions" hidden></div>
+
+    <!-- (Opcional) lista completa para que JS la lea desde Blade -->
+    <script type="application/json" id="users_json">
+      @json($users->map(fn($u)=>['id'=>$u->id,'name'=>$u->name])->values())
+    </script>
+  </div>
+
+
 
       {{-- CAMBIO 2: Método de pago --}}
       <div class="form-group">

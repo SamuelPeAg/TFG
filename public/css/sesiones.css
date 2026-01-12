@@ -303,3 +303,30 @@
   font-weight: 800;
 }
 .btn-close:hover{ background:#777; }
+
+.suggestions{
+  margin-top: 8px;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.suggestions .item{
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.suggestions .item:hover{
+  background: rgba(0,0,0,0.04);
+}
+
+.suggestions .item small{
+  display:block;
+  font-weight: 500;
+  color:#666;
+}
+
