@@ -67,14 +67,14 @@
 
   <!-- MODAL: Nueva Clase -->
   {{-- MODAL 2: Formulario nueva clase --}}
-<div
-  id="modalNuevaClase"
-  class="modal-overlay"
-  role="dialog"
-  aria-modal="true"
-  aria-hidden="true"
-  aria-labelledby="titulo-nueva-clase"
->
+  <div
+    id="modalNuevaClase"
+    class="modal-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="titulo-nueva-clase"
+    >
   <div class="modal-box">
     <button type="button" class="close-icon" id="btnCerrarNuevaClase" aria-label="Cerrar">&times;</button>
 
@@ -141,9 +141,20 @@
 
       <button type="submit" class="btn-submit">Guardar Clase</button>
     </form>
-  </div>
-</div>
+  </div> <!-- cierre de dashboard-container o lo que toque -->
 
-  <script src="{{ asset('js/sesiones.js') }}"></script>
+<script type="application/json" id="sesiones-data">
+  @json($datosSesiones ?? [])
+</script>
+
+<script>
+  window.SESIONES_CONFIG = window.SESIONES_CONFIG || {};
+  window.SESIONES_CONFIG.datosSesiones =
+    JSON.parse(document.getElementById('sesiones-data').textContent);
+</script>
+
+
+<script src="{{ asset('js/sesiones.js') }}"></script>
 </body>
+
 </html>

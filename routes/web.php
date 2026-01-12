@@ -52,15 +52,13 @@ Route::middleware('auth')->group(function () {
         return redirect('/');
     })->name('logout');
 
-    // --- AQUÍ ESTABA EL ERROR ---
+
     // 1. Ver la lista de sesiones
     Route::get('/sesiones', [SessionesController::class, 'index'])->name('sesiones');
-    
-    // 2. Guardar nueva sesión (ESTA ES LA LÍNEA QUE TE FALTABA PARA SOLUCIONAR EL ERROR)
     Route::post('/sesiones', [SessionesController::class, 'store'])->name('sesiones.store');
 
     // Buscador
-    Route::get('/prueba-db', [SessionesController::class, 'buscarPorUsuario']);
+    Route::get('/usuarios/reservas', [SessionesController::class, 'buscarPorUsuario'])->name('sesiones.buscar');
 
     // --- OTRAS RUTAS ---
     Route::resource('users', UserController::class);

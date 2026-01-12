@@ -10,18 +10,27 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class SessionesFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
+        $centros = ['CLINICA', 'AIRA', 'OPEN'];
+        $metodosPago = ['TPV', 'BIZUM', 'TRANSFERENCIA']; // ajusta si tus opciones son otras
+
         return [
-            'user_id' => User::factory(), // genera un usuario automáticamente
-            'IBAN' => $this->faker->numberBetween(10000000, 99999999), // AJUSTA si necesitas más longitud
-            'Pago' => $this->faker->numberBetween(10, 500), // cantidad de pago
-            'Fecharegistro' => $this->faker->date(),
+            'user_id' => User::factory(),
+
+            // nuevos campos
+            'centro' => $this->faker->randomElement($centros),
+            'nombre_clase' => $this->faker->randomElement([
+                'Pilates', 'Crossfit', 'Yoga', 'HIIT', 'Cardio'
+            ]),
+            'metodo_pago' => $this->faker->randomElement($metodosPago),
+
+            // pago / iban
+            'IBAN' => $this->faker->iban('ES'), // IBAN realista con letras
+            'Pago' => $this->faker->randomFloat(2, 10, 80), // decimal 2 cifras
+
+            // datetime (fecha + hora)
+            'Fecharegistro' => $this->faker->dateTimeBetween('-2 months', 'now'),
         ];
     }
 }
