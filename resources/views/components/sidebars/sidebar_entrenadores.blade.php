@@ -66,9 +66,6 @@
             </span>
         </div>
         
-        <div style="width: 40px; height: 40px; background-color: #ffffff; color: #00897b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
-            {{ substr(auth()->user()->name, 0, 1) }} 
-        </div>
     </div>
 
     <div class="utility-links" style="margin-bottom: 20px;">
