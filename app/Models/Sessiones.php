@@ -13,6 +13,7 @@ class Sessiones extends Model
 
     protected $fillable = [
         'user_id',
+        'entrenador_id',
         'IBAN',
         'Pago',
         'Fecharegistro',
@@ -29,5 +30,9 @@ class Sessiones extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+     public function entrenador()
+    {
+        return $this->belongsTo(User::class, 'entrenador_id');
     }
 }

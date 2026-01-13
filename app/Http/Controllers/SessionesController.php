@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Sessiones;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class SessionesController extends Controller
 {
@@ -66,6 +67,7 @@ class SessionesController extends Controller
         // 1) Validación (ajusta centros/métodos a tus opciones reales)
         $data = $request->validate([
             'user_id'       => ['required', 'exists:users,id'],
+            'entrenador_id' => Auth::id(),
             'centro'        => ['required', 'in:CLINICA,AIRA,OPEN'],
             'nombre_clase'  => ['required', 'string', 'max:120'],
             'metodo_pago' => ['required', 'in:TPV,EF,DD,CC'],

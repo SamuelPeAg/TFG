@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -17,7 +19,16 @@ class RoleSeeder extends Seeder
         Role::firstOrCreate(['name' => 'admin']);
         Role::firstOrCreate(['name' => 'cliente']);
         Role::firstOrCreate(['name' => 'entrenador']);
+        
+         $admin = User::firstOrCreate(
+            ['email' => 'admin@factomove.local'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('Admin12345'),
+            ]
+        );
 
+        $admin->syncRoles(['admin']);
         // (Opcional) Crear permisos y asignarlos a roles si los necesitas
         // Permission::firstOrCreate(['name' => 'manage users']);
         // $role = Role::findByName('admin');

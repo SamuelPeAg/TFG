@@ -34,4 +34,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(UserGroup::class, 'user_user_group');
     }
+    public function sesionesCreadas()
+    {
+        return $this->hasMany(\App\Models\Sessiones::class, 'entrenador_id');
+    }
+
 }

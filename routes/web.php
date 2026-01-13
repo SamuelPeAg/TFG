@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EntrenadorController;
+use App\Http\Controllers\FacturacionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
@@ -58,7 +59,8 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
         return redirect('/');
     })->name('logout');
 
-
+    Route::get('/facturas', [FacturacionController::class, 'index'])
+        ->name('facturas');
     // 1. Ver la lista de sesiones
     Route::get('/sesiones', [SessionesController::class, 'index'])->name('sesiones');
     Route::post('/sesiones', [SessionesController::class, 'store'])->name('sesiones.store');
