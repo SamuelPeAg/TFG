@@ -72,7 +72,9 @@ Route::middleware('auth')->group(function () {
     // Route::resource('trainers', TrainerController::class);
     Route::resource('reservations', UserReservationController::class); // Agregué esto por si acaso
     
-    Route::view('/configuracion', 'configuracion.configuracion')->name('configuracion');
+    Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
+    Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
+
 
     Route::get('/facturas', function () {
         return view('facturacion.facturas');
