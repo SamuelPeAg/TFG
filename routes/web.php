@@ -22,6 +22,8 @@ Route::get('/', function () {
 Route::resource('entrenadores', EntrenadorController::class);
 
 Route::resource('users', UserController::class);
+Route::post('/users/crear-grupo', [UserController::class, 'storeGroup'])->name('users.group.store');
+Route::delete('/users/grupos/{id}', [UserController::class, 'destroyGroup'])->name('users.group.destroy');
 
 // Rutas Legales
 Route::get('/aviso-legal', function () { return view('legal.notice'); })->name('legal.notice');

@@ -3,16 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserGroup; // <--- IMPORTANTE
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use PhpParser\Node\Scalar\String_;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
-        return view('users.index', compact('users'));
+        // Cargamos usuarios con sus grupos para mostrarlos en la tabla
+        $users = User::with('groups')->get();
+        
+        // Cargamos todos los grupos disponibles para el modal de gestión
+        $groups = UserGroup::withCount('users')->get();
+
+        return view('users.index', compact('users', 'groups'));
     }
 
     public function store(Request $request)
@@ -30,7 +35,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'IBAN' => $request->IBAN,
-            'firma_digital' => $request->firma_digital,
+            'FirmaDigital' => $request->firma_digital, // Ajusta si tu columna se llama diferente
         ]);
 
         return redirect()->route('users.index')->with('success', 'Usuario creado correctamente.');
@@ -44,12 +49,18 @@ class UserController extends Controller
             'IBAN' => 'nullable|unique:users,IBAN,' . $user->id,
         ]);
 
-        $user->update([
+        $data = [
             'name' => $request->name,
             'email' => $request->email,
             'IBAN' => $request->IBAN,
-            'firma_digital' => $request->firma_digital,
-        ]);
+            'FirmaDigital' => $request->firma_digital,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
 
         return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
     }
@@ -57,10 +68,31 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-
-        return redirect()
-            ->route('users.index')
-            ->with('success', 'Usuario eliminado correctamente.');
+        return redirect()->route('users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 
+    // --- MÉTODOS PARA GRUPOS ---
+
+    public function storeGroup(Request $request)
+    {
+        $request->validate([
+            'group_name' => 'required|string|max:255',
+            'users' => 'required|array|min:2',
+        ]);
+
+        $group = UserGroup::create(['name' => $request->group_name]);
+        $group->users()->attach($request->users);
+
+        return redirect()->route('users.index')
+            ->with('success', 'Grupo "' . $request->group_name . '" creado con éxito.');
+    }
+
+    public function destroyGroup($id)
+    {
+        $group = UserGroup::findOrFail($id);
+        $group->delete(); // Elimina el grupo y la relación pivote
+
+        return redirect()->route('users.index')
+            ->with('success', 'Grupo eliminado correctamente.');
+    }
 }
