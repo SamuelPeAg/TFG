@@ -11,8 +11,8 @@ class UserController extends Controller
 {
     public function index()
     {
-        // Cargamos usuarios con sus grupos para mostrarlos en la tabla
-        $users = User::with('groups')->get();
+        // Mostrar solo clientes en la interfaz de usuarios
+        $users = User::role('cliente')->with('groups')->get();
         
         // Cargamos todos los grupos disponibles para el modal de gestión
         $groups = UserGroup::withCount('users')->get();
@@ -30,13 +30,16 @@ class UserController extends Controller
             'firma_digital' => 'nullable',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'IBAN' => $request->IBAN,
             'FirmaDigital' => $request->firma_digital, // Ajusta si tu columna se llama diferente
         ]);
+
+        // Asignar rol cliente por defecto
+        $user->assignRole('cliente');
 
         return redirect()->route('users.index')->with('success', 'Usuario creado correctamente.');
     }

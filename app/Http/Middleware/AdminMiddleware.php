@@ -15,6 +15,11 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $user = $request->user();
+        if (! $user || ! method_exists($user, 'hasRole') || ! $user->hasRole('admin')) {
+            abort(403, 'Acceso prohibido: se requiere rol admin.');
+        }
+
         return $next($request);
     }
 }

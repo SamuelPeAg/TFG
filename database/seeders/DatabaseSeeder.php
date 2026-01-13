@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // 0. Roles y permisos (primero)
+            RoleSeeder::class,
             // 1. Cuentas y perfiles
             UserSeeder::class,      // Crea las cuentas de login
 

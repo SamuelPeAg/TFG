@@ -5,11 +5,15 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Asegurar que las configuraciones de permisos están limpias
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
         // Usuario 1
         User::firstOrCreate(
             ['email' => 'test@example.com'],
@@ -44,5 +48,37 @@ class UserSeeder extends Seeder
                 'FirmaDigital' => 'firma_digital_ana',
             ]
         );
+
+        // Asignar rol admin al usuario de prueba si existe
+        $admin = User::where('email', 'test@example.com')->first();
+        if ($admin) {
+            $admin->assignRole('admin');
+        }
+
+        // Crear y asignar rol a un entrenador
+        $trainer = User::firstOrCreate(
+            ['email' => 'entrenador@example.com'],
+            [
+                'name' => 'Entrenador Demo',
+                'password' => Hash::make('password'),
+                'foto_de_perfil' => 'perfil_entrenador.jpg',
+                'IBAN' => 'ES1111111111111111111111',
+                'FirmaDigital' => 'firma_entrenador',
+            ]
+        );
+        $trainer->assignRole('entrenador');
+
+        // Crear y asignar rol a un cliente
+        $client = User::firstOrCreate(
+            ['email' => 'cliente@example.com'],
+            [
+                'name' => 'Cliente Demo',
+                'password' => Hash::make('password'),
+                'foto_de_perfil' => 'perfil_cliente.jpg',
+                'IBAN' => 'ES2222222222222222222222',
+                'FirmaDigital' => 'firma_cliente',
+            ]
+        );
+        $client->assignRole('cliente');
     }
 }

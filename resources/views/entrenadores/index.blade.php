@@ -75,12 +75,17 @@
                                 <td>
                                     <div class="action-buttons">
                                         {{-- Botón Editar (Abre Modal JS) --}}
+                                        @php
+                                            $u = \App\Models\User::where('email', $entrenador->email)->first();
+                                            $isAdmin = ($u && method_exists($u,'hasRole') && $u->hasRole('admin')) ? '1' : '0';
+                                        @endphp
                                         <button type="button" class="btn-icon btn-edit" 
                                             onclick="abrirModalEditar(
                                                 '{{ $entrenador->id }}', 
                                                 '{{ $entrenador->nombre }}', 
                                                 '{{ $entrenador->email }}', 
-                                                '{{ $entrenador->iban }}'
+                                                '{{ $entrenador->iban }}',
+                                                '{{ $isAdmin }}'
                                             )">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
@@ -159,6 +164,16 @@
                         <input type="password" name="password_confirmation" class="form-control-custom" placeholder="Repite tu contraseña" required>
                     </div>
                 </div>
+                @if(auth()->check() && auth()->user()->hasRole('admin'))
+                <div class="form-group" style="margin-top:10px;">
+                    <label class="form-label-custom">Dar rol de admin</label>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" name="make_admin" id="make_admin" value="1">
+                        <small>Marcar para dar también rol <strong>admin</strong> al entrenador</small>
+                    </div>
+                </div>
+                @endif
+
                 <button type="submit" class="btn-facto">Crear Entrenador</button>
             </form>
         </div>
@@ -219,6 +234,16 @@
                     </div>
                 </div>
 
+                @if(auth()->check() && auth()->user()->hasRole('admin'))
+                <div class="form-group" style="margin-top:10px;">
+                    <label class="form-label-custom">Dar rol de admin</label>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" name="make_admin" id="edit_make_admin" value="1">
+                        <small>Marcar para dar/quitar rol <strong>admin</strong></small>
+                    </div>
+                </div>
+                @endif
+
                 <button type="submit" class="btn-facto">Actualizar Datos</button>
             </form>
         </div>
@@ -254,6 +279,11 @@
             
             // 4. Asignar al formulario
             formEdit.action = urlFinal;
+
+            // 6. Marcar checkbox si el entrenador ya tiene rol admin (parametro isAdmin)
+            if(typeof isAdmin !== 'undefined') {
+                document.getElementById('edit_make_admin').checked = (isAdmin == '1');
+            }
 
             // 5. Mostrar modal
             modalEdit.style.display = 'flex';

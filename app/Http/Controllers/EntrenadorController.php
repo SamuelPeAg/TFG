@@ -3,15 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Models\Entrenador;
+use App\Models\User;
+use Spatie\Permission\PermissionRegistrar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
 
 class EntrenadorController extends Controller
 {
     public function index()
     {
-        $entrenadores = Entrenador::all();
+        // Mostrar solo los entrenadores cuyo email pertenece a un User con rol 'entrenador'
+        $emails = User::role('entrenador')->pluck('email')->toArray();
+        $entrenadores = Entrenador::whereIn('email', $emails)->get();
         return view('entrenadores.index', compact('entrenadores'));
     }
 
@@ -24,13 +29,35 @@ class EntrenadorController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        Entrenador::create([
+        $entrenador = Entrenador::create([
             'nombre'   => $request->nombre,
             'email'    => $request->email,
             'iban'     => $request->iban,
             'password' => Hash::make($request->password),
             'rol'      => 'entrenador', 
         ]);
+
+        // Crear/actualizar el User asociado y asignarle rol 'entrenador'
+        $user = User::firstOrCreate(
+            ['email' => $request->email],
+            ['name' => $request->nombre, 'password' => Hash::make($request->password)]
+        );
+
+        // Limpiar caché de permisos antes de asignar
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Asegurar que siempre tenga rol 'entrenador'
+        if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('entrenador')) {
+            $user->assignRole('entrenador');
+        }
+
+        // Si el usuario autenticado es admin y marcó la casilla, añadir rol admin
+        $current = Auth::user();
+        if ($current && method_exists($current, 'hasRole') && $current->hasRole('admin') && $request->boolean('make_admin')) {
+            if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('admin')) {
+                $user->assignRole('admin');
+            }
+        }
 
         return redirect()->route('entrenadores.index')
             ->with('success', 'Entrenador añadido correctamente.');
@@ -64,6 +91,43 @@ class EntrenadorController extends Controller
 
         // 5. Guardar
         $entrenador->update($data);
+
+        // Actualizar/crear User asociado
+        $user = User::firstOrCreate(
+            ['email' => $entrenador->email],
+            ['name' => $entrenador->nombre, 'password' => Hash::make($request->password ?? 'password')]
+        );
+        // Si el email fue cambiado, sincronizar
+        if ($user->email !== $request->email) {
+            $user->email = $request->email;
+            $user->save();
+        }
+
+        // Si el password fue actualizado, sincronizar
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+            $user->save();
+        }
+
+        // Limpiar caché y asegurar rol 'entrenador' siempre
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('entrenador')) {
+            $user->assignRole('entrenador');
+        }
+
+        // Permitir a admin dar/quitar rol admin mediante campo 'make_admin'
+        $current = Auth::user();
+        if ($current && method_exists($current, 'hasRole') && $current->hasRole('admin')) {
+            if ($request->boolean('make_admin')) {
+                if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('admin')) {
+                    $user->assignRole('admin');
+                }
+            } else {
+                if ($user && method_exists($user, 'hasRole') && $user->hasRole('admin')) {
+                    $user->removeRole('admin');
+                }
+            }
+        }
 
         return redirect()->route('entrenadores.index')
             ->with('success', 'Entrenador actualizado correctamente.');
