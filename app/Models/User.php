@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 // Importante: Importar el modelo UserGroup
 use App\Models\UserGroup;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, SoftDeletes, Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
