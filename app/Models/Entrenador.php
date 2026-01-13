@@ -19,8 +19,4 @@ class Entrenador extends Model
         'password',  
         'rol',       
     ];
-    public function groups()
-    {
-        return $this->belongsToMany(TrainerGroup::class, 'entrenador_trainer_group');
-    }
 }
