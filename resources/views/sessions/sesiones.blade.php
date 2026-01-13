@@ -7,7 +7,6 @@
 
   <link rel="stylesheet" href="{{ asset('css/global.css') }}">
   <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
@@ -17,7 +16,27 @@
 
     <main class="main-content">
 
+      <!-- HEADER -->
       <div class="header-controls">
+        <!-- IZQUIERDA: buscador -->
+        <div class="controls-bar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <div class="search-anchor">
+              <input
+                type="text"
+                id="search-user"
+                placeholder="Buscar usuario..."
+                autocomplete="off"
+              >
+              <!-- Sugerencias del buscador -->
+              <div id="search_user_suggestions" class="suggestions" hidden></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DERECHA: título + botón -->
         <div class="title-section">
           <h1>Historial de Sesiones</h1>
 
@@ -26,19 +45,12 @@
             Nueva Clase
           </button>
         </div>
-
-        <div class="controls-bar">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="search-user" placeholder="Buscar usuario..." autocomplete="off">
-          </div>
-        </div>
       </div>
+      <!-- /HEADER -->
 
       <section class="calendar-layout" aria-label="Calendario de sesiones">
         <div class="calendar-panel">
           <div class="calendar-container">
-            <!-- Aquí el JS artesanal renderiza el calendario -->
             <div id="user-calendar" class="custom-calendar"></div>
           </div>
 
@@ -66,7 +78,6 @@
   </div>
 
   <!-- MODAL: Nueva Clase -->
-  {{-- MODAL 2: Formulario nueva clase --}}
   <div
     id="modalNuevaClase"
     class="modal-overlay"
@@ -74,99 +85,91 @@
     aria-modal="true"
     aria-hidden="true"
     aria-labelledby="titulo-nueva-clase"
-    >
-  <div class="modal-box">
-    <button type="button" class="close-icon" id="btnCerrarNuevaClase" aria-label="Cerrar">&times;</button>
+  >
+    <div class="modal-box">
+      <button type="button" class="close-icon" id="btnCerrarNuevaClase" aria-label="Cerrar">&times;</button>
 
-    <h2 id="titulo-nueva-clase">
-      <i class="fa-solid fa-calendar-plus"></i>
-      Agendar Nueva Clase
-    </h2>
+      <h2 id="titulo-nueva-clase">
+        <i class="fa-solid fa-calendar-plus"></i>
+        Agendar Nueva Clase
+      </h2>
 
-    <form action="{{ route('sesiones.store') }}" method="POST">
-      @csrf
+      <form action="{{ route('sesiones.store') }}" method="POST">
+        @csrf
 
-      <div class="form-group">
-        <label for="centro">🏢 Centro:</label>
-        <select id="centro" name="centro" class="form-input" required>
+        <div class="form-group">
+          <label for="centro">🏢 Centro:</label>
+          <select id="centro" name="centro" class="form-input" required>
             <option value="">Selecciona centro</option>
             <option value="OPEN">OPEN</option>
             <option value="AIRA">AIRA</option>
             <option value="CLINICA">CLINICA</option>
-        </select>
+          </select>
         </div>
 
+        <div class="form-group">
+          <label for="nombre_clase">🏋️ Clase:</label>
+          <input id="nombre_clase" type="text" name="nombre_clase" class="form-input" placeholder="Ej: Pilates, Crossfit..." required>
+        </div>
 
-      <div class="form-group">
-        <label for="nombre_clase">🏋️ Clase:</label>
-        <input id="nombre_clase" type="text" name="nombre_clase" class="form-input" placeholder="Ej: Pilates, Crossfit..." required>
-      </div>
+        <!-- Usuario autocomplete (modal) -->
+        <div class="form-group">
+          <label for="user_search">👤 Usuario:</label>
 
-      {{-- CAMBIO 1: Usuario (antes entrenador) --}}
-    <div class="form-group">
-    <label for="user_search">👤 Usuario:</label>
+          <input
+            id="user_search"
+            type="text"
+            class="form-input"
+            placeholder="Escribe para buscar (ej: Ana)"
+            autocomplete="off"
+          >
 
-    <!-- INPUT visible -->
-    <input
-      id="user_search"
-      type="text"
-      class="form-input"
-      placeholder="Escribe para buscar (ej: Ana)"
-      autocomplete="off"
-    >
+          <input type="hidden" name="user_id" id="user_id" required>
 
-    <!-- Campo REAL que se envía: el user_id -->
-    <input type="hidden" name="user_id" id="user_id" required>
+          <div id="user_suggestions" class="suggestions" hidden></div>
 
-    <!-- Lista de sugerencias (se rellena por JS) -->
-    <div id="user_suggestions" class="suggestions" hidden></div>
+          <script type="application/json" id="users_json">
+            @json($users->map(fn($u)=>['id'=>$u->id,'name'=>$u->name])->values())
+          </script>
+        </div>
 
-    <!-- (Opcional) lista completa para que JS la lea desde Blade -->
-    <script type="application/json" id="users_json">
-      @json($users->map(fn($u)=>['id'=>$u->id,'name'=>$u->name])->values())
-    </script>
+        <div class="form-group">
+          <label for="metodo_pago">💳 Método de pago:</label>
+          <select id="metodo_pago" name="metodo_pago" class="form-input" required>
+            <option value="">Selecciona método</option>
+            <option value="TPV">TPV</option>
+            <option value="EF">EF</option>
+            <option value="DD">DD</option>
+            <option value="CC">CC</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="fecha_hora">🕒 Hora y Fecha:</label>
+          <input id="fecha_hora" type="datetime-local" name="fecha_hora" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label for="precio">💶 Precio (€):</label>
+          <input id="precio" type="number" name="precio" step="0.01" class="form-input" placeholder="0.00" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Guardar Clase</button>
+      </form>
+    </div>
   </div>
 
+  <!-- Datos sesiones para JS -->
+  <script type="application/json" id="sesiones-data">
+    @json($datosSesiones ?? [])
+  </script>
 
+  <script>
+    window.SESIONES_CONFIG = window.SESIONES_CONFIG || {};
+    window.SESIONES_CONFIG.datosSesiones =
+      JSON.parse(document.getElementById('sesiones-data').textContent);
+  </script>
 
-      {{-- CAMBIO 2: Método de pago --}}
-      <div class="form-group">
-        <label for="metodo_pago">💳 Método de pago:</label>
-        <select id="metodo_pago" name="metodo_pago" class="form-input" required>
-          <option value="">Selecciona método</option>
-          <option value="TPV">TPV</option>
-          <option value="EF">EF</option>
-          <option value="DD">DD</option>
-          <option value="CC">CC</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="fecha_hora">🕒 Hora y Fecha:</label>
-        <input id="fecha_hora" type="datetime-local" name="fecha_hora" class="form-input" required>
-      </div>
-
-      <div class="form-group">
-        <label for="precio">💶 Precio (€):</label>
-        <input id="precio" type="number" name="precio" step="0.01" class="form-input" placeholder="0.00" required>
-      </div>
-
-      <button type="submit" class="btn-submit">Guardar Clase</button>
-    </form>
-  </div> <!-- cierre de dashboard-container o lo que toque -->
-
-<script type="application/json" id="sesiones-data">
-  @json($datosSesiones ?? [])
-</script>
-
-<script>
-  window.SESIONES_CONFIG = window.SESIONES_CONFIG || {};
-  window.SESIONES_CONFIG.datosSesiones =
-    JSON.parse(document.getElementById('sesiones-data').textContent);
-</script>
-
-
-<script src="{{ asset('js/sesiones.js') }}"></script>
+  <script src="{{ asset('js/sesiones.js') }}"></script>
 </body>
-
 </html>

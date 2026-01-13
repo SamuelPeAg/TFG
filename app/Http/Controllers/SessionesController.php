@@ -68,7 +68,7 @@ class SessionesController extends Controller
             'user_id'       => ['required', 'exists:users,id'],
             'centro'        => ['required', 'in:CLINICA,AIRA,OPEN'],
             'nombre_clase'  => ['required', 'string', 'max:120'],
-            'metodo_pago'   => ['required', 'in:TPV,BIZUM,TRANSFERENCIA'],
+            'metodo_pago' => ['required', 'in:TPV,EF,DD,CC'],
             'fecha_hora'    => ['required', 'date'],           // viene del input datetime-local
             'precio'        => ['required', 'numeric', 'min:0'],// tu "Pago"
         ]);

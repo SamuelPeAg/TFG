@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/[\u0300-\u036f]/g, '');
 
   // ====== CIERRE DE MODALES ======
-  // Cerrar modal al click fuera (overlay)
   [modalNueva, modalInfo].forEach((m) => {
     if (!m) return;
     m.addEventListener('click', (e) => {
@@ -65,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ESC para cerrar
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       closeModal(modalNueva);
@@ -73,27 +71,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Botones modal Nueva Clase
   if (btnNueva) btnNueva.addEventListener('click', () => openModal(modalNueva));
   if (btnCerrarNueva) btnCerrarNueva.addEventListener('click', () => closeModal(modalNueva));
 
-  // Botones modal Info
   if (btnCerrarInfo1) btnCerrarInfo1.addEventListener('click', () => closeModal(modalInfo));
   if (btnCerrarInfo2) btnCerrarInfo2.addEventListener('click', () => closeModal(modalInfo));
 
-  // =========================================================
-  // AUTOCOMPLETE USUARIOS (input + lista clickable)
-  // Requisitos HTML:
-  // - <input id="user_search" ...>
-  // - <input type="hidden" name="user_id" id="user_id" required>
-  // - <div id="user_suggestions" hidden></div>
-  // - <script type="application/json" id="users_json">@json([...])</script>
-  // =========================================================
-  const userSearchInput = document.getElementById('user_search');
-  const userIdHidden = document.getElementById('user_id');
-  const suggestionsBox = document.getElementById('user_suggestions');
+  // ====== USERS JSON (se reutiliza para ambos autocompletes) ======
   const usersJsonEl = document.getElementById('users_json');
-
   let USERS = [];
   try {
     USERS = usersJsonEl ? JSON.parse(usersJsonEl.textContent || '[]') : [];
@@ -101,105 +86,147 @@ document.addEventListener('DOMContentLoaded', () => {
     USERS = [];
   }
 
-  function showSuggestions(list) {
-    if (!suggestionsBox) return;
+  // =========================================================
+  // AUTOCOMPLETE REUTILIZABLE
+  // =========================================================
+  function initAutocomplete({
+    inputEl,
+    hiddenIdEl,         // opcional (modal)
+    boxEl,
+    onPick,             // callback cuando eliges uno
+    minChars = 1,
+    maxResults = 12,
+    mode = 'startsWith' // 'startsWith' o 'includes'
+  }) {
+    if (!inputEl || !boxEl) return;
 
-    if (!list.length) {
-      suggestionsBox.hidden = true;
-      suggestionsBox.innerHTML = '';
-      return;
-    }
+    const show = (list) => {
+      if (!list.length) {
+        boxEl.hidden = true;
+        boxEl.innerHTML = '';
+        return;
+      }
 
-    suggestionsBox.innerHTML = list
-      .map((u) => `
-        <div class="item" data-id="${u.id}" data-name="${u.name}">
-          ${u.name}
-        </div>
-      `)
-      .join('');
+      boxEl.innerHTML = list
+        .map((u) => `<div class="item" data-id="${u.id}" data-name="${u.name}">${u.name}</div>`)
+        .join('');
+      boxEl.hidden = false;
+    };
 
-    suggestionsBox.hidden = false;
-  }
+    const filter = (qRaw) => {
+      const q = normalize(qRaw);
 
-  function filterUsers(qRaw) {
-    const q = normalize(qRaw);
+      // Si hay hidden id (modal): al escribir, invalida el id hasta elegir uno
+      if (hiddenIdEl) hiddenIdEl.value = '';
 
-    // si borras texto -> invalida el id (hasta que elijas)
-    if (userIdHidden) userIdHidden.value = '';
+      if (!q || q.length < minChars) {
+        show([]);
+        return;
+      }
 
-    if (!q) {
-      showSuggestions([]);
-      return;
-    }
+      const matches = USERS
+        .filter((u) => {
+          const n = normalize(u.name);
+          return mode === 'includes' ? n.includes(q) : n.startsWith(q);
+        })
+        .slice(0, maxResults);
 
-    const matches = USERS
-      .filter((u) => normalize(u.name).startsWith(q)) // empieza por...
-      // si quieres "contiene", cambia a: .includes(q)
-      // .filter((u) => normalize(u.name).includes(q))
-      .slice(0, 12);
+      show(matches);
+    };
 
-    showSuggestions(matches);
-  }
+    inputEl.addEventListener('input', debounce((e) => {
+      filter(e.target.value);
+    }, 120));
 
-  // Escribir -> filtrar
-  if (userSearchInput) {
-    userSearchInput.addEventListener(
-      'input',
-      debounce((e) => filterUsers(e.target.value), 120)
-    );
-
-    // Focus -> si ya hay texto, re-mostrar
-    userSearchInput.addEventListener('focus', () => {
-      const q = userSearchInput.value;
-      if (q) filterUsers(q);
+    inputEl.addEventListener('focus', () => {
+      const q = inputEl.value;
+      if (q) filter(q);
     });
-  }
 
-  // Click en sugerencia -> autocompleta y guarda id
-  if (suggestionsBox) {
-    suggestionsBox.addEventListener('mousedown', (e) => {
-      // mousedown > click: evita que el blur del input cierre antes de seleccionar
+    // mousedown para que no se cierre por blur antes de seleccionar
+    boxEl.addEventListener('mousedown', (e) => {
       const item = e.target.closest('.item');
       if (!item) return;
 
-      const id = item.dataset.id;
-      const name = item.dataset.name;
+      const picked = { id: item.dataset.id, name: item.dataset.name };
 
-      if (userSearchInput) userSearchInput.value = name;
-      if (userIdHidden) userIdHidden.value = id;
+      inputEl.value = picked.name;
+      if (hiddenIdEl) hiddenIdEl.value = picked.id;
 
-      suggestionsBox.hidden = true;
-      suggestionsBox.innerHTML = '';
+      boxEl.hidden = true;
+      boxEl.innerHTML = '';
+
+      if (typeof onPick === 'function') onPick(picked);
     });
-  }
 
-  // Click fuera -> cierra sugerencias
-  document.addEventListener('click', (e) => {
-    if (!suggestionsBox || suggestionsBox.hidden) return;
-    const inside =
-      e.target.closest('#user_suggestions') || e.target.closest('#user_search');
-    if (!inside) {
-      suggestionsBox.hidden = true;
-    }
-  });
-
-  // Al abrir modal Nueva Clase -> limpia input y id y sugerencias
-  if (btnNueva) {
-    btnNueva.addEventListener('click', () => {
-      if (userSearchInput) userSearchInput.value = '';
-      if (userIdHidden) userIdHidden.value = '';
-      if (suggestionsBox) {
-        suggestionsBox.hidden = true;
-        suggestionsBox.innerHTML = '';
+    // click fuera -> cerrar
+    document.addEventListener('click', (e) => {
+      if (boxEl.hidden) return;
+      const inside = e.target.closest(`#${boxEl.id}`) || e.target.closest(`#${inputEl.id}`);
+      if (!inside) {
+        boxEl.hidden = true;
       }
     });
+
+    // helper para reset si quieres
+    return {
+      reset: () => {
+        inputEl.value = '';
+        if (hiddenIdEl) hiddenIdEl.value = '';
+        boxEl.hidden = true;
+        boxEl.innerHTML = '';
+      }
+    };
   }
+
+  // =========================================================
+  // AUTOCOMPLETE MODAL NUEVA CLASE
+  // Requisitos HTML (como ya tienes):
+  //  - input#user_search
+  //  - hidden#user_id
+  //  - div#user_suggestions
+  // =========================================================
+  const userSearchInput = document.getElementById('user_search');
+  const userIdHidden = document.getElementById('user_id');
+  const suggestionsBox = document.getElementById('user_suggestions');
+
+  const modalAutocomplete = initAutocomplete({
+    inputEl: userSearchInput,
+    hiddenIdEl: userIdHidden,
+    boxEl: suggestionsBox,
+    onPick: () => {}, // aquí no hace falta hacer nada extra
+    mode: 'startsWith'
+  });
+
+  // cuando abres el modal, limpia selección
+  if (btnNueva && modalAutocomplete) {
+    btnNueva.addEventListener('click', () => {
+      modalAutocomplete.reset();
+    });
+  }
+
+  // =========================================================
+  // AUTOCOMPLETE PARA EL BUSCADOR SUPERIOR (#search-user)
+  // Requisito HTML:
+  //  - div#search_user_suggestions debajo del input
+  // =========================================================
+  const searchBoxEl = document.getElementById('search_user_suggestions');
+
+  initAutocomplete({
+    inputEl: searchInput,
+    boxEl: searchBoxEl,
+    hiddenIdEl: null,
+    mode: 'includes', // mejor para buscar en lista grande
+    onPick: (picked) => {
+      // al elegir, lanzas tu búsqueda directamente:
+      fetchAndRender(picked.name);
+    }
+  });
 
   // ====== CALENDARIO ARTESANAL ======
   function renderCalendar(year, month) {
     calendarEl.innerHTML = '';
 
-    // Header
     const header = document.createElement('div');
     header.className = 'cal-header';
     header.innerHTML = `
@@ -209,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     calendarEl.appendChild(header);
 
-    // Weekdays
     const weekdays = document.createElement('div');
     weekdays.className = 'cal-grid cal-weekdays';
     const wd = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
@@ -221,12 +247,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     calendarEl.appendChild(weekdays);
 
-    // Days grid
     const grid = document.createElement('div');
     grid.className = 'cal-grid cal-days';
 
     const firstDay = new Date(year, month, 1);
-    const offset = (firstDay.getDay() + 6) % 7; // Lunes=0
+    const offset = (firstDay.getDay() + 6) % 7;
 
     for (let i = 0; i < offset; i++) {
       const b = document.createElement('div');
@@ -237,9 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(
-        d
-      ).padStart(2, '0')}`;
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
       const cell = document.createElement('div');
       cell.className = 'cal-day';
@@ -250,17 +273,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (items.length) cell.classList.add('event');
 
       cell.addEventListener('click', () => {
-        document
-          .querySelectorAll('.cal-day.selected')
-          .forEach((x) => x.classList.remove('selected'));
+        document.querySelectorAll('.cal-day.selected').forEach((x) => x.classList.remove('selected'));
         cell.classList.add('selected');
 
         if (items.length) {
           renderDayDetails(dateStr, items);
           openModal(modalInfo);
         } else {
-          if (summaryEl)
-            summaryEl.innerHTML = `<p>No hay sesiones para ${dateStr}.</p>`;
+          if (summaryEl) summaryEl.innerHTML = `<p>No hay sesiones para ${dateStr}.</p>`;
         }
       });
 
@@ -269,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     calendarEl.appendChild(grid);
 
-    // Controls
     header.querySelector('#prev').addEventListener('click', () => {
       const m = month - 1;
       if (m < 0) renderCalendar(year - 1, 11);
@@ -287,36 +306,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tituloFechaEl) tituloFechaEl.textContent = `Detalles del Día: ${dateStr}`;
 
     if (listaSesionesEl) {
-      listaSesionesEl.innerHTML = items
-        .map((i) => {
-          const coste = i.coste ?? i.precio ?? null;
-          const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
-          const pago = i.pago || i.estado || 'N/D';
+      listaSesionesEl.innerHTML = items.map((i) => {
+        const coste = i.coste ?? i.precio ?? null;
+        const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
+        const pago = i.pago || i.estado || 'N/D';
 
-          return `
-            <div class="sesion-card">
-              <div class="detail-item"><strong>Hora:</strong> <span>${i.hora || 'N/D'}</span></div>
-              <div class="detail-item"><strong>Clase:</strong> <span>${i.clase || i.nombre_clase || 'N/D'}</span></div>
-              <div class="detail-item"><strong>Descripción:</strong> <span>${i.descripcion || ''}</span></div>
-              <div class="detail-item"><strong>Coste:</strong> <span>${costeTxt}</span></div>
-              <div class="detail-item"><strong>Pago:</strong> <span>${pago}</span></div>
-            </div>
-          `;
-        })
-        .join('');
+        return `
+          <div class="sesion-card">
+            <div class="detail-item"><strong>Hora:</strong> <span>${i.hora || 'N/D'}</span></div>
+            <div class="detail-item"><strong>Clase:</strong> <span>${i.clase || i.nombre_clase || 'N/D'}</span></div>
+            <div class="detail-item"><strong>Descripción:</strong> <span>${i.descripcion || ''}</span></div>
+            <div class="detail-item"><strong>Coste:</strong> <span>${costeTxt}</span></div>
+            <div class="detail-item"><strong>Pago:</strong> <span>${pago}</span></div>
+          </div>
+        `;
+      }).join('');
     }
 
     if (summaryEl) {
-      summaryEl.innerHTML = items
-        .map((i) => {
-          const coste = i.coste ?? i.precio ?? null;
-          const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
-          const pago = i.pago || i.estado || 'N/D';
-          return `<p><strong>${i.hora || 'N/D'}</strong> — ${
-            i.clase || i.nombre_clase || 'N/D'
-          } <em>(${costeTxt}, ${pago})</em></p>`;
-        })
-        .join('');
+      summaryEl.innerHTML = items.map((i) => {
+        const coste = i.coste ?? i.precio ?? null;
+        const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
+        const pago = i.pago || i.estado || 'N/D';
+        return `<p><strong>${i.hora || 'N/D'}</strong> — ${i.clase || i.nombre_clase || 'N/D'} <em>(${costeTxt}, ${pago})</em></p>`;
+      }).join('');
     }
   }
 
@@ -340,22 +353,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const today = new Date();
       renderCalendar(today.getFullYear(), today.getMonth());
 
-      if (summaryEl)
-        summaryEl.innerHTML = `<p>Resultados cargados. Haz clic en un día marcado.</p>`;
+      if (summaryEl) summaryEl.innerHTML = `<p>Resultados cargados. Haz clic en un día marcado.</p>`;
     } catch (e) {
       console.error(e);
-      if (summaryEl)
-        summaryEl.innerHTML = `<p>No se pudo cargar el historial (error de red o JSON).</p>`;
+      if (summaryEl) summaryEl.innerHTML = `<p>No se pudo cargar el historial (error de red o JSON).</p>`;
     }
   }
 
   if (searchInput) {
-    searchInput.addEventListener(
-      'input',
-      debounce((e) => {
-        fetchAndRender(e.target.value.trim());
-      }, 300)
-    );
+    searchInput.addEventListener('input', debounce((e) => {
+      fetchAndRender(e.target.value.trim());
+    }, 300));
   }
 
   // ====== INIT ======
