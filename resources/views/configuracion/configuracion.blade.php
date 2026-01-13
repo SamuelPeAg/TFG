@@ -77,19 +77,6 @@
 
                 <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-                  {{-- Nombre --}}
-                  <div class="group sm:col-span-1">
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Nombre</label>
-                    <div class="relative">
-                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-id-card text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
-                      </div>
-                      <input type="text"
-                             class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400"
-                             placeholder="Tu nombre">
-                    </div>
-                  </div>
-
                   {{-- Usuario --}}
                   <div class="group sm:col-span-1">
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Usuario</label>
@@ -187,30 +174,6 @@
                     </div>
                   </label>
 
-                  <label class="flex items-start gap-4 p-4 bg-gray-50 border border-gray-200 rounded-2xl cursor-pointer hover:bg-white transition">
-                    <input type="checkbox" class="mt-1 h-5 w-5 rounded border-gray-300 text-brandTeal focus:ring-green-500">
-                    <div>
-                      <p class="font-bold text-gray-800">Modo compacto</p>
-                      <p class="text-sm text-gray-500">Reduce espacios para ver más contenido.</p>
-                    </div>
-                  </label>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Idioma</label>
-                      <select class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800">
-                        <option>Español</option>
-                        <option>English</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Zona horaria</label>
-                      <select class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800">
-                        <option>Europe/Madrid</option>
-                        <option>UTC</option>
-                      </select>
-                    </div>
                   </div>
 
                 </div>
