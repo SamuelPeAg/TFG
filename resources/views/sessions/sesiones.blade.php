@@ -8,6 +8,29 @@
   <link rel="stylesheet" href="{{ asset('css/global.css') }}">
   <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    /* Estilo para quitar la línea del buscador (de tu petición anterior) */
+    #search-user {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent;
+    }
+    .search-anchor input:focus {
+        border: none !important;
+        outline: none !important;
+    }
+
+    /* NUEVO: Estilo para los iconos de los formularios */
+    .form-group label i {
+        color: #ec4899; /* Color rosado/rojo como en tu imagen de referencia (o pon #00897b para el verde) */
+        margin-right: 8px; /* Espacio entre el icono y el texto */
+        width: 20px;       /* Para que todos alineen igual */
+        text-align: center;
+    }
+  </style>
+
 </head>
 
 <body>
@@ -16,13 +39,10 @@
 
     <main class="main-content">
 
-      <!-- HEADER -->
       <div class="header-controls">
-        <!-- IZQUIERDA: buscador -->
         <div class="controls-bar">
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-
             <div class="search-anchor">
               <input
                 type="text"
@@ -30,30 +50,24 @@
                 placeholder="Buscar usuario..."
                 autocomplete="off"
               >
-              <!-- Sugerencias del buscador -->
               <div id="search_user_suggestions" class="suggestions" hidden></div>
             </div>
           </div>
         </div>
 
-        <!-- DERECHA: título + botón -->
         <div class="title-section">
           <h1>Historial de Sesiones</h1>
-
           <button type="button" class="btn-add-class" id="btnNuevaClase">
             <i class="fa-solid fa-plus"></i>
             Nueva Clase
           </button>
         </div>
       </div>
-      <!-- /HEADER -->
-
       <section class="calendar-layout" aria-label="Calendario de sesiones">
         <div class="calendar-panel">
           <div class="calendar-container">
             <div id="user-calendar" class="custom-calendar"></div>
           </div>
-
           <div id="calendar-summary" class="calendar-summary">
             <p>
               <i class="fa-solid fa-circle-info"></i>
@@ -67,7 +81,6 @@
     </main>
   </div>
 
-  <!-- MODAL: Detalles del día -->
   <div id="infoPopup" class="modal-overlay" aria-hidden="true">
     <div class="modal-box">
       <button type="button" class="close-icon" id="btnCerrarPopup" aria-label="Cerrar">&times;</button>
@@ -77,7 +90,6 @@
     </div>
   </div>
 
-  <!-- MODAL: Nueva Clase -->
   <div
     id="modalNuevaClase"
     class="modal-overlay"
@@ -98,7 +110,7 @@
         @csrf
 
         <div class="form-group">
-          <label for="centro">🏢 Centro:</label>
+          <label for="centro"><i class="fa-solid fa-building"></i> Centro:</label>
           <select id="centro" name="centro" class="form-input" required>
             <option value="">Selecciona centro</option>
             <option value="OPEN">OPEN</option>
@@ -108,13 +120,12 @@
         </div>
 
         <div class="form-group">
-          <label for="nombre_clase">🏋️ Clase:</label>
+          <label for="nombre_clase"><i class="fa-solid fa-dumbbell"></i> Clase:</label>
           <input id="nombre_clase" type="text" name="nombre_clase" class="form-input" placeholder="Ej: Pilates, Crossfit..." required>
         </div>
 
-        <!-- Usuario autocomplete (modal) -->
         <div class="form-group">
-          <label for="user_search">👤 Usuario:</label>
+          <label for="user_search"><i class="fa-solid fa-user"></i> Usuario:</label>
 
           <input
             id="user_search"
@@ -123,9 +134,7 @@
             placeholder="Escribe para buscar (ej: Ana)"
             autocomplete="off"
           >
-
           <input type="hidden" name="user_id" id="user_id" required>
-
           <div id="user_suggestions" class="suggestions" hidden></div>
 
           <script type="application/json" id="users_json">
@@ -134,7 +143,7 @@
         </div>
 
         <div class="form-group">
-          <label for="metodo_pago">💳 Método de pago:</label>
+          <label for="metodo_pago"><i class="fa-solid fa-credit-card"></i> Método de pago:</label>
           <select id="metodo_pago" name="metodo_pago" class="form-input" required>
             <option value="">Selecciona método</option>
             <option value="TPV">TPV</option>
@@ -145,12 +154,12 @@
         </div>
 
         <div class="form-group">
-          <label for="fecha_hora">🕒 Hora y Fecha:</label>
+          <label for="fecha_hora"><i class="fa-solid fa-clock"></i> Hora y Fecha:</label>
           <input id="fecha_hora" type="datetime-local" name="fecha_hora" class="form-input" required>
         </div>
 
         <div class="form-group">
-          <label for="precio">💶 Precio (€):</label>
+          <label for="precio"><i class="fa-solid fa-euro-sign"></i> Precio (€):</label>
           <input id="precio" type="number" name="precio" step="0.01" class="form-input" placeholder="0.00" required>
         </div>
 
@@ -159,7 +168,6 @@
     </div>
   </div>
 
-  <!-- Datos sesiones para JS -->
   <script type="application/json" id="sesiones-data">
     @json($datosSesiones ?? [])
   </script>
