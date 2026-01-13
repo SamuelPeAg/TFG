@@ -78,16 +78,16 @@
     </div>
 
     <nav class="main-menu">
-        <a href="{{ route("entrenadores.index") }}"  class="menu-item">
+        <a href="{{ route("entrenadores.index") }}"  class="menu-item {{ request()->routeIs('entrenadores.*') ? 'active' : '' }}">
             <i class="fa-solid fa-dumbbell"></i> ENTRENADORES
         </a>
-        <a href="{{ route("users.index") }}" class="menu-item ">
+        <a href="{{ route("users.index") }}" class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
             <i class="fa-solid fa-users"></i> USUARIOS
         </a>
-        <a href="{{ route("sesiones") }}" class="menu-item">
+        <a href="{{ route("sesiones") }}" class="menu-item {{ request()->routeIs('sesiones') || request()->routeIs('sesiones.*') ? 'active' : '' }}">
             <i class="fa-solid fa-calendar-check"></i> SESIONES
         </a>
-        <a href="{{ route ("facturas")}}" class="menu-item active">
+        <a href="{{ route("facturas")}}" class="menu-item {{ request()->routeIs('facturas') ? 'active' : '' }}">
             <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN
         </a>
     </nav>
@@ -100,18 +100,23 @@
         </div>
         <div style="display: flex; flex-direction: column; text-align: left; line-height: 1.3;">
             <span style="font-weight: 700; color: #ffffff; font-size: 14px;">
-                {{ auth()->user()->name }} 
+                {{ auth()->user()->name }}
             </span>
             <span style="font-size: 11px; color: #e0f2f1; opacity: 0.8;">
                 Panel de Gestión
             </span>
         </div>
+        
+        <div style="width: 40px; height: 40px; background-color: #ffffff; color: #00897b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
+            {{ substr(auth()->user()->name, 0, 1) }} 
+        </div>
     </div>
 
     <div class="utility-links" style="margin-bottom: 20px;">
         
-        <a href="#" class="menu-item">
-            <i class="fa-solid fa-circle-question"></i> AYUDA
+        {{-- CONFIGURACIÓN --}}
+        <a href="{{ route('configuracion.edit') }}" class="menu-item {{ request()->routeIs('configuracion.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-gear"></i> CONFIGURACIÓN
         </a>
 
         <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
