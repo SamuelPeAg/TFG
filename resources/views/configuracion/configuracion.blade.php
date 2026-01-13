@@ -4,13 +4,10 @@
 
 <div class="flex flex-col min-h-[calc(100vh-80px)]">
 
-  {{-- ÁREA CENTRAL CON GRADIENTE --}}
   <div class="flex-grow flex items-center justify-center p-4 sm:p-8 bg-gradient-to-br from-white via-brandTeal/30 to-brandCoral/40">
 
-    {{-- TARJETA --}}
     <div class="relative z-10 w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/60">
 
-      {{-- Encabezado --}}
       <div class="px-8 pt-10 pb-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div class="flex items-center gap-4">
@@ -25,20 +22,29 @@
         </div>
       </div>
 
-      {{-- Contenido --}}
       <div class="px-8 pb-10">
 
-        {{-- Mensaje OK --}}
+        {{-- OK --}}
         @if(session('success'))
           <div class="mb-6 p-4 rounded-2xl border border-green-200 bg-green-50 text-green-700 font-semibold">
             {{ session('success') }}
           </div>
         @endif
 
-        {{-- Tabs / Menú lateral --}}
+        {{-- Errores generales --}}
+        @if ($errors->any())
+          <div class="mb-6 p-4 rounded-2xl border border-red-200 bg-red-50 text-red-700">
+            <p class="font-bold mb-2">Revisa los campos:</p>
+            <ul class="list-disc ml-5 text-sm space-y-1">
+              @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
+
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {{-- Menú --}}
           <aside class="lg:col-span-1">
             <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
               <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 ml-1">Secciones</p>
@@ -59,13 +65,10 @@
                   <span class="font-semibold text-gray-800">Preferencias</span>
                 </a>
               </div>
-
             </div>
           </aside>
 
-          {{-- Formulario --}}
           <section class="lg:col-span-2">
-
             <form method="POST" action="{{ route('configuracion.update') }}" class="space-y-8">
               @csrf
               @method('PUT')
@@ -79,16 +82,13 @@
 
                 <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-                  {{-- Usuario --}}
                   <div class="group sm:col-span-1">
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Usuario</label>
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-user text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                       </div>
-                      <input
-                        type="text"
-                        name="name"
+                      <input type="text" name="name"
                         value="{{ old('name', $user->name) }}"
                         class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400"
                         placeholder="Ej. JuanPerez">
@@ -98,16 +98,13 @@
                     @enderror
                   </div>
 
-                  {{-- Email --}}
                   <div class="group sm:col-span-2">
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Email</label>
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-envelope text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                       </div>
-                      <input
-                        type="email"
-                        name="email"
+                      <input type="email" name="email"
                         value="{{ old('email', $user->email) }}"
                         class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400"
                         placeholder="tu@email.com">
@@ -125,20 +122,18 @@
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
                   <h3 class="text-lg font-extrabold text-gray-900">Seguridad</h3>
                   <p class="text-sm text-gray-500">Cambia tu contraseña</p>
+                  <p class="text-xs text-gray-400 mt-1">Si no rellenas estos campos, tu contraseña no se cambia.</p>
                 </div>
 
                 <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-                  {{-- Contraseña actual --}}
                   <div class="group sm:col-span-2">
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Contraseña actual</label>
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-lock text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                       </div>
-                      <input
-                        type="password"
-                        name="current_password"
+                      <input type="password" name="current_password"
                         class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400"
                         placeholder="••••••••">
                     </div>
@@ -147,16 +142,13 @@
                     @enderror
                   </div>
 
-                  {{-- Nueva contraseña --}}
                   <div class="group sm:col-span-1">
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Nueva contraseña</label>
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-key text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                       </div>
-                      <input
-                        type="password"
-                        name="password"
+                      <input type="password" name="password"
                         class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400"
                         placeholder="••••••••">
                     </div>
@@ -165,16 +157,13 @@
                     @enderror
                   </div>
 
-                  {{-- Confirmar --}}
                   <div class="group sm:col-span-1">
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Confirmar contraseña</label>
                     <div class="relative">
                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fa-solid fa-check text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                       </div>
-                      <input
-                        type="password"
-                        name="password_confirmation"
+                      <input type="password" name="password_confirmation"
                         class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400"
                         placeholder="••••••••">
                     </div>
@@ -201,7 +190,6 @@
                 </div>
               </div>
 
-              {{-- Botones --}}
               <div class="flex flex-col sm:flex-row gap-3 sm:justify-end">
                 <a href="{{ url()->previous() }}"
                    class="w-full sm:w-auto flex justify-center py-3.5 px-6 rounded-xl border border-gray-200 bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 transition">
@@ -222,7 +210,6 @@
     </div>
   </div>
 
-  {{-- FOOTER GLOBAL --}}
   <x-footers.footer_welcome />
 
 </div>
