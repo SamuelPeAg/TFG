@@ -1,214 +1,224 @@
-@extends('components.headers.header_welcome')
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar Sesión - Factomove</title>
+    
+    {{-- Estilos Globales (Tailwind) --}}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    {{-- FullCalendar CSS --}}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 
-@section('content')
+    <style>
+        /* Personalización de colores de FullCalendar para coincidir con tu marca */
+        :root {
+            --brand-teal: #00897b; /* Ajusta a tu código exacto */
+            --brand-coral: #ff7043; /* Ajusta a tu código exacto */
+        }
+        .fc-button-primary {
+            background-color: var(--brand-teal) !important;
+            border-color: var(--brand-teal) !important;
+        }
+        .fc-button-active {
+            background-color: #00695c !important;
+        }
+        .fc-event {
+            cursor: pointer;
+            border: none;
+        }
+        /* Ocultar scrollbar feo en contenedor */
+        .fc-scroller::-webkit-scrollbar {
+            width: 8px;
+        }
+        .fc-scroller::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
 
-    {{-- 1. ENCABEZADO DE LA PÁGINA (MODIFICADO) --}}
-    {{-- He reducido el padding vertical (pt-10 pb-6) y añadido la sección de perfil --}}
-    <section class="bg-brandTeal pt-10 pb-8 text-center text-white relative overflow-hidden shadow-md">
-        <div class="absolute inset-0 opacity-10 pattern-dots"></div>
+    {{-- Header Simple con botón volver --}}
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="{{ route('welcome') }}" class="flex items-center gap-2 text-gray-600 hover:text-teal-600 transition">
+                <img src="{{ asset('img/logopng.png') }}" class="h-8 w-auto" alt="Logo">
+                <span class="font-bold text-xl">Factomove</span>
+            </a>
+            <a href="{{ route('welcome') }}" class="text-sm font-medium text-gray-500 hover:text-teal-600">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Volver al inicio
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
         
-        {{-- SECCIÓN PERFIL DE USUARIO (ARRIBA DERECHA) --}}
-        @auth
-        <div class="absolute top-4 right-4 md:top-6 md:right-8 flex items-center gap-3 z-20">
-            {{-- Texto: Nombre y Rol --}}
-            <div class="text-right hidden xs:block"> {{-- hidden en móviles muy pequeños si quieres --}}
-                <h4 class="font-bold text-white text-base md:text-lg leading-tight shadow-sm drop-shadow-md">
-                    {{ Auth::user()->name }}
-                </h4>
-                <p class="text-brandAqua/80 text-[10px] md:text-xs font-medium uppercase tracking-wider">
-                    Panel de Gestión
+        {{-- Selector de Centro (Visible para cambiar rápidamente) --}}
+        <div class="mb-8 flex flex-col sm:flex-row justify-between items-end gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Calendario de Reservas</h1>
+                <p class="text-gray-500 mt-1">
+                    Viendo horarios para: 
+                    <span class="font-bold text-teal-700 bg-teal-50 px-3 py-1 rounded-lg border border-teal-200">
+                        {{ request('center', 'Todos los centros') }}
+                    </span>
                 </p>
             </div>
 
-            {{-- Avatar Circular --}}
-            <div class="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition duration-200">
-                <span class="text-brandTeal font-extrabold text-lg md:text-xl uppercase">
-                    {{-- Obtenemos la primera letra del nombre --}}
-                    {{ substr(Auth::user()->name, 0, 1) }}
-                </span>
+            {{-- Formulario para cambiar de centro sin volver atrás --}}
+            <form action="{{ route('booking.view') }}" method="GET" class="flex gap-2 bg-white p-2 rounded-lg shadow-sm border border-gray-200">
+                <select name="center" class="bg-transparent border-none text-gray-700 font-medium focus:ring-0 cursor-pointer outline-none px-2" onchange="this.form.submit()">
+                    <option value="AIRA" {{ request('center') == 'AIRA' ? 'selected' : '' }}>AIRA</option>
+                    <option value="OPEN" {{ request('center') == 'OPEN' ? 'selected' : '' }}>OPEN</option>
+                    <option value="VIRTUAL" {{ request('center') == 'VIRTUAL' ? 'selected' : '' }}>VIRTUAL</option>
+                </select>
+                <button type="submit" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700 transition">
+                    <i class="fa-solid fa-filter"></i>
+                </button>
+            </form>
+        </div>
+
+        {{-- CONTENEDOR DEL CALENDARIO --}}
+        <div class="bg-white p-4 md:p-6 rounded-2xl shadow-lg border border-gray-100">
+            <div id='calendar'></div>
+        </div>
+
+    </main>
+
+    {{-- MODAL DE RESERVA (Oculto por defecto) --}}
+    <div id="bookingModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform transition-all scale-100">
+            <div class="flex justify-between items-center mb-4 border-b pb-3">
+                <h3 class="text-xl font-bold text-gray-900">Confirmar Reserva</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
             </div>
-        </div>
-        @endauth
-
-        {{-- TÍTULO Y SUBTÍTULO (MÁS PEQUEÑOS) --}}
-        <div class="relative z-10 max-w-7xl mx-auto px-4 mt-8 md:mt-2"> 
-            <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight mb-2">
-                Reserva tu Sesión
-            </h1>
-            <p class="text-brandAqua/80 text-sm md:text-base max-w-2xl mx-auto">
-                Selecciona un día en el calendario para ver las clases disponibles.
-            </p>
-        </div>
-    </section>
-
-    {{-- 2. CALENDARIO FUNCIONAL --}}
-    <section class="py-8 md:py-12 bg-gray-50 min-h-screen">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            {{-- Controles del Mes --}}
-            <div class="flex justify-between items-center mb-6 bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100">
-                <button id="prevMonthBtn" class="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <h2 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                    <i class="fa-regular fa-calendar text-brandCoral"></i> 
-                    <span id="currentMonthYear">Cargando...</span>
-                </h2>
-                <button id="nextMonthBtn" class="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-            </div>
-
-            {{-- Grid del Calendario --}}
-            <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            <div class="space-y-4">
+                <div class="bg-teal-50 p-4 rounded-lg border border-teal-100">
+                    <p class="text-sm text-teal-800 font-bold uppercase mb-1" id="modalCenter">Centro</p>
+                    <h4 class="text-lg font-bold text-gray-900" id="modalClassTitle">Nombre Clase</h4>
+                    <p class="text-gray-600 flex items-center gap-2 mt-1">
+                        <i class="fa-regular fa-clock"></i> <span id="modalTime">Hora</span>
+                    </p>
+                </div>
                 
-                {{-- Días de la semana --}}
-                <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
-                    @foreach(['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as $day)
-                        <div class="py-3 text-center font-bold text-gray-500 text-xs md:text-sm uppercase tracking-wider">{{ $day }}</div>
-                    @endforeach
-                </div>
-
-                {{-- Días del mes --}}
-                <div id="calendarGrid" class="grid grid-cols-7 divide-x divide-y divide-gray-100">
-                    {{-- Se rellena con JS --}}
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- 3. MODAL (POPUP) --}}
-    <div id="sessionModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity backdrop-blur-sm" onclick="closeModal()"></div>
-
-        <div class="flex items-center justify-center min-h-screen px-4 text-center sm:p-0">
-            <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-2xl sm:w-full">
-                
-                <div class="bg-brandTeal px-4 py-4 sm:px-6 flex justify-between items-center">
-                    <h3 class="text-lg leading-6 font-bold text-white flex items-center gap-2">
-                        <i class="fa-regular fa-calendar-check"></i>
-                        Sesiones para el <span id="modalDateText">--/--/----</span>
-                    </h3>
-                    <button type="button" onclick="closeModal()" class="text-brandAqua hover:text-white transition focus:outline-none">
-                        <i class="fa-solid fa-xmark text-2xl"></i>
-                    </button>
-                </div>
-
-                <div class="px-4 py-5 sm:p-6 bg-gray-50 max-h-[70vh] overflow-y-auto space-y-4">
-                    {{-- Ejemplo estático --}}
-                    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
-                        <div class="flex flex-col sm:flex-row justify-between gap-4">
-                            <div class="flex items-start gap-4">
-                                <div class="bg-gray-100 rounded-lg p-3 text-center min-w-[80px]">
-                                    <span class="block text-gray-900 font-bold text-xl">09:00</span>
-                                    <span class="block text-xs text-gray-500">60 min</span>
-                                </div>
-                                <div>
-                                    <h4 class="text-lg font-bold text-gray-900">Entrenamiento Funcional</h4>
-                                    <div class="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                                        <i class="fa-solid fa-location-dot text-brandCoral"></i>
-                                        <span>Sala Principal</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button class="w-full sm:w-auto bg-brandTeal text-white font-bold py-2 px-6 rounded-lg hover:bg-opacity-90 transition shadow-sm">
-                                Reservar
-                            </button>
-                        </div>
-                    </div>
+                <form id="reservationForm" method="POST" action="{{ route('sesiones.reservar') }}"> {{-- Asegúrate de tener esta ruta --}}
+                    @csrf
+                    <input type="hidden" name="class_id" id="modalClassId">
                     
-                    <p class="text-center text-gray-400 text-sm mt-4">No hay más sesiones programadas para este día.</p>
-                </div>
+                    <div class="text-sm text-gray-500 mb-4">
+                        Al confirmar, se descontará una sesión de tu bono o se procederá al cobro.
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeModal()" class="flex-1 py-3 border border-gray-300 rounded-lg font-bold text-gray-700 hover:bg-gray-50 transition">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="flex-1 py-3 bg-teal-600 rounded-lg font-bold text-white hover:bg-teal-700 shadow-lg shadow-teal-200 transition">
+                            Confirmar
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    {{-- LÓGICA JAVASCRIPT (Misma lógica, solo cambia el ID del contenedor del mes si lo cambiaste) --}}
+    {{-- SCRIPT DEL CALENDARIO --}}
     <script>
-        const currentMonthYear = document.getElementById('currentMonthYear');
-        const calendarGrid = document.getElementById('calendarGrid');
-        const prevBtn = document.getElementById('prevMonthBtn');
-        const nextBtn = document.getElementById('nextMonthBtn');
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var centerFilter = "{{ request('center') }}"; // Obtiene el centro de la URL
 
-        let date = new Date();
-        let currYear = date.getFullYear();
-        let currMonth = date.getMonth();
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'timeGridWeek', // Vista inicial: Semana con horas
+                locale: 'es', // Español
+                firstDay: 1, // Lunes primer día
+                slotMinTime: "07:00:00", // Hora inicio calendario
+                slotMaxTime: "22:00:00", // Hora fin calendario
+                allDaySlot: false, // Quitar fila de "todo el día" si son clases por horas
+                height: 'auto',
+                
+                // Botones del Header
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek' // Botones para cambiar Mes/Semana
+                },
+                buttonText: {
+                    today: 'Hoy',
+                    month: 'Mes',
+                    week: 'Semana'
+                },
 
-        const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                // OBTENER EVENTOS (Aquí conecta con tu Backend Laravel)
+                // Debes crear una ruta que devuelva JSON filtrado por centro
+                events: function(info, successCallback, failureCallback) {
+                    // Simulación de datos (BORRA ESTO y usa fetch real)
+                    // En tu backend deberías filtrar: WHERE center = centerFilter
+                    
+                    // EJEMPLO FETCH REAL:
+                    /*
+                    fetch(`/api/clases?start=${info.startStr}&end=${info.endStr}&center=${centerFilter}`)
+                        .then(response => response.json())
+                        .then(data => successCallback(data));
+                    */
 
-        function renderCalendar() {
-            let firstDayofMonth = new Date(currYear, currMonth, 1).getDay(); 
-            let lastDateofMonth = new Date(currYear, currMonth + 1, 0).getDate(); 
-            let lastDateofLastMonth = new Date(currYear, currMonth, 0).getDate(); 
-            let liTag = "";
+                    // DATOS DE EJEMPLO PARA QUE VEAS CÓMO QUEDA:
+                    var events = [
+                        {
+                            id: '1',
+                            title: 'Crossfit (AIRA)',
+                            start: '2026-01-14T10:00:00',
+                            end: '2026-01-14T11:00:00',
+                            backgroundColor: '#00897b', // Color Teal
+                            extendedProps: { center: 'AIRA' }
+                        },
+                        {
+                            id: '2',
+                            title: 'Yoga (OPEN)',
+                            start: '2026-01-14T18:00:00',
+                            end: '2026-01-14T19:00:00',
+                            backgroundColor: '#ff7043', // Color Coral
+                            extendedProps: { center: 'OPEN' }
+                        }
+                    ];
+                    
+                    // Filtro simple de JS (en producción hazlo en backend)
+                    if(centerFilter) {
+                        events = events.filter(e => e.extendedProps.center === centerFilter);
+                    }
+                    
+                    successCallback(events);
+                },
 
-            for (let i = firstDayofMonth; i > 0; i--) { 
-                liTag += `<div class="min-h-[100px] md:min-h-[120px] bg-gray-50/50 p-2 border-b border-r border-gray-100"></div>`;
-            }
-
-            for (let i = 1; i <= lastDateofMonth; i++) {
-                let isToday = i === new Date().getDate() && currMonth === new Date().getMonth() && currYear === new Date().getFullYear();
-                let activeClass = isToday ? 'bg-brandTeal/5 border-2 border-brandTeal/30' : 'hover:bg-brandAqua/5';
-                let numberClass = isToday ? 'bg-brandTeal text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-gray-700';
-
-                let eventHtml = '';
-                if(i % 3 === 0) { 
-                     eventHtml = `<div class="space-y-1 mt-2"><div class="text-[10px] bg-brandTeal/10 text-brandTeal px-1 py-0.5 rounded border border-brandTeal/20 truncate font-medium">09:00 CrossFit</div></div>`;
-                } else if (i % 5 === 0) {
-                     eventHtml = `<div class="space-y-1 mt-2"><div class="text-[10px] bg-purple-100 text-purple-600 px-1 py-0.5 rounded border border-purple-200 truncate font-medium">18:00 Yoga</div><div class="text-[10px] bg-gray-100 text-gray-500 px-1 py-0.5 rounded truncate hidden md:block">2 más...</div></div>`;
+                // AL HACER CLIC EN UN EVENTO
+                eventClick: function(info) {
+                    openModal(info.event);
                 }
+            });
 
-                liTag += `<div onclick="openModal('${currYear}-${currMonth+1}-${i}')" class="min-h-[100px] md:min-h-[120px] p-2 cursor-pointer transition relative group border-gray-100 ${activeClass}">
-                        <span class="font-bold block mb-1 ${numberClass}">${i}</span>
-                        ${eventHtml}
-                    </div>`;
-            }
-            currentMonthYear.innerText = `${months[currMonth]} ${currYear}`;
-            calendarGrid.innerHTML = liTag;
-        }
-
-        prevBtn.addEventListener("click", () => {
-            currMonth = currMonth - 1;
-            if(currMonth < 0) {
-                date = new Date(currYear, currMonth);
-                currYear = date.getFullYear();
-                currMonth = date.getMonth();
-            } else {
-                date = new Date();
-            }
-            renderCalendar();
+            calendar.render();
         });
 
-        nextBtn.addEventListener("click", () => {
-            currMonth = currMonth + 1;
-            if(currMonth > 11) {
-                date = new Date(currYear, currMonth);
-                currYear = date.getFullYear();
-                currMonth = date.getMonth();
-            } else {
-                date = new Date();
-            }
-            renderCalendar();
-        });
-
-        renderCalendar();
-
-        function openModal(dateString) {
-            document.getElementById('modalDateText').innerText = dateString;
-            document.getElementById('sessionModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+        // Funciones del Modal
+        function openModal(event) {
+            document.getElementById('modalClassTitle').innerText = event.title;
+            document.getElementById('modalTime').innerText = event.start.toLocaleString();
+            document.getElementById('modalCenter').innerText = event.extendedProps.center || "{{ request('center') }}";
+            document.getElementById('modalClassId').value = event.id;
+            
+            document.getElementById('bookingModal').classList.remove('hidden');
         }
 
         function closeModal() {
-            document.getElementById('sessionModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
+            document.getElementById('bookingModal').classList.add('hidden');
         }
-        
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "Escape") closeModal();
-        });
     </script>
 
-    <x-footers.footer_welcome />
-
-@endsection
+</body>
+</html>

@@ -14,7 +14,8 @@ use App\Http\Controllers\SessionesController;
 | RUTAS PÚBLICAS (Cualquiera puede entrar)
 |--------------------------------------------------------------------------
 */
-
+Route::get('/reservar', [UserReservationController::class, 'index'])->name('booking.view');
+Route::post('/reservar/guardar', [UserReservationController::class, 'store'])->name('sesiones.reservar');
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -70,6 +71,7 @@ Route::middleware('auth')->group(function () {
     // --- OTRAS RUTAS ---
     Route::resource('users', UserController::class);
     // Route::resource('trainers', TrainerController::class);
+   // Ejemplo en web.php
     Route::resource('reservations', UserReservationController::class); // Agregué esto por si acaso
     
     Route::view('/configuracion', 'configuracion.configuracion')->name('configuracion');
