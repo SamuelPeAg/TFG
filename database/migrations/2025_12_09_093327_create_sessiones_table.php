@@ -17,6 +17,11 @@ return new class extends Migration
                 ->constrained('users')
                 ->nullOnDelete();
 
+            $table->foreignId('entrenador_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
             // Datos nuevos del formulario
             $table->string('centro');                // Ej: CLINICA / AIRA / OPEN
             $table->string('nombre_clase');          // Ej: Pilates, Crossfit...
