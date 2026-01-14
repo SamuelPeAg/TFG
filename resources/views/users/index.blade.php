@@ -119,7 +119,7 @@
         @endif
 
         {{-- COMPONENTE DE TABLA DE USUARIOS --}}
-<x-tablas.users-table :users="$users" />
+        <x-tablas.users-table :users="$users" />
       </div>
     </main>
   </div>
@@ -159,70 +159,11 @@
       </div>
   </div>
 
-  {{-- 3. COMPONENTE MODAL GESTIONAR GRUPOS (NUEVA UBICACIÓN) --}}
+  {{-- 3. COMPONENTE MODAL GESTIONAR GRUPOS --}}
   <x-modales.gestion-grupos :groups="$groups" />
 
-  {{-- 4. MODAL CREAR USUARIO --}}
-{{-- 4. MODAL CREAR USUARIO --}}
-  <div id="modalCrearUsuario" class="modal-overlay" aria-hidden="true">
-    <div class="modal-card">
-      <button type="button" class="close-btn" id="btnCerrarModalCrearUsuario">&times;</button>
-      <div class="modal-header-custom">
-        <div class="logo-simulado"><i class="fas fa-user-plus"></i></div>
-        <h2>Crear Usuario</h2>
-      </div>
-      <form action="{{ route('users.store') }}" method="POST">
-        @csrf
-        
-        {{-- CAMPO NOMBRE --}}
-        <div class="form-group">
-            <label class="form-label-custom">Nombre</label>
-            <div class="input-group-custom">
-                <i class="fas fa-user"></i>
-                <input type="text" name="name" class="form-control-custom" placeholder="Ej. Juan Pérez" required>
-            </div>
-        </div>
-
-        {{-- CAMPO EMAIL --}}
-        <div class="form-group">
-            <label class="form-label-custom">Email</label>
-            <div class="input-group-custom">
-                <i class="fas fa-envelope"></i>
-                <input type="email" name="email" class="form-control-custom" placeholder="usuario@email.com" required>
-            </div>
-        </div>
-
-        {{-- CAMPO PASS --}}
-        <div class="form-group">
-            <label class="form-label-custom">Pass</label>
-            <div class="input-group-custom">
-                <i class="fas fa-lock"></i>
-                <input type="password" name="password" class="form-control-custom" placeholder="********" required>
-            </div>
-        </div>
-
-        {{-- CAMPO IBAN --}}
-        <div class="form-group">
-            <label class="form-label-custom">IBAN</label>
-            <div class="input-group-custom">
-                <i class="fas fa-credit-card"></i>
-                <input type="text" name="IBAN" class="form-control-custom" placeholder="ES00 0000 0000 0000...">
-            </div>
-        </div>
-
-        {{-- CAMPO FIRMA --}}
-        <div class="form-group">
-            <label class="form-label-custom">Firma</label>
-            <div class="input-group-custom">
-                <i class="fas fa-pen-nib"></i>
-                <input type="text" name="firma_digital" class="form-control-custom" placeholder="Código de firma...">
-            </div>
-        </div>
-
-        <button type="submit" class="btn-facto">Crear</button>
-      </form>
-    </div>
-  </div>
+  {{-- 4. COMPONENTE MODAL CREAR USUARIO (NUEVO) --}}
+  <x-modales.crear-usuario />
 
   {{-- 5. MODAL EDITAR USUARIO --}}
   <div id="modalEditarUsuario" class="modal-overlay" aria-hidden="true">
@@ -255,8 +196,6 @@
       const countSpan = document.getElementById('countSelected');
       const modalGrupo = document.getElementById('modalGrupo');
       
-      // Obtenemos referencia al modal del componente.
-      // Como el componente se renderiza en el HTML final, JS lo encuentra por ID sin problemas.
       const modalGestion = document.getElementById('modalGestionGrupos');
       
       const inputsContainer = document.getElementById('hiddenInputsContainer');
@@ -301,7 +240,7 @@
           if(modalGrupo) modalGrupo.style.display = 'none';
       }
 
-      // Modal Gestionar Grupos (Funciones llamadas por el HTML y el Componente)
+      // Modal Gestionar Grupos
       function abrirModalGestionGrupos() {
           if(modalGestion) modalGestion.style.display = 'flex';
       }
@@ -316,6 +255,7 @@
       });
 
       // --- LÓGICA MODALES USUARIOS (CREAR / EDITAR) ---
+      // IMPORTANTE: Estos IDs deben coincidir con los del componente x-modales.crear-usuario
       const modalCrear = document.getElementById('modalCrearUsuario');
       const btnAbrirCrear = document.getElementById('toggleCrearUsuario');
       const btnCerrarCrear = document.getElementById('btnCerrarModalCrearUsuario');
@@ -326,7 +266,7 @@
       const modalEditar = document.getElementById('modalEditarUsuario');
       const btnCerrarEditar = document.getElementById('btnCerrarModalEditarUsuario');
       
-      // Delegación de eventos para los botones de editar (dentro del componente tabla)
+      // Delegación de eventos para los botones de editar
       document.addEventListener('click', function(e) {
           const btn = e.target.closest('.js-edit-user');
           if (btn) {
