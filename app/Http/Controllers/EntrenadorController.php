@@ -22,13 +22,34 @@ class EntrenadorController extends Controller
 
     public function store(Request $request)
     {
+        // --- 1. VALIDACIONES ROBUSTAS (Mínimo 3-4 reglas por campo) ---
         $request->validate([
-            'nombre'   => 'required|string|max:255',
-            'email'    => 'required|email|unique:entrenadores,email',
-            'iban'     => 'required|string|max:34',
-            'password' => 'required|min:8|confirmed',
+            // Nombre: Obligatorio, Texto, Mínimo 3 letras, Máximo 255
+            'nombre'   => 'required|string|min:3|max:255',
+            
+            // Email: Obligatorio, Formato válido, Único en la tabla users
+            'email'    => 'required|email|unique:users,email|unique:entrenadores,email',
+            
+            // IBAN: Obligatorio, Texto, Minimo 15 caracteres, Maximo 34
+            'iban'     => 'required|string|min:15|max:34',
+            
+            // Password: Obligatorio, String, Mínimo 8, Confirmado (coincide con password_confirmation)
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            // --- MENSAJES PERSONALIZADOS ---
+            'nombre.required'    => 'El nombre completo es obligatorio.',
+            'nombre.min'         => 'El nombre debe tener al menos 3 letras.',
+            'email.required'     => 'El correo electrónico es obligatorio.',
+            'email.email'        => 'Introduce un correo válido.',
+            'email.unique'       => 'Este correo ya está registrado en el sistema.',
+            'iban.required'      => 'El IBAN es necesario.',
+            'iban.min'           => 'El IBAN parece incompleto (mínimo 15 caracteres).',
+            'password.required'  => 'La contraseña es obligatoria.',
+            'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
+        // Crear el Entrenador
         $entrenador = Entrenador::create([
             'nombre'   => $request->nombre,
             'email'    => $request->email,
@@ -63,18 +84,24 @@ class EntrenadorController extends Controller
             ->with('success', 'Entrenador añadido correctamente.');
     }
 
-    // --- AQUÍ ESTÁ LA CORRECCIÓN DEL UPDATE ---
     public function update(Request $request, $id)
     {
         // 1. Buscamos el entrenador manualmente por ID
         $entrenador = Entrenador::findOrFail($id);
 
-        // 2. Validación (Usamos $id para ignorar el email actual de este usuario)
+        // --- VALIDACIONES DE EDICIÓN ---
         $request->validate([
-            'nombre'   => 'required|string|max:255',
+            'nombre'   => 'required|string|min:3|max:255',
+            // En update ignoramos el ID del entrenador actual para que no de error de "ya existe"
             'email'    => 'required|email|unique:entrenadores,email,' . $id,
-            'iban'     => 'required|string|max:34',
-            'password' => 'nullable|min:8|confirmed',
+            'iban'     => 'required|string|min:15|max:34',
+            'password' => 'nullable|string|min:8|confirmed',
+        ], [
+            'nombre.required'    => 'El nombre es obligatorio.',
+            'email.unique'       => 'Este correo ya está en uso por otro usuario.',
+            'iban.required'      => 'El IBAN es obligatorio.',
+            'password.min'       => 'La contraseña nueva debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
         // 3. Preparar datos
@@ -97,6 +124,7 @@ class EntrenadorController extends Controller
             ['email' => $entrenador->email],
             ['name' => $entrenador->nombre, 'password' => Hash::make($request->password ?? 'password')]
         );
+        
         // Si el email fue cambiado, sincronizar
         if ($user->email !== $request->email) {
             $user->email = $request->email;
@@ -117,7 +145,7 @@ class EntrenadorController extends Controller
 
         // Permitir a admin dar/quitar rol admin mediante campo 'make_admin'
         $current = Auth::user();
-        if ($current && method_exists($current, 'hasRole') && $current->hasRole('admin')) {
+        if ($current && method_exists($current, 'hasRole') && $current && $current->hasRole('admin')) {
             if ($request->boolean('make_admin')) {
                 if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('admin')) {
                     $user->assignRole('admin');

@@ -3,14 +3,46 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\UserGroup; // <--- IMPORTANTE
+use App\Models\UserGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
-
 class UserController extends Controller
 {
+    /**
+     * Array centralizado de mensajes de error en español.
+     * Así reutilizamos los mismos textos para crear y actualizar.
+     */
+    protected function validationMessages()
+    {
+        return [
+            'name.required'      => 'El nombre es obligatorio.',
+            'name.string'        => 'El nombre debe ser un texto válido.',
+            'name.min'           => 'El nombre debe tener al menos 3 caracteres.',
+            'name.max'           => 'El nombre no puede superar los 255 caracteres.',
+            
+            'email.required'     => 'El correo electrónico es obligatorio.',
+            'email.email'        => 'Introduce una dirección de correo válida.',
+            'email.unique'       => 'Este correo ya está registrado por otro usuario.',
+            
+            'password.required'  => 'La contraseña es obligatoria.',
+            'password.min'       => 'La contraseña debe tener al menos 6 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            
+            'IBAN.string'        => 'El IBAN debe ser un texto.',
+            'IBAN.unique'        => 'Este IBAN ya pertenece a otro usuario.',
+            'IBAN.min'           => 'El IBAN parece incompleto (mínimo 15 caracteres).',
+            
+            'firma_digital.string' => 'La firma digital debe ser texto.',
+            'firma_digital.max'    => 'La firma digital es demasiado larga.',
+
+            'group_name.required' => 'El nombre del grupo es obligatorio.',
+            'users.required'      => 'Debes seleccionar al menos dos usuarios.',
+            'users.min'           => 'Un grupo necesita mínimo 2 miembros.',
+        ];
+    }
+
     public function index()
     {
         // Mostrar solo clientes en la interfaz de usuarios
@@ -24,20 +56,30 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        // --- 1. VALIDACIONES ROBUSTAS (Mínimo 2 por campo) ---
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'IBAN' => 'nullable|unique:users',
-            'firma_digital' => 'nullable',
-        ]);
+            // Nombre: Obligatorio + Texto + Mínimo 3 letras + Máximo 255
+            'name'          => 'required|string|min:3|max:255',
+            
+            // Email: Obligatorio + Formato email + Único en la tabla
+            'email'         => 'required|email|unique:users,email',
+            
+            // Password: Obligatorio + Mínimo 6 caracteres
+            'password'      => 'required|string|min:6',
+            
+            // IBAN: Opcional + Texto + Único + Mínimo 15 caracteres (validez básica)
+            'IBAN'          => 'nullable|string|unique:users,IBAN|min:15|max:34',
+            
+            // Firma: Opcional + Texto + Máximo 255
+            'firma_digital' => 'nullable|string|max:255',
+        ], $this->validationMessages());
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'IBAN' => $request->IBAN,
-            'FirmaDigital' => $request->firma_digital, // Ajusta si tu columna se llama diferente
+            'FirmaDigital' => $request->firma_digital,
         ]);
 
         // Asignar rol cliente por defecto
@@ -48,11 +90,14 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        // --- VALIDACIONES AL ACTUALIZAR ---
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'IBAN' => 'nullable|unique:users,IBAN,' . $user->id,
-        ]);
+            'name'          => 'required|string|min:3|max:255',
+            // Ignoramos el ID del usuario actual para que no falle el "unique"
+            'email'         => 'required|email|unique:users,email,' . $user->id,
+            'IBAN'          => 'nullable|string|min:15|unique:users,IBAN,' . $user->id,
+            'firma_digital' => 'nullable|string|max:255',
+        ], $this->validationMessages());
 
         $data = [
             'name' => $request->name,
@@ -61,7 +106,12 @@ class UserController extends Controller
             'FirmaDigital' => $request->firma_digital,
         ];
 
+        // Solo actualizar contraseña si se ha rellenado
         if ($request->filled('password')) {
+            $request->validate([
+                'password' => 'string|min:6', // Validamos también aquí
+            ], $this->validationMessages());
+            
             $data['password'] = Hash::make($request->password);
         }
 
@@ -82,8 +132,8 @@ class UserController extends Controller
     {
         $request->validate([
             'group_name' => 'required|string|max:255',
-            'users' => 'required|array|min:2',
-        ]);
+            'users'      => 'required|array|min:2',
+        ], $this->validationMessages());
 
         $group = UserGroup::create(['name' => $request->group_name]);
         $group->users()->attach($request->users);
@@ -101,7 +151,7 @@ class UserController extends Controller
             ->with('success', 'Grupo eliminado correctamente.');
     }
 
-    //Métodos de configuracion
+    // --- MÉTODOS DE CONFIGURACIÓN (PERFIL) ---
     public function configuracion(Request $request)
     {
         return view('configuracion.configuracion', [
@@ -113,26 +163,27 @@ class UserController extends Controller
     {
         $user = $request->user();
 
+        // Validaciones en español
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:50'],
+            'name'  => ['required', 'string', 'min:3', 'max:50'],
             'email' => [
                 'required',
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
-            // si quieres permitir IBAN / FirmaDigital desde configuración:
-            'IBAN' => ['nullable', Rule::unique('users', 'IBAN')->ignore($user->id)],
-            'firma_digital' => ['nullable', 'string'],
+            'IBAN' => [
+                'nullable', 
+                'string', 
+                'min:15', 
+                Rule::unique('users', 'IBAN')->ignore($user->id)
+            ],
+            'firma_digital' => ['nullable', 'string', 'max:255'],
 
             // Password opcional (solo si se rellena)
             'current_password' => ['nullable', 'string'],
-            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
-        ], [
-            'email.unique' => 'Ese email ya está en uso.',
-            'IBAN.unique' => 'Ese IBAN ya está en uso.',
-            'password.confirmed' => 'La confirmación no coincide.',
-        ]);
+            'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
+        ], $this->validationMessages()); // Usamos los mensajes comunes
 
         // Datos básicos
         $data = [
@@ -144,10 +195,11 @@ class UserController extends Controller
 
         // Cambiar contraseña SOLO si el usuario escribe una nueva
         if ($request->filled('password')) {
+            // Validación extra para la contraseña actual
             $request->validate([
                 'current_password' => ['required'],
             ], [
-                'current_password.required' => 'Debes escribir tu contraseña actual.',
+                'current_password.required' => 'Por seguridad, debes escribir tu contraseña actual para cambiarla.',
             ]);
 
             if (!Hash::check($request->current_password, $user->password)) {
@@ -163,5 +215,4 @@ class UserController extends Controller
 
         return back()->with('success', 'Configuración actualizada correctamente.');
     }
-
 }

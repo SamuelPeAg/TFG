@@ -54,7 +54,7 @@
                             <tr>
                                 <th>Entrenador</th>
                                 <th>Email</th>
-                                <th>IBAN</th> {{-- Nueva columna --}}
+                                <th>IBAN</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -117,67 +117,8 @@
         </main>
     </div>
 
-    {{-- MODAL REGISTRO (CREAR) --}}
-    <div id="modalRegistro" class="modal-overlay">
-        <div class="modal-card">
-            <button type="button" class="close-btn" id="btnCerrarModal">&times;</button>
-            <div class="modal-header-custom">
-                <div class="logo-simulado"><i class="fas fa-layer-group"></i></div>
-                <h2>Añadir Entrenador</h2>
-                <p>Registra un profesional en Factomove.</p>
-            </div>
-
-            <form action="{{ route('entrenadores.store') }}" method="POST">
-                @csrf
-                <div class="form-group">
-                    <label class="form-label-custom">Nombre Completo</label>
-                    <div class="input-group-custom">
-                        <i class="fas fa-user"></i>
-                        <input type="text" name="nombre" class="form-control-custom" placeholder="Ej. Maria Garcia" required value="{{ old('nombre') }}">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label-custom">Correo Electrónico</label>
-                    <div class="input-group-custom">
-                        <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" class="form-control-custom" placeholder="tucorreo@ejemplo.com" required value="{{ old('email') }}">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label-custom">IBAN</label>
-                    <div class="input-group-custom">
-                        <i class="fas fa-credit-card"></i>
-                        <input type="text" name="iban" class="form-control-custom" placeholder="ES00 0000..." required value="{{ old('iban') }}">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label-custom">Contraseña</label>
-                    <div class="input-group-custom">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" name="password" class="form-control-custom" placeholder="Mínimo 8 caracteres" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label-custom">Confirmar Contraseña</label>
-                    <div class="input-group-custom">
-                        <i class="fas fa-check-double"></i>
-                        <input type="password" name="password_confirmation" class="form-control-custom" placeholder="Repite tu contraseña" required>
-                    </div>
-                </div>
-                @if(auth()->check() && auth()->user()->hasRole('admin'))
-                <div class="form-group" style="margin-top:10px;">
-                    <label class="form-label-custom">Dar rol de admin</label>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" name="make_admin" id="make_admin" value="1">
-                        <small>Marcar para dar también rol <strong>admin</strong> al entrenador</small>
-                    </div>
-                </div>
-                @endif
-
-                <button type="submit" class="btn-facto">Crear Entrenador</button>
-            </form>
-        </div>
-    </div>
+    {{-- MODAL REGISTRO (CREAR) - AHORA COMO COMPONENTE --}}
+    <x-modales.crear-entrenador />
 
     {{-- MODAL EDITAR (ACTUALIZAR) --}}
     <div id="modalEditar" class="modal-overlay">
@@ -251,6 +192,7 @@
 
    <script>
         // --- LÓGICA MODAL REGISTRO ---
+        // El componente x-modales.crear-entrenador renderiza el HTML con ID 'modalRegistro' y 'btnCerrarModal'
         const modal = document.getElementById('modalRegistro');
         const btnAbrir = document.getElementById('btnAbrirModal');
         const btnCerrar = document.getElementById('btnCerrarModal');
@@ -264,24 +206,21 @@
         const formEdit = document.getElementById('formEditar');
 
         // Función corregida para generar la URL perfectamente
-        function abrirModalEditar(id, nombre, email, iban) {
+        function abrirModalEditar(id, nombre, email, iban, isAdmin) {
             // 1. Rellenar inputs
             document.getElementById('edit_nombre').value = nombre;
             document.getElementById('edit_email').value = email;
             document.getElementById('edit_iban').value = iban;
 
             // 2. Generar URL segura
-            // Usamos 'temp_id' como marcador de posición que NO será codificado extrañamente
             let urlBase = "{{ route('entrenadores.update', 'temp_id') }}";
-            
-            // 3. Reemplazar 'temp_id' por el ID real
             let urlFinal = urlBase.replace('temp_id', id);
             
-            // 4. Asignar al formulario
+            // 3. Asignar al formulario
             formEdit.action = urlFinal;
 
-            // 6. Marcar checkbox si el entrenador ya tiene rol admin (parametro isAdmin)
-            if(typeof isAdmin !== 'undefined') {
+            // 4. Marcar checkbox si el entrenador ya tiene rol admin
+            if(document.getElementById('edit_make_admin')) {
                 document.getElementById('edit_make_admin').checked = (isAdmin == '1');
             }
 

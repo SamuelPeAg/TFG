@@ -7,7 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable; 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-// Importante: Importar el modelo UserGroup
+// Importaciones correctas según tu imagen
 use App\Models\UserGroup;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -21,7 +21,7 @@ class User extends Authenticatable
         'password',
         'foto_de_perfil',
         'IBAN',
-        'FirmaDigital', // Asegúrate que en tu BD sea 'FirmaDigital' o 'firma_digital' según tu migración anterior
+        'FirmaDigital', 
     ];
 
     protected $hidden = [
@@ -29,14 +29,17 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // --- RELACIÓN NUEVA ---
+    // Relación con Grupos
     public function groups()
     {
+        // OJO: Asegúrate que en la base de datos la tabla se llame 'user_user_group'
+        // Si te da error, prueba con 'group_user'
         return $this->belongsToMany(UserGroup::class, 'user_user_group');
     }
+
+    // Relación con Sessiones (Coincide con tu archivo Sessiones.php)
     public function sesionesCreadas()
     {
         return $this->hasMany(\App\Models\Sessiones::class, 'entrenador_id');
     }
-
 }
