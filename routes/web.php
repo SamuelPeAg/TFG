@@ -80,11 +80,6 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
     Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
 
-
-    Route::get('/facturas', function () {
-        return view('facturacion.facturas');
-    })->name('facturas');
-
     Route::get('/calendario', function () {
         return view('booking.calendar'); 
     })->name('booking.view');
