@@ -22,7 +22,7 @@
           width: 20px;
           height: 20px;
           border: 2px solid #CBD5E0;
-          border-radius: 6px; /* Borde redondeado suave */
+          border-radius: 6px; 
           display: grid;
           place-content: center;
           transition: all 0.2s ease-in-out;
@@ -37,12 +37,11 @@
           transition: 120ms transform ease-in-out;
           box-shadow: inset 1em 1em white;
           transform-origin: center;
-          /* Icono de Check (tick) usando clip-path */
           clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
       }
 
       .custom-checkbox:checked {
-          background-color: #4BB7AE; /* Color BrandTeal */
+          background-color: #4BB7AE; 
           border-color: #4BB7AE;
       }
 
@@ -119,91 +118,8 @@
           </div>
         @endif
 
-        {{-- TABLA DE USUARIOS --}}
-        <div class="table-container">
-          <table class="facto-table">
-            <thead>
-              <tr>
-                <th class="check-column">
-                    <input type="checkbox" id="selectAll" class="custom-checkbox">
-                </th>
-                <th>Usuario</th>
-                <th>Email</th>
-                <th>Grupos</th> <th>IBAN</th>
-                <th>Firma</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              @forelse($users as $user)
-                <tr>
-                  <td class="check-column">
-                      <input type="checkbox" class="user-check custom-checkbox" value="{{ $user->id }}">
-                  </td>
-                  
-                  <td>
-                    <div class="user-info">
-                      <div class="avatar-circle">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                      </div>
-                      <span>{{ $user->name }}</span>
-                    </div>
-                  </td>
-
-                  <td>{{ $user->email }}</td>
-                  
-                  <td>
-                      @forelse($user->groups as $group)
-                          <span class="group-tag">{{ $group->name }}</span>
-                      @empty
-                          <span style="color: #cbd5e0; font-size: 0.8em;">-</span>
-                      @endforelse
-                  </td>
-
-                  <td style="font-family: monospace;">{{ $user->IBAN ?? '---' }}</td>
-                  <td style="font-family: monospace;">{{ $user->FirmaDigital ?? 'No' }}</td>
-
-                  <td>
-                    <div class="action-buttons">
-                      {{-- EDITAR --}}
-                      <button
-                        type="button"
-                        class="btn-icon btn-edit js-edit-user"
-                        data-id="{{ $user->id }}"
-                        data-name="{{ $user->name }}"
-                        data-email="{{ $user->email }}"
-                        data-iban="{{ $user->IBAN }}"
-                        data-firma="{{ $user->FirmaDigital }}"
-                      >
-                        <i class="fas fa-pencil-alt"></i>
-                      </button>
-
-                      {{-- ELIMINAR --}}
-                      <form
-                        action="{{ route('users.destroy', $user->id) }}"
-                        method="POST"
-                        onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');"
-                      >
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn-icon btn-delete">
-                          <i class="fas fa-trash-alt"></i>
-                        </button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-              @empty
-                <tr>
-                  <td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">
-                    No hay usuarios registrados aún.
-                  </td>
-                </tr>
-              @endforelse
-            </tbody>
-          </table>
-        </div>
-
+        {{-- COMPONENTE DE TABLA DE USUARIOS --}}
+<x-tablas.users-table :users="$users" />
       </div>
     </main>
   </div>
@@ -229,7 +145,6 @@
           </div>
           <form action="{{ route('users.group.store') }}" method="POST">
               @csrf
-              {{-- Inputs ocultos se generan por JS --}}
               <div id="hiddenInputsContainer"></div>
 
               <div class="form-group">
@@ -244,58 +159,11 @@
       </div>
   </div>
 
-  {{-- 3. MODAL GESTIONAR (VER/BORRAR) GRUPOS --}}
-  <div id="modalGestionGrupos" class="modal-overlay" aria-hidden="true">
-    <div class="modal-card" style="max-width: 500px;">
-      <button type="button" class="close-btn" onclick="cerrarModalGestionGrupos()">&times;</button>
-      
-      <div class="modal-header-custom">
-        <div class="logo-simulado"><i class="fas fa-trash-alt"></i></div>
-        <h2>Grupos Existentes</h2>
-        <p>Gestiona o elimina tus grupos.</p>
-      </div>
-  
-      <div style="max-height: 300px; overflow-y: auto; margin-top: 15px;">
-        @if(isset($groups) && $groups->count() > 0)
-          <table class="w-full text-left" style="width: 100%; border-collapse: collapse;">
-            <thead style="background: #f7fafc; border-bottom: 2px solid #edf2f7; position: sticky; top: 0;">
-              <tr>
-                <th style="padding: 10px; color: #718096; font-size: 0.85em;">GRUPO</th>
-                <th style="padding: 10px; text-align: right; color: #718096; font-size: 0.85em;">ACCIÓN</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach($groups as $group)
-                <tr style="border-bottom: 1px solid #edf2f7;">
-                  <td style="padding: 12px; font-weight: 600; color: #2D3748;">
-                    {{ $group->name }}
-                    <span style="font-size: 0.75em; color: #a0aec0; font-weight: normal; margin-left: 5px;">
-                      ({{ $group->users_count }} usuarios)
-                    </span>
-                  </td>
-                  <td style="padding: 12px; text-align: right;">
-                    <form action="{{ route('users.group.destroy', $group->id) }}" method="POST" onsubmit="return confirm('¿Borrar el grupo {{ $group->name }}?');">
-                      @csrf @method('DELETE')
-                      <button type="submit" style="background: #FFF5F5; color: #E53E3E; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" title="Eliminar Grupo">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        @else
-          <div style="text-align: center; padding: 20px; color: #A0AEC0;">
-            <i class="fas fa-folder-open" style="font-size: 2em; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
-            No hay grupos creados todavía.
-          </div>
-        @endif
-      </div>
-    </div>
-  </div>
+  {{-- 3. COMPONENTE MODAL GESTIONAR GRUPOS (NUEVA UBICACIÓN) --}}
+  <x-modales.gestion-grupos :groups="$groups" />
 
   {{-- 4. MODAL CREAR USUARIO --}}
+{{-- 4. MODAL CREAR USUARIO --}}
   <div id="modalCrearUsuario" class="modal-overlay" aria-hidden="true">
     <div class="modal-card">
       <button type="button" class="close-btn" id="btnCerrarModalCrearUsuario">&times;</button>
@@ -305,11 +173,52 @@
       </div>
       <form action="{{ route('users.store') }}" method="POST">
         @csrf
-        <div class="form-group"><label class="form-label-custom">Nombre</label><div class="input-group-custom"><i class="fas fa-user"></i><input type="text" name="name" class="form-control-custom" required></div></div>
-        <div class="form-group"><label class="form-label-custom">Email</label><div class="input-group-custom"><i class="fas fa-envelope"></i><input type="email" name="email" class="form-control-custom" required></div></div>
-        <div class="form-group"><label class="form-label-custom">Pass</label><div class="input-group-custom"><i class="fas fa-lock"></i><input type="password" name="password" class="form-control-custom" required></div></div>
-        <div class="form-group"><label class="form-label-custom">IBAN</label><div class="input-group-custom"><i class="fas fa-credit-card"></i><input type="text" name="IBAN" class="form-control-custom"></div></div>
-        <div class="form-group"><label class="form-label-custom">Firma</label><div class="input-group-custom"><i class="fas fa-pen-nib"></i><input type="text" name="firma_digital" class="form-control-custom"></div></div>
+        
+        {{-- CAMPO NOMBRE --}}
+        <div class="form-group">
+            <label class="form-label-custom">Nombre</label>
+            <div class="input-group-custom">
+                <i class="fas fa-user"></i>
+                <input type="text" name="name" class="form-control-custom" placeholder="Ej. Juan Pérez" required>
+            </div>
+        </div>
+
+        {{-- CAMPO EMAIL --}}
+        <div class="form-group">
+            <label class="form-label-custom">Email</label>
+            <div class="input-group-custom">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" class="form-control-custom" placeholder="usuario@email.com" required>
+            </div>
+        </div>
+
+        {{-- CAMPO PASS --}}
+        <div class="form-group">
+            <label class="form-label-custom">Pass</label>
+            <div class="input-group-custom">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" class="form-control-custom" placeholder="********" required>
+            </div>
+        </div>
+
+        {{-- CAMPO IBAN --}}
+        <div class="form-group">
+            <label class="form-label-custom">IBAN</label>
+            <div class="input-group-custom">
+                <i class="fas fa-credit-card"></i>
+                <input type="text" name="IBAN" class="form-control-custom" placeholder="ES00 0000 0000 0000...">
+            </div>
+        </div>
+
+        {{-- CAMPO FIRMA --}}
+        <div class="form-group">
+            <label class="form-label-custom">Firma</label>
+            <div class="input-group-custom">
+                <i class="fas fa-pen-nib"></i>
+                <input type="text" name="firma_digital" class="form-control-custom" placeholder="Código de firma...">
+            </div>
+        </div>
+
         <button type="submit" class="btn-facto">Crear</button>
       </form>
     </div>
@@ -345,18 +254,22 @@
       const floatingBar = document.getElementById('floatingBar');
       const countSpan = document.getElementById('countSelected');
       const modalGrupo = document.getElementById('modalGrupo');
+      
+      // Obtenemos referencia al modal del componente.
+      // Como el componente se renderiza en el HTML final, JS lo encuentra por ID sin problemas.
       const modalGestion = document.getElementById('modalGestionGrupos');
+      
       const inputsContainer = document.getElementById('hiddenInputsContainer');
 
       // Actualizar barra flotante
       function updateFloatingBar() {
           const selected = document.querySelectorAll('.user-check:checked');
-          countSpan.innerText = selected.length;
+          if(countSpan) countSpan.innerText = selected.length;
           
           if(selected.length >= 2) {
-              floatingBar.classList.add('active');
+              if(floatingBar) floatingBar.classList.add('active');
           } else {
-              floatingBar.classList.remove('active');
+              if(floatingBar) floatingBar.classList.remove('active');
           }
       }
 
@@ -369,8 +282,9 @@
           });
       }
 
-      // Modal Crear Grupo (Enviar IDs)
+      // Modal Crear Grupo
       function abrirModalGrupo() {
+          if(!modalGrupo) return;
           inputsContainer.innerHTML = ''; 
           const selected = document.querySelectorAll('.user-check:checked');
           selected.forEach(cb => {
@@ -384,15 +298,15 @@
       }
 
       function cerrarModalGrupo() {
-          modalGrupo.style.display = 'none';
+          if(modalGrupo) modalGrupo.style.display = 'none';
       }
 
-      // Modal Gestionar Grupos
+      // Modal Gestionar Grupos (Funciones llamadas por el HTML y el Componente)
       function abrirModalGestionGrupos() {
-          modalGestion.style.display = 'flex';
+          if(modalGestion) modalGestion.style.display = 'flex';
       }
       function cerrarModalGestionGrupos() {
-          modalGestion.style.display = 'none';
+          if(modalGestion) modalGestion.style.display = 'none';
       }
 
       // Cierres al clicar fuera
@@ -400,6 +314,42 @@
           if (e.target === modalGrupo) modalGrupo.style.display = 'none';
           if (e.target === modalGestion) modalGestion.style.display = 'none';
       });
+
+      // --- LÓGICA MODALES USUARIOS (CREAR / EDITAR) ---
+      const modalCrear = document.getElementById('modalCrearUsuario');
+      const btnAbrirCrear = document.getElementById('toggleCrearUsuario');
+      const btnCerrarCrear = document.getElementById('btnCerrarModalCrearUsuario');
+      
+      if(btnAbrirCrear) btnAbrirCrear.addEventListener('click', () => modalCrear.style.display = 'flex');
+      if(btnCerrarCrear) btnCerrarCrear.addEventListener('click', () => modalCrear.style.display = 'none');
+
+      const modalEditar = document.getElementById('modalEditarUsuario');
+      const btnCerrarEditar = document.getElementById('btnCerrarModalEditarUsuario');
+      
+      // Delegación de eventos para los botones de editar (dentro del componente tabla)
+      document.addEventListener('click', function(e) {
+          const btn = e.target.closest('.js-edit-user');
+          if (btn) {
+              const id = btn.dataset.id;
+              document.getElementById('edit_name').value = btn.dataset.name;
+              document.getElementById('edit_email').value = btn.dataset.email;
+              document.getElementById('edit_iban').value = btn.dataset.iban || '';
+              document.getElementById('edit_firma').value = btn.dataset.firma || '';
+              
+              const form = document.getElementById('formEditarUsuario');
+              form.action = `/users/${id}`; 
+
+              if(modalEditar) modalEditar.style.display = 'flex';
+          }
+      });
+
+      if(btnCerrarEditar) btnCerrarEditar.addEventListener('click', () => modalEditar.style.display = 'none');
+
+      window.addEventListener('click', (e) => {
+          if (e.target === modalCrear) modalCrear.style.display = 'none';
+          if (e.target === modalEditar) modalEditar.style.display = 'none';
+      });
+
   </script>
 </body>
 </html>
