@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfil_test.jpg',
                 'iban' => 'ES1234567890123456789012',
-                'FirmaDigital' => 'firma_digital_test',
+                'firma_digital' => 'firma_digital_test',
             ]
         );
 
@@ -33,7 +33,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfill_test.jpg',
                 'iban' => 'ES12345678901234545689012',
-                'FirmaDigital' => 'firma_digitall_test',
+                'firma_digital' => 'firma_digitall_test',
             ]
         );
 
@@ -45,7 +45,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('123456'),
                 'foto_de_perfil' => 'perfil_ana.jpg',
                 'iban' => 'ES0987654321098765432109',
-                'FirmaDigital' => 'firma_digital_ana',
+                'firma_digital' => 'firma_digital_ana',
             ]
         );
 
@@ -63,7 +63,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfil_entrenador.jpg',
                 'iban' => 'ES1111111111111111111111',
-                'FirmaDigital' => 'firma_entrenador',
+                'firma_digital' => 'firma_entrenador',
             ]
         );
         $trainer->assignRole('entrenador');
@@ -76,7 +76,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfil_cliente.jpg',
                 'iban' => 'ES2222222222222222222222',
-                'FirmaDigital' => 'firma_cliente',
+                'firma_digital' => 'firma_cliente',
             ]
         );
         $client->assignRole('cliente');

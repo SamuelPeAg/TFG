@@ -18,7 +18,7 @@ class UserFactory extends Factory
             'password' => Hash::make('password123'),
             'foto_de_perfil' => null,
             'iban' => $this->faker->optional()->iban('ES'),
-            'FirmaDigital' => $this->faker->optional()->text(100),
+            'firma_digital' => $this->faker->optional()->text(100),
             'created_at' => now(),
             'updated_at' => now(),
         ];

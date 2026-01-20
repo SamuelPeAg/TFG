@@ -124,7 +124,7 @@
         <mxCell id="Dx9iV9yvrUt0WH5JZXmu-72" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="Fecharegistro" vertex="1">
           <mxGeometry height="12.5" width="53.5" x="868.3000000000002" y="811.5100000000002" as="geometry" />
         </mxCell>
-        <mxCell id="Dx9iV9yvrUt0WH5JZXmu-74" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="FirmaDigital" vertex="1">
+        <mxCell id="Dx9iV9yvrUt0WH5JZXmu-74" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="firma_digital" vertex="1">
           <mxGeometry height="12.5" width="53.5" x="26.460000000000107" y="1034.0600000000002" as="geometry" />
         </mxCell>
         <mxCell id="Dx9iV9yvrUt0WH5JZXmu-75" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" value="" vertex="1">

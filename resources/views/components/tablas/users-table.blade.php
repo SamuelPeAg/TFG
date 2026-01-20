@@ -44,7 +44,7 @@
                 </td>
 
                 <td style="font-family: monospace;">{{ $user->iban ?? '---' }}</td>
-                <td style="font-family: monospace;">{{ $user->FirmaDigital ?? 'No' }}</td>
+                <td style="font-family: monospace;">{{ $user->firma_digital ?? 'No' }}</td>
 
                 <td>
                     <div class="action-buttons">
@@ -56,7 +56,7 @@
                             data-name="{{ $user->name }}"
                             data-email="{{ $user->email }}"
                             data-iban="{{ $user->iban }}"
-                            data-firma="{{ $user->FirmaDigital }}"
+                            data-firma="{{ $user->firma_digital }}"
                         >
                             <i class="fas fa-pencil-alt"></i>
                         </button>

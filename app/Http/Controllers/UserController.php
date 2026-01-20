@@ -79,7 +79,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'iban' => $request->iban,
-            'FirmaDigital' => $request->firma_digital,
+            'firma_digital' => $request->firma_digital,
         ]);
 
         // Asignar rol cliente por defecto
@@ -103,7 +103,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'iban' => $request->iban,
-            'FirmaDigital' => $request->firma_digital,
+            'firma_digital' => $request->firma_digital,
         ];
 
         // Solo actualizar contraseña si se ha rellenado
@@ -190,7 +190,7 @@ class UserController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'iban' => $validated['iban'] ?? $user->iban,
-            'FirmaDigital' => $validated['firma_digital'] ?? $user->FirmaDigital,
+            'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
         ];
 
         // Cambiar contraseña SOLO si el usuario escribe una nueva
