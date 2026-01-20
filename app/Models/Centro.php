@@ -18,11 +18,6 @@ class Centro extends Model
         "direccion"
     ];
 
-    //Un Centro tiene N Clases 
-    public function clases()
-    {
-        return $this->hasMany(Clase::class, 'id_centro', 'id'); // FK 'id_centro'
-    }
 
     //Un Centro tiene N HorariosClases
     public function horariosClases()

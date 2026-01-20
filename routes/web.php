@@ -6,8 +6,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserReservationController;
-use App\Http\Controllers\TrainerController;
 use App\Http\Controllers\SessionesController;
 
 /*
@@ -15,8 +13,6 @@ use App\Http\Controllers\SessionesController;
 | RUTAS PÚBLICAS (Cualquiera puede entrar)
 |--------------------------------------------------------------------------
 */
-Route::get('/reservar', [UserReservationController::class, 'index'])->name('booking.view');
-Route::post('/reservar/guardar', [UserReservationController::class, 'store'])->name('sesiones.reservar');
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -27,8 +23,11 @@ Route::get('/', function () {
 
 // Rutas Legales
 Route::get('/aviso-legal', function () { return view('legal.notice'); })->name('legal.notice');
+
 Route::get('/politica-privacidad', function () { return view('legal.privacy'); })->name('privacy.policy');
+
 Route::get('/politica-cookies', function () { return view('legal.cookies'); })->name('cookies.policy');
+
 Route::get('/contacto', function () { return view('contact'); })->name('contact');
 
 
@@ -75,7 +74,6 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     Route::delete('/users/grupos/{id}', [UserController::class, 'destroyGroup'])->name('users.group.destroy')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     // Gestión de entrenadores (solo admin)
     Route::resource('entrenadores', EntrenadorController::class)->middleware(\App\Http\Middleware\AdminMiddleware::class);
-    Route::resource('reservations', UserReservationController::class); // Agregué esto por si acaso
     
     Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
     Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
