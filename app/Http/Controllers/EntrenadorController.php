@@ -2,41 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Entrenador;
 use App\Models\User;
-use Spatie\Permission\PermissionRegistrar;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Spatie\Permission\PermissionRegistrar;
 
 class EntrenadorController extends Controller
 {
     public function index()
     {
-        // Mostrar solo los entrenadores cuyo email pertenece a un User con rol 'entrenador'
-        $emails = User::role('entrenador')->pluck('email')->toArray();
-        $entrenadores = Entrenador::whereIn('email', $emails)->get();
+        $entrenadores = User::role('entrenador')->get();
         return view('entrenadores.index', compact('entrenadores'));
     }
 
     public function store(Request $request)
     {
-        // --- 1. VALIDACIONES ROBUSTAS (Mínimo 3-4 reglas por campo) ---
         $request->validate([
-            // Nombre: Obligatorio, Texto, Mínimo 3 letras, Máximo 255
-            'nombre'   => 'required|string|min:3|max:255',
-            
-            // Email: Obligatorio, Formato válido, Único en la tabla users
-            'email'    => 'required|email|unique:users,email|unique:entrenadores,email',
-            
-            // IBAN: Obligatorio, Texto, Minimo 15 caracteres, Maximo 34
-            'iban'     => 'required|string|min:15|max:34',
-            
-            // Password: Obligatorio, String, Mínimo 8, Confirmado (coincide con password_confirmation)
-            'password' => 'required|string|min:8|confirmed',
+            'nombre'   => ['required', 'string', 'min:3', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+            'iban'     => ['required', 'string', 'min:15', 'max:34'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
-            // --- MENSAJES PERSONALIZADOS ---
             'nombre.required'    => 'El nombre completo es obligatorio.',
             'nombre.min'         => 'El nombre debe tener al menos 3 letras.',
             'email.required'     => 'El correo electrónico es obligatorio.',
@@ -49,53 +37,33 @@ class EntrenadorController extends Controller
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
-        // Crear el Entrenador
-        $entrenador = Entrenador::create([
-            'nombre'   => $request->nombre,
+        $user = User::create([
+            'name'     => $request->nombre,
             'email'    => $request->email,
             'iban'     => $request->iban,
             'password' => Hash::make($request->password),
-            'rol'      => 'entrenador', 
         ]);
 
-        // Crear/actualizar el User asociado y asignarle rol 'entrenador'
-        $user = User::firstOrCreate(
-            ['email' => $request->email],
-            ['name' => $request->nombre, 'password' => Hash::make($request->password)]
-        );
-
-        // Limpiar caché de permisos antes de asignar
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        $user->assignRole('entrenador');
 
-        // Asegurar que siempre tenga rol 'entrenador'
-        if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('entrenador')) {
-            $user->assignRole('entrenador');
-        }
-
-        // Si el usuario autenticado es admin y marcó la casilla, añadir rol admin
         $current = Auth::user();
-        if ($current && method_exists($current, 'hasRole') && $current->hasRole('admin') && $request->boolean('make_admin')) {
-            if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('admin')) {
-                $user->assignRole('admin');
-            }
+        if ($current && $current->hasRole('admin') && $request->boolean('make_admin')) {
+            $user->assignRole('admin');
         }
 
-        return redirect()->route('entrenadores.index')
-            ->with('success', 'Entrenador añadido correctamente.');
+        return redirect()->route('entrenadores.index')->with('success', 'Entrenador añadido correctamente.');
     }
 
     public function update(Request $request, $id)
     {
-        // 1. Buscamos el entrenador manualmente por ID
-        $entrenador = Entrenador::findOrFail($id);
+        $user = User::role('entrenador')->whereKey($id)->firstOrFail();
 
-        // --- VALIDACIONES DE EDICIÓN ---
         $request->validate([
-            'nombre'   => 'required|string|min:3|max:255',
-            // En update ignoramos el ID del entrenador actual para que no de error de "ya existe"
-            'email'    => 'required|email|unique:entrenadores,email,' . $id,
-            'iban'     => 'required|string|min:15|max:34',
-            'password' => 'nullable|string|min:8|confirmed',
+            'nombre'   => ['required', 'string', 'min:3', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'iban'     => ['required', 'string', 'min:15', 'max:34'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ], [
             'nombre.required'    => 'El nombre es obligatorio.',
             'email.unique'       => 'Este correo ya está en uso por otro usuario.',
@@ -104,80 +72,45 @@ class EntrenadorController extends Controller
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
-        // 3. Preparar datos
         $data = [
-            'nombre' => $request->nombre,
-            'email'  => $request->email,
-            'iban'   => $request->iban,
+            'name'  => $request->nombre,
+            'email' => $request->email,
+            'iban'  => $request->iban,
         ];
 
-        // 4. Solo actualizar contraseña si se escribió una nueva
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
-        // 5. Guardar
-        $entrenador->update($data);
+        $user->update($data);
 
-        // Actualizar/crear User asociado
-        $user = User::firstOrCreate(
-            ['email' => $entrenador->email],
-            ['name' => $entrenador->nombre, 'password' => Hash::make($request->password ?? 'password')]
-        );
-        
-        // Si el email fue cambiado, sincronizar
-        if ($user->email !== $request->email) {
-            $user->email = $request->email;
-            $user->save();
-        }
-
-        // Si el password fue actualizado, sincronizar
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-            $user->save();
-        }
-
-        // Limpiar caché y asegurar rol 'entrenador' siempre
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('entrenador')) {
+        if (! $user->hasRole('entrenador')) {
             $user->assignRole('entrenador');
         }
 
-        // Permitir a admin dar/quitar rol admin mediante campo 'make_admin'
         $current = Auth::user();
-        if ($current && method_exists($current, 'hasRole') && $current && $current->hasRole('admin')) {
+        if ($current && $current->hasRole('admin')) {
             if ($request->boolean('make_admin')) {
-                if ($user && method_exists($user, 'hasRole') && ! $user->hasRole('admin')) {
+                if (! $user->hasRole('admin')) {
                     $user->assignRole('admin');
                 }
             } else {
-                if ($user && method_exists($user, 'hasRole') && $user->hasRole('admin')) {
+                if ($user->hasRole('admin')) {
                     $user->removeRole('admin');
                 }
             }
         }
 
-        return redirect()->route('entrenadores.index')
-            ->with('success', 'Entrenador actualizado correctamente.');
+        return redirect()->route('entrenadores.index')->with('success', 'Entrenador actualizado correctamente.');
     }
 
     public function destroy($id)
     {
-        try {
-            $entrenador = Entrenador::findOrFail($id);
-            $entrenador->delete();
+        $user = User::role('entrenador')->whereKey($id)->firstOrFail();
 
-            return redirect()->route('entrenadores.index')
-                ->with('success', 'Entrenador eliminado correctamente.');
+        $user->delete();
 
-        } catch (QueryException $e) {
-            if ($e->getCode() == "23000") {
-                return back()->withErrors(['error' => 'No se puede eliminar: Este entrenador tiene sesiones asignadas.']);
-            }
-            return back()->withErrors(['error' => 'Error de base de datos: ' . $e->getMessage()]);
-            
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Ocurrió un error inesperado: ' . $e->getMessage()]);
-        }
+        return redirect()->route('entrenadores.index')->with('success', 'Entrenador eliminado correctamente.');
     }
 }
