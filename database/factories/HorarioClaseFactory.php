@@ -16,7 +16,7 @@ class HorarioClaseFactory extends Factory
     {
         return [
             'id_clase' => Clase::factory(),
-            'id_entrenador' => Entrenador::factory(),
+            'entrenador_id' => Entrenador::factory(),
             'id_centro' => Centro::factory(), 
             'fecha_hora_inicio' => $this->faker->dateTimeBetween('+1 dia', '+1 mes'),
             'capacidad' => $this->faker->numberBetween(10, 30),

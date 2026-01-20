@@ -387,7 +387,7 @@
         <mxCell id="ALWcXamRgTf9TZ5OoiQr-1" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="ID_Horario" vertex="1">
           <mxGeometry height="12.5" width="37.5" x="435.46" y="785.25" as="geometry" />
         </mxCell>
-        <mxCell id="ALWcXamRgTf9TZ5OoiQr-2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="ID_Entrenador" vertex="1">
+        <mxCell id="ALWcXamRgTf9TZ5OoiQr-2" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="entrenador_id" vertex="1">
           <mxGeometry height="12.5" width="63.5" x="496.69" y="785.25" as="geometry" />
         </mxCell>
         <mxCell id="ALWcXamRgTf9TZ5OoiQr-3" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" value="id" vertex="1">
