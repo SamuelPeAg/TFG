@@ -30,7 +30,6 @@ class DatabaseSeeder extends Seeder
             HorarioClaseSeeder::class,  // Crea las clases en el calendario (instancias)
             
             // 4. Datos adicionales
-            ReservaEntrenadorSeeder::class, // Disponibilidad de entrenadores personales
             FacturaEntrenadorSeeder::class, // Facturas de ejemplo
 
             // 5. Reservas (al final)
