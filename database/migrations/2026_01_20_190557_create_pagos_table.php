@@ -6,9 +6,12 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('sessiones', function (Blueprint $table) {
+        Schema::create('pagos', function (Blueprint $table) {
             $table->id();
 
             // Relación con users (si se borra el usuario, la sesión queda sin user_id)
@@ -38,8 +41,11 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('sessiones');
+        Schema::dropIfExists('pagos');
     }
 };

@@ -3,15 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pago;
-use Illuminate\Http\Request;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
-class SessionesController extends Controller
+class PagosController extends Controller
 {
-    /**
-     * Muestra la vista principal.
-     */
     public function index()
     {
          $users = User::orderBy('name')->get(); // o select('id','name')
@@ -82,7 +79,4 @@ class SessionesController extends Controller
 
     return redirect()->route('sesiones')->with('success', 'Sesión creada correctamente.');
 }
-
-
-
 }

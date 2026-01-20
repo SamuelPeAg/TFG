@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Sessiones extends Model
+class Pago extends Model
 {
-    use HasFactory;
+    // use HasFactory;
 
-    protected $table = 'sessiones';
+    protected $table = 'Pagos';
 
     protected $fillable = [
         'user_id',

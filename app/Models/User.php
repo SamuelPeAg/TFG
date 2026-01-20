@@ -37,7 +37,7 @@ class User extends Authenticatable
 
     public function sesionesCreadas()
     {
-        return $this->hasMany(Sessiones::class, 'entrenador_id');
+        return $this->hasMany(Pago::class, 'entrenador_id');
     }
 
     public function horariosComoEntrenador()
