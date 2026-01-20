@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('metodo_pago');           // Ej: TPV / BIZUM / TRANSFERENCIA (lo que defináis)
 
             // Datos de pago
-            $table->string('IBAN')->nullable();      // IBAN puede tener letras, NO int
+            $table->string('iban')->nullable();      // iban puede tener letras, NO int
             $table->decimal('Pago', 8, 2);           // dinero decimal
 
             // Fecha + hora real (tu input datetime-local)

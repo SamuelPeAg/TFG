@@ -18,7 +18,7 @@ class SyncEntrenadoresSeeder extends Seeder
                 [
                     'nombre' => $u->name,
                     'email' => $u->email,
-                    'iban' => $u->IBAN ?? null,
+                    'iban' => $u->iban ?? null,
                     'password' => $u->password ?? bcrypt('password'),
                     'rol' => 'entrenador',
                 ]

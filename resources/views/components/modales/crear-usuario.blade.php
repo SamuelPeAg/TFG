@@ -36,12 +36,12 @@
                 </div>
             </div>
 
-            {{-- CAMPO IBAN --}}
+            {{-- CAMPO iban --}}
             <div class="form-group">
-                <label class="form-label-custom">IBAN</label>
+                <label class="form-label-custom">iban</label>
                 <div class="input-group-custom">
                     <i class="fas fa-credit-card"></i>
-                    <input type="text" name="IBAN" class="form-control-custom" placeholder="ES00 0000 0000 0000...">
+                    <input type="text" name="iban" class="form-control-custom" placeholder="ES00 0000 0000 0000...">
                 </div>
             </div>
 

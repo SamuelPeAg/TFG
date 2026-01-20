@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
                 'name' => 'Usuario de Prueba',
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfil_test.jpg',
-                'IBAN' => 'ES1234567890123456789012',
+                'iban' => 'ES1234567890123456789012',
                 'FirmaDigital' => 'firma_digital_test',
             ]
         );
@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
                 'name' => 'Paco Pepe',
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfill_test.jpg',
-                'IBAN' => 'ES12345678901234545689012',
+                'iban' => 'ES12345678901234545689012',
                 'FirmaDigital' => 'firma_digitall_test',
             ]
         );
@@ -44,7 +44,7 @@ class UserSeeder extends Seeder
                 'name' => 'Ana López',
                 'password' => Hash::make('123456'),
                 'foto_de_perfil' => 'perfil_ana.jpg',
-                'IBAN' => 'ES0987654321098765432109',
+                'iban' => 'ES0987654321098765432109',
                 'FirmaDigital' => 'firma_digital_ana',
             ]
         );
@@ -62,7 +62,7 @@ class UserSeeder extends Seeder
                 'name' => 'Entrenador Demo',
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfil_entrenador.jpg',
-                'IBAN' => 'ES1111111111111111111111',
+                'iban' => 'ES1111111111111111111111',
                 'FirmaDigital' => 'firma_entrenador',
             ]
         );
@@ -75,7 +75,7 @@ class UserSeeder extends Seeder
                 'name' => 'Cliente Demo',
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfil_cliente.jpg',
-                'IBAN' => 'ES2222222222222222222222',
+                'iban' => 'ES2222222222222222222222',
                 'FirmaDigital' => 'firma_cliente',
             ]
         );

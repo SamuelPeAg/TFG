@@ -68,12 +68,12 @@ class SessionesController extends Controller
     ]);
 
     $user = User::findOrFail($data['user_id']);
-    $iban = $user->IBAN ?? null;
+    $iban = $user->iban ?? null;
 
     Sessiones::create([
         'user_id'       => $data['user_id'],
         'entrenador_id' => auth()->id(),
-        'IBAN'          => $iban,
+        'iban'          => $iban,
         'Pago'          => $data['precio'],
         'Fecharegistro' => Carbon::parse($data['fecha_hora']),
         'centro'        => $data['centro'],

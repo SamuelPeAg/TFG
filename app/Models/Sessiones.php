@@ -14,7 +14,7 @@ class Sessiones extends Model
     protected $fillable = [
         'user_id',
         'entrenador_id',
-        'IBAN',
+        'iban',
         'Pago',
         'Fecharegistro',
         'centro',

@@ -6,7 +6,7 @@
             <tr>
                 <th>Entrenador</th>
                 <th>Email</th>
-                {{-- Si tu tabla trainers no tiene IBAN, puedes quitar esta columna o dejarla vacía --}}
+                {{-- Si tu tabla trainers no tiene iban, puedes quitar esta columna o dejarla vacía --}}
                 <th>Acciones</th>
             </tr>
         </thead>

@@ -30,8 +30,8 @@ class EntrenadorController extends Controller
             'email.required'     => 'El correo electrónico es obligatorio.',
             'email.email'        => 'Introduce un correo válido.',
             'email.unique'       => 'Este correo ya está registrado en el sistema.',
-            'iban.required'      => 'El IBAN es necesario.',
-            'iban.min'           => 'El IBAN parece incompleto (mínimo 15 caracteres).',
+            'iban.required'      => 'El iban es necesario.',
+            'iban.min'           => 'El iban parece incompleto (mínimo 15 caracteres).',
             'password.required'  => 'La contraseña es obligatoria.',
             'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
@@ -67,7 +67,7 @@ class EntrenadorController extends Controller
         ], [
             'nombre.required'    => 'El nombre es obligatorio.',
             'email.unique'       => 'Este correo ya está en uso por otro usuario.',
-            'iban.required'      => 'El IBAN es obligatorio.',
+            'iban.required'      => 'El iban es obligatorio.',
             'password.min'       => 'La contraseña nueva debe tener al menos 8 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);

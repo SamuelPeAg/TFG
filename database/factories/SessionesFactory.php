@@ -26,7 +26,7 @@ class SessionesFactory extends Factory
             'metodo_pago' => $this->faker->randomElement($metodosPago),
 
             // pago / iban
-            'IBAN' => $this->faker->iban('ES'), // IBAN realista con letras
+            'iban' => $this->faker->iban('ES'), // iban realista con letras
             'Pago' => $this->faker->randomFloat(2, 10, 80), // decimal 2 cifras
 
             // datetime (fecha + hora)
