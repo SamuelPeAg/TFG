@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch(`/usuarios/reservas?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/usuarios/Pagos?q=${encodeURIComponent(q)}`);
       const data = await res.json();
 
       clases = Array.isArray(data.events) ? data.events : [];

@@ -31,16 +31,17 @@ class PagosController extends Controller
             ->get();
 
         $events = $pagos->map(function (Pago $p) {
-            $fecha = Carbon::parse($p->fecha_registro);
+            $fechaRegistro = $p->getAttribute('fecha_registro');
+            $fecha = $fechaRegistro ? Carbon::parse($fechaRegistro) : null;
 
             return [
-                'fecha' => $fecha->format('Y-m-d'),
-                'hora'  => $fecha->format('H:i'),
-                'clase' => $p->nombre_clase,
+                'fecha' => $fecha?->format('Y-m-d') ?? '',
+                'hora'  => $fecha?->format('H:i') ?? '',
+                'clase' => (string) $p->getAttribute('nombre_clase'),
                 'descripcion' => '',
-                'coste' => (float) $p->importe,
-                'pago' => $p->metodo_pago,
-                'centro' => $p->centro,
+                'coste' => (float) $p->getAttribute('importe'),
+                'pago' => (string) $p->getAttribute('metodo_pago'),
+                'centro' => (string) $p->getAttribute('centro'),
             ];
         })->values();
 
@@ -61,9 +62,9 @@ class PagosController extends Controller
         $user = User::findOrFail($data['user_id']);
 
         Pago::create([
-            'user_id'        => $user->id,
+            'user_id'        => $user->getAttribute('id'),
             'entrenador_id'  => auth()->id(),
-            'iban'           => $user->iban,
+            'iban'           => $user->getAttribute('iban'),
             'importe'        => $data['precio'],
             'fecha_registro' => Carbon::parse($data['fecha_hora']),
             'centro'         => $data['centro'],
