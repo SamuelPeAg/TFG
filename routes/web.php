@@ -4,6 +4,7 @@ use App\Http\Controllers\EntrenadorController;
 use App\Http\Controllers\FacturacionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\NominaController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserReservationController;
@@ -80,7 +81,53 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
     Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
 
+     
+// Agrega esto dentro de tu grupo de middleware 'auth' si es necesario
+Route::resource('nominas', NominaController::class)->names('nominas');
+
+
     Route::get('/calendario', function () {
         return view('booking.calendar'); 
     })->name('booking.view');
 });
+
+Route::get('/nominas', function () {
+    
+    // 1. Inventamos unos datos falsos para que la tabla no de error
+    $nominas = [
+        (object)[
+            'id' => 1,
+            'user_id' => 1,
+            'user' => (object)[
+                'nombre' => 'Juan Pérez', 
+                'email' => 'juan@demo.com'
+            ],
+            'fecha_emision' => '2024-01-15',
+            'importe' => 1450.50,
+            'concepto' => 'Nómina Enero',
+            'archivo_path' => 'ruta/falsa.pdf'
+        ],
+        (object)[
+            'id' => 2,
+            'user_id' => 2,
+            'user' => (object)[
+                'nombre' => 'Laura García', 
+                'email' => 'laura@demo.com'
+            ],
+            'fecha_emision' => '2024-01-15',
+            'importe' => 1200.00,
+            'concepto' => 'Nómina Enero',
+            'archivo_path' => null
+        ]
+    ];
+
+    // 2. Inventamos usuarios para que el selector del Modal funcione
+    $users = [
+        (object)['id' => 1, 'nombre' => 'Juan Pérez', 'email' => 'juan@demo.com'],
+        (object)['id' => 2, 'nombre' => 'Laura García', 'email' => 'laura@demo.com'],
+    ];
+
+    // 3. Cargamos la vista pasándole estos datos falsos
+    return view('nominas.nominasAdmin', compact('nominas', 'users'));
+
+})->name('nominas');

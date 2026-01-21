@@ -48,6 +48,9 @@
         <a href="{{ route("facturas")}}" class="menu-item {{ request()->routeIs('facturas') ? 'active' : '' }}">
             <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN
         </a>
+            <a href="{{ route('nominas') }}" class="menu-item {{ request()->routeIs('nominas.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-file-invoice-dollar"></i> NÓMINAS
+        </a>
     </nav>
 
     <div style="flex-grow: 1;"></div>
