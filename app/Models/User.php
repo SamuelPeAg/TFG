@@ -35,7 +35,7 @@ class User extends Authenticatable
         return $this->belongsToMany(UserGroup::class, 'user_user_group');
     }
 
-    public function sesionesCreadas()
+    public function PagosCreadas()
     {
         return $this->hasMany(Pago::class, 'entrenador_id');
     }

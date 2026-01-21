@@ -11,72 +11,66 @@ class PagosController extends Controller
 {
     public function index()
     {
-         $users = User::orderBy('name')->get(); // o select('id','name')
-        return view('sessions.sesiones', compact('users'));
+        $users = User::orderBy('name')->get();
+        return view('Pagos.index', compact('users'));
     }
 
-    /**
-     * Busca sesiones por nombre de usuario (AJAX).
-     */
     public function buscarPorUsuario(Request $request)
     {
-        $nombre = $request->input('q');
+        $nombre = trim((string) $request->input('q', ''));
 
-        if (!$nombre) {
+        if ($nombre === '') {
             return response()->json(['events' => []]);
         }
 
-        $sesiones = Pago::with('user')
+        $pagos = Pago::with('user')
             ->whereHas('user', function ($query) use ($nombre) {
-                $query->where('name', 'LIKE', "%{$nombre}%");
+                $query->where('name', 'like', "%{$nombre}%");
             })
-            ->orderBy('Fecharegistro', 'asc')
+            ->orderBy('fecha_registro', 'asc')
             ->get();
 
-        $events = $sesiones->map(function ($sesion) {
-            $fecha = Carbon::parse($sesion->Fecharegistro);
+        $events = $pagos->map(function (Pago $p) {
+            $fecha = Carbon::parse($p->fecha_registro);
 
             return [
                 'fecha' => $fecha->format('Y-m-d'),
                 'hora'  => $fecha->format('H:i'),
-                'clase' => $sesion->nombre_clase,
+                'clase' => $p->nombre_clase,
                 'descripcion' => '',
-                'coste' => $sesion->Pago,
-                'pago' => $sesion->metodo_pago,
-                'centro' => $sesion->centro,
+                'coste' => (float) $p->importe,
+                'pago' => $p->metodo_pago,
+                'centro' => $p->centro,
             ];
         })->values();
 
         return response()->json(['events' => $events]);
     }
 
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'user_id'      => ['required', 'exists:users,id'],
+            'centro'       => ['required', 'in:CLINICA,AIRA,OPEN'],
+            'nombre_clase' => ['required', 'string', 'max:120'],
+            'metodo_pago'  => ['required', 'in:TPV,EF,DD,CC'],
+            'fecha_hora'   => ['required', 'date'],
+            'precio'       => ['required', 'numeric', 'min:0'],
+        ]);
 
+        $user = User::findOrFail($data['user_id']);
 
-   public function store(Request $request)
-{
-    $data = $request->validate([
-        'user_id'      => ['required', 'exists:users,id'],
-        'centro'       => ['required', 'in:CLINICA,AIRA,OPEN'],
-        'nombre_clase' => ['required', 'string', 'max:120'],
-        'metodo_pago'  => ['required', 'in:TPV,EF,DD,CC'],
-        'fecha_hora'   => ['required', 'date'],
-        'precio'       => ['required', 'numeric', 'min:0'],
-    ]);
+        Pago::create([
+            'user_id'        => $user->id,
+            'entrenador_id'  => auth()->id(),
+            'iban'           => $user->iban,
+            'importe'        => $data['precio'],
+            'fecha_registro' => Carbon::parse($data['fecha_hora']),
+            'centro'         => $data['centro'],
+            'nombre_clase'   => $data['nombre_clase'],
+            'metodo_pago'    => $data['metodo_pago'],
+        ]);
 
-    $user = User::findOrFail($data['user_id']);
-    $iban = $user->iban ?? null;
-
-    Pago::create([
-        'user_id'       => $data['user_id'],
-        'entrenador_id' => auth()->id(),
-        'iban'          => $iban,
-        'Pago'          => $data['precio'],
-        'Fecharegistro' => Carbon::parse($data['fecha_hora']),
-        'centro'        => $data['centro'],
-        'nombre_clase'  => $data['nombre_clase'],
-        'metodo_pago'   => $data['metodo_pago'],
-    ]);
-
-    return redirect()->route('sesiones')->with('success', 'Sesión creada correctamente.');
-}
+        return redirect()->route('Pagos')->with('success', 'Pago creado correctamente.');
+    }
 }

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\SessionesController;
+use App\Http\Controllers\PagosController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,12 +60,12 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
 
     Route::get('/facturas', [FacturacionController::class, 'index'])
         ->name('facturas');
-    // 1. Ver la lista de sesiones
-    Route::get('/sesiones', [SessionesController::class, 'index'])->name('sesiones');
-    Route::post('/sesiones', [SessionesController::class, 'store'])->name('sesiones.store');
+    // 1. Ver la lista de Pagos
+    Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos');
+    Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
 
     // Buscador
-    Route::get('/usuarios/reservas', [SessionesController::class, 'buscarPorUsuario'])->name('sesiones.buscar');
+    Route::get('/usuarios/Pagos', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar');
     
    // Ejemplo en web.php
     // Gestión de usuarios para admin o entrenador

@@ -18,7 +18,7 @@ class RestrictEntrenadorMiddleware
             // Normalizar sin slashes al inicio
             $allowedPrefixes = [
                 'users',
-                'sesiones',
+                'Pagos',
                 'usuarios/reservas',
                 'logout',
             ];

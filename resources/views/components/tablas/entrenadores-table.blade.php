@@ -25,11 +25,11 @@
                 <td>{{ $entrenador->email }}</td>
                 <td>
                     <div class="action-buttons">
-                        {{-- 1. BOTÓN SESIONES (Añadido) --}}
-                        <a href="{{ route('sesiones', $entrenador->id) }}" 
+                        {{-- 1. BOTÓN Pagos (Añadido) --}}
+                        <a href="{{ route('Pagos', $entrenador->id) }}" 
                            class="btn-icon" 
                            style="color: #4BB7AE;" 
-                           title="Ver Sesiones">
+                           title="Ver Pagos">
                             <i class="fas fa-calendar-check"></i>
                         </a>
 

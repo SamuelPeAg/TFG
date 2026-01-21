@@ -320,14 +320,14 @@ h2 {
   font-size: 0.82rem;
 }
 
-/* Botón sesiones (tu clase actual) */
-.btn.sesiones {
+/* Botón Pagos (tu clase actual) */
+.btn.Pagos {
   background-color: #40e0d0;
   color: #fff;
   border: none;
   box-shadow: 0 10px 22px rgba(0,0,0,0.06);
 }
-.btn.sesiones:hover {
+.btn.Pagos:hover {
   background-color: #34cfc6;
 }
 
