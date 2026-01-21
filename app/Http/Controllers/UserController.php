@@ -30,9 +30,9 @@ class UserController extends Controller
             'password.min'       => 'La contraseña debe tener al menos 6 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
             
-            'IBAN.string'        => 'El IBAN debe ser un texto.',
-            'IBAN.unique'        => 'Este IBAN ya pertenece a otro usuario.',
-            'IBAN.min'           => 'El IBAN parece incompleto (mínimo 15 caracteres).',
+            'iban.string'        => 'El iban debe ser un texto.',
+            'iban.unique'        => 'Este iban ya pertenece a otro usuario.',
+            'iban.min'           => 'El iban parece incompleto (mínimo 15 caracteres).',
             
             'firma_digital.string' => 'La firma digital debe ser texto.',
             'firma_digital.max'    => 'La firma digital es demasiado larga.',
@@ -67,8 +67,8 @@ class UserController extends Controller
             // Password: Obligatorio + Mínimo 6 caracteres
             'password'      => 'required|string|min:6',
             
-            // IBAN: Opcional + Texto + Único + Mínimo 15 caracteres (validez básica)
-            'IBAN'          => 'nullable|string|unique:users,IBAN|min:15|max:34',
+            // iban: Opcional + Texto + Único + Mínimo 15 caracteres (validez básica)
+            'iban'          => 'nullable|string|unique:users,iban|min:15|max:34',
             
             // Firma: Opcional + Texto + Máximo 255
             'firma_digital' => 'nullable|string|max:255',
@@ -78,8 +78,8 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'IBAN' => $request->IBAN,
-            'FirmaDigital' => $request->firma_digital,
+            'iban' => $request->iban,
+            'firma_digital' => $request->firma_digital,
         ]);
 
         // Asignar rol cliente por defecto
@@ -95,15 +95,15 @@ class UserController extends Controller
             'name'          => 'required|string|min:3|max:255',
             // Ignoramos el ID del usuario actual para que no falle el "unique"
             'email'         => 'required|email|unique:users,email,' . $user->id,
-            'IBAN'          => 'nullable|string|min:15|unique:users,IBAN,' . $user->id,
+            'iban'          => 'nullable|string|min:15|unique:users,iban,' . $user->id,
             'firma_digital' => 'nullable|string|max:255',
         ], $this->validationMessages());
 
         $data = [
             'name' => $request->name,
             'email' => $request->email,
-            'IBAN' => $request->IBAN,
-            'FirmaDigital' => $request->firma_digital,
+            'iban' => $request->iban,
+            'firma_digital' => $request->firma_digital,
         ];
 
         // Solo actualizar contraseña si se ha rellenado
@@ -172,11 +172,11 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
-            'IBAN' => [
+            'iban' => [
                 'nullable', 
                 'string', 
                 'min:15', 
-                Rule::unique('users', 'IBAN')->ignore($user->id)
+                Rule::unique('users', 'iban')->ignore($user->id)
             ],
             'firma_digital' => ['nullable', 'string', 'max:255'],
 
@@ -189,8 +189,8 @@ class UserController extends Controller
         $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'IBAN' => $validated['IBAN'] ?? $user->IBAN,
-            'FirmaDigital' => $validated['firma_digital'] ?? $user->FirmaDigital,
+            'iban' => $validated['iban'] ?? $user->iban,
+            'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
         ];
 
         // Cambiar contraseña SOLO si el usuario escribe una nueva

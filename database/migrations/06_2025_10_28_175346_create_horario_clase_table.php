@@ -6,32 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('horarios_clases', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_clase');
-            $table->unsignedBigInteger('id_entrenador');
-            $table->unsignedBigInteger('id_centro');
 
-            $table->foreign('id_clase')->references('id')->on('clases')->onDelete('cascade');
-            $table->foreign('id_entrenador')->references('id')->on('entrenadores')->onDelete('cascade');
-            $table->foreign('id_centro')->references('id')->on('centros')->onDelete('cascade');
+            $table->foreignId('clase_id')
+                ->constrained('clases')
+                ->cascadeOnDelete();
+
+            $table->foreignId('entrenador_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
+
+            $table->foreignId('centro_id')
+                ->constrained('centros')
+                ->cascadeOnDelete();
+
             $table->dateTime('fecha_hora_inicio');
-            $table->integer('capacidad'); 
+            $table->unsignedInteger('capacidad');
+
             $table->timestamps();
             $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('horarios_clases');
     }
-}; 
+};

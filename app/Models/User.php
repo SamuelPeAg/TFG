@@ -4,11 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable; 
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
-// Importaciones correctas según tu imagen
-use App\Models\UserGroup;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -20,8 +17,8 @@ class User extends Authenticatable
         'email',
         'password',
         'foto_de_perfil',
-        'IBAN',
-        'FirmaDigital', 
+        'iban',
+        'firma_digital',
     ];
 
     protected $hidden = [
@@ -29,17 +26,22 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // Relación con Grupos
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
     public function groups()
     {
-        // OJO: Asegúrate que en la base de datos la tabla se llame 'user_user_group'
-        // Si te da error, prueba con 'group_user'
         return $this->belongsToMany(UserGroup::class, 'user_user_group');
     }
 
-    // Relación con Sessiones (Coincide con tu archivo Sessiones.php)
-    public function sesionesCreadas()
+    public function PagosCreadas()
     {
-        return $this->hasMany(\App\Models\Sessiones::class, 'entrenador_id');
+        return $this->hasMany(Pago::class, 'entrenador_id');
+    }
+
+    public function horariosComoEntrenador()
+    {
+        return $this->hasMany(HorarioClase::class, 'entrenador_id');
     }
 }

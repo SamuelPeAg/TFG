@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sesiones - Factomove</title>
+  <title>Pagos - Factomove</title>
 
   <link rel="stylesheet" href="{{ asset('css/global.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/sesiones.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/Pagos.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
@@ -35,7 +35,7 @@
 
 <body>
   <div class="dashboard-container">
-    @include('components.sidebars.sidebar_sesiones')
+    @include('components.sidebars.sidebar_Pagos')
 
     <main class="main-content">
 
@@ -56,14 +56,14 @@
         </div>
 
         <div class="title-section">
-          <h1>Historial de Sesiones</h1>
+          <h1>Historial de Pagos</h1>
           <button type="button" class="btn-add-class" id="btnNuevaClase">
             <i class="fa-solid fa-plus"></i>
             Nueva Clase
           </button>
         </div>
       </div>
-      <section class="calendar-layout" aria-label="Calendario de sesiones">
+      <section class="calendar-layout" aria-label="Calendario de Pagos">
         <div class="calendar-panel">
           <div class="calendar-container">
             <div id="user-calendar" class="custom-calendar"></div>
@@ -85,7 +85,7 @@
     <div class="modal-box">
       <button type="button" class="close-icon" id="btnCerrarPopup" aria-label="Cerrar">&times;</button>
       <h2 id="modal-fecha-titulo">Detalles del Día</h2>
-      <div id="lista-sesiones" class="modal-details"></div>
+      <div id="lista-Pagos" class="modal-details"></div>
       <button type="button" class="btn-close" id="btnCerrarPopup2">Cerrar</button>
     </div>
   </div>
@@ -106,7 +106,7 @@
         Agendar Nueva Clase
       </h2>
 
-      <form action="{{ route('sesiones.store') }}" method="POST">
+      <form action="{{ route('Pagos.store') }}" method="POST">
         @csrf
 
         <div class="form-group">
@@ -168,16 +168,16 @@
     </div>
   </div>
 
-  <script type="application/json" id="sesiones-data">
-    @json($datosSesiones ?? [])
+  <script type="application/json" id="Pagos-data">
+    @json($datosPagos ?? [])
   </script>
 
   <script>
-    window.SESIONES_CONFIG = window.SESIONES_CONFIG || {};
-    window.SESIONES_CONFIG.datosSesiones =
-      JSON.parse(document.getElementById('sesiones-data').textContent);
+    window.Pagos_CONFIG = window.Pagos_CONFIG || {};
+    window.Pagos_CONFIG.datosPagos =
+      JSON.parse(document.getElementById('Pagos-data').textContent);
   </script>
 
-  <script src="{{ asset('js/sesiones.js') }}"></script>
+  <script src="{{ asset('js/Pagos.js') }}"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pago;
 use App\Models\Sessiones;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -15,16 +16,16 @@ class FacturacionController extends Controller
         $centro = $request->query('centro', 'todos');
         $entrenadorId = $request->query('entrenador_id', '');
 
-        $q = Sessiones::query()
+        $q = Pago::query()
             ->with(['entrenador:id,name'])
             ->when($desde, fn($qq) => $qq->whereDate('Fecharegistro', '>=', $desde))
             ->when($hasta, fn($qq) => $qq->whereDate('Fecharegistro', '<=', $hasta))
             ->when($centro !== 'todos', fn($qq) => $qq->where('centro', $centro))
             ->when($entrenadorId, fn($qq) => $qq->where('entrenador_id', $entrenadorId));
 
-        $sesiones = $q->get();
+        $Pagos = $q->get();
 
-        $centros = Sessiones::query()
+        $centros = Pago::query()
             ->select('centro')
             ->distinct()
             ->orderBy('centro')
@@ -37,17 +38,17 @@ class FacturacionController extends Controller
 
         $resumen = [];
 
-        foreach ($sesiones as $s) {
+        foreach ($Pagos as $s) {
             $nombre = $s->entrenador?->name ?? 'Sin entrenador';
 
             if (!isset($resumen[$nombre])) {
                 $resumen[$nombre] = [
-                    'sesiones' => 0,
+                    'Pagos' => 0,
                     'facturacion' => 0,
                 ];
             }
 
-            $resumen[$nombre]['sesiones'] += 1;
+            $resumen[$nombre]['Pagos'] += 1;
             $resumen[$nombre]['facturacion'] += (float) ($s->Pago ?? 0);
         }
 

@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const inputEditName = document.getElementById('edit_name');
   const inputEditEmail = document.getElementById('edit_email');
-  const inputEditIban = document.getElementById('edit_iban');
+  const inputEditiban = document.getElementById('edit_iban');
   const inputEditFirma = document.getElementById('edit_firma');
 
   // =========================
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (inputEditName) inputEditName.value = name;
     if (inputEditEmail) inputEditEmail.value = email;
-    if (inputEditIban) inputEditIban.value = iban;
+    if (inputEditiban) inputEditiban.value = iban;
     if (inputEditFirma) inputEditFirma.value = firma;
 
     // 2) Action del form

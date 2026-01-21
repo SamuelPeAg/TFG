@@ -22,15 +22,12 @@ class DatabaseSeeder extends Seeder
 
             // 2. Datos base
             CentroSeeder::class,
-            EntrenadorSeeder::class,
             
             // 3. Clases y Horarios
             ClaseSeeder::class,         // Define los tipos de clase (Yoga, Pilates...)
-            ClaseEntrenadorSeeder::class, // Asigna qué entrenador puede dar qué clase
             HorarioClaseSeeder::class,  // Crea las clases en el calendario (instancias)
             
             // 4. Datos adicionales
-            FacturaEntrenadorSeeder::class, // Facturas de ejemplo
 
             // 5. Reservas (al final)
             ReservaSeeder::class,       // Usuarios apuntándose a clases

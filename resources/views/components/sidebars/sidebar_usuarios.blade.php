@@ -42,8 +42,8 @@
         <a href="{{ route("users.index") }}" class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
             <i class="fa-solid fa-users"></i> USUARIOS
         </a>
-        <a href="{{ route("sesiones") }}" class="menu-item {{ request()->routeIs('sesiones') || request()->routeIs('sesiones.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-calendar-check"></i> SESIONES
+        <a href="{{ route("Pagos") }}" class="menu-item {{ request()->routeIs('Pagos') || request()->routeIs('Pagos.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-calendar-check"></i> Pagos
         </a>
         <a href="{{ route("facturas")}}" class="menu-item {{ request()->routeIs('facturas') ? 'active' : '' }}">
             <i class="fa-solid fa-file-invoice"></i> FACTURACIÓN

@@ -54,7 +54,7 @@
                             <tr>
                                 <th>Entrenador</th>
                                 <th>Email</th>
-                                <th>IBAN</th>
+                                <th>iban</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -152,7 +152,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label-custom">IBAN</label>
+                    <label class="form-label-custom">iban</label>
                     <div class="input-group-custom">
                         <i class="fas fa-credit-card"></i>
                         <input type="text" name="iban" id="edit_iban" class="form-control-custom" required>

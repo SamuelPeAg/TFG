@@ -105,7 +105,7 @@
                         @else
                             <div class="flex items-center gap-3">
                                 
-                                <a href="{{ route('sesiones') }}" class="flex items-center gap-3 group hover:opacity-80 transition-opacity duration-200">
+                                <a href="{{ route('Pagos') }}" class="flex items-center gap-3 group hover:opacity-80 transition-opacity duration-200">
                                     
                                     <div class="hidden md:flex flex-col items-end leading-tight">
                                         <span class="font-bold text-gray-700 dark:text-gray-200 text-sm group-hover:text-brandTeal transition-colors">

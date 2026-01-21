@@ -10,7 +10,7 @@
                 <th>Usuario</th>
                 <th>Email</th>
                 <th>Grupos</th> 
-                <th>IBAN</th>
+                <th>iban</th>
                 <th>Firma</th>
                 <th>Acciones</th>
             </tr>
@@ -43,8 +43,8 @@
                     @endforelse
                 </td>
 
-                <td style="font-family: monospace;">{{ $user->IBAN ?? '---' }}</td>
-                <td style="font-family: monospace;">{{ $user->FirmaDigital ?? 'No' }}</td>
+                <td style="font-family: monospace;">{{ $user->iban ?? '---' }}</td>
+                <td style="font-family: monospace;">{{ $user->firma_digital ?? 'No' }}</td>
 
                 <td>
                     <div class="action-buttons">
@@ -55,8 +55,8 @@
                             data-id="{{ $user->id }}"
                             data-name="{{ $user->name }}"
                             data-email="{{ $user->email }}"
-                            data-iban="{{ $user->IBAN }}"
-                            data-firma="{{ $user->FirmaDigital }}"
+                            data-iban="{{ $user->iban }}"
+                            data-firma="{{ $user->firma_digital }}"
                         >
                             <i class="fas fa-pencil-alt"></i>
                         </button>

@@ -13,13 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalInfo = document.getElementById('infoPopup');
   const btnCerrarInfo1 = document.getElementById('btnCerrarPopup');
   const btnCerrarInfo2 = document.getElementById('btnCerrarPopup2');
-  const listaSesionesEl = document.getElementById('lista-sesiones');
+  const listaPagosEl = document.getElementById('lista-Pagos');
   const tituloFechaEl = document.getElementById('modal-fecha-titulo');
   const summaryEl = document.getElementById('calendar-summary');
 
   // ====== DATOS ======
-  let clases = Array.isArray(window.SESIONES_CONFIG?.datosSesiones)
-    ? window.SESIONES_CONFIG.datosSesiones
+  let clases = Array.isArray(window.Pagos_CONFIG?.datosPagos)
+    ? window.Pagos_CONFIG.datosPagos
     : [];
 
   // ====== HELPERS ======
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
           renderDayDetails(dateStr, items);
           openModal(modalInfo);
         } else {
-          if (summaryEl) summaryEl.innerHTML = `<p>No hay sesiones para ${dateStr}.</p>`;
+          if (summaryEl) summaryEl.innerHTML = `<p>No hay Pagos para ${dateStr}.</p>`;
         }
       });
 
@@ -305,8 +305,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderDayDetails(dateStr, items) {
     if (tituloFechaEl) tituloFechaEl.textContent = `Detalles del Día: ${dateStr}`;
 
-    if (listaSesionesEl) {
-      listaSesionesEl.innerHTML = items.map((i) => {
+    if (listaPagosEl) {
+      listaPagosEl.innerHTML = items.map((i) => {
         const coste = i.coste ?? i.precio ?? null;
         const costeTxt = coste != null ? `€${Number(coste).toFixed(2)}` : 'N/D';
         const pago = i.pago || i.estado || 'N/D';
@@ -333,20 +333,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ====== BUSCADOR (sesiones) ======
+  // ====== BUSCADOR (Pagos) ======
   async function fetchAndRender(q) {
     if (!q) {
       clases = [];
       const today = new Date();
       renderCalendar(today.getFullYear(), today.getMonth());
       if (summaryEl) {
-        summaryEl.innerHTML = `<p><i class="fa-solid fa-circle-info"></i> Busca un usuario para ver sesiones.</p>`;
+        summaryEl.innerHTML = `<p><i class="fa-solid fa-circle-info"></i> Busca un usuario para ver Pagos.</p>`;
       }
       return;
     }
 
     try {
-      const res = await fetch(`/usuarios/reservas?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/usuarios/Pagos?q=${encodeURIComponent(q)}`);
       const data = await res.json();
 
       clases = Array.isArray(data.events) ? data.events : [];
