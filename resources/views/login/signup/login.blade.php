@@ -2,17 +2,9 @@
 
 @section('content')
 
-    {{-- 
-        CAMBIO 1: 
-        Moví el gradiente (bg-gradient...) AQUI, al contenedor padre.
-        Así el color cubre toda la pantalla, incluyendo el espacio del padding superior.
-    --}}
+    {{-- Fondo gradiente --}}
     <div class="flex flex-col min-h-screen pt-24 lg:pt-28 bg-gradient-to-br from-white via-brandTeal/30 to-brandCoral/40">
 
-        {{-- 
-            CAMBIO 2: 
-            Quité las clases del gradiente de este div para evitar duplicarlas.
-        --}}
         <div class="flex-grow flex items-center justify-center p-4 sm:p-8">
             
             {{-- TARJETA DE LOGIN --}}
@@ -35,18 +27,23 @@
                     <form method="POST" action="{{ route('login') }}" class="space-y-5">
                         @csrf
                         
-                        {{-- Input Usuario --}}
+                        {{-- 
+                            === CAMBIO REALIZADO: INPUT EMAIL ===
+                            Ahora pide el correo y usa el name="email"
+                        --}}
                         <div class="group">
-                            <label for="name" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Usuario</label>
+                            <label for="email" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 ml-1">Correo Electrónico</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fa-solid fa-user text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
+                                    {{-- Icono cambiado a sobre (envelope) --}}
+                                    <i class="fa-solid fa-envelope text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                                 </div>
-                                <input type="text" id="name" name="name" value="{{ old('name') }}" 
+                                <input type="email" id="email" name="email" value="{{ old('email') }}" 
                                     class="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:bg-white focus:border-transparent outline-none transition duration-200 sm:text-sm font-medium text-gray-800 placeholder-gray-400" 
-                                    placeholder="Ej. JuanPerez" required autofocus>
+                                    placeholder="ejemplo@correo.com" required autofocus>
                             </div>
-                            @error('name')
+                            {{-- Muestra errores asociados al email --}}
+                            @error('email')
                                 <p class="mt-1 text-xs text-red-500 font-bold ml-1">{{ $message }}</p>
                             @enderror
                         </div>
