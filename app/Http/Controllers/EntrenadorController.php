@@ -60,21 +60,15 @@ class EntrenadorController extends Controller
         $user = User::role('entrenador')->whereKey($id)->firstOrFail();
 
         $request->validate([
-            'nombre'   => ['required', 'string', 'min:3', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'iban'     => ['required', 'string', 'min:15', 'max:34'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ], [
-            'nombre.required'    => 'El nombre es obligatorio.',
-            'email.unique'       => 'Este correo ya está en uso por otro usuario.',
             'iban.required'      => 'El iban es obligatorio.',
             'password.min'       => 'La contraseña nueva debe tener al menos 8 caracteres.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
         $data = [
-            'name'  => $request->nombre,
-            'email' => $request->email,
             'iban'  => $request->iban,
         ];
 
