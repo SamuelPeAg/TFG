@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
   <style>
-      /* --- CHECKBOXES BONITOS Y REDONDITOS --- */
+      /* --- Estilos Generales y Tabla --- */
       .check-column { width: 40px; text-align: center; vertical-align: middle; }
       
       .custom-checkbox {
@@ -53,7 +53,6 @@
           border-color: #38a199;
       }
 
-      /* --- ETIQUETAS DE GRUPO EN TABLA --- */
       .group-tag { 
           background: #e6fffa; color: #2c7a7b; 
           padding: 2px 8px; border-radius: 12px; 
@@ -62,7 +61,7 @@
           border: 1px solid #b2f5ea;
       }
 
-      /* --- BARRA FLOTANTE --- */
+      /* --- Barra Flotante --- */
       .floating-actions {
           position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
           background: #2D3748; color: white; padding: 15px 30px; border-radius: 50px;
@@ -77,6 +76,72 @@
           font-weight: bold; cursor: pointer; transition: transform 0.2s;
       }
       .btn-group-action:hover { transform: scale(1.05); background: #f7fafc; }
+
+
+      /* =========================================
+         NUEVOS ESTILOS DE BOTONES (TIPO IMAGEN)
+         ========================================= */
+      
+      /* Contenedor Flex para centrar */
+      .controls-bar {
+          display: flex;
+          justify-content: center; /* Centrado horizontal */
+          align-items: center;     /* Centrado vertical */
+          gap: 30px;               /* Espacio entre los botones */
+          margin-bottom: 30px;
+          padding: 10px 0;
+      }
+
+      /* Estilo Base para ambos botones (Tamaño y forma) */
+      .btn-design {
+          width: 180px;            /* Ancho fijo igual para ambos */
+          height: 45px;            /* Altura consistente */
+          border: none;
+          border-radius: 12px;     /* Bordes redondeados como en la imagen */
+          color: white;
+          font-size: 13px;
+          font-weight: 800;        /* Fuente negrita */
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          text-decoration: none;
+          letter-spacing: 0.5px;
+      }
+
+      .btn-design:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+      }
+
+      .btn-design i {
+          font-size: 1.1em;
+      }
+
+      /* --- Botón 1: VER GRUPOS (Degradado) --- */
+      .btn-gradient-custom {
+          /* Degradado de Verde Azulado a Rosa/Rojo */
+          background: linear-gradient(90deg, #38C1A3 0%, #E65C9C 100%);
+          text-transform: uppercase; /* Texto en mayúsculas */
+          text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      }
+      .btn-gradient-custom:hover {
+          filter: brightness(1.1);
+      }
+
+      /* --- Botón 2: AÑADIR USUARIO (Sólido) --- */
+      .btn-solid-custom {
+          /* Color Verde Menta Sólido */
+          background-color: #38C1A3; 
+          /* Mantiene mayúsculas/minúsculas normal */
+      }
+      .btn-solid-custom:hover {
+          background-color: #32ac91;
+      }
+
   </style>
 </head>
 
@@ -90,20 +155,21 @@
           <h1>Gestión de Usuarios</h1>
         </div>
 
-        <div class="controls-bar" style="display: flex; gap: 10px;">
-          <button onclick="abrirModalGestionGrupos()" class="btn-facto" style="background-color: #2D3748; display: flex; align-items: center; gap: 8px;" type="button">
-            <i class="fas fa-layer-group"></i> <span>Ver Grupos</span>
+        <div class="controls-bar">
+          
+          <button onclick="abrirModalGestionGrupos()" class="btn-design btn-gradient-custom" type="button">
+            <i class="fas fa-layer-group"></i> <span>VER GRUPOS</span>
           </button>
 
-          <button id="toggleCrearUsuario" class="btn-success" type="button">
-            <i class="fas fa-plus"></i> Añadir usuario
+          <button id="toggleCrearUsuario" class="btn-design btn-solid-custom" type="button">
+            <i class="fas fa-plus"></i> <span>Añadir usuario</span>
           </button>
+          
         </div>
       </div>
 
       <div class="content-wrapper">
 
-        {{-- Flash Messages --}}
         @if(session('success'))
           <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -118,13 +184,11 @@
           </div>
         @endif
 
-        {{-- COMPONENTE DE TABLA DE USUARIOS --}}
         <x-tablas.users-table :users="$users" />
       </div>
     </main>
   </div>
 
-  {{-- 1. BARRA FLOTANTE (CREAR GRUPO) --}}
   <div class="floating-actions" id="floatingBar">
       <div>
           <span id="countSelected" class="count-badge">0</span> usuarios seleccionados
@@ -134,7 +198,6 @@
       </button>
   </div>
 
-  {{-- 2. MODAL CREAR NUEVO GRUPO --}}
   <div id="modalGrupo" class="modal-overlay" aria-hidden="true">
       <div class="modal-card">
           <button type="button" class="close-btn" onclick="cerrarModalGrupo()">&times;</button>
@@ -159,13 +222,10 @@
       </div>
   </div>
 
-  {{-- 3. COMPONENTE MODAL GESTIONAR GRUPOS --}}
   <x-modales.gestion-grupos :groups="$groups" />
 
-  {{-- 4. COMPONENTE MODAL CREAR USUARIO (NUEVO) --}}
   <x-modales.crear-usuario />
 
-  {{-- 5. MODAL EDITAR USUARIO --}}
   <div id="modalEditarUsuario" class="modal-overlay" aria-hidden="true">
     <div class="modal-card">
       <button type="button" class="close-btn" id="btnCerrarModalEditarUsuario">&times;</button>
@@ -188,108 +248,5 @@
 
   <script src="{{ asset('js/users.js') }}"></script>
   
-  <script>
-      // --- LÓGICA DE CHECKBOXES Y GRUPOS ---
-      const checkboxes = document.querySelectorAll('.user-check');
-      const selectAll = document.getElementById('selectAll');
-      const floatingBar = document.getElementById('floatingBar');
-      const countSpan = document.getElementById('countSelected');
-      const modalGrupo = document.getElementById('modalGrupo');
-      
-      const modalGestion = document.getElementById('modalGestionGrupos');
-      
-      const inputsContainer = document.getElementById('hiddenInputsContainer');
-
-      // Actualizar barra flotante
-      function updateFloatingBar() {
-          const selected = document.querySelectorAll('.user-check:checked');
-          if(countSpan) countSpan.innerText = selected.length;
-          
-          if(selected.length >= 2) {
-              if(floatingBar) floatingBar.classList.add('active');
-          } else {
-              if(floatingBar) floatingBar.classList.remove('active');
-          }
-      }
-
-      checkboxes.forEach(cb => cb.addEventListener('change', updateFloatingBar));
-
-      if(selectAll) {
-          selectAll.addEventListener('change', function() {
-              checkboxes.forEach(cb => cb.checked = this.checked);
-              updateFloatingBar();
-          });
-      }
-
-      // Modal Crear Grupo
-      function abrirModalGrupo() {
-          if(!modalGrupo) return;
-          inputsContainer.innerHTML = ''; 
-          const selected = document.querySelectorAll('.user-check:checked');
-          selected.forEach(cb => {
-              const input = document.createElement('input');
-              input.type = 'hidden';
-              input.name = 'users[]'; 
-              input.value = cb.value;
-              inputsContainer.appendChild(input);
-          });
-          modalGrupo.style.display = 'flex';
-      }
-
-      function cerrarModalGrupo() {
-          if(modalGrupo) modalGrupo.style.display = 'none';
-      }
-
-      // Modal Gestionar Grupos
-      function abrirModalGestionGrupos() {
-          if(modalGestion) modalGestion.style.display = 'flex';
-      }
-      function cerrarModalGestionGrupos() {
-          if(modalGestion) modalGestion.style.display = 'none';
-      }
-
-      // Cierres al clicar fuera
-      window.addEventListener('click', (e) => {
-          if (e.target === modalGrupo) modalGrupo.style.display = 'none';
-          if (e.target === modalGestion) modalGestion.style.display = 'none';
-      });
-
-      // --- LÓGICA MODALES USUARIOS (CREAR / EDITAR) ---
-      // IMPORTANTE: Estos IDs deben coincidir con los del componente x-modales.crear-usuario
-      const modalCrear = document.getElementById('modalCrearUsuario');
-      const btnAbrirCrear = document.getElementById('toggleCrearUsuario');
-      const btnCerrarCrear = document.getElementById('btnCerrarModalCrearUsuario');
-      
-      if(btnAbrirCrear) btnAbrirCrear.addEventListener('click', () => modalCrear.style.display = 'flex');
-      if(btnCerrarCrear) btnCerrarCrear.addEventListener('click', () => modalCrear.style.display = 'none');
-
-      const modalEditar = document.getElementById('modalEditarUsuario');
-      const btnCerrarEditar = document.getElementById('btnCerrarModalEditarUsuario');
-      
-      // Delegación de eventos para los botones de editar
-      document.addEventListener('click', function(e) {
-          const btn = e.target.closest('.js-edit-user');
-          if (btn) {
-              const id = btn.dataset.id;
-              document.getElementById('edit_name').value = btn.dataset.name;
-              document.getElementById('edit_email').value = btn.dataset.email;
-              document.getElementById('edit_iban').value = btn.dataset.iban || '';
-              document.getElementById('edit_firma').value = btn.dataset.firma || '';
-              
-              const form = document.getElementById('formEditarUsuario');
-              form.action = `/users/${id}`; 
-
-              if(modalEditar) modalEditar.style.display = 'flex';
-          }
-      });
-
-      if(btnCerrarEditar) btnCerrarEditar.addEventListener('click', () => modalEditar.style.display = 'none');
-
-      window.addEventListener('click', (e) => {
-          if (e.target === modalCrear) modalCrear.style.display = 'none';
-          if (e.target === modalEditar) modalEditar.style.display = 'none';
-      });
-
-  </script>
 </body>
 </html>

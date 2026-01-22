@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="{{ asset('css/global.css') }}">
     <link rel="stylesheet" href="{{ asset('css/tablaCRUD.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        .form-control-custom[readonly] {
+            background-color: #e2e8f0; 
+            color: #718096;            
+            cursor: not-allowed;       
+            border-color: #cbd5e0;
+        }
+    </style>
 </head>
 
 <body>
@@ -32,7 +41,6 @@
 
             <div class="content-wrapper">
 
-                {{-- Mensajes Flash --}}
                 @if(session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
@@ -47,7 +55,6 @@
                     </div>
                 @endif
 
-                {{-- TABLA INTEGRADA CON EL DISEÑO FACTOMOVE --}}
                 <div class="table-container">
                     <table class="facto-table">
                         <thead>
@@ -63,18 +70,16 @@
                             <tr>
                                 <td>
                                     <div class="user-info">
-                                        {{-- Generar iniciales para el avatar --}}
                                         <div class="avatar-circle">
-                                            {{ strtoupper(substr($entrenador->nombre, 0, 1)) }}
+                                            {{ strtoupper(substr($entrenador->name, 0, 1)) }}
                                         </div>
-                                        <span>{{ $entrenador->nombre }}</span>
+                                        <span>{{ $entrenador->name }}</span>
                                     </div>
                                 </td>
                                 <td>{{ $entrenador->email }}</td>
                                 <td style="font-family: monospace;">{{ $entrenador->iban }}</td>
                                 <td>
                                     <div class="action-buttons">
-                                        {{-- Botón Editar (Abre Modal JS) --}}
                                         @php
                                             $u = \App\Models\User::where('email', $entrenador->email)->first();
                                             $isAdmin = ($u && method_exists($u,'hasRole') && $u->hasRole('admin')) ? '1' : '0';
@@ -82,7 +87,7 @@
                                         <button type="button" class="btn-icon btn-edit" 
                                             onclick="abrirModalEditar(
                                                 '{{ $entrenador->id }}', 
-                                                '{{ $entrenador->nombre }}', 
+                                                '{{ $entrenador->name }}', 
                                                 '{{ $entrenador->email }}', 
                                                 '{{ $entrenador->iban }}',
                                                 '{{ $isAdmin }}'
@@ -90,7 +95,6 @@
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
 
-                                        {{-- Botón Eliminar (Formulario) --}}
                                         <form action="{{ route('entrenadores.destroy', $entrenador->id) }}" method="POST" 
                                               onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este entrenador?');">
                                             @csrf
@@ -117,10 +121,8 @@
         </main>
     </div>
 
-    {{-- MODAL REGISTRO (CREAR) - AHORA COMO COMPONENTE --}}
     <x-modales.crear-entrenador />
 
-    {{-- MODAL EDITAR (ACTUALIZAR) --}}
     <div id="modalEditar" class="modal-overlay">
         <div class="modal-card">
             <button type="button" class="close-btn" id="btnCerrarModalEditar">&times;</button>
@@ -130,7 +132,6 @@
                 <p>Actualiza los datos del profesional.</p>
             </div>
 
-            {{-- El action se rellenará con JS --}}
             <form id="formEditar" method="POST">
                 @csrf
                 @method('PUT') 
@@ -139,7 +140,7 @@
                     <label class="form-label-custom">Nombre Completo</label>
                     <div class="input-group-custom">
                         <i class="fas fa-user"></i>
-                        <input type="text" name="nombre" id="edit_nombre" class="form-control-custom" required>
+                        <input type="text" name="nombre" id="edit_nombre" class="form-control-custom" required readonly>
                     </div>
                 </div>
 
@@ -147,7 +148,7 @@
                     <label class="form-label-custom">Correo Electrónico</label>
                     <div class="input-group-custom">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" id="edit_email" class="form-control-custom" required>
+                        <input type="email" name="email" id="edit_email" class="form-control-custom" required readonly>
                     </div>
                 </div>
 
@@ -191,8 +192,6 @@
     </div>
 
    <script>
-        // --- LÓGICA MODAL REGISTRO ---
-        // El componente x-modales.crear-entrenador renderiza el HTML con ID 'modalRegistro' y 'btnCerrarModal'
         const modal = document.getElementById('modalRegistro');
         const btnAbrir = document.getElementById('btnAbrirModal');
         const btnCerrar = document.getElementById('btnCerrarModal');
@@ -200,41 +199,28 @@
         if(btnAbrir) btnAbrir.addEventListener('click', () => modal.style.display = 'flex');
         if(btnCerrar) btnCerrar.addEventListener('click', () => modal.style.display = 'none');
 
-        // --- LÓGICA MODAL EDITAR ---
         const modalEdit = document.getElementById('modalEditar');
         const btnCerrarEdit = document.getElementById('btnCerrarModalEditar');
         const formEdit = document.getElementById('formEditar');
 
-        // Función corregida para generar la URL perfectamente
         function abrirModalEditar(id, nombre, email, iban, isAdmin) {
-            // 1. Rellenar inputs
             document.getElementById('edit_nombre').value = nombre;
             document.getElementById('edit_email').value = email;
             document.getElementById('edit_iban').value = iban;
 
-            // 2. Generar URL segura
             let urlBase = "{{ route('entrenadores.update', 'temp_id') }}";
             let urlFinal = urlBase.replace('temp_id', id);
             
-            // 3. Asignar al formulario
             formEdit.action = urlFinal;
 
-            // 4. Marcar checkbox si el entrenador ya tiene rol admin
             if(document.getElementById('edit_make_admin')) {
                 document.getElementById('edit_make_admin').checked = (isAdmin == '1');
             }
 
-            // 5. Mostrar modal
             modalEdit.style.display = 'flex';
         }
 
         if(btnCerrarEdit) btnCerrarEdit.addEventListener('click', () => modalEdit.style.display = 'none');
-
-        // Cerrar al hacer clic fuera
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) modal.style.display = 'none';
-            if (e.target === modalEdit) modalEdit.style.display = 'none';
-        });
     </script>
 </body>
 </html>
