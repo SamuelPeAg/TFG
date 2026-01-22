@@ -78,22 +78,10 @@
                         <div class="absolute inset-0 flex items-center" aria-hidden="true">
                             <div class="w-full border-t border-gray-200"></div>
                         </div>
-                        <div class="relative flex justify-center">
-                            <span class="px-4 bg-white text-xs text-gray-400 uppercase font-bold tracking-wider">O continúa con</span>
-                        </div>
+                        
                     </div>
 
-                    {{-- Redes Sociales --}}
-                    <div class="mt-6 grid grid-cols-2 gap-4">
-                        <a href="#" class="flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition duration-200">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Google-flutter-logo.png" alt="Google" class="h-5 w-5 mr-2">
-                            Google
-                        </a>
-                        <a href="#" class="flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-xl shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition duration-200">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png" alt="Facebook" class="h-5 w-5 mr-2">
-                            Facebook
-                        </a>
-                    </div>
+                    
 
                     {{-- Footer Tarjeta --}}
                     <p class="mt-8 text-center text-sm text-gray-600">
