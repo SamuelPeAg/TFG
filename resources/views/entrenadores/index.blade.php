@@ -82,7 +82,7 @@
                                         <button type="button" class="btn-icon btn-edit" 
                                             onclick="abrirModalEditar(
                                                 '{{ $entrenador->id }}', 
-                                                '{{ $entrenador->nombre }}', 
+                                                '{{ $entrenador->name }}', 
                                                 '{{ $entrenador->email }}', 
                                                 '{{ $entrenador->iban }}',
                                                 '{{ $isAdmin }}'
@@ -139,7 +139,7 @@
                     <label class="form-label-custom">Nombre Completo</label>
                     <div class="input-group-custom">
                         <i class="fas fa-user"></i>
-                        <input type="text" name="nombre" id="edit_nombre" class="form-control-custom" required>
+                        <input type="text" name="nombre" id="edit_nombre" class="form-control-custom" required readonly>
                     </div>
                 </div>
 
@@ -147,7 +147,7 @@
                     <label class="form-label-custom">Correo Electrónico</label>
                     <div class="input-group-custom">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email" id="edit_email" class="form-control-custom" required>
+                        <input type="email" name="email" id="edit_email" class="form-control-custom" required readonly>
                     </div>
                 </div>
 
