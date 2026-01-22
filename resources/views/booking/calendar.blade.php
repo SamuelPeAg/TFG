@@ -107,7 +107,7 @@
                     </p>
                 </div>
                 
-                <form id="reservationForm" method="POST" action="{{ route('Pagos.reservar') }}"> {{-- Asegúrate de tener esta ruta --}}
+                <form id="reservationForm" method="POST" action="{{ route('Pagos.store') }}"> {{-- Asegúrate de tener esta ruta --}}
                     @csrf
                     <input type="hidden" name="class_id" id="modalClassId">
                     
