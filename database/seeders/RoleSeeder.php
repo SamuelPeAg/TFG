@@ -21,10 +21,10 @@ class RoleSeeder extends Seeder
         Role::firstOrCreate(['name' => 'entrenador']);
         
          $admin = User::firstOrCreate(
-            ['email' => 'admin@factomove.local'],
+            ['email' => 'admin@factomove'],
             [
-                'name' => 'Admin',
-                'password' => Hash::make('Admin12345'),
+                'name' => 'admin',
+                'password' => Hash::make('admin12345'),
             ]
         );
 
