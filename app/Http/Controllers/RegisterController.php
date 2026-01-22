@@ -48,7 +48,7 @@ class RegisterController extends Controller
         Auth::login($user);
 
         // REDIRIGIR DESPUÉS DE REGISTRAR
-        return redirect('/users');  // Cambia esto si quieres otra ruta
+        return redirect('/');  // Cambia esto si quieres otra ruta
     }
 
 }
