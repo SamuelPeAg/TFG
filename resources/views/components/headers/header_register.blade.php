@@ -85,7 +85,7 @@
                         </a>
                     @endif
 
-                    @if (Route::has('register'))
+                    {{-- @if (Route::has('register'))
                         <a href="{{ route('register') }}"
                             class="bg-brandTeal text-white px-5 py-2.5 rounded-full font-bold shadow-md hover:bg-opacity-90 hover:shadow-lg transition transform hover:-translate-y-0.5">
                             Crear Cuenta
@@ -95,7 +95,7 @@
                             class="bg-brandTeal text-white px-5 py-2.5 rounded-full font-bold shadow-md hover:bg-opacity-90 transition">
                             Crear Cuenta
                         </a>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
 

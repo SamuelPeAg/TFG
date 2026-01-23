@@ -99,9 +99,9 @@
                                 Iniciar Sesión
                             </a>
                         
-                            <a href="{{ route('register') }}" class="bg-brandTeal text-white px-5 py-2.5 rounded-full font-bold shadow-md hover:bg-opacity-90 hover:shadow-lg transition transform hover:-translate-y-0.5">
+                            {{-- <a href="{{ route('register') }}" class="bg-brandTeal text-white px-5 py-2.5 rounded-full font-bold shadow-md hover:bg-opacity-90 hover:shadow-lg transition transform hover:-translate-y-0.5">
                                 Crear Cuenta
-                            </a>
+                            </a> --}}
                         @else
                             <div class="flex items-center gap-3">
                                 
