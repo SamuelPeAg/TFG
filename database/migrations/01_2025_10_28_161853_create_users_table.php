@@ -15,6 +15,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
 
+            // Nuevo campo para el token de activación
+            $table->string('activation_token', 60)->nullable()->unique();
+
+            // Otros campos
             $table->string('foto_de_perfil')->nullable();
             $table->string('iban')->nullable()->unique();
             $table->text('firma_digital')->nullable();
