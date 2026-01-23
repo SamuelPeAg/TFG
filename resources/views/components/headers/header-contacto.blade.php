@@ -55,7 +55,7 @@
     </style>
 </head>
 
-<body class="text-darkText bg-gray-50 overflow-x-hidden min-h-screen flex flex-col pt-20">
+<body class="text-darkText bg-gray-50 overflow-x-hidden min-h-screen flex flex-col">
 
     <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-sm transition-all duration-300 top-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

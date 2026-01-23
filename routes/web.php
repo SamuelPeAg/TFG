@@ -31,6 +31,21 @@ Route::get('/politica-cookies', function () { return view('legal.cookies'); })->
 
 Route::get('/contacto', function () { return view('contact'); })->name('contact');
 
+// Ruta POST para enviar formulario de contacto
+Route::post('/contacto/enviar', function (Illuminate\Http\Request $request) {
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'phone' => 'nullable|string|max:20',
+        'message' => 'required|string|max:1000',
+    ]);
+
+    // Aquí puedes añadir lógica para enviar email, guardar en BD, etc.
+    // Por ahora solo retornamos con mensaje de éxito
+    
+    return redirect()->route('contact')->with('success', '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.');
+})->name('contact.send');
+
 
 /*
 |--------------------------------------------------------------------------
