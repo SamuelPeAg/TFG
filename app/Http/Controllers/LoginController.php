@@ -22,7 +22,7 @@ class LoginController extends Controller
 
          // Validación de las credenciales
     $credentials = $request->validate([
-        'name' => ['required', 'string'],
+        'email' => ['required', 'email'],
         'password' => ['required', 'string'],
     ]);
 
@@ -37,8 +37,8 @@ class LoginController extends Controller
 
     // Si falla la autenticación
     return back()->withErrors([
-        'name' => 'Las credenciales no son correctas.',
-    ])->onlyInput('name');
+        'email' => 'Las credenciales no son correctas.',
+    ])->onlyInput('email');
     }
 
     /**

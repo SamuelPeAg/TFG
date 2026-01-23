@@ -17,6 +17,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'activarEntrenador'])->name('entrenadores.activar');
 // La gestión de entrenadores debe requerir autenticación y rol admin (se añadirá en el grupo auth más abajo)
 
 // Las rutas de gestión de usuarios deben estar protegidas (ver sección auth)
@@ -61,11 +62,11 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     Route::get('/facturas', [FacturacionController::class, 'index'])
         ->name('facturas');
     // 1. Ver la lista de Pagos
-    Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos');
-    Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
+    Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
 
     // Buscador
-    Route::get('/usuarios/Pagos', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar');
+    Route::get('/usuarios/Pagos', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     
    // Ejemplo en web.php
     // Gestión de usuarios para admin o entrenador
@@ -75,10 +76,13 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     // Gestión de entrenadores (solo admin)
     Route::resource('entrenadores', EntrenadorController::class)->middleware(\App\Http\Middleware\AdminMiddleware::class);
     
-    Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
-    Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
+    Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
 
     Route::get('/calendario', function () {
         return view('booking.calendar'); 
     })->name('booking.view');
 });
+
+
+
