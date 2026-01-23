@@ -25,21 +25,19 @@ class EntrenadorController extends Controller
             'nombre'   => ['required', 'string', 'min:3', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
         ]);
-
+        $token = Str::random(60);
         // Crear el usuario entrenador (solo nombre y email)
         $user = User::create([
             'name'     => $request->nombre,
             'email'    => $request->email,
-            'password' => Hash::make(Str::random(24)),  // Contraseña temporal
+            'password' => Hash::make(Str::random(24)), 
+            'activation_token' => $token 
         ]);
 
         // Crear un token de activación para el entrenador
-        $token = Str::random(60);
+      
 
         // Verificar que el token se genera correctamente
-
-        // Actualiza el usuario con el token
-        $user->update(['activation_token' => $token]);
         dd($user);  
 
         // Enviar el email con el enlace de activación
