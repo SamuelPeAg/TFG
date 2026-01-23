@@ -33,9 +33,8 @@ class EntrenadorController extends Controller
             'password' => Hash::make(Str::random(24)), 
             'activation_token' => $token 
         ]);
-
         // Crear un token de activación para el entrenador
-      
+        $user->assignRole('entrenador');
 
         
 
@@ -66,7 +65,6 @@ class EntrenadorController extends Controller
 
         // Asignar rol de entrenador
         $user->assignRole('entrenador');
-
         return redirect()->route('login')->with('success', 'Registro completado exitosamente.');
     }
 
