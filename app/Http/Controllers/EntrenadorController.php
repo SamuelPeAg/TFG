@@ -35,6 +35,11 @@ class EntrenadorController extends Controller
 
         // Crear un token de activación para el entrenador
         $token = Str::random(60);
+
+        // Verificar que el token se genera correctamente
+        dd($token);  // Esto debería imprimir el token antes de asignarlo
+
+        // Actualiza el usuario con el token
         $user->update(['activation_token' => $token]);
 
         // Enviar el email con el enlace de activación
@@ -42,6 +47,7 @@ class EntrenadorController extends Controller
 
         return redirect()->route('entrenadores.index')->with('success', 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.');
     }
+
 
 
     public function update(Request $request, $id)

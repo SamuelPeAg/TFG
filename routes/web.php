@@ -17,6 +17,7 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'activarEntrenador'])->name('entrenadores.activar');
 // La gestión de entrenadores debe requerir autenticación y rol admin (se añadirá en el grupo auth más abajo)
 
 // Las rutas de gestión de usuarios deben estar protegidas (ver sección auth)
@@ -84,4 +85,4 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
 });
 
 
-Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'activarEntrenador'])->name('entrenadores.activar');
+
