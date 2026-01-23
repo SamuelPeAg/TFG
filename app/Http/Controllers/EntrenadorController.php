@@ -104,11 +104,16 @@ class EntrenadorController extends Controller
     public function activarEntrenador($token)
     {
     // Buscar el usuario con ese token
-    $user = User::where('activation_token', $token)->firstOrFail();
+        $user = User::where('activation_token', $token)->first();
 
-    // Aquí puedes mostrar un formulario donde el usuario complete la información faltante
-    // Ejemplo: volver a pasar el token al formulario de actualización
+        // Verificar si el usuario fue encontrado
+        if (!$user) {
+            // Si no se encuentra el usuario, puedes devolver un error o redirigir
+            return redirect()->route('login')->with('error', 'Token de activación inválido.');
+        }
 
-    return view('entrenadores.activar', compact('user', 'token'));
+        // Si se encuentra el usuario, renderizamos la vista de activación
+        return view('entrenadores.activar', compact('user', 'token'));
     }
+
 }
