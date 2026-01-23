@@ -136,10 +136,56 @@
                     </div>
                 </div>
 
+                {{-- Botón hamburguesa móvil --}}
                 <div class="md:hidden flex items-center">
-                    <button class="text-gray-600 dark:text-gray-300 hover:text-brandTeal focus:outline-none">
+                    <button id="mobileMenuToggle" class="text-gray-600 dark:text-gray-300 hover:text-brandTeal focus:outline-none">
                         <i class="fa-solid fa-bars text-2xl"></i>
                     </button>
+                </div>
+            </div>
+            
+            {{-- Menú móvil (oculto por defecto) --}}
+            <div id="mobileMenu" class="md:hidden hidden border-t border-gray-200 dark:border-gray-700">
+                <div class="px-4 py-4 space-y-3">
+                    <a href="{{ route('contact') }}" class="block text-gray-600 dark:text-gray-300 hover:text-brandTeal font-medium transition py-2">
+                        Contactanos
+                    </a>
+                    
+                    <a href="{{ route('welcome') }}" class="block text-gray-600 dark:text-gray-300 hover:text-brandTeal font-medium transition py-2">
+                        Inicio
+                    </a>
+                    
+                    <div class="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                        @guest
+                            <a href="{{ route('login') }}" class="block text-gray-700 dark:text-gray-200 font-bold hover:text-brandTeal transition py-2">
+                                Iniciar Sesión
+                            </a>
+                        @else
+                            <div class="space-y-3">
+                                <a href="{{ route('Pagos') }}" class="flex items-center gap-3 py-2">
+                                    <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg">
+                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-gray-700 dark:text-gray-200 text-sm">
+                                            {{ auth()->user()->name }}
+                                        </span>
+                                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                                            Panel de Gestión
+                                        </span>
+                                    </div>
+                                </a>
+                                
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="w-full text-left text-brandCoral hover:text-red-600 transition flex items-center gap-2 py-2 font-medium">
+                                        <i class="fa-solid fa-right-from-bracket"></i>
+                                        Cerrar Sesión
+                                    </button>
+                                </form>
+                            </div>
+                        @endguest
+                    </div>
                 </div>
             </div>
         </div>
@@ -148,6 +194,36 @@
     <main>
         @yield('content')
     </main>
+
+    {{-- Script para menú móvil --}}
+    <script>
+        // Toggle menú móvil
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const icon = this.querySelector('i');
+            
+            mobileMenu.classList.toggle('hidden');
+            
+            // Cambiar icono
+            if (mobileMenu.classList.contains('hidden')) {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            } else {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            }
+        });
+        
+        // Cerrar menú al hacer click en un enlace
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('mobileMenu').classList.add('hidden');
+                const icon = document.querySelector('#mobileMenuToggle i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
+        });
+    </script>
 
     <script>
         window.addEventListener('scroll', reveal);

@@ -5,7 +5,7 @@
 :root {
   --primary-color: #4BB7AE;
   --primary-dark: #EF5D7A;
-  --accent-color: #A5EFE2;  
+  --accent-color: #A5EFE2;
   --bg-input: #f9fafb;
   --text-gray: #6b7280;
 }
@@ -15,7 +15,7 @@
    ========================= */
 .header-controls {
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
   padding: 10px 0;
@@ -25,7 +25,7 @@
   margin: 0;
   font-size: 1.8rem;
   color: #333;
-  font-weight: 800; 
+  font-weight: 800;
 }
 
 
@@ -43,11 +43,11 @@
   align-items: center;
   background: #fff;
   border: 1px solid #e2e8f0;
-  border-radius: 12px; 
+  border-radius: 12px;
   padding: 0 15px;
-  height: 45px; 
+  height: 45px;
   width: 260px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   position: relative;
 }
 
@@ -73,33 +73,33 @@
    BOTÓN NUEVA CLASE (Estilo Usuarios - INTEGRADO)
    ========================= */
 .btn-design {
-  height: 45px;          
+  height: 45px;
   padding: 0 25px;
   border: none;
-  border-radius: 12px;     
+  border-radius: 12px;
   color: white;
   font-size: 13px;
-  font-weight: 800;       
+  font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   text-decoration: none;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
 .btn-solid-custom {
-  background-color: #38C1A3; 
+  background-color: #38C1A3;
 }
 
 .btn-solid-custom:hover {
   background-color: #32ac91;
   transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
 }
 
 /* =========================
@@ -117,7 +117,7 @@
   background: #fff;
   padding: 26px;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   min-height: 620px;
@@ -164,7 +164,7 @@
   border-radius: 20px;
   width: 90%;
   max-width: 480px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
   position: relative;
   text-align: center;
   transform: translateY(20px) scale(0.95);
@@ -211,7 +211,10 @@
   cursor: pointer;
   transition: color 0.2s;
 }
-.close-icon:hover { color: var(--accent-color); }
+
+.close-icon:hover {
+  color: var(--accent-color);
+}
 
 /* =========================
    FORMULARIO MODERNO (INPUTS CON ICONOS)
@@ -248,7 +251,7 @@
 
 .modern-input {
   width: 100%;
-  padding: 14px 16px 14px 48px; 
+  padding: 14px 16px 14px 48px;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   background-color: var(--bg-input);
@@ -297,9 +300,10 @@
   z-index: 50;
   max-height: 160px;
   overflow-y: auto;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   margin-top: 5px;
 }
+
 .suggestions .item {
   padding: 12px 15px;
   cursor: pointer;
@@ -307,6 +311,7 @@
   border-bottom: 1px solid #f3f4f6;
   text-align: left;
 }
+
 .suggestions .item:hover {
   background-color: #f9fafb;
   color: var(--accent-color);
@@ -320,16 +325,19 @@
   text-align: left;
   margin: 20px 0;
 }
+
 .sesion-card {
   background: #f8fafc;
   border-left: 5px solid var(--primary-color) !important;
   padding: 15px;
   border-radius: 8px;
 }
+
 .btn-cancel {
   background: #f3f4f6;
   color: #374151;
 }
+
 .btn-confirm {
   background: var(--primary-color);
   color: white;
@@ -338,28 +346,158 @@
 /* =========================
    AJUSTES FULLCALENDAR
    ========================= */
-.fc { 
-    font-family: inherit; 
+.fc {
+  font-family: inherit;
 }
 
 /* TÍTULO DEL MES (Grande y Negro) */
-.fc .fc-toolbar-title { 
-    font-size: 2rem !important;      
-    color: #000000 !important;       
-    font-weight: 800 !important;     
-    text-transform: capitalize !important; 
-    letter-spacing: -0.5px;          
+.fc .fc-toolbar-title {
+  font-size: 2rem !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  text-transform: capitalize !important;
+  letter-spacing: -0.5px;
 }
 
 /* Botones del calendario (Mes, Semana, Día) */
-.fc-button { 
-    background-color: var(--primary-color) !important; 
-    border: none !important; 
-    font-weight: 600 !important;
-    text-transform: capitalize !important;
+.fc-button {
+  background-color: var(--primary-color) !important;
+  border: none !important;
+  font-weight: 600 !important;
+  text-transform: capitalize !important;
 }
 
 /* Día actual (Fondo suave) */
-.fc-day-today { 
-    background-color: rgba(75, 183, 174, 0.08) !important; 
+.fc-day-today {
+  background-color: rgba(75, 183, 174, 0.08) !important;
+}
+
+/* ================================
+   RESPONSIVE DESIGN
+================================ */
+
+/* TABLET Y MÓVIL (< 1024px) */
+@media (max-width: 1023px) {
+  .calendar-panel {
+    padding: 20px;
+  }
+
+  .search-box {
+    width: 200px;
+  }
+
+  .modal-box {
+    max-width: 90%;
+    padding: 32px;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.6rem !important;
+  }
+}
+
+/* MÓVIL (< 768px) */
+@media (max-width: 767px) {
+
+  /* Header responsive */
+  .header-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .controls-bar {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .btn-design {
+    width: 100%;
+  }
+
+  /* Calendario más compacto */
+  .calendar-panel {
+    padding: 15px;
+    border-radius: 16px;
+  }
+
+  .calendar-layout {
+    padding: 10px 0;
+  }
+
+  /* Título del calendario más pequeño */
+  .fc .fc-toolbar-title {
+    font-size: 1.3rem !important;
+  }
+
+  /* Botones del calendario más pequeños */
+  .fc-button {
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.7rem !important;
+  }
+
+  /* Modal responsive */
+  .modal-box {
+    max-width: 95%;
+    padding: 24px;
+    border-radius: 16px;
+  }
+
+  .modern-title {
+    font-size: 1.4rem;
+  }
+
+  .modern-logo {
+    width: 50px;
+  }
+
+  .modern-input {
+    padding: 12px 14px 12px 44px;
+    font-size: 0.9rem;
+  }
+
+  .btn-gradient {
+    padding: 14px;
+    font-size: 0.9rem;
+  }
+
+  /* Sugerencias */
+  .suggestions .item {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+/* MÓVIL PEQUEÑO (< 480px) */
+@media (max-width: 479px) {
+  .calendar-panel {
+    padding: 12px;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.1rem !important;
+  }
+
+  .fc-button {
+    font-size: 0.75rem !important;
+    padding: 0.3rem 0.5rem !important;
+  }
+
+  .modal-box {
+    padding: 20px;
+  }
+
+  .modern-title {
+    font-size: 1.2rem;
+  }
+
+  .modern-input {
+    padding: 10px 12px 10px 40px;
+    font-size: 0.85rem;
+  }
 }

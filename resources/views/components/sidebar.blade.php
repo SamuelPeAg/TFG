@@ -1,6 +1,14 @@
 <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
 
-<aside class="sidebar-container">
+{{-- Botón Hamburguesa (solo visible en móvil/tablet) --}}
+<button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
+    <i class="fa-solid fa-bars"></i>
+</button>
+
+{{-- Overlay oscuro (solo visible cuando sidebar está abierto en móvil) --}}
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar-container" id="sidebarContainer">
     
     <div class="sidebar-logo">
         <a href="{{ route('welcome') }}">
@@ -71,3 +79,81 @@
     </div>
 
 </aside>
+
+{{-- Script para toggle del menú --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebarContainer');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    console.log('Sidebar script loaded');
+    console.log('menuToggle:', menuToggle);
+    console.log('sidebar:', sidebar);
+    console.log('overlay:', overlay);
+    
+    // Abrir/cerrar sidebar
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Menu toggle clicked!');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            // Cambiar icono
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+                console.log('Sidebar opened');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+                console.log('Sidebar closed');
+            }
+        });
+        
+        // También añadir evento táctil para móviles
+        menuToggle.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            this.click();
+        }, { passive: false });
+    }
+    
+    // Cerrar al hacer click en overlay
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            
+            // Restaurar icono
+            const icon = menuToggle.querySelector('i');
+            icon.classList.remove('fa-times');
+            icon.classList.add('fa-bars');
+            
+            console.log('Sidebar closed via overlay');
+        });
+    }
+    
+    // Cerrar al hacer click en un enlace del menú (solo en móvil)
+    const menuItems = sidebar.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+        item.addEventListener('click', function() {
+            if (window.innerWidth < 1024) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                
+                // Restaurar icono
+                const icon = menuToggle.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+                
+                console.log('Sidebar closed via menu item');
+            }
+        });
+    });
+});
+</script>
