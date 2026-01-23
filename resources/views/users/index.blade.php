@@ -52,28 +52,9 @@
           border-color: #38a199;
       }
 
-      .group-tag { 
-          background: #e6fffa; color: #2c7a7b; 
-          padding: 2px 8px; border-radius: 12px; 
-          font-size: 0.75em; font-weight: 600; 
-          margin-right: 4px; display: inline-block; margin-bottom: 2px; 
-          border: 1px solid #b2f5ea;
-      }
 
-      .floating-actions {
-          position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
-          background: #2D3748; color: white; padding: 15px 30px; border-radius: 50px;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 20px;
-          z-index: 1000; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0;
-      }
-      .floating-actions.active { transform: translateX(-50%) translateY(0); opacity: 1; }
-      .count-badge { background: #4BB7AE; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 0.9em; }
-      
-      .btn-group-action {
-          background: white; color: #2D3748; border: none; padding: 8px 16px; border-radius: 20px;
-          font-weight: bold; cursor: pointer; transition: transform 0.2s;
-      }
-      .btn-group-action:hover { transform: scale(1.05); background: #f7fafc; }
+
+
 
       
       .header-controls {
@@ -156,9 +137,7 @@
         </div>
 
         <div class="controls-bar">
-          <button onclick="abrirModalGestionGrupos()" class="btn-design btn-gradient-custom" type="button">
-            <i class="fas fa-layer-group"></i> <span>VER GRUPOS</span>
-          </button>
+
 
           <button id="toggleCrearUsuario" class="btn-design btn-solid-custom" type="button">
             <i class="fas fa-plus"></i> <span>Añadir usuario</span>
@@ -187,40 +166,7 @@
     </main>
   </div>
 
-  <div class="floating-actions" id="floatingBar">
-      <div>
-          <span id="countSelected" class="count-badge">0</span> usuarios seleccionados
-      </div>
-      <button type="button" class="btn-group-action" onclick="abrirModalGrupo()">
-          <i class="fas fa-users"></i> Crear Grupo
-      </button>
-  </div>
-
-  <div id="modalGrupo" class="modal-overlay" aria-hidden="true">
-      <div class="modal-card">
-          <button type="button" class="close-btn" onclick="cerrarModalGrupo()">&times;</button>
-          <div class="modal-header-custom">
-              <div class="logo-simulado"><i class="fas fa-users-cog"></i></div>
-              <h2>Nuevo Grupo</h2>
-              <p>Agrupa a los usuarios seleccionados.</p>
-          </div>
-          <form action="{{ route('users.group.store') }}" method="POST">
-              @csrf
-              <div id="hiddenInputsContainer"></div>
-
-              <div class="form-group">
-                  <label class="form-label-custom">Nombre del Grupo</label>
-                  <div class="input-group-custom">
-                      <i class="fas fa-tag"></i>
-                      <input type="text" name="group_name" class="form-control-custom" placeholder="Ej. Clientes VIP" required>
-                  </div>
-              </div>
-              <button type="submit" class="btn-facto">Confirmar Grupo</button>
-          </form>
-      </div>
-  </div>
-
-  <x-modales.gestion-grupos :groups="$groups" />
+ 
 
   <x-modales.crear-usuario />
 

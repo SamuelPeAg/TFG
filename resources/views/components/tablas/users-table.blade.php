@@ -4,12 +4,8 @@
     <table class="facto-table">
         <thead>
             <tr>
-                <th class="check-column">
-                    <input type="checkbox" id="selectAll" class="custom-checkbox">
-                </th>
                 <th>Usuario</th>
-                <th>Email</th>
-                <th>Grupos</th> 
+                <th>Email</th> 
                 <th>iban</th>
                 <th>Firma</th>
                 <th>Acciones</th>
@@ -19,11 +15,6 @@
         <tbody>
             @forelse($users as $user)
             <tr>
-                <td class="check-column">
-                    {{-- Este checkbox es vital para la barra flotante JS --}}
-                    <input type="checkbox" class="user-check custom-checkbox" value="{{ $user->id }}">
-                </td>
-                
                 <td>
                     <div class="user-info">
                         <div class="avatar-circle">
@@ -34,14 +25,6 @@
                 </td>
 
                 <td>{{ $user->email }}</td>
-                
-                <td>
-                    @forelse($user->groups as $group)
-                        <span class="group-tag">{{ $group->name }}</span>
-                    @empty
-                        <span style="color: #cbd5e0; font-size: 0.8em;">-</span>
-                    @endforelse
-                </td>
 
                 <td style="font-family: monospace;">{{ $user->iban ?? '---' }}</td>
                 <td style="font-family: monospace;">{{ $user->firma_digital ?? 'No' }}</td>
@@ -77,7 +60,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" style="text-align:center; padding:30px; color:#94a3b8;">
+                <td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">
                     No hay usuarios registrados aún.
                 </td>
             </tr>

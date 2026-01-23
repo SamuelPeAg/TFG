@@ -30,11 +30,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    public function groups()
-    {
-        return $this->belongsToMany(UserGroup::class, 'user_user_group');
-    }
-
+    
     public function PagosCreadas()
     {
         return $this->hasMany(Pago::class, 'entrenador_id');
