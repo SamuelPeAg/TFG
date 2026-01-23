@@ -82,3 +82,6 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
         return view('booking.calendar'); 
     })->name('booking.view');
 });
+
+
+Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'activarEntrenador'])->name('entrenadores.activar');

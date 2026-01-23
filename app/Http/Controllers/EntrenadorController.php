@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\EntrenadorRegistrationMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\PermissionRegistrar;
+use Str;
 
 class EntrenadorController extends Controller
 {
@@ -19,40 +21,31 @@ class EntrenadorController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+       $request->validate([
             'nombre'   => ['required', 'string', 'min:3', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-            'iban'     => ['required', 'string', 'min:15', 'max:34'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ], [
             'nombre.required'    => 'El nombre completo es obligatorio.',
-            'nombre.min'         => 'El nombre debe tener al menos 3 letras.',
             'email.required'     => 'El correo electrónico es obligatorio.',
             'email.email'        => 'Introduce un correo válido.',
             'email.unique'       => 'Este correo ya está registrado en el sistema.',
-            'iban.required'      => 'El iban es necesario.',
-            'iban.min'           => 'El iban parece incompleto (mínimo 15 caracteres).',
-            'password.required'  => 'La contraseña es obligatoria.',
-            'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 
+        // Crear el usuario entrenador (solo nombre y email)
         $user = User::create([
             'name'     => $request->nombre,
             'email'    => $request->email,
-            'iban'     => $request->iban,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make(Str::random(24)),  // Contraseña temporal
         ]);
 
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
-        $user->assignRole('entrenador');
+        // Crear un token de activación para el entrenador
+        $token = Str::random(60);
+        $user->update(['activation_token' => $token]);
 
-        $current = Auth::user();
-        if ($current && $current->hasRole('admin') && $request->boolean('make_admin')) {
-            $user->assignRole('admin');
-        }
+        // Enviar el email con el enlace de activación
+        Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
 
-        return redirect()->route('entrenadores.index')->with('success', 'Entrenador añadido correctamente.');
+        return redirect()->route('entrenadores.index')->with('success', 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.');
     }
 
     public function update(Request $request, $id)
@@ -106,5 +99,16 @@ class EntrenadorController extends Controller
         $user->delete();
 
         return redirect()->route('entrenadores.index')->with('success', 'Entrenador eliminado correctamente.');
+    }
+
+    public function activarEntrenador($token)
+    {
+    // Buscar el usuario con ese token
+    $user = User::where('activation_token', $token)->firstOrFail();
+
+    // Aquí puedes mostrar un formulario donde el usuario complete la información faltante
+    // Ejemplo: volver a pasar el token al formulario de actualización
+
+    return view('entrenadores.activar', compact('user', 'token'));
     }
 }
