@@ -127,8 +127,7 @@
 
 <body>
   <div class="dashboard-container">
-    @include('components.sidebars.sidebar_usuarios')
-
+@include('components.sidebar')
     <main class="main-content">
       
       <div class="header-controls">

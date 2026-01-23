@@ -19,9 +19,9 @@
         top: 0; left: 0;
         width: 100%; height: 100%;
         background-color: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
         align-items: center; justify-content: center;
         backdrop-filter: blur(3px);
+        z-index: 9999999 !important; 
     }
     
     .modal-overlay.active {
@@ -174,8 +174,7 @@
 
 <body>
   <div class="dashboard-container">
-    @include('components.sidebars.sidebar_Pagos')
-
+@include('components.sidebar')
     <main class="main-content">
       <div class="header-controls">
         

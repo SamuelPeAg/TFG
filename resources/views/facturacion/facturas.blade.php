@@ -29,8 +29,7 @@
 <body>
 
 <div class="dashboard-container">
-    @include('components.sidebars.sidebar_facturacion')
-
+@include('components.sidebar')
     <main class="main-content">
 
         <div class="header-controls">

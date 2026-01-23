@@ -75,7 +75,7 @@
 
     <div class="dashboard-container">
 
-        @include('components.sidebars.sidebar_entrenadores')
+        @include('components.sidebar')
 
         <main class="main-content">
 
