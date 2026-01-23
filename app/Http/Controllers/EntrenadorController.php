@@ -37,8 +37,7 @@ class EntrenadorController extends Controller
         // Crear un token de activación para el entrenador
       
 
-        // Verificar que el token se genera correctamente
-        dd($user);  
+        
 
         // Enviar el email con el enlace de activación
         Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
