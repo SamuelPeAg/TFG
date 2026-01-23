@@ -48,18 +48,29 @@ class EntrenadorController extends Controller
 
     public function update(Request $request, $id)
     {
+
+        $request->validate([
+        'password' => 'required|confirmed|min:8',
+        // 'iban'     => 'required|string|min:24', 
+    ], [
+        'password.required'  => 'La contraseña es obligatoria.',
+        'password.confirmed' => 'Las contraseñas no coinciden.',
+        'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+        // 'iban.required'      => 'El campo IBAN es obligatorio.',
+        // 'iban.min'           => 'El IBAN debe tener el formato completo (24 caracteres).',
+    ]);
         $user = User::whereKey($id)->firstOrFail();
 
         // Validar los campos
         $request->validate([
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'iban'     => ['required', 'string', 'min:15', 'max:34'],
+            // 'iban'     => ['required', 'string', 'min:15', 'max:34'],
         ]);
 
         // Actualizar la información del usuario
         $user->update([
             'password' => Hash::make($request->password),
-            'iban'     => $request->iban,
+            // 'iban'     => $request->iban,
             'activation_token' => null,  // Borrar el token de activación
         ]);
 
