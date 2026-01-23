@@ -19,29 +19,33 @@ class PagosController extends Controller
     {
         $nombre = trim((string) $request->input('q', ''));
 
-        if ($nombre === '') {
-            return response()->json(['events' => []]);
+        $query = Pago::with('user');
+
+        if ($nombre !== '') {
+            $query->whereHas('user', function ($q) use ($nombre) {
+                $q->where('name', 'like', "%{$nombre}%");
+            });
         }
 
-        $pagos = Pago::with('user')
-            ->whereHas('user', function ($query) use ($nombre) {
-                $query->where('name', 'like', "%{$nombre}%");
-            })
-            ->orderBy('fecha_registro', 'asc')
-            ->get();
+        $pagos = $query->orderBy('fecha_registro', 'asc')->get();
 
         $events = $pagos->map(function (Pago $p) {
-            $fechaRegistro = $p->getAttribute('fecha_registro');
-            $fecha = $fechaRegistro ? Carbon::parse($fechaRegistro) : null;
-
+            $fecha = $p->fecha_registro;
             return [
-                'fecha' => $fecha?->format('Y-m-d') ?? '',
-                'hora'  => $fecha?->format('H:i') ?? '',
-                'clase' => (string) $p->getAttribute('nombre_clase'),
-                'descripcion' => '',
-                'coste' => (float) $p->getAttribute('importe'),
-                'pago' => (string) $p->getAttribute('metodo_pago'),
-                'centro' => (string) $p->getAttribute('centro'),
+                'id' => $p->id,
+                'title' => $p->nombre_clase . ' - ' . ($p->user->name ?? 'Usuario'),
+                'start' => $fecha ? $fecha->toIso8601String() : null,
+                'backgroundColor' => '#00897b',
+                'borderColor' => '#00897b',
+                'textColor' => '#ffffff',
+                'extendedProps' => [
+                    'hora' => $fecha ? $fecha->format('H:i') : '',
+                    'coste' => (float) $p->importe,
+                    'pago' => (string) $p->metodo_pago,
+                    'centro' => $p->centro,
+                    'alumno' => $p->user->name ?? 'Desconocido',
+                    'clase_nombre' => $p->nombre_clase
+                ],
             ];
         })->values();
 
@@ -60,18 +64,40 @@ class PagosController extends Controller
         ]);
 
         $user = User::findOrFail($data['user_id']);
+        $fecha = Carbon::parse($data['fecha_hora']);
 
-        Pago::create([
-            'user_id'        => $user->getAttribute('id'),
-            'entrenador_id'  => auth()->id(),
-            'iban'           => $user->getAttribute('iban'),
+        $pago = Pago::create([
+            'user_id'        => $user->id,
+            // 'entrenador_id'  => auth()->id(),
+            'iban'           => $user->iban,
             'importe'        => $data['precio'],
-            'fecha_registro' => Carbon::parse($data['fecha_hora']),
+            'fecha_registro' => $fecha,
             'centro'         => $data['centro'],
             'nombre_clase'   => $data['nombre_clase'],
             'metodo_pago'    => $data['metodo_pago'],
         ]);
 
-        return redirect()->route('Pagos')->with('success', 'Pago creado correctamente.');
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'event' => [
+                    'id' => $pago->id,
+                    'title' => $pago->nombre_clase . ' - ' . $user->name,
+                    'start' => $fecha->toIso8601String(),
+                    'backgroundColor' => '#00897b',
+                    'borderColor' => '#00897b',
+                    'extendedProps' => [
+                        'hora' => $fecha->format('H:i'),
+                        'coste' => (float) $pago->importe,
+                        'pago' => (string) $pago->metodo_pago,
+                        'centro' => $pago->centro,
+                        'alumno' => $user->name,
+                        'clase_nombre' => $pago->nombre_clase
+                    ]
+                ]
+            ]);
+        }
+
+        return redirect()->route('Pagos')->with('success', 'Clase creada.');
     }
 }

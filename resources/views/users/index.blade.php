@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
   <style>
-      /* --- Estilos Generales y Tabla --- */
       .check-column { width: 40px; text-align: center; vertical-align: middle; }
       
       .custom-checkbox {
@@ -61,7 +60,6 @@
           border: 1px solid #b2f5ea;
       }
 
-      /* --- Barra Flotante --- */
       .floating-actions {
           position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
           background: #2D3748; color: white; padding: 15px 30px; border-radius: 50px;
@@ -77,30 +75,36 @@
       }
       .btn-group-action:hover { transform: scale(1.05); background: #f7fafc; }
 
-
-      /* =========================================
-         NUEVOS ESTILOS DE BOTONES (TIPO IMAGEN)
-         ========================================= */
       
-      /* Contenedor Flex para centrar */
-      .controls-bar {
+      .header-controls {
           display: flex;
-          justify-content: center; /* Centrado horizontal */
-          align-items: center;     /* Centrado vertical */
-          gap: 30px;               /* Espacio entre los botones */
+          justify-content: space-between; 
+          align-items: center;
           margin-bottom: 30px;
           padding: 10px 0;
       }
 
-      /* Estilo Base para ambos botones (Tamaño y forma) */
+      .title-section h1 {
+          margin: 0;
+          font-size: 1.8rem;
+          color: #333;
+          font-weight: 800; 
+      }
+      
+      .controls-bar {
+          display: flex;
+          align-items: center; 
+          gap: 20px; 
+      }
+
       .btn-design {
-          width: 180px;            /* Ancho fijo igual para ambos */
-          height: 45px;            /* Altura consistente */
+          width: 180px;            
+          height: 45px;            
           border: none;
-          border-radius: 12px;     /* Bordes redondeados como en la imagen */
+          border-radius: 12px;     
           color: white;
           font-size: 13px;
-          font-weight: 800;        /* Fuente negrita */
+          font-weight: 800;        
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -121,22 +125,17 @@
           font-size: 1.1em;
       }
 
-      /* --- Botón 1: VER GRUPOS (Degradado) --- */
       .btn-gradient-custom {
-          /* Degradado de Verde Azulado a Rosa/Rojo */
           background: linear-gradient(90deg, #38C1A3 0%, #E65C9C 100%);
-          text-transform: uppercase; /* Texto en mayúsculas */
+          text-transform: uppercase; 
           text-shadow: 0 1px 2px rgba(0,0,0,0.1);
       }
       .btn-gradient-custom:hover {
           filter: brightness(1.1);
       }
 
-      /* --- Botón 2: AÑADIR USUARIO (Sólido) --- */
       .btn-solid-custom {
-          /* Color Verde Menta Sólido */
           background-color: #38C1A3; 
-          /* Mantiene mayúsculas/minúsculas normal */
       }
       .btn-solid-custom:hover {
           background-color: #32ac91;
@@ -150,13 +149,13 @@
     @include('components.sidebars.sidebar_usuarios')
 
     <main class="main-content">
+      
       <div class="header-controls">
         <div class="title-section">
           <h1>Gestión de Usuarios</h1>
         </div>
 
         <div class="controls-bar">
-          
           <button onclick="abrirModalGestionGrupos()" class="btn-design btn-gradient-custom" type="button">
             <i class="fas fa-layer-group"></i> <span>VER GRUPOS</span>
           </button>
@@ -164,7 +163,6 @@
           <button id="toggleCrearUsuario" class="btn-design btn-solid-custom" type="button">
             <i class="fas fa-plus"></i> <span>Añadir usuario</span>
           </button>
-          
         </div>
       </div>
 
