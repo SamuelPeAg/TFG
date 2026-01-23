@@ -68,7 +68,7 @@ class PagosController extends Controller
 
         $pago = Pago::create([
             'user_id'        => $user->id,
-            // 'entrenador_id'  => auth()->id(),
+            // 'entrenador_id'  => $request->user()->id,
             'iban'           => $user->iban,
             'importe'        => $data['precio'],
             'fecha_registro' => $fecha,

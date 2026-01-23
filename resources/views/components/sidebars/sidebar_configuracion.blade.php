@@ -38,6 +38,7 @@
 
     {{-- FOOTER (Configuración y Salir) --}}
     <div class="sidebar-footer">
+        {{-- El botón de configuración se iluminará aquí --}}
         <a href="{{ route('configuracion.edit') }}" class="menu-item {{ request()->routeIs('configuracion.*') ? 'active' : '' }}">
             <i class="fa-solid fa-gear"></i> CONFIGURACIÓN
         </a>
@@ -64,6 +65,4 @@
     </div>
 </div>
 
-{{-- SCRIPT --}}
-{{-- Asegúrate de que public/js/sidebar.js exista. Si no, copia el script abajo --}}
 <script src="{{ asset('js/sidebar.js') }}"></script>
