@@ -37,10 +37,10 @@ class EntrenadorController extends Controller
         $token = Str::random(60);
 
         // Verificar que el token se genera correctamente
-        dd($token);  // Esto debería imprimir el token antes de asignarlo
 
         // Actualiza el usuario con el token
         $user->update(['activation_token' => $token]);
+        dd($user);  
 
         // Enviar el email con el enlace de activación
         Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
