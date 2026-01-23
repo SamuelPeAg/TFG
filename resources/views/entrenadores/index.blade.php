@@ -17,6 +17,57 @@
             cursor: not-allowed;       
             border-color: #cbd5e0;
         }
+        .header-controls {
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 10px 0;
+        }
+
+        .title-section h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: 800; 
+        }
+
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+       
+        .btn-design {
+            height: 45px;            
+            padding: 0 25px;
+            border: none;
+            border-radius: 12px;     
+            color: white;
+            font-size: 13px;
+            font-weight: 800;        
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            text-transform: uppercase; 
+        }
+
+        .btn-solid-custom {
+            background-color: #38C1A3; 
+        }
+
+        .btn-solid-custom:hover {
+            background-color: #32ac91;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
     </style>
 </head>
 
@@ -24,19 +75,22 @@
 
     <div class="dashboard-container">
 
-        @include('components.sidebars.sidebar_entrenadores')
+        @include('components.sidebar')
 
         <main class="main-content">
 
             <div class="header-controls">
+                
                 <div class="title-section">
                     <h1>Gestión de Entrenadores</h1>
                 </div>
+
                 <div class="controls-bar">
-                    <button id="btnAbrirModal" class="btn-success">
-                        <i class="fas fa-plus"></i> Añadir Entrenador
+                    <button id="btnAbrirModal" class="btn-design btn-solid-custom">
+                        <i class="fas fa-plus"></i> <span>Añadir Entrenador</span>
                     </button>
                 </div>
+
             </div>
 
             <div class="content-wrapper">
@@ -191,7 +245,7 @@
         </div>
     </div>
 
-   <script>
+    <script>
         const modal = document.getElementById('modalRegistro');
         const btnAbrir = document.getElementById('btnAbrirModal');
         const btnCerrar = document.getElementById('btnCerrarModal');

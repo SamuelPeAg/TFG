@@ -3,25 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facturación</title>
+    <title>Facturación - Factomove</title>
 
     <link rel="stylesheet" href="{{ asset('css/global.css') }}">
     <link rel="stylesheet" href="{{ asset('css/facturacion.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <style>
+        .header-controls {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 10px 0;
+        }
+
+        .title-section h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: 800; 
+        }
+    </style>
+
 </head>
 <body>
 
 <div class="dashboard-container">
-    @include('components.sidebars.sidebar_facturacion')
-
+@include('components.sidebar')
     <main class="main-content">
 
-        <h1>Gestión de Facturación</h1>
+        <div class="header-controls">
+            <div class="title-section">
+                <h1>Gestión de Facturación</h1>
+            </div>
+        </div>
 
         <div class="facturacion-dashboard">
 
-            {{-- Acción --}}
+            {{-- Acción: Se queda EXACTAMENTE como estaba antes (btn-big) --}}
             <div>
                 <button class="btn-big" type="button">
                     <i class="fa-solid fa-file-invoice"></i>

@@ -1,0 +1,196 @@
+:root {
+    --primary-color: #4BB7AE; /* Turquesa */
+    --primary-dark: #EF5D7A;  /* Rojo/Rosa para logout */
+    --sidebar-bg-top: #4BB7AE;
+    --sidebar-bg-bottom: #34495e;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 260px;
+    background: linear-gradient(180deg, var(--sidebar-bg-top) 0%, var(--sidebar-bg-bottom) 100%);
+    padding: 30px 20px; /* Ajuste de padding lateral */
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 0;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    font-family: 'Nunito', sans-serif;
+}
+
+/* LOGO - CENTRADO PERFECTO */
+.sidebar-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra horizontalmente */
+    justify-content: center;
+    margin-bottom: 35px; /* Espacio antes del perfil */
+    text-align: center;
+}
+
+.sidebar-logo a {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar-logo img {
+    width: 65px; /* Tamaño ajustado a la imagen */
+    margin-bottom: 10px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.sidebar-logo h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+/* PERFIL USUARIO */
+.user-profile-card {
+    backdrop-filter: blur(5px);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background-color: white;
+    color: var(--primary-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.user-info-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.user-info-text .name {
+    font-weight: 800;
+    font-size: 1rem;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info-text .role {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* MENÚ */
+.main-menu {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 20px;
+    border-radius: 10px; 
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.menu-item i {
+    width: 25px;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.menu-item.active {
+    background-color: white;
+    color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    font-weight: 800;  
+    justify-content: center; 
+}
+
+.menu-item.active i {
+    color: var(--primary-color);
+}
+
+/* FOOTER */
+.sidebar-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.logout-btn {
+    color: #ff8fa3 !important; /* Tono rojizo suave */
+}
+
+.logout-btn:hover {
+    background: rgba(239, 93, 122, 0.15) !important;
+    color: #EF5D7A !important;
+}
+
+/* MODAL */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    
+    /* CAMBIO AQUÍ: Aumentamos el número y agregamos !important */
+    z-index: 9999 !important; 
+    
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-box {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.modal-title { font-size: 1.5rem; font-weight: 800; color: #333; margin-bottom: 10px; }
+.modal-text { color: #666; margin-bottom: 25px; }
+.modal-actions { display: flex; justify-content: center; gap: 15px; }
+.btn-modal { padding: 12px 25px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; }
+.btn-cancel { background: #f0f0f0; color: #555; }
+.btn-confirm { background: var(--primary-color); color: white; }

@@ -5,6 +5,7 @@
         <div class="modal-header-custom">
             <div class="logo-simulado"><i class="fas fa-user-plus"></i></div>
             <h2>Crear Usuario</h2>
+            <p>Registra un usuario en Factomove.</p>
         </div>
         <form action="{{ route('users.store') }}" method="POST">
             @csrf

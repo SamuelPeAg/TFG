@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\UserGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -36,22 +35,16 @@ class UserController extends Controller
             
             'firma_digital.string' => 'La firma digital debe ser texto.',
             'firma_digital.max'    => 'La firma digital es demasiado larga.',
-
-            'group_name.required' => 'El nombre del grupo es obligatorio.',
-            'users.required'      => 'Debes seleccionar al menos dos usuarios.',
-            'users.min'           => 'Un grupo necesita mínimo 2 miembros.',
         ];
     }
 
     public function index()
     {
         // Mostrar solo clientes en la interfaz de usuarios
-        $users = User::role('cliente')->with('groups')->get();
+        $users = User::role('cliente')->get();
         
-        // Cargamos todos los grupos disponibles para el modal de gestión
-        $groups = UserGroup::withCount('users')->get();
 
-        return view('users.index', compact('users', 'groups'));
+        return view('users.index', compact('users',));
     }
 
     public function store(Request $request)
@@ -126,30 +119,7 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 
-    // --- MÉTODOS PARA GRUPOS ---
 
-    public function storeGroup(Request $request)
-    {
-        $request->validate([
-            'group_name' => 'required|string|max:255',
-            'users'      => 'required|array|min:2',
-        ], $this->validationMessages());
-
-        $group = UserGroup::create(['name' => $request->group_name]);
-        $group->users()->attach($request->users);
-
-        return redirect()->route('users.index')
-            ->with('success', 'Grupo "' . $request->group_name . '" creado con éxito.');
-    }
-
-    public function destroyGroup($id)
-    {
-        $group = UserGroup::findOrFail($id);
-        $group->delete(); // Elimina el grupo y la relación pivote
-
-        return redirect()->route('users.index')
-            ->with('success', 'Grupo eliminado correctamente.');
-    }
 
     // --- MÉTODOS DE CONFIGURACIÓN (PERFIL) ---
     public function configuracion(Request $request)

@@ -34,13 +34,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    // Relación de muchos a muchos con UserGroup
-    public function groups()
-    {
-        return $this->belongsToMany(UserGroup::class, 'user_user_group');
-    }
-
-    // Relación de uno a muchos con Pago (si el usuario es entrenador)
+    
     public function PagosCreadas()
     {
         return $this->hasMany(Pago::class, 'entrenador_id');
