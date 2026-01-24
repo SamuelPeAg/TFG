@@ -169,6 +169,47 @@
     #search-user { border: none !important; outline: none !important; box-shadow: none !important; background: transparent; }
     .search-anchor input:focus { border: none !important; outline: none !important; }
     .form-group label i { color: #00897b; margin-right: 8px; width: 20px; text-align: center; }
+
+    /* New Modal Styles for Redesign */
+    .modal-expanded { max-width: 900px !important; width: 95% !important; padding: 0 !important; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-grid { display: flex; flex-direction: row; height: auto; text-align: left; }
+    .modal-col-left { flex: 1; padding: 30px 40px; background: #fff; border-right: 1px solid #f3f4f6; }
+    .modal-col-right { flex: 0.9; padding: 30px 40px; background: #fcfcfc; display: flex; flex-direction: column; }
+    .section-title { font-size: 13px; color: #9ca3af; font-weight: 800; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .form-row { display: flex; gap: 15px; }
+    .form-row .modern-form-group { flex: 1; }
+
+    /* Entrenadores List */
+    .trainers-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 5px; margin-bottom: 20px; }
+    .trainer-option { margin: 0; }
+    .trainer-option input { display: none; }
+    .trainer-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: white; }
+    .trainer-option input:checked + .trainer-card { border-color: #4BB7AE; background: #f0fdf9; box-shadow: 0 2px 5px rgba(75, 183, 174, 0.1); }
+    .trainer-option input:checked + .trainer-card .check-icon { opacity: 1; transform: scale(1); }
+    .check-icon { color: #4BB7AE; opacity: 0; transform: scale(0.5); transition: all 0.2s; margin-left: auto; }
+    .avatar-circle-sm { 
+        width: 32px; height: 32px; 
+        border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 12px; font-weight: 800; flex-shrink: 0;
+        background: linear-gradient(135deg, #39c5a7, #eb567a);
+        color: white;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .trainer-name { font-size: 14px; font-weight: 600; color: #374151; }
+
+    .btn-outline-custom { background: transparent; border: 2px dashed #e5e7eb; color: #9ca3af; height: auto; padding: 10px; }
+    .btn-outline-custom:hover { border-color: #4BB7AE; color: #4BB7AE; background: #f0fdf9; }
+    
+    .modal-footer { padding: 20px 40px; background: #fff; border-top: 1px solid #f3f4f6; text-align: center; }
+
+    /* Responsive */
+    @media(max-width: 768px) {
+        .modal-grid { flex-direction: column; }
+        .modal-col-left, .modal-col-right { padding: 25px; border-right: none; }
+        .modal-col-left { border-bottom: 1px solid #eee; }
+        .modal-expanded { max-width: 95% !important; overflow-y: auto; max-height: 90vh; display: block; }
+    }
   </style>
 </head>
 
@@ -231,7 +272,7 @@
   </div>
 
   <div id="infoPopup" class="modal-overlay" aria-hidden="true">
-    <div class="modal-box">
+    <div class="modal-box modal-expanded">
       <button type="button" class="close-icon" id="btnCerrarPopup" style="position: absolute; top: 15px; right: 15px; background:none; border:none; font-size:24px; color:#9ca3af; cursor:pointer;">&times;</button>
       <h2 id="modal-fecha-titulo">Detalles</h2>
       <div id="lista-Pagos" class="modal-details"></div>
@@ -241,103 +282,150 @@
   </div>
 
   <div id="modalNuevaClase" class="modal-overlay" role="dialog" aria-hidden="true">
-    <div class="modal-box" style="padding: 40px; max-width: 450px;">
-      
-      <button type="button" class="close-icon" id="btnCerrarNuevaClase" style="position: absolute; top: 15px; right: 15px; background:none; border:none; font-size:24px; color:#9ca3af; cursor:pointer;">&times;</button>
+    <div class="modal-box modal-expanded">
+      <button type="button" class="close-icon" id="btnCerrarNuevaClase" style="position: absolute; top: 15px; right: 15px; z-index:10;">&times;</button>
 
-      <div class="modern-modal-header">
-          <img src="{{ asset('img/logopng.png') }}" alt="Logo" class="modern-logo"> 
-          <h2 class="modern-title">Agendar Clase</h2>
-          <p class="modern-subtitle">Registra una nueva sesión en el sistema.</p>
+      <div class="modern-modal-header" style="margin-bottom:0; padding-top:25px;">
+          <img src="{{ asset('img/logopng.png') }}" alt="Logo" class="modern-logo" style="width:40px; margin-bottom:5px;"> 
+          <h2 class="modern-title" style="font-size:18px;">Agendar Clase</h2>
+          <p class="modern-subtitle">Configura la sesión y asigna participantes.</p>
       </div>
 
-      <form id="formNuevaClase" action="{{ route('Pagos.store') }}" method="POST">
+      <form id="formNuevaClase" action="{{ route('Pagos.store') }}" method="POST" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
         @csrf
 
-        <div class="modern-form-group">
-          <label for="centro" class="modern-label">CENTRO</label>
-          <div class="input-wrapper">
-            <i class="fa-solid fa-building input-icon"></i>
-            <select id="centro" name="centro" class="modern-input" required>
-                <option value="" disabled selected>Selecciona un centro...</option>
-                <option value="OPEN">OPEN</option>
-                <option value="AIRA">AIRA</option>
-                <option value="CLINICA">CLINICA</option>
-            </select>
-          </div>
-        </div>
+        <div class="modal-grid" style="flex:1; overflow-y:auto;">
+            <!-- COLUMNA IZQUIERDA: DETALLES -->
+            <div class="modal-col-left">
+                <h4 class="section-title">DETALLES DE LA SESIÓN</h4>
 
-        <div class="modern-form-group">
-          <label for="nombre_clase" class="modern-label">NOMBRE DE LA CLASE</label>
-          <div class="input-wrapper">
-            <i class="fa-solid fa-dumbbell input-icon"></i>
-            <input id="nombre_clase" type="text" name="nombre_clase" class="modern-input" placeholder="Ej. Pilates Avanzado" required>
-          </div>
-        </div>
+                <!-- Centro -->
+                <div class="modern-form-group">
+                  <label for="centro" class="modern-label">CENTRO</label>
+                  <div class="input-wrapper">
+                    <i class="fa-solid fa-building input-icon"></i>
+                    <select id="centro" name="centro" class="modern-input" required>
+                        <option value="" disabled selected>Selecciona un centro...</option>
+                        <option value="OPEN">OPEN</option>
+                        <option value="AIRA">AIRA</option>
+                        <option value="CLINICA">CLINICA</option>
+                    </select>
+                  </div>
+                </div>
 
-        <div class="modern-form-group">
-          <label for="tipo_clase" class="modern-label">TIPO DE CLASE</label>
-          <div class="input-wrapper">
-            <i class="fa-solid fa-layer-group input-icon"></i>
-            <select id="tipo_clase" name="tipo_clase" class="modern-input" required onchange="cambiarTipoClase()">
-                <option value="EP" selected>EP (Individual)</option>
-                <option value="DUO">DUO</option>
-                <option value="TRIO">TRIO</option>
-                <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
-                <option value="GRUPO">GRUPO</option>
-            </select>
-          </div>
-        </div>
+                <!-- Clase -->
+                <div class="modern-form-group">
+                  <label for="nombre_clase" class="modern-label">NOMBRE DE LA CLASE</label>
+                  <div class="input-wrapper">
+                    <i class="fa-solid fa-dumbbell input-icon"></i>
+                    <input id="nombre_clase" type="text" name="nombre_clase" class="modern-input" placeholder="Ej. Pilates Avanzado" required>
+                  </div>
+                </div>
 
-        <div id="usuarios-container">
-            <!-- Se generará dinámicamente -->
-            <div class="modern-form-group user-input-group" id="user-group-0" style="position: relative;">
-              <label class="modern-label">Cliente 1</label>
-              <div class="input-wrapper">
-                <i class="fa-solid fa-user input-icon"></i>
-                <input type="text" class="modern-input user-search" placeholder="Buscar alumno..." autocomplete="off" data-index="0" required>
-                <input type="hidden" name="users[]" class="user-id-input" id="user_id_0">
-              </div>
-              <div id="suggestions_0" class="suggestions" hidden></div>
-            </div>
-        </div>
-        
-        <button type="button" id="btnAddUser" class="btn-design btn-solid-custom" style="display:none; width:100%; margin-bottom:15px; background:#4BB7AE;">
-            <i class="fas fa-plus"></i> Añadir Alumno
-        </button>
+                <!-- Tipo -->
+                <div class="modern-form-group">
+                  <label for="tipo_clase" class="modern-label">TIPO DE CLASE</label>
+                  <div class="input-wrapper">
+                    <i class="fa-solid fa-layer-group input-icon"></i>
+                    <select id="tipo_clase" name="tipo_clase" class="modern-input" required onchange="cambiarTipoClase()">
+                        <option value="EP" selected>EP (Individual)</option>
+                        <option value="DUO">DUO</option>
+                        <option value="TRIO">TRIO</option>
+                        <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
+                        <option value="GRUPO">GRUPO</option>
+                    </select>
+                  </div>
+                </div>
 
-        <div class="modern-form-group">
-            <label for="metodo_pago" class="modern-label">MÉTODO DE PAGO</label>
-            <div class="input-wrapper">
-              <i class="fa-solid fa-credit-card input-icon"></i>
-              <select id="metodo_pago" name="metodo_pago" class="modern-input" required>
-                <option value="TPV">TPV (Tarjeta)</option>
-                <option value="EF">Efectivo</option>
-                <option value="DD">Domiciliación</option>
-                <option value="CC">Cuenta Corriente</option>
-              </select>
-            </div>
-        </div>
-
-        <div style="display: flex; gap: 15px;">
-            <div class="modern-form-group" style="flex: 1;">
-                <label for="fecha_hora" class="modern-label">FECHA Y HORA</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-clock input-icon"></i>
-                    <input id="fecha_hora" type="datetime-local" name="fecha_hora" class="modern-input" required>
+                <!-- Fecha y Precio (Row) -->
+                <div class="form-row">
+                    <div class="modern-form-group">
+                        <label for="fecha_hora" class="modern-label">FECHA Y HORA</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-clock input-icon"></i>
+                            <input id="fecha_hora" type="datetime-local" name="fecha_hora" class="modern-input" required>
+                        </div>
+                    </div>
+                    <div class="modern-form-group">
+                        <label for="precio" class="modern-label">PRECIO (€)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-euro-sign input-icon"></i>
+                            <input id="precio" type="number" name="precio" step="0.01" class="modern-input" placeholder="0.00" required>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Metodo Pago -->
+                <div class="modern-form-group">
+                    <label for="metodo_pago" class="modern-label">MÉTODO DE PAGO</label>
+                    <div class="input-wrapper">
+                      <i class="fa-solid fa-credit-card input-icon"></i>
+                      <select id="metodo_pago" name="metodo_pago" class="modern-input" required>
+                        <option value="TPV">TPV (Tarjeta)</option>
+                        <option value="EF">Efectivo</option>
+                        <option value="DD">Domiciliación</option>
+                        <option value="CC">Cuenta Corriente</option>
+                      </select>
+                    </div>
                 </div>
             </div>
 
-            <div class="modern-form-group" style="flex: 1;">
-                <label for="precio" class="modern-label">PRECIO (€)</label>
-                <div class="input-wrapper">
-                    <i class="fa-solid fa-euro-sign input-icon"></i>
-                    <input id="precio" type="number" name="precio" step="0.01" class="modern-input" placeholder="0.00" required>
+            <!-- COLUMNA DERECHA: PERSONAS -->
+            <div class="modal-col-right">
+                <!-- Sección Entrenadores -->
+                <h4 class="section-title">EQUIPO TÉCNICO</h4>
+                <div class="modern-form-group">
+                    <label class="modern-label" style="display:flex; justify-content:space-between;">
+                        <span>ENTRENADORES</span>
+                        <span style="font-size:10px; opacity:0.7;">(Selecciona uno o varios)</span>
+                    </label>
+                    <div class="trainers-list-container">
+                        @if(isset($entrenadores) && $entrenadores->count() > 0)
+                            @foreach($entrenadores as $coach)
+                                <label class="trainer-option">
+                                    <input type="checkbox" name="trainers[]" value="{{ $coach->id }}">
+                                    <div class="trainer-card">
+                                        <div class="avatar-circle-sm">
+                                            {{ strtoupper(substr($coach->name, 0, 1)) }}
+                                        </div>
+                                        <span class="trainer-name">{{ $coach->name }}</span>
+                                        <i class="fa-solid fa-check check-icon"></i>
+                                    </div>
+                                </label>
+                            @endforeach
+                        @else
+                            <div style="padding:15px; text-align:center; color:#9ca3af; border:1px dashed #e5e7eb; border-radius:10px;">
+                                <small>No hay entrenadores disponibles</small>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Sección Clientes -->
+                <h4 class="section-title" style="margin-top:10px;">PARTICIPANTES</h4>
+                <div class="modern-form-group" style="flex:1;">
+                    <div id="usuarios-container" class="clients-container">
+                        <!-- Dynamic -->
+                        <div class="modern-form-group user-input-group" id="user-group-0" style="position:relative;">
+                          <label class="modern-label">Cliente 1</label>
+                          <div class="input-wrapper">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" class="modern-input user-search" placeholder="Buscar alumno..." autocomplete="off" data-index="0" required>
+                            <input type="hidden" name="users[]" class="user-id-input" id="user_id_0">
+                          </div>
+                          <div id="suggestions_0" class="suggestions" hidden></div>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="btnAddUser" class="btn-design btn-outline-custom" style="display:none; width:100%; margin-top:10px;">
+                        <i class="fas fa-plus"></i> Añadir Otro Alumno
+                    </button>
                 </div>
             </div>
         </div>
 
-        <button type="submit" class="btn-gradient">GUARDAR CLASE</button>
+        <div class="modal-footer">
+            <button type="submit" class="btn-gradient" style="max-width:300px; margin:0 auto;">GUARDAR CLASE</button>
+        </div>
       </form>
 
       <script type="application/json" id="users_json">

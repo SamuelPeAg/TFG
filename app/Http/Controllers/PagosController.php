@@ -12,14 +12,15 @@ class PagosController extends Controller
     public function index()
     {
         $users = User::role('cliente')->orderBy('name')->get();
-        return view('calendario.index', compact('users'));
+        $entrenadores = User::role('entrenador')->orderBy('name')->get();
+        return view('calendario.index', compact('users', 'entrenadores'));
     }
 
     public function buscarPorUsuario(Request $request)
     {
         $nombre = trim((string) $request->input('q', ''));
 
-        $query = Pago::with('user');
+        $query = Pago::with(['user', 'entrenadores']);
 
         if ($nombre !== '') {
             $query->whereHas('user', function ($q) use ($nombre) {
@@ -56,8 +57,29 @@ class PagosController extends Controller
                 ];
             })->values();
 
+            // Recopilar entrenadores (únicos para el grupo)
+            $entrenadoresMap = [];
+            
+            foreach ($grupo as $p) {
+                if ($p->entrenadores) {
+                    foreach ($p->entrenadores as $t) {
+                        if (!isset($entrenadoresMap[$t->id])) {
+                            $entrenadoresMap[$t->id] = [
+                                'id' => $t->id,
+                                'name' => $t->name,
+                                'initial' => strtoupper(substr($t->name, 0, 1))
+                            ];
+                        }
+                    }
+                }
+            }
+            
+            $entrenadoresList = array_values($entrenadoresMap);
+
             $events[] = [
-                'id' => $first->id, // ID representativo (del primero)
+                'id' => $first->id, 
+                // Usamos propiedades personalizadas para identificar la sesión única y poder editar todos
+                'groupId' => $key, 
                 'title' => $title,
                 'start' => $first->fecha_registro ? $first->fecha_registro->toIso8601String() : null,
                 'backgroundColor' => '#00897b',
@@ -68,7 +90,14 @@ class PagosController extends Controller
                     'centro' => $first->centro,
                     'clase_nombre' => $first->nombre_clase,
                     'tipo_clase' => $first->tipo_clase,
-                    'alumnos' => $alumnos // Array de alumnos
+                    'alumnos' => $alumnos,
+                    'entrenadores' => $entrenadoresList, // Array de entrenadores
+                    // Datos clave para identificar la sesión al añadir/quitar entrenadores
+                    'session_key' => [
+                        'fecha_hora' => $first->fecha_registro->format('Y-m-d H:i:s'),
+                        'nombre_clase' => $first->nombre_clase,
+                        'centro' => $first->centro
+                    ]
                 ],
             ];
         }
@@ -81,6 +110,8 @@ class PagosController extends Controller
         $data = $request->validate([
             'users'        => ['required', 'array', 'min:1'],
             'users.*'      => ['exists:users,id'],
+            'trainers'     => ['nullable', 'array'],
+            'trainers.*'   => ['exists:users,id'],
             'centro'       => ['required', 'in:CLINICA,AIRA,OPEN'],
             'nombre_clase' => ['required', 'string', 'max:120'],
             'tipo_clase'   => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
@@ -92,19 +123,23 @@ class PagosController extends Controller
             'users.array' => 'Formato de usuarios incorrecto.',
             'users.*.exists' => 'El usuario seleccionado no existe o no es válido.',
             'centro.required' => 'El centro es obligatorio.',
-            // ... (mensajes existentes)
         ]);
 
         $fecha = Carbon::parse($data['fecha_hora']);
         $createdEvents = [];
+        
+        // Entrenadores seleccionados
+        $trainers = $data['trainers'] ?? [];
+        $firstTrainerId = !empty($trainers) ? $trainers[0] : null;
 
         foreach ($data['users'] as $userId) {
             $user = User::findOrFail($userId);
             
             $pago = Pago::create([
                 'user_id'        => $user->id,
+                'entrenador_id'  => $firstTrainerId, // Legacy: primer entrenador
                 'iban'           => $user->iban,
-                'importe'        => $data['precio'], // Precio por persona se asume, o total? Asumimos por persona según lógica común
+                'importe'        => $data['precio'], 
                 'fecha_registro' => $fecha,
                 'centro'         => $data['centro'],
                 'nombre_clase'   => $data['nombre_clase'],
@@ -112,45 +147,125 @@ class PagosController extends Controller
                 'metodo_pago'    => $data['metodo_pago'],
             ]);
 
-            $createdEvents[] = [
-                'id' => $pago->id,
-                'title' => $pago->nombre_clase . ' - ' . $user->name,
-                'start' => $fecha->toIso8601String(),
-                'backgroundColor' => '#00897b',
-                'borderColor' => '#00897b',
-                'extendedProps' => [
-                    'hora' => $fecha->format('H:i'),
-                    'coste' => (float) $pago->importe,
-                    'pago' => (string) $pago->metodo_pago,
-                    'centro' => $pago->centro,
-                    'alumno' => $user->name,
-                    'clase_nombre' => $pago->nombre_clase
-                ]
-            ];
+            // Guardar relación de múltiples entrenadores
+            if (!empty($trainers)) {
+                $pago->entrenadores()->sync($trainers);
+            }
+
+            $createdEvents[] = $pago;
         }
 
         if ($request->wantsJson()) {
-            // Retornamos el último evento creado para compatibilidad con JS simple, 
-            // o podríamos devolver todos. Como el JS actual espera un solo 'event', 
-            // le mandaremos el primero o adaptamos JS. 
-            // PERO: El JS usa calendar.addEvent(json.event). 
-            // Para soportar múltiples, deberíamos cambiar JS o simplemente devolver success y recargar
-            // o devolver un array 'events'.
-            // Por simplicidad y compatibilidad con el JS que espera 'event' (singular), 
-            // mandamos el primero, pero lo ideal es recargar el calendario.
-            
-            // HACK: Mandamos "success" y el JS ya añade ONE event. 
-            // Para que salgan todos, mejor devolvemos una propiedad 'events' y actualizamos JS
-            // O dejamos que el usuario recargue.
-            // Voy a devolver el primero para que no rompa, pero lo ideal es refactorizar a events list
-            
             return response()->json([
                 'success' => true,
-                'event' => $createdEvents[0] ?? null, // Retrocompatibilidad parcial
-                'events' => $createdEvents // Nueva propiedad para futuro soporte
+                'message' => 'Clase creada exitosamente'
             ]);
         }
 
         return redirect()->route('Pagos')->with('success', 'Clase creada exitosamente.');
+    }
+
+    // Método para añadir entrenador a una sesión completa
+    public function addTrainerToSession(Request $request) 
+    {
+        $request->validate([
+            'trainer_id' => 'required|exists:users,id',
+            'fecha_hora' => 'required|date',
+            'nombre_clase' => 'required|string',
+            'centro' => 'required|string'
+        ]);
+
+        $fecha = Carbon::parse($request->fecha_hora);
+        
+        // Buscar todos los pagos que coinciden con la "sesión"
+        $pagos = Pago::where('fecha_registro', $fecha)
+                     ->where('nombre_clase', $request->nombre_clase)
+                     ->where('centro', $request->centro)
+                     ->get();
+
+        if ($pagos->isEmpty()) {
+            return response()->json(['error' => 'Sesión no encontrada'], 404);
+        }
+
+        foreach($pagos as $pago) {
+            // Attach si no existe ya
+            if (!$pago->entrenadores()->where('user_id', $request->trainer_id)->exists()) {
+                $pago->entrenadores()->attach($request->trainer_id);
+                
+                // Actualizar legacy column si estaba vacía
+                if (!$pago->entrenador_id) {
+                    $pago->entrenador_id = $request->trainer_id;
+                    $pago->save();
+                }
+            }
+        }
+
+        // Devolver la lista actualizada de entrenadores
+        $updatedTrainers = $this->_getTrainersForSession($pagos);
+
+        return response()->json([
+            'success' => true,
+            'trainers' => $updatedTrainers
+        ]);
+    }
+
+    // Método para quitar entrenador de una sesión completa
+    public function removeTrainerFromSession(Request $request) 
+    {
+        $request->validate([
+            'trainer_id' => 'required|exists:users,id',
+            'fecha_hora' => 'required|date',
+            'nombre_clase' => 'required|string',
+            'centro' => 'required|string'
+        ]);
+
+        $fecha = Carbon::parse($request->fecha_hora);
+        
+        $pagos = Pago::where('fecha_registro', $fecha)
+                     ->where('nombre_clase', $request->nombre_clase)
+                     ->where('centro', $request->centro)
+                     ->get();
+
+        if ($pagos->isEmpty()) {
+            return response()->json(['error' => 'Sesión no encontrada'], 404);
+        }
+
+        foreach($pagos as $pago) {
+            $pago->entrenadores()->detach($request->trainer_id);
+            
+            // Si quitamos el que estaba en legacy column, ponemos otro o null
+            if ($pago->entrenador_id == $request->trainer_id) {
+                $next = $pago->entrenadores()->first();
+                $pago->entrenador_id = $next ? $next->id : null;
+                $pago->save();
+            }
+        }
+
+        // Devolver la lista actualizada de entrenadores
+        $updatedTrainers = $this->_getTrainersForSession($pagos);
+
+        return response()->json([
+            'success' => true,
+            'trainers' => $updatedTrainers
+        ]);
+    }
+
+    private function _getTrainersForSession($pagos) {
+        $entrenadores = collect();
+        // Recargar las relaciones para tener datos frescos
+        $pagos->each->load('entrenadores');
+        
+        $pagos->each(function($p) use ($entrenadores) {
+            foreach($p->entrenadores as $t) {
+                if (!$entrenadores->contains('id', $t->id)) {
+                    $entrenadores->push([
+                        'id' => $t->id,
+                        'name' => $t->name,
+                        'initial' => strtoupper(substr($t->name, 0, 1))
+                    ]);
+                }
+            }
+        });
+        return $entrenadores->values();
     }
 }

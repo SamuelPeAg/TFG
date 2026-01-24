@@ -60,55 +60,219 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputFechaHora) inputFechaHora.value = localISOTime;
   }
 
-  // ====== 3. MOSTRAR DETALLES EVENTO ======
+  // ====== 3. MOSTRAR DETALLES EVENTO (REDISEÑADO) ======
   function mostrarDetallesEvento(event) {
     const p = event.extendedProps;
-    const fechaTxt = event.start.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    const fechaObj = event.start;
+    // Formato fecha amigable: "Jueves, 5 de Febrero"
+    const diaSemana = fechaObj.toLocaleDateString('es-ES', { weekday: 'long' });
+    const diaNum = fechaObj.getDate();
+    const mes = fechaObj.toLocaleDateString('es-ES', { month: 'long' });
+    const fechaTxt = `${diaSemana}, ${diaNum} de ${mes}`;
 
-    tituloFechaEl.textContent = `Detalles: ${fechaTxt}`;
+    tituloFechaEl.innerHTML = `<span style="text-transform:capitalize; color:#0e7490;">${diaSemana}</span>, ${diaNum} de <span style="text-transform:capitalize;">${mes}</span>`;
+    tituloFechaEl.style.color = "#333";
+    tituloFechaEl.style.fontSize = "1.5rem";
+    tituloFechaEl.style.textAlign = "center";
 
-    let html = `<div style="background:#fff; border-radius:8px; overflow:hidden;">`;
-
-    // Header General
-    html += `
-        <div style="background: #f3f4f6; padding: 15px; border-bottom: 2px solid #00897b;">
-            <h3 style="margin:0; color:#111827; font-size:18px; font-weight:700;">${p.clase_nombre}</h3>
-            <div style="display:flex; gap:15px; margin-top:8px; font-size:14px; color:#4b5563;">
-                <span><i class="fa-solid fa-clock" style="color:#00897b"></i> ${p.hora}</span>
-                <span><i class="fa-solid fa-building" style="color:#00897b"></i> ${p.centro}</span>
-                ${p.tipo_clase ? `<span><i class="fa-solid fa-layer-group" style="color:#00897b"></i> ${p.tipo_clase}</span>` : ''}
+    // Preparar contenido modal
+    let html = `
+      <div class="modal-grid" style="min-height:300px; border-top:1px solid #eee; margin-top:20px;">
+        <!-- COLUMNA IZQUIERDA: Info General y Clientes -->
+        <div class="modal-col-left" style="padding:25px; border-right:1px solid #eee;">
+            <div style="margin-bottom:20px;">
+                <h3 style="margin:0; font-size:22px; color:#111827; font-weight:700;">${p.clase_nombre}</h3>
+                <div style="display:flex; gap:15px; margin-top:8px; font-size:14px; color:#4b5563;">
+                    <span><i class="fa-solid fa-clock" style="color:#00897b"></i> ${p.hora}</span>
+                    <span><i class="fa-solid fa-building" style="color:#00897b"></i> ${p.centro}</span>
+                    ${p.tipo_clase ? `<span><i class="fa-solid fa-layer-group" style="color:#00897b"></i> ${p.tipo_clase}</span>` : ''}
+                </div>
             </div>
-        </div>
-        <div style="padding: 15px;">
-      `;
+
+            <h4 class="section-title">ASISTENTES (${p.alumnos ? p.alumnos.length : 0})</h4>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+    `;
 
     if (p.alumnos && p.alumnos.length > 0) {
-      html += `<h4 style="margin:0 0 10px 0; font-size:14px; text-transform:uppercase; color:#9ca3af;">Asistentes (${p.alumnos.length})</h4>`;
       p.alumnos.forEach(alum => {
         html += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; margin-bottom:8px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:32px; height:32px; background:#00897b; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">
-                            ${alum.nombre.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <div style="font-weight:600; color:#374151;">${alum.nombre}</div>
-                            <div style="font-size:12px; color:#6b7280;">${alum.pago}</div>
-                        </div>
-                    </div>
-                    <div style="font-weight:700; color:#1f2937;">€${Number(alum.coste).toFixed(2)}</div>
-                </div>
-              `;
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+              <div style="display:flex; align-items:center; gap:12px;">
+                  <div style="width:36px; height:36px; background:#00897b; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">
+                      ${alum.nombre.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                      <div style="font-weight:700; color:#374151; font-size:14px;">${alum.nombre}</div>
+                      <div style="font-size:11px; color:#6b7280; text-transform:uppercase;">${alum.pago}</div>
+                  </div>
+              </div>
+              <div style="font-weight:800; color:#111827;">€${Number(alum.coste).toFixed(2)}</div>
+          </div>
+        `;
       });
     } else {
-      // Fallback legacy (si por alguna razón no llegara la lista)
-      html += `<p>No hay información de alumnos.</p>`;
+      html += `<p style="color:#9ca3af; font-style:italic;">No hay información de alumnos.</p>`;
     }
 
-    html += `</div></div>`;
+    html += `
+        </div>
+      </div>
+
+      <!-- COLUMNA DERECHA: Entrenadores -->
+      <div class="modal-col-right" style="padding:25px; background:#fcfcfc;">
+        <h4 class="section-title">EQUIPO TÉCNICO</h4>
+        <div id="lista-entrenadores-sesion" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+          <!-- Lista dinámica JS -->
+        </div>
+
+        <div style="margin-top:auto;">
+             <label style="display:block; font-size:11px; font-weight:800; color:#9ca3af; text-transform:uppercase; margin-bottom:8px;">AÑADIR ENTRENADOR</label>
+             <div style="display:flex; gap:8px;">
+                <select id="select-add-trainer" class="modern-input" style="padding:10px;">
+                    <option value="" selected disabled>Seleccionar...</option>
+                    ${generarOpcionesEntrenadores()}
+                </select>
+                <button type="button" id="btn-add-trainer-action" class="btn-design btn-solid-custom" style="padding:0 15px; width:auto; border-radius:10px;">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+             </div>
+        </div>
+      </div>
+    </div>`;
+
     listaPagosEl.innerHTML = html;
 
+    // Renderizar entrenadores actuales
+    renderEntrenadoresSesion(p.entrenadores || [], p.session_key);
+
+    // Event Listener para añadir entrenador
+    const btnAdd = document.getElementById('btn-add-trainer-action');
+    if (btnAdd) {
+      btnAdd.addEventListener('click', () => {
+        const select = document.getElementById('select-add-trainer');
+        const trainerId = select.value;
+        if (!trainerId) return;
+
+        agregarEntrenadorSesion(trainerId, p.session_key, event);
+      });
+    }
+
     openModal(modalInfo);
+  }
+
+  // --- Helpers renderizado entrenadores ---
+  function generarOpcionesEntrenadores() {
+    // USERS global o inyectado. Asumiremos que tenemos acceso a una lista de entrenadores global o la extraemos del DOM si está disponible
+    // En index.blade.php inyectamos 'users', pero no 'entrenadores' como JSON global explícito en JS puro...
+    // HACK: Usar los checkboxes del modal "Nueva Clase" para obtener la lista de entrenadores disponibles :D
+    const checkboxes = document.querySelectorAll('input[name="trainers[]"]');
+    let opts = '';
+    checkboxes.forEach(chk => {
+      const name = chk.closest('.trainer-option').querySelector('.trainer-name').textContent;
+      opts += `<option value="${chk.value}">${name}</option>`;
+    });
+    return opts;
+  }
+
+  function renderEntrenadoresSesion(entrenadores, sessionKey) {
+    const container = document.getElementById('lista-entrenadores-sesion');
+    if (!container) return;
+
+    container.innerHTML = '';
+    if (!entrenadores || entrenadores.length === 0) {
+      container.innerHTML = `<div style="padding:10px; border:1px dashed #e5e7eb; border-radius:8px; color:#9ca3af; font-size:13px; text-align:center;">Sin asignación</div>`;
+      return;
+    }
+
+    entrenadores.forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'trainer-card';
+      div.style.background = 'white';
+      div.style.cursor = 'default';
+      // No hover effect highlighting like checkboxes
+
+      div.innerHTML = `
+             <div class="avatar-circle-sm">${t.initial || t.name.charAt(0)}</div>
+             <span class="trainer-name" style="flex:1;">${t.name}</span>
+             <button type="button" class="btn-icon btn-delete-trainer" style="border:none; background:none; cursor:pointer; color:#ef4444;" title="Eliminar">
+                <i class="fa-solid fa-trash-can"></i>
+             </button>
+          `;
+
+      div.querySelector('.btn-delete-trainer').addEventListener('click', () => {
+        eliminarEntrenadorSesion(t.id, sessionKey);
+      });
+
+      container.appendChild(div);
+    });
+  }
+
+  // --- Lógica AJAX Entrenadores ---
+  async function agregarEntrenadorSesion(trainerId, sessionKey, eventCal) {
+    try {
+      const formData = new FormData();
+      formData.append('trainer_id', trainerId);
+      formData.append('fecha_hora', sessionKey.fecha_hora);
+      formData.append('nombre_clase', sessionKey.nombre_clase);
+      formData.append('centro', sessionKey.centro);
+
+      const res = await fetch('/Pagos/add-trainer', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // 1. Recargar calendario de fondo (sin molestar al usuario)
+        const currentSearch = document.getElementById('search-user')?.value || '';
+        fetchAndRenderCalendar(currentSearch);
+
+        // 2. Actualizar lista de entrenadores en el modal usando los datos que devolvio el back
+        if (data.trainers) {
+          renderEntrenadoresSesion(data.trainers, sessionKey);
+        }
+
+        // NO cerramos el modal
+        // closeModal(modalInfo);
+      } else {
+        alert('Error al añadir entrenador');
+      }
+    } catch (e) { console.error(e); }
+  }
+
+  async function eliminarEntrenadorSesion(trainerId, sessionKey) {
+    try {
+      const formData = new FormData();
+      formData.append('trainer_id', trainerId);
+      formData.append('fecha_hora', sessionKey.fecha_hora);
+      formData.append('nombre_clase', sessionKey.nombre_clase);
+      formData.append('centro', sessionKey.centro);
+
+      const res = await fetch('/Pagos/remove-trainer', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // 1. Recargar calendario de fondo
+        const currentSearch = document.getElementById('search-user')?.value || '';
+        fetchAndRenderCalendar(currentSearch);
+
+        // 2. Actualizar lista en el modal
+        if (data.trainers) {
+          renderEntrenadoresSesion(data.trainers, sessionKey);
+        }
+
+        // NO cerramos el modal
+      } else {
+        alert('Error al eliminar entrenador');
+      }
+    } catch (e) { console.error(e); }
   }
 
   // ====== 4. FETCH DATOS ======
@@ -135,8 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Enviar array de usuarios tal cual (incluyendo vacíos) para que falle la validación en el servidor si es necesario
       payload.users = formData.getAll('users[]');
-
       if (payload['users[]']) delete payload['users[]'];
+
+      // Enviar array de entrenadores
+      payload.trainers = formData.getAll('trainers[]');
+      if (payload['trainers[]']) delete payload['trainers[]'];
 
       try {
         const res = await fetch(formNuevaClase.action, {
