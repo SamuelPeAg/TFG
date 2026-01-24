@@ -12,7 +12,7 @@ class PagosController extends Controller
     public function index()
     {
         $users = User::role('cliente')->orderBy('name')->get();
-        return view('Pagos.index', compact('users'));
+        return view('calendario.index', compact('users'));
     }
 
     public function buscarPorUsuario(Request $request)
