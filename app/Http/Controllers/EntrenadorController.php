@@ -20,29 +20,50 @@ class EntrenadorController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'nombre'   => ['required', 'string', 'min:3', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
-        ]);
-        $token = Str::random(60);
-        // Crear el usuario entrenador (solo nombre y email)
-        $user = User::create([
-            'name'     => $request->nombre,
-            'email'    => $request->email,
-            'password' => Hash::make(Str::random(24)), 
-            'activation_token' => $token 
-        ]);
-        // Crear un token de activación para el entrenador
-        $user->assignRole('entrenador');
+        {
+            $request->validate([
+                'nombre' => ['required', 'string', 'min:3', 'max:255'],
+                'email'  => ['required', 'email', 'max:255'],
+            ]);
 
-        
+            $email = strtolower(trim($request->email));
 
-        // Enviar el email con el enlace de activación
-        Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+            // 1) Buscar si ya existe un usuario con ese email
+            $user = User::where('email', $email)->first();
 
-        return redirect()->route('entrenadores.index')->with('success', 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.');
-    }
+            // 2) Si existe, NO crees otro user (porque email debe ser único en users)
+            if ($user) {
+                // Si ya es entrenador, no hagas nada
+                if ($user->hasRole('entrenador')) {
+                    return redirect()->route('entrenadores.index')
+                        ->with('success', 'Ese correo ya pertenece a un entrenador. No se hicieron cambios.');
+                }
+
+                // Si no es entrenador, lo "conviertes" en entrenador
+                $user->assignRole('entrenador');
+
+                return redirect()->route('entrenadores.index')
+                    ->with('success', 'El usuario ya existía. Se le asignó el rol de entrenador.');
+            }
+
+            // 3) Si no existe, lo creas como antes
+            $token = Str::random(60);
+
+            $user = User::create([
+                'name'  => $request->nombre,
+                'email' => $email,
+                'password' => \Hash::make(Str::random(24)),
+                'activation_token' => $token,
+            ]);
+
+            $user->assignRole('entrenador');
+
+            \Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+
+            return redirect()->route('entrenadores.index')
+                ->with('success', 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.');
+        }
+
 
 
 
@@ -84,10 +105,17 @@ class EntrenadorController extends Controller
     {
         $user = User::role('entrenador')->whereKey($id)->firstOrFail();
 
-        $user->delete();
+        // Quitar roles/permisos (Spatie)
+        $user->syncRoles([]);              // o $user->removeRole('entrenador');
+        $user->syncPermissions([]);
 
-        return redirect()->route('entrenadores.index')->with('success', 'Entrenador eliminado correctamente.');
+        // Si tu modelo User tiene SoftDeletes, esto lo borra DEFINITIVO
+        $user->forceDelete();
+
+        return redirect()->route('entrenadores.index')
+            ->with('success', 'Entrenador eliminado correctamente.');
     }
+
 
     public function activarEntrenador($token)
     {
