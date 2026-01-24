@@ -72,85 +72,134 @@ document.addEventListener('DOMContentLoaded', () => {
     const mes = fechaObj.toLocaleDateString('es-ES', { month: 'long' });
     const fechaTxt = `${diaSemana}, ${diaNum} de ${mes}`;
 
-    tituloFechaEl.innerHTML = `<span style="text-transform:capitalize; color:#0e7490;">${diaSemana}</span>, ${diaNum} de <span style="text-transform:capitalize;">${mes}</span>`;
-    tituloFechaEl.style.color = "#333";
-    tituloFechaEl.style.fontSize = "1.5rem";
+    // Estilizado del encabezado con colores corporativos
+    tituloFechaEl.innerHTML = `<span style="display:block; font-size:1.2rem; font-weight:400; opacity:0.9; text-transform:capitalize;">${diaSemana}</span><span style="display:block; font-size:2rem; font-weight:800; letter-spacing:-1px;">${diaNum} de ${mes}</span>`;
+
+    // Aplicar estilos corporativos al contenedor del título
+    tituloFechaEl.style.background = "linear-gradient(135deg, #00897b 0%, #0e7490 100%)"; // Teal a Cyan oscuro
+    tituloFechaEl.style.color = "white";
+    tituloFechaEl.style.padding = "30px 20px";
+    tituloFechaEl.style.margin = "0";
     tituloFechaEl.style.textAlign = "center";
+    tituloFechaEl.style.textTransform = "capitalize";
+    tituloFechaEl.style.position = "relative";
+
+    // Ajustar el botón de cerrar para que se vea bien sobre el fondo oscuro
+    const btnCerrar = document.getElementById('btnCerrarPopup');
+    if (btnCerrar) {
+      btnCerrar.style.color = "white";
+      btnCerrar.style.opacity = "0.8";
+      btnCerrar.style.zIndex = "10";
+    }
 
     // Preparar contenido modal
+    // Preparar contenido modal
     let html = `
-      <div class="modal-grid" style="min-height:300px; border-top:1px solid #eee; margin-top:20px;">
-        <!-- COLUMNA IZQUIERDA: Info General y Clientes -->
-        <div class="modal-col-left" style="padding:25px; border-right:1px solid #eee;">
-            <div style="margin-bottom:20px;">
-                <h3 style="margin:0; font-size:22px; color:#111827; font-weight:700;">${p.clase_nombre}</h3>
-                <div style="display:flex; gap:15px; margin-top:8px; font-size:14px; color:#4b5563;">
-                    <span><i class="fa-solid fa-clock" style="color:#00897b"></i> ${p.hora}</span>
-                    <span><i class="fa-solid fa-building" style="color:#00897b"></i> ${p.centro}</span>
-                    ${p.tipo_clase ? `<span><i class="fa-solid fa-layer-group" style="color:#00897b"></i> ${p.tipo_clase}</span>` : ''}
+      <style>
+        .modal-grid { display: grid; grid-template-columns: 2fr 1fr; min-height: 400px; border-top: 1px solid #f3f4f6; }
+        .modal-main { padding: 32px; }
+        .modal-sidebar { background-color: #f9fafb; padding: 32px; border-left: 1px solid #f3f4f6; display: flex; flex-direction: column; }
+        
+        .class-title { font-size: 28px; font-weight: 800; color: #111827; margin: 0 0 12px 0; letter-spacing: -0.5px; }
+        .meta-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #f3f4f6; border-radius: 99px; font-size: 13px; color: #4b5563; font-weight: 600; }
+        .meta-pill i { color: #0e7490; }
+        
+        .section-header { font-size: 12px; font-weight: 800; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; margin-top: 32px; }
+        
+        .participant-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; transition: all 0.2s; margin-bottom: 10px; }
+        .participant-card:hover { border-color: #d1d5db; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #0e7490, #0891b2); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; box-shadow: 0 2px 4px rgba(14, 116, 144, 0.2); }
+        
+        .trainer-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 8px; }
+        .trainer-item .t-avatar { width: 32px; height: 32px; background: #f3f4f6; color: #374151; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+        
+        @media (max-width: 768px) {
+            .modal-grid { grid-template-columns: 1fr; }
+            .modal-sidebar { border-left: none; border-top: 1px solid #f3f4f6; }
+        }
+      </style>
+
+      <div class="modal-grid">
+        <!-- SECCIÓN PRINCIPAL: Info y Participantes -->
+        <div class="modal-main">
+            <div>
+                <h3 class="class-title">${p.clase_nombre}</h3>
+                <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                    <span class="meta-pill"><i class="fa-solid fa-clock"></i> ${p.hora}</span>
+                    <span class="meta-pill"><i class="fa-solid fa-building"></i> ${p.centro}</span>
+                    ${p.tipo_clase ? `<span class="meta-pill"><i class="fa-solid fa-layer-group"></i> ${p.tipo_clase}</span>` : ''}
                 </div>
             </div>
 
-            <h4 class="section-title">ASISTENTES (${p.alumnos ? p.alumnos.length : 0})</h4>
-            <div style="display:flex; flex-direction:column; gap:10px;">
+            <h4 class="section-header">Asistentes confirmados (${p.alumnos ? p.alumnos.length : 0})</h4>
+            <div>
     `;
 
     if (p.alumnos && p.alumnos.length > 0) {
       p.alumnos.forEach(alum => {
         html += `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+          <div class="participant-card">
               <div style="display:flex; align-items:center; gap:12px;">
-                  <div style="width:36px; height:36px; background:#00897b; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">
+                  <div class="user-avatar">
                       ${alum.nombre.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                      <div style="font-weight:700; color:#374151; font-size:14px;">${alum.nombre}</div>
-                      <div style="font-size:11px; color:#6b7280; text-transform:uppercase;">${alum.pago}</div>
+                      <div style="font-weight:700; color:#1f2937; font-size:15px;">${alum.nombre}</div>
+                      <div style="font-size:12px; color:#6b7280;">Método: ${alum.pago}</div>
                   </div>
               </div>
-              <div style="font-weight:800; color:#111827;">€${Number(alum.coste).toFixed(2)}</div>
+              <div style="font-weight:700; color:#0e7490; font-size:15px;">€${Number(alum.coste).toFixed(2)}</div>
           </div>
         `;
       });
     } else {
-      html += `<p style="color:#9ca3af; font-style:italic;">No hay información de alumnos.</p>`;
+      html += `
+        <div style="text-align:center; padding:40px 20px; background:#f9fafb; border-radius:12px; border:1px dashed #e5e7eb;">
+            <i class="fa-solid fa-users-slash" style="color:#d1d5db; font-size:24px; margin-bottom:10px;"></i>
+            <p style="color:#6b7280; font-size:14px; margin:0;">No hay alumnos inscritos aún.</p>
+        </div>`;
     }
 
     html += `
-        </div>
-      </div>
-
-      <!-- COLUMNA DERECHA: Entrenadores -->
-      <div class="modal-col-right" style="padding:25px; background:#fcfcfc;">
-        <h4 class="section-title">EQUIPO TÉCNICO</h4>
-        <div id="lista-entrenadores-sesion" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
-          <!-- Lista dinámica JS -->
+            </div>
         </div>
 
-        <div style="margin-top:auto;" id="trainer-actions-wrapper">
-             ${(window.IS_ADMIN) ?
-        `<label style="display:block; font-size:11px; font-weight:800; color:#9ca3af; text-transform:uppercase; margin-bottom:8px;">AÑADIR ENTRENADOR</label>
-             <div style="display:flex; gap:8px;">
-                <select id="select-add-trainer" class="modern-input" style="padding:10px;">
-                    <option value="" selected disabled>Seleccionar...</option>
-                    ${generarOpcionesEntrenadores()}
-                </select>
-                <button type="button" id="btn-add-trainer-action" class="btn-design btn-solid-custom" style="padding:0 15px; width:auto; border-radius:10px;">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-             </div>`
+        <!-- SIDEBAR: Equipo Técnico y Acciones -->
+        <div class="modal-sidebar">
+            <h4 class="section-header" style="margin-top:0;">Equipo Técnico</h4>
+            
+            <div id="lista-entrenadores-sesion" style="flex: 1;">
+              <!-- JS rendered list -->
+            </div>
+
+            <div style="margin-top:20px;" id="trainer-actions-wrapper">
+                 ${(window.IS_ADMIN) ?
+        `<label class="section-header" style="display:block; margin-bottom:10px;">Gestionar Personal</label>
+                 <div style="display:flex; gap:8px;">
+                    <select id="select-add-trainer" class="modern-input" style="padding:10px; font-size:13px;">
+                        <option value="" selected disabled>Añadir entrenador...</option>
+                        ${generarOpcionesEntrenadores()}
+                    </select>
+                    <button type="button" id="btn-add-trainer-action" 
+                        style="background:#111827; color:white; border:none; width:40px; border-radius:8px; cursor:pointer;">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                 </div>`
         : (window.IS_TRAINER && window.CURRENT_USER_ID) ?
-          // Si es entrenador y NO está en la lista, mostrar botón de unirse
+          // Lógica de botón de inscripción para entrenador
           (!p.entrenadores || !p.entrenadores.find(t => t.id === window.CURRENT_USER_ID)) ?
-            `<button type="button" id="btn-join-session" class="btn-design btn-solid-custom" style="width:100%; border-radius:10px; background-color:#10b981;">
-                    <i class="fa-solid fa-user-plus"></i> Inscribirme a esta clase
+            `<button type="button" id="btn-join-session" 
+                    style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px -1px rgba(16, 185, 129, 0.3);">
+                    <i class="fa-solid fa-user-plus"></i> Inscribirme
                  </button>`
-            : '<div style="font-size:12px; color:#10b981; text-align:center;"><i class="fa-solid fa-check"></i> Ya estás inscrito</div>'
+            : `<div style="padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; color:#166534; font-size:13px; display:flex; gap:8px; align-items:center;">
+                        <i class="fa-solid fa-circle-check"></i> <span>Estás asignado a esta clase</span>
+                   </div>`
           : ''
       }
+            </div>
         </div>
-      </div>
-    </div>`;
+      </div>`;
 
     listaPagosEl.innerHTML = html;
 
@@ -208,14 +257,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     entrenadores.forEach(t => {
       const div = document.createElement('div');
-      div.className = 'trainer-card';
-      div.style.background = 'white';
-      div.style.cursor = 'default';
-      // No hover effect highlighting like checkboxes
+      div.className = 'trainer-item'; // Usar la nueva clase 'trainer-item'
+      // Eliminamos el style inline background white etc, ya que lo definimos en CSS
 
       div.innerHTML = `
-             <div class="avatar-circle-sm">${t.initial || t.name.charAt(0)}</div>
-             <span class="trainer-name" style="flex:1;">${t.name}</span>
+             <div class="t-avatar">${t.initial || t.name.charAt(0)}</div>
+             <span class="trainer-name" style="flex:1; font-size:14px; color:#374151; font-weight:500;">${t.name}</span>
              ${(window.IS_ADMIN || (window.IS_TRAINER && t.id === window.CURRENT_USER_ID)) ?
           `<button type="button" class="btn-icon btn-delete-trainer" style="border:none; background:none; cursor:pointer; color:#ef4444;" title="Eliminar">
                 <i class="fa-solid fa-trash-can"></i>
