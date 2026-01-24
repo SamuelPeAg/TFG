@@ -88,6 +88,9 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     Route::post('/Pagos/add-trainer', [PagosController::class, 'addTrainerToSession'])->name('Pagos.addTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])->name('Pagos.removeTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     
+    // Reportes
+    Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    
    // Ejemplo en web.php
     // Gestión de usuarios para admin o entrenador
     Route::resource('users', UserController::class)->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);

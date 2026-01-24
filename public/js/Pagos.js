@@ -390,15 +390,6 @@ document.addEventListener('DOMContentLoaded', () => {
       inputFechaHora.value = (new Date(now.getTime() - offsetMs)).toISOString().slice(0, 16);
     });
 
-  // ====== 7. LOGICA MODAL SALIR (CERRAR SESIÓN) ======
-
-  if (btnSideLogout) {
-    btnSideLogout.addEventListener('click', (e) => {
-      e.preventDefault();
-      openModal(modalSalir);
-    });
-  }
-
   if (btnConfirmarSalir) {
     btnConfirmarSalir.addEventListener('click', () => {
       if (logoutForm) logoutForm.submit();

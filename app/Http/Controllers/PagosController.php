@@ -13,7 +13,7 @@ class PagosController extends Controller
     {
         $users = User::role('cliente')->orderBy('name')->get();
         $entrenadores = User::role('entrenador')->orderBy('name')->get();
-        return view('calendario.index', compact('users', 'entrenadores'));
+        return view('Pagos.index', compact('users', 'entrenadores'));
     }
 
     public function buscarPorUsuario(Request $request)
@@ -267,5 +267,60 @@ class PagosController extends Controller
             }
         });
         return $entrenadores->values();
+    }
+    public function getReporte(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|in:user,trainer',
+            'id' => 'required|integer',
+            'start' => 'required|date',
+            'end' => 'required|date|after_or_equal:start',
+        ]);
+
+        $start = Carbon::parse($request->start)->startOfDay();
+        $end = Carbon::parse($request->end)->endOfDay();
+        $type = $request->type;
+        $id = $request->id;
+
+        $query = Pago::with(['user', 'entrenadores'])
+                     ->whereBetween('fecha_registro', [$start, $end]);
+
+        if ($type === 'user') {
+            $query->where('user_id', $id);
+            $persona = User::find($id);
+        } else {
+            // Entrenador: Buscar en la relación muchos a muchos
+            $query->whereHas('entrenadores', function($q) use ($id) {
+                $q->where('users.id', $id);
+            });
+            $persona = User::find($id);
+        }
+
+        $pagos = $query->orderBy('fecha_registro', 'asc')->get();
+
+        // Calcular totales
+        $totalSesiones = $pagos->count(); 
+        $totalImporte = $pagos->sum('importe');
+
+        // Formatear para la tabla
+        $detalles = $pagos->map(function($p) {
+            return [
+                'fecha' => $p->fecha_registro->format('Y-m-d H:i'),
+                'clase' => $p->nombre_clase,
+                'centro' => $p->centro,
+                'alumno' => $p->user->name ?? 'Desconocido', 
+                'importe' => $p->importe,
+                'metodo' => $p->metodo_pago
+            ];
+        });
+
+        return response()->json([
+            'persona' => $persona ? $persona->name : 'Desconocido',
+            'resumen' => [
+                'sesiones' => $totalSesiones,
+                'total' => number_format($totalImporte, 2)
+            ],
+            'detalles' => $detalles
+        ]);
     }
 }
