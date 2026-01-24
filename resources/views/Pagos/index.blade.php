@@ -268,15 +268,36 @@
           </div>
         </div>
 
-        <div class="modern-form-group" style="position: relative;">
-          <label for="user_search" class="modern-label">Cliente</label>
+        <div class="modern-form-group">
+          <label for="tipo_clase" class="modern-label">TIPO DE CLASE</label>
           <div class="input-wrapper">
-            <i class="fa-solid fa-user input-icon"></i>
-            <input id="user_search" type="text" class="modern-input" placeholder="Buscar alumno..." autocomplete="off" required>
-            <input type="hidden" name="user_id" id="user_id">
+            <i class="fa-solid fa-layer-group input-icon"></i>
+            <select id="tipo_clase" name="tipo_clase" class="modern-input" required onchange="cambiarTipoClase()">
+                <option value="EPE" selected>EPE (Individual)</option>
+                <option value="DUO">DUO</option>
+                <option value="TRIO">TRIO</option>
+                <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
+                <option value="GRUPO">GRUPO</option>
+            </select>
           </div>
-          <div id="user_suggestions" class="suggestions" hidden></div>
         </div>
+
+        <div id="usuarios-container">
+            <!-- Se generará dinámicamente -->
+            <div class="modern-form-group user-input-group" id="user-group-0" style="position: relative;">
+              <label class="modern-label">Cliente 1</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-user input-icon"></i>
+                <input type="text" class="modern-input user-search" placeholder="Buscar alumno..." autocomplete="off" data-index="0" required>
+                <input type="hidden" name="users[]" class="user-id-input" id="user_id_0">
+              </div>
+              <div id="suggestions_0" class="suggestions" hidden></div>
+            </div>
+        </div>
+        
+        <button type="button" id="btnAddUser" class="btn-design btn-solid-custom" style="display:none; width:100%; margin-bottom:15px; background:#4BB7AE;">
+            <i class="fas fa-plus"></i> Añadir Alumno
+        </button>
 
         <div class="modern-form-group">
             <label for="metodo_pago" class="modern-label">MÉTODO DE PAGO</label>

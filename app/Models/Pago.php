@@ -16,6 +16,7 @@ class Pago extends Model
         'entrenador_id',
         'centro',
         'nombre_clase',
+        'tipo_clase',
         'metodo_pago',
         'iban',
         'importe',
