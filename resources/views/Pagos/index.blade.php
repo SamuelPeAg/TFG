@@ -269,7 +269,7 @@
         </div>
 
         <div class="modern-form-group" style="position: relative;">
-          <label for="user_search" class="modern-label">ALUMNO / USUARIO</label>
+          <label for="user_search" class="modern-label">Cliente</label>
           <div class="input-wrapper">
             <i class="fa-solid fa-user input-icon"></i>
             <input id="user_search" type="text" class="modern-input" placeholder="Buscar alumno..." autocomplete="off" required>

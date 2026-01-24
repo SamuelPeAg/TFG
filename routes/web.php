@@ -76,13 +76,13 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     // Gestión de entrenadores (solo admin)
     Route::resource('entrenadores', EntrenadorController::class)->middleware(\App\Http\Middleware\AdminMiddleware::class);
     
-    Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
-    Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+   
 
     Route::get('/calendario', function () {
         return view('booking.calendar'); 
     })->name('booking.view');
 });
-
+Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
 
 
