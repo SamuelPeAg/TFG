@@ -21,6 +21,7 @@ class RestrictEntrenadorMiddleware
                 'Pagos',
                 'usuarios/reservas',
                 'logout',
+                'calendario', // Permitir calendario
             ];
 
             $path = ltrim($request->path(), '/');
