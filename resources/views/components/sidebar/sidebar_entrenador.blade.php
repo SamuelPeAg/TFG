@@ -21,10 +21,10 @@
         <div class="user-avatar">
             {{ substr(auth()->user()->name, 0, 1) }}
         </div>
-        <div class="user-info-text">
+        <a href="{{ route('calendario') }}" class="user-info-text hover:opacity-80 transition-opacity">
             <span class="name">{{ auth()->user()->name }}</span>
             <span class="role">Panel de Gestión</span>
-        </div>
+        </a>
     </div>
 
     <nav class="main-menu">

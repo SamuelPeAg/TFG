@@ -35,7 +35,16 @@ class LoginController extends Controller
         // Regenerar sesión para mayor seguridad
         $request->session()->regenerate();
 
-        // Redirigir al dashboard o la ruta que desees después de iniciar sesión
+        // Redirigir según rol o intención
+        $user = Auth::user();
+        
+        if ($user->hasRole('admin')) {
+            return redirect()->intended('/users');
+        } elseif ($user->hasRole('entrenador')) {
+            // Los entrenadores suelen empezar en el calendario
+            return redirect()->intended('/calendario');
+        }
+
         return redirect()->intended('/users');
     }
 
