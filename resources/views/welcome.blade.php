@@ -122,72 +122,7 @@
         </div>
     </section>
 
-    {{-- 4. SELECCIÓN DE CENTRO (INTEGRADO CON TU CALENDAR.BLADE.PHP) --}}
-    <section id="reservas" class="py-24 bg-gray-50 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-brandTeal font-bold tracking-widest uppercase text-sm mb-2">Empieza ahora</h2>
-                <h3 class="text-4xl md:text-5xl font-black text-gray-900">Elige tu espacio</h3>
-                <p class="mt-4 text-gray-500">Selecciona dónde quieres entrenar hoy</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                {{-- CENTRO AIRA --}}
-                {{-- Nota: Esto apunta a la ruta que carga views/booking/calendar.blade.php --}}
-                <a href="{{ route('booking.view', ['center' => 'AIRA']) }}" class="group bg-white rounded-[2rem] p-2 shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="bg-gray-50 rounded-[1.5rem] p-8 h-full flex flex-col items-center text-center border border-transparent group-hover:border-brandTeal/30 transition-colors">
-                        <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-3xl text-brandTeal shadow-sm mb-6 group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-dumbbell"></i>
-                        </div>
-                        <h4 class="text-2xl font-bold text-gray-900 mb-2">Centro AIRA</h4>
-                        <p class="text-sm text-gray-500 mb-8">Maquinaria especializada y fuerza.</p>
-                        
-                        <div class="mt-auto w-full">
-                            <span class="block w-full py-3 rounded-xl bg-brandTeal text-white font-bold text-sm group-hover:bg-gray-900 transition-colors">
-                                Ver Horario AIRA
-                            </span>
-                        </div>
-                    </div>
-                </a>
-
-                {{-- CENTRO OPEN --}}
-                <a href="{{ route('booking.view', ['center' => 'OPEN']) }}" class="group bg-white rounded-[2rem] p-2 shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="bg-gray-50 rounded-[1.5rem] p-8 h-full flex flex-col items-center text-center border border-transparent group-hover:border-brandCoral/30 transition-colors">
-                        <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-3xl text-brandCoral shadow-sm mb-6 group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-sun"></i>
-                        </div>
-                        <h4 class="text-2xl font-bold text-gray-900 mb-2">Centro OPEN</h4>
-                        <p class="text-sm text-gray-500 mb-8">Aire libre y entrenamiento funcional.</p>
-                        
-                        <div class="mt-auto w-full">
-                            <span class="block w-full py-3 rounded-xl bg-brandCoral text-white font-bold text-sm group-hover:bg-gray-900 transition-colors">
-                                Ver Horario OPEN
-                            </span>
-                        </div>
-                    </div>
-                </a>
-
-                {{-- VIRTUAL --}}
-                <a href="{{ route('booking.view', ['center' => 'VIRTUAL']) }}" class="group bg-white rounded-[2rem] p-2 shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                    <div class="bg-gray-50 rounded-[1.5rem] p-8 h-full flex flex-col items-center text-center border border-transparent group-hover:border-brandAqua/50 transition-colors">
-                        <div class="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-3xl text-brandAqua shadow-sm mb-6 group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-laptop"></i>
-                        </div>
-                        <h4 class="text-2xl font-bold text-gray-900 mb-2">VIRTUAL</h4>
-                        <p class="text-sm text-gray-500 mb-8">Entrena desde casa o viaje.</p>
-                        
-                        <div class="mt-auto w-full">
-                            <span class="block w-full py-3 rounded-xl bg-teal-400 text-white font-bold text-sm group-hover:bg-gray-900 transition-colors">
-                                Ver Horario VIRTUAL
-                            </span>
-                        </div>
-                    </div>
-                </a>
-
-            </div>
-        </div>
-    </section>
+   
 
     <div class="border-t border-gray-100"></div>
 

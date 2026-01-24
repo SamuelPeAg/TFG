@@ -53,8 +53,13 @@
 <body class="transition-colors duration-300">
 
     {{-- INCLUIMOS EL COMPONENTE SIDEBAR --}}
-    <x-sidebar />
-
+    @auth
+        @if(auth()->user()->hasRole('admin'))
+            @include('components.sidebar.sidebar_admin')
+        @elseif(auth()->user()->hasRole('entrenador'))
+            @include('components.sidebar.sidebar_entrenador')
+        @endif
+    @endauth
     {{-- CONTENIDO PRINCIPAL --}}
     <main class="dashboard-main">
         
