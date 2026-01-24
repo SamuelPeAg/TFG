@@ -131,12 +131,7 @@
             <td style="padding: 20px 0;">
                 <table class="email-container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                     
-                    <!-- Header con Logo -->
-                    <tr>
-                        <td class="header">
-                            <img src="{{ asset('img/logopng.png') }}" alt="Factomove Logo" class="logo">
-                        </td>
-                    </tr>
+                    
                     
                     <!-- Contenido Principal -->
                     <tr>
