@@ -3,8 +3,8 @@
 @section('content')
 
     {{-- SECCIÓN HERO COMPACTA --}}
-    <section class="bg-gradient-to-br from-white via-brandTeal/5 to-brandCoral/5 pb-0">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-36 pb-8">
+    <section class="bg-gradient-to-b from-brandTeal/20 to-white pb-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-36 pb-16">
             <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                 Contáctanos
             </h1>
