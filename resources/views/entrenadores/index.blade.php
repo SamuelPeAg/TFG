@@ -245,36 +245,6 @@
         </div>
     </div>
 
-    <script>
-        const modal = document.getElementById('modalRegistro');
-        const btnAbrir = document.getElementById('btnAbrirModal');
-        const btnCerrar = document.getElementById('btnCerrarModal');
-
-        if(btnAbrir) btnAbrir.addEventListener('click', () => modal.style.display = 'flex');
-        if(btnCerrar) btnCerrar.addEventListener('click', () => modal.style.display = 'none');
-
-        const modalEdit = document.getElementById('modalEditar');
-        const btnCerrarEdit = document.getElementById('btnCerrarModalEditar');
-        const formEdit = document.getElementById('formEditar');
-
-        function abrirModalEditar(id, nombre, email, iban, isAdmin) {
-            document.getElementById('edit_nombre').value = nombre;
-            document.getElementById('edit_email').value = email;
-            document.getElementById('edit_iban').value = iban;
-
-            let urlBase = "{{ route('entrenadores.update', 'temp_id') }}";
-            let urlFinal = urlBase.replace('temp_id', id);
-            
-            formEdit.action = urlFinal;
-
-            if(document.getElementById('edit_make_admin')) {
-                document.getElementById('edit_make_admin').checked = (isAdmin == '1');
-            }
-
-            modalEdit.style.display = 'flex';
-        }
-
-        if(btnCerrarEdit) btnCerrarEdit.addEventListener('click', () => modalEdit.style.display = 'none');
-    </script>
+    <script src="{{ asset('js/entrenadores.js') }}"></script>
 </body>
 </html>
