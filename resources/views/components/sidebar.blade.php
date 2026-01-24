@@ -1,4 +1,48 @@
 <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+{{-- Estilos extra para el Scroll --}}
+<style>
+    /* Aseguramos que el sidebar ocupe toda la altura y use Flexbox */
+    .sidebar-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh; /* Altura completa de la ventana */
+        max-height: 100vh;
+        overflow: hidden; /* Evita scroll doble */
+    }
+
+    /* El menú principal crece para ocupar el espacio y hace scroll si es necesario */
+    .main-menu {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 5px; /* Espacio para que el scroll no pegue al texto */
+        
+        /* Estilizando la barra de scroll (Chrome/Safari/Edge) */
+        scrollbar-width: thin; /* Firefox */
+        scrollbar-color: #cbd5e0 transparent; /* Firefox */
+    }
+
+    /* Webkit Scrollbar */
+    .main-menu::-webkit-scrollbar {
+        width: 6px;
+    }
+    .main-menu::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .main-menu::-webkit-scrollbar-thumb {
+        background-color: #cbd5e0;
+        border-radius: 20px;
+    }
+    .main-menu::-webkit-scrollbar-thumb:hover {
+        background-color: #38C1A3; /* Color corporativo al pasar el mouse */
+    }
+
+    /* El footer se queda fijo abajo */
+    .sidebar-footer {
+        flex-shrink: 0; /* No se encoge */
+        padding-top: 15px;
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+</style>
 
 {{-- Botón Hamburguesa (solo visible en móvil/tablet) --}}
 <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
@@ -53,6 +97,19 @@
             <span>FACTURACIÓN</span>
         </a>
 
+        {{-- NUEVO BOTÓN AÑADIDO: NÓMINAS --}}
+        <a href="{{ route('nominas.index') }}" 
+           class="menu-item {{ request()->routeIs('nominas.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+            <span>MIS NÓMINAS</span>
+        </a>
+
+        <a href="{{ route('admin.nominas') }}" 
+   class="menu-item {{ request()->routeIs('admin.nominas') ? 'active' : '' }}">
+    <i class="fa-solid fa-file-invoice-dollar"></i>
+    <span>NÓMINAS-A</span>
+</a>
+
     </nav>
 
     <div class="sidebar-footer">
@@ -88,17 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const overlay = document.getElementById('sidebarOverlay');
     
     console.log('Sidebar script loaded');
-    console.log('menuToggle:', menuToggle);
-    console.log('sidebar:', sidebar);
-    console.log('overlay:', overlay);
     
     // Abrir/cerrar sidebar
     if (menuToggle) {
         menuToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            
-            console.log('Menu toggle clicked!');
             
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
@@ -108,11 +160,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (sidebar.classList.contains('active')) {
                 icon.classList.remove('fa-bars');
                 icon.classList.add('fa-times');
-                console.log('Sidebar opened');
             } else {
                 icon.classList.remove('fa-times');
                 icon.classList.add('fa-bars');
-                console.log('Sidebar closed');
             }
         });
         
@@ -133,8 +183,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const icon = menuToggle.querySelector('i');
             icon.classList.remove('fa-times');
             icon.classList.add('fa-bars');
-            
-            console.log('Sidebar closed via overlay');
         });
     }
     
@@ -150,8 +198,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const icon = menuToggle.querySelector('i');
                 icon.classList.remove('fa-times');
                 icon.classList.add('fa-bars');
-                
-                console.log('Sidebar closed via menu item');
             }
         });
     });

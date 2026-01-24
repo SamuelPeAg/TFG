@@ -76,7 +76,15 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     // Gestión de entrenadores (solo admin)
     Route::resource('entrenadores', EntrenadorController::class)->middleware(\App\Http\Middleware\AdminMiddleware::class);
     
-   
+   // Ruta temporal para ver la vista estática
+Route::get('/nominas', function () {
+    return view('nominas_entrenador.nominas_e');
+})->name('nominas.index');
+
+Route::get('/admin/nominas', function () {
+    // La vista está en la carpeta "nominas_admin", archivo "nominas_a"
+    return view('nominas_admin.nominas_a'); 
+})->name('admin.nominas');
 
     Route::get('/calendario', function () {
         return view('booking.calendar'); 
