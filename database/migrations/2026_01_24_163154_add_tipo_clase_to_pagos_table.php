@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pagos', function (Blueprint $table) {
-            $table->string('tipo_clase')->after('nombre_clase')->default('EPE');
+            $table->string('tipo_clase')->after('nombre_clase')->default('EP');
         });
     }
 

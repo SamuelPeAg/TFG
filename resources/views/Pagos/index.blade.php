@@ -273,7 +273,7 @@
           <div class="input-wrapper">
             <i class="fa-solid fa-layer-group input-icon"></i>
             <select id="tipo_clase" name="tipo_clase" class="modern-input" required onchange="cambiarTipoClase()">
-                <option value="EPE" selected>EPE (Individual)</option>
+                <option value="EP" selected>EP (Individual)</option>
                 <option value="DUO">DUO</option>
                 <option value="TRIO">TRIO</option>
                 <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>

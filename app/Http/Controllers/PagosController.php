@@ -83,7 +83,7 @@ class PagosController extends Controller
             'users.*'      => ['exists:users,id'],
             'centro'       => ['required', 'in:CLINICA,AIRA,OPEN'],
             'nombre_clase' => ['required', 'string', 'max:120'],
-            'tipo_clase'   => ['required', 'string', 'in:EPE,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
+            'tipo_clase'   => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
             'metodo_pago'  => ['required', 'in:TPV,EF,DD,CC'],
             'fecha_hora'   => ['required', 'date'],
             'precio'       => ['required', 'numeric', 'min:0'],

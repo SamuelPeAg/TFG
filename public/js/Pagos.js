@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     boxEl: document.getElementById('search_user_suggestions')
   });
 
-  // Inicializar el primer input de usuario (EPE por defecto)
+  // Inicializar el primer input de usuario (EP por defecto)
   const firstUserInput = document.querySelector('.user-search[data-index="0"]');
   if (firstUserInput) {
     initAutocomplete({
