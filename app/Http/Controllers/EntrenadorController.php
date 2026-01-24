@@ -74,7 +74,7 @@ class EntrenadorController extends Controller
 
             $user->assignRole('entrenador');
 
-            \Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+            Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
 
             return redirect()->route('entrenadores.index')
                 ->with('success', 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.');
