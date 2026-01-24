@@ -44,6 +44,11 @@
         <a href="{{ route('Pagos') }}" 
            class="menu-item {{ request()->routeIs('Pagos') || request()->routeIs('Pagos.*') ? 'active' : '' }}">
             <i class="fa-solid fa-calendar-check"></i>
+            <span>PAGOS</span>
+        </a>
+        <a href="{{ route('Pagos') }}" 
+           class="menu-item {{ request()->routeIs('Pagos') || request()->routeIs('Pagos.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-calendar-check"></i>
             <span>CALENDARIO</span>
         </a>
 

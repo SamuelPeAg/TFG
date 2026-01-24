@@ -29,7 +29,14 @@
 <body>
 
 <div class="dashboard-container">
-@include('components.sidebar')
+@auth
+        @if(auth()->user()->hasRole('admin'))
+            @include('components.sidebar.sidebar_admin')
+        @elseif(auth()->user()->hasRole('entrenador'))
+            @include('components.sidebar.sidebar_entrenador')
+        @endif
+    @endauth
+
     <main class="main-content">
 
         <div class="header-controls">
