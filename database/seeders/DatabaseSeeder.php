@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
 
             // 5. Reservas (al final)
             ReservaSeeder::class,       // Usuarios apuntándose a clases
+            NominaEntrenadorSeeder::class, // <--- AÑADE ESTA LÍNEA
         ]);
     }
 }

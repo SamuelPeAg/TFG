@@ -10,46 +10,26 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
   <style>
-      /* Reutilizando tus estilos base */
+      /* --- Estilos mantenidos de tu diseño --- */
       .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 10px 0; }
       .title-section h1 { margin: 0; font-size: 1.8rem; color: #333; font-weight: 800; }
       .controls-bar { display: flex; align-items: center; gap: 20px; }
 
-      /* Botones */
       .btn-design { width: auto; min-width: 160px; padding: 0 20px; height: 45px; border: none; border-radius: 12px; color: white; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-decoration: none; }
       .btn-design:hover { transform: translateY(-3px); }
       .btn-solid-custom { background-color: #38C1A3; }
       .btn-solid-custom:hover { background-color: #32ac91; }
 
-      /* Filtros Superiores */
-      .filters-container {
-          background: white;
-          padding: 20px;
-          border-radius: 16px;
-          margin-bottom: 25px;
-          display: flex;
-          gap: 15px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-          border: 1px solid rgba(0,0,0,0.02);
-      }
-      .filter-input {
-          padding: 10px 15px;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          outline: none;
-          color: #4a5568;
-          font-size: 0.9rem;
-      }
+      .filters-container { background: white; padding: 20px; border-radius: 16px; margin-bottom: 25px; display: flex; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02); }
+      .filter-input { padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; color: #4a5568; font-size: 0.9rem; }
       .filter-input:focus { border-color: #38C1A3; }
 
-      /* Tabla Personalizada (Estilo Users) */
       .table-wrapper { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
       .admin-table { width: 100%; border-collapse: separate; border-spacing: 0; }
       .admin-table th { text-align: left; padding: 15px; color: #64748b; font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; font-weight: 700; }
       .admin-table td { padding: 15px; border-bottom: 1px solid #f1f5f9; color: #333; vertical-align: middle; }
       .admin-table tr:hover td { background-color: #f8fafc; }
 
-      /* Badges y Avatares */
       .coach-info { display: flex; align-items: center; gap: 10px; }
       .avatar-circle { width: 35px; height: 35px; background: #38C1A3; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; }
       
@@ -57,30 +37,19 @@
       .status-paid { background: #d1fae5; color: #059669; }
       .status-pending { background: #fff7ed; color: #c2410c; }
 
-      /* Acciones */
       .action-btn { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 1.1rem; transition: color 0.2s; margin: 0 5px; }
       .action-btn.edit:hover { color: #38C1A3; }
       .action-btn.delete:hover { color: #ef4444; }
       .action-btn.download:hover { color: #3b82f6; }
 
-      /* Modal Estilos (Iguales a tu User Edit) */
+      /* Modal */
       .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
       .modal-overlay.active { display: flex; opacity: 1; pointer-events: auto; }
       .modal-card { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 30px; position: relative; transform: translateY(20px); transition: transform 0.3s ease; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
       .modal-overlay.active .modal-card { transform: translateY(0); }
       .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer; }
       
-      /* Zona de Upload en Modal */
-      .upload-area {
-          border: 2px dashed #cbd5e0;
-          border-radius: 12px;
-          padding: 30px;
-          text-align: center;
-          margin-bottom: 20px;
-          cursor: pointer;
-          transition: border-color 0.2s;
-          background: #f8fafc;
-      }
+      .upload-area { border: 2px dashed #cbd5e0; border-radius: 12px; padding: 30px; text-align: center; margin-bottom: 20px; cursor: pointer; transition: border-color 0.2s; background: #f8fafc; }
       .upload-area:hover { border-color: #38C1A3; background: #f0fdfa; }
       .upload-icon { font-size: 2rem; color: #38C1A3; margin-bottom: 10px; }
       
@@ -88,7 +57,11 @@
       .form-label { display: block; margin-bottom: 5px; font-weight: 600; color: #4a5568; font-size: 0.9rem; }
       .form-input { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
       .form-input:focus { border-color: #38C1A3; }
-
+      
+      /* Alertas */
+      .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
+      .alert-success { background: #d1fae5; color: #065f46; }
+      .alert-error { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 
@@ -111,6 +84,23 @@
       </div>
 
       <div class="content-wrapper">
+
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-error">{{ session('error') }}</div>
+        @endif
+
+        @if($errors->any())
+            <div class="alert alert-error">
+                <ul style="margin:0; padding-left:20px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         
         <div class="filters-container">
             <div style="flex: 1;">
@@ -118,16 +108,8 @@
             </div>
             <div>
                 <select class="filter-input">
-                    <option>Enero 2024</option>
-                    <option>Diciembre 2023</option>
-                    <option>Noviembre 2023</option>
-                </select>
-            </div>
-            <div>
-                 <select class="filter-input">
-                    <option>Todos los estados</option>
-                    <option>Pagado</option>
-                    <option>Pendiente</option>
+                    <option>2024</option>
+                    <option>2023</option>
                 </select>
             </div>
         </div>
@@ -136,7 +118,8 @@
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th width="50"></th> <th>Entrenador</th>
+                        <th width="50">#</th> 
+                        <th>Entrenador</th>
                         <th>Periodo</th>
                         <th>Importe</th>
                         <th>Estado</th>
@@ -145,49 +128,61 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><input type="checkbox" class="custom-checkbox"></td>
-                        <td>
-                            <div class="coach-info">
-                                <div class="avatar-circle">JP</div>
-                                <div>
-                                    <div style="font-weight: bold;">Juan Pérez</div>
-                                    <div style="font-size: 0.8rem; color: #94a3b8;">juan@factomove.com</div>
+                    @forelse($historial as $nomina)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>
+                                <div class="coach-info">
+                                    <div class="avatar-circle">
+                                        {{ substr($nomina->user->name ?? '?', 0, 2) }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: bold;">
+                                            {{ $nomina->user->name ?? 'Usuario Eliminado' }}
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: #94a3b8;">
+                                            {{ $nomina->user->email ?? '-' }}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>Enero 2024</td>
-                        <td style="font-weight: bold;">1.450,00 €</td>
-                        <td><span class="status-badge status-paid">Pagado</span></td>
-                        <td><i class="fas fa-file-pdf" style="color: #ef4444; margin-right: 5px;"></i> nomina_ene.pdf</td>
-                        <td style="text-align: center;">
-                            <button class="action-btn download" title="Descargar"><i class="fas fa-download"></i></button>
-                            <button class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn delete" title="Eliminar"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
+                            </td>
+                            <td>
+                                {{-- Convertir número de mes a texto --}}
+                                @php
+                                    $meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+                                    $nombreMes = $meses[$nomina->mes - 1] ?? 'Mes ' . $nomina->mes;
+                                @endphp
+                                {{ $nombreMes }} {{ $nomina->anio }}
+                            </td>
+                            <td style="font-weight: bold;">{{ number_format($nomina->importe, 2, ',', '.') }} €</td>
+                            <td>
+                                <span class="status-badge status-paid">Pagado</span>
+                            </td>
+                            <td>
+                                <i class="fas fa-file-pdf" style="color: #ef4444; margin-right: 5px;"></i> 
+                                {{ $nomina->concepto }}
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="{{ asset('storage/' . $nomina->archivo_path) }}" target="_blank" class="action-btn download" title="Ver PDF">
+                                    <i class="fas fa-eye"></i>
+                                </a>
 
-                    <tr>
-                        <td><input type="checkbox" class="custom-checkbox"></td>
-                        <td>
-                            <div class="coach-info">
-                                <div class="avatar-circle" style="background: #E65C9C;">MG</div>
-                                <div>
-                                    <div style="font-weight: bold;">María García</div>
-                                    <div style="font-size: 0.8rem; color: #94a3b8;">maria@factomove.com</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>Enero 2024</td>
-                        <td style="font-weight: bold;">1.600,00 €</td>
-                        <td><span class="status-badge status-pending">Pendiente</span></td>
-                        <td><i class="fas fa-file-pdf" style="color: #ef4444; margin-right: 5px;"></i> nomina_ene_maria.pdf</td>
-                        <td style="text-align: center;">
-                            <button class="action-btn download" title="Descargar"><i class="fas fa-download"></i></button>
-                            <button class="action-btn edit" title="Editar"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn delete" title="Eliminar"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
+                                <form action="{{ route('admin.nominas.destroy', $nomina->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Seguro que quieres eliminar esta nómina?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="action-btn delete" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" style="text-align:center; padding: 30px; color: #888;">
+                                No hay nóminas subidas todavía.
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -208,43 +203,54 @@
             <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px;">Asigna el documento al entrenador correspondiente.</p>
         </div>
 
-        <form action="#" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.nominas.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+
             <div class="form-group">
                 <label class="form-label">Entrenador</label>
-                <select class="form-input">
+                <select name="user_id" class="form-input" required>
                     <option value="" disabled selected>Selecciona un entrenador...</option>
-                    <option value="1">Juan Pérez</option>
-                    <option value="2">María García</option>
+                    @foreach($entrenadores as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                    @endforeach
                 </select>
             </div>
 
             <div style="display: flex; gap: 15px;">
                 <div class="form-group" style="flex: 1;">
                     <label class="form-label">Mes</label>
-                    <select class="form-input">
-                        <option>Enero</option>
-                        <option>Febrero</option>
+                    <select name="mes" class="form-input">
+                        @php
+                            $meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+                        @endphp
+                        @foreach($meses as $index => $mes)
+                            <option value="{{ $index + 1 }}" {{ date('n') == ($index + 1) ? 'selected' : '' }}>
+                                {{ $mes }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="form-group" style="flex: 1;">
                     <label class="form-label">Año</label>
-                    <select class="form-input">
-                        <option>2024</option>
-                        <option>2023</option>
-                    </select>
+                    <input type="number" name="anio" value="{{ date('Y') }}" class="form-input">
                 </div>
             </div>
 
             <div class="form-group">
+                <label class="form-label">Concepto (Opcional)</label>
+                <input type="text" name="concepto" class="form-input" placeholder="Ej: Nómina Enero">
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">Importe Neto (€)</label>
-                <input type="number" step="0.01" class="form-input" placeholder="Ej: 1450.00">
+                <input type="number" name="importe" step="0.01" class="form-input" placeholder="Ej: 1450.00" required>
             </div>
 
             <div class="upload-area" id="dropZone">
                 <i class="fas fa-cloud-upload-alt upload-icon"></i>
                 <h4 style="margin: 0; color: #4a5568;">Arrastra el PDF aquí</h4>
-                <p style="margin: 5px 0 0; color: #94a3b8; font-size: 0.8rem;">o haz clic para buscar en tu ordenador</p>
-                <input type="file" id="fileInput" style="display: none;" accept=".pdf">
+                <p style="margin: 5px 0 0; color: #94a3b8; font-size: 0.8rem;">o haz clic para buscar</p>
+                <input type="file" name="archivo" id="fileInput" style="display: none;" accept=".pdf" required>
             </div>
 
             <button type="submit" class="btn-design btn-solid-custom" style="width: 100%;">Subir y Guardar</button>
@@ -261,14 +267,14 @@
         const fileInput = document.getElementById('fileInput');
 
         // Abrir Modal
-        btnAbrir.addEventListener('click', () => {
-            modal.classList.add('active');
-        });
+        if(btnAbrir) {
+            btnAbrir.addEventListener('click', () => { modal.classList.add('active'); });
+        }
 
         // Cerrar Modal
-        btnCerrar.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
+        if(btnCerrar) {
+            btnCerrar.addEventListener('click', () => { modal.classList.remove('active'); });
+        }
 
         // Cerrar al hacer click fuera
         modal.addEventListener('click', (e) => {

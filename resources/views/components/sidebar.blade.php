@@ -98,10 +98,10 @@
         </a>
 
         {{-- NUEVO BOTÓN AÑADIDO: NÓMINAS --}}
-        <a href="{{ route('nominas.index') }}" 
-           class="menu-item {{ request()->routeIs('nominas.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-file-invoice-dollar"></i>
-            <span>MIS NÓMINAS</span>
+        <a href="{{ route('nominas_e') }}" 
+        class="menu-item {{ request()->routeIs('nominas_e') ? 'active' : '' }}">
+        <i class="fas fa-file-invoice-dollar"></i>
+        <span>MIS NOMINAS</span>
         </a>
 
         <a href="{{ route('admin.nominas') }}" 
