@@ -170,20 +170,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!res.ok) throw new Error('Error al guardar');
 
         if (json.success) {
-          if (json.events && Array.isArray(json.events)) {
-            json.events.forEach(ev => calendar.addEvent(ev));
-          } else if (json.event) {
-            calendar.addEvent(json.event);
+          if (json.success) {
+            // Recargar el calendario para que se muestren los eventos agrupados correctamente
+            const currentSearch = document.getElementById('search-user')?.value || '';
+            fetchAndRenderCalendar(currentSearch);
+
+            closeModal(modalNueva);
+            formNuevaClase.reset();
+            summaryEl.innerHTML = `<p style="color:#00897b"><strong>¡Guardado!</strong> Clase añadida.</p>`;
           }
-          closeModal(modalNueva);
-          formNuevaClase.reset();
-          summaryEl.innerHTML = `<p style="color:#00897b"><strong>¡Guardado!</strong> Clase añadida.</p>`;
+        } catch (error) {
+          console.error(error);
+          alert("Error inesperado al guardar la clase.");
         }
-      } catch (error) {
-        console.error(error);
-        alert("Error inesperado al guardar la clase.");
-      }
-    });
+      });
   }
 
   function mostrarError(container, msg) {
