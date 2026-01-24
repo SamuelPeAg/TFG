@@ -1,48 +1,97 @@
-<footer class="bg-gray-900 dark:bg-gray-950 text-white py-12 border-t-4 border-brandTeal transition-colors duration-300">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
+<footer class="bg-gray-900 dark:bg-gray-950 text-white py-10 border-t border-gray-800 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {{-- Columna 1: Logo y Eslogan --}}
-        <div>
-            <div class="flex items-center gap-2 mb-4">
-                {{-- Corregido: text-brandCoral para coincidir con el header --}}
-                <i class="fa-solid fa-cube text-brandCoral text-2xl"></i>
-                <span class="font-bold text-xl">Factomove</span>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center place-items-center">
+            
+            {{-- Columna 1: Brand + Social --}}
+            <div class="flex flex-col items-center space-y-4">
+                <div class="flex items-center gap-2 justify-center">
+                    <img src="{{ asset('img/logopng.png') }}" alt="Factomove Logo" class="h-6 w-auto brightness-0 invert">
+                    <span class="font-bold text-xl tracking-tight">Factomove</span>
+                </div>
+                <p class="text-gray-400 text-xs leading-relaxed max-w-xs mx-auto">
+                    Simplificando la gestión de usuarios y potenciando tu bienestar.
+                </p>
+                
+                {{-- Social Icons --}}
+                <div class="flex items-center justify-center gap-4">
+                    <a href="https://www.instagram.com/movertedavida/?hl=es" target="_blank" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-brandCoral hover:text-white transition-all duration-300">
+                        <i class="fa-brands fa-instagram text-sm"></i>
+                    </a>
+                    <a href="https://movertedavida.com/cordoba/" target="_blank" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-brandTeal hover:text-white transition-all duration-300" title="Web Oficial">
+                        <i class="fa-solid fa-globe text-sm"></i>
+                    </a>
+                    <a href="https://www.facebook.com/movertedavida/?locale=es_ES" target="_blank" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                        <i class="fa-brands fa-facebook text-sm"></i>
+                    </a>
+                </div>
             </div>
-            <p class="text-gray-400 text-sm">Simplificando la gestión de usuarios.</p>
+
+            {{-- Columna 2: Navegación --}}
+            <div class="flex flex-col items-center">
+                <h4 class="font-bold text-base text-white mb-4">
+                    Navegación
+                </h4>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li>
+                        <a href="{{ url('/') }}" class="hover:text-brandTeal transition">
+                            Inicio
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://movertedavida.com/cordoba/" target="_blank" class="hover:text-brandTeal transition">
+                            Nosotros
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('contact') }}" class="hover:text-brandTeal transition">
+                            Contacto
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            {{-- Columna 3: Centros Moverte --}}
+            <div class="flex flex-col items-center">
+                <h4 class="font-bold text-base text-white mb-4">
+                    Centros Moverte
+                </h4>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li>
+                        <a href="https://movertedavida.com/cordoba/" target="_blank" class="hover:text-brandTeal transition">
+                            Córdoba
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://movertedavida.com/puente-genil/" target="_blank" class="hover:text-brandTeal transition">
+                            Puente Genil
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://movertedavida.com/granada/" target="_blank" class="hover:text-brandTeal transition">
+                            Granada
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            {{-- Columna 3: Legal --}}
+            <div class="flex flex-col items-center">
+                <h4 class="font-bold text-base text-white mb-4">
+                    Legal
+                </h4>
+                <ul class="space-y-2 text-gray-400 text-sm">
+                    <li><a href="{{ route('cookies.policy') }}" class="hover:text-brandCoral transition">Política de Cookies</a></li>
+                    <li><a href="{{ route('privacy.policy') }}" class="hover:text-brandCoral transition">Política de Privacidad</a></li>
+                    <li><a href="{{ route('legal.notice') }}" class="hover:text-brandCoral transition">Aviso Legal</a></li>
+                </ul>
+            </div>
+
         </div>
 
-        {{-- Columna 2: Producto --}}
-        <div>
-            {{-- Corregido: text-brandAqua --}}
-            <h4 class="font-bold text-brandAqua mb-4">Producto</h4>
-            <ul class="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" class="hover:text-brandCoral transition">Funcionalidades</a></li>
-                <li><a href="#" class="hover:text-brandCoral transition">Precios</a></li>
-            </ul>
+        {{-- Copyright --}}
+        <div class="mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
+            <p>&copy; {{ date('Y') }} Factomove. Todos los derechos reservados.</p>
         </div>
-
-        {{-- Columna 3: Compañía --}}
-        <div>
-            <h4 class="font-bold text-brandAqua mb-4">Compañía</h4>
-            <ul class="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" class="hover:text-brandCoral transition">Nosotros</a></li>
-                <li><a href="#" class="hover:text-brandCoral transition">Contacto</a></li>
-            </ul>
-        </div>
-
-        {{-- Columna 4: Legal --}}
-        <div>
-            <h4 class="font-bold text-brandAqua mb-4">Legal</h4>
-            <ul class="space-y-2 text-gray-400 text-sm">
-                <li><a href="{{ route('cookies.policy') }}" class="hover:text-brandCoral transition">Política de Cookies</a></li>
-                <li><a href="{{ route('privacy.policy') }}" class="hover:text-brandCoral transition">Política de Privacidad</a></li>
-                <li><a href="{{ route('legal.notice') }}" class="hover:text-brandCoral transition">Aviso Legal</a></li>
-            </ul>
-        </div>
-    </div>
-
-    {{-- Copyright --}}
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-gray-800 dark:border-gray-800 text-center text-gray-500 text-sm">
-        &copy; {{ date('Y') }} Factomove. Todos los derechos reservados.
     </div>
 </footer>
