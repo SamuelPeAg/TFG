@@ -19,6 +19,7 @@ Route::get('/', function () {
 })->name('welcome');
 
 Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'activarEntrenador'])->name('entrenadores.activar');
+Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'completeActivation'])->name('entrenadores.complete');
 // La gestión de entrenadores debe requerir autenticación y rol admin (se añadirá en el grupo auth más abajo)
 
 // Las rutas de gestión de usuarios deben estar protegidas (ver sección auth)

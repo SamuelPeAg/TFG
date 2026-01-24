@@ -435,6 +435,13 @@
     </div>
   </div>
 
+  <script>
+    window.CURRENT_USER_ROLE = "{{ Auth::check() ? (Auth::user()->roles->pluck('name')->first() ?? '') : '' }}";
+    window.CURRENT_USER_ID = {{ Auth::id() ?? 'null' }};
+    window.IS_ADMIN = {{ Auth::check() && Auth::user()->hasRole('admin') ? 'true' : 'false' }};
+    window.IS_TRAINER = {{ Auth::check() && Auth::user()->hasRole('entrenador') ? 'true' : 'false' }};
+  </script>
+
   <script src="{{ asset('js/Pagos.js') }}"></script>
 
   <script>

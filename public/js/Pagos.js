@@ -48,7 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   calendar.render();
-  fetchAndRenderCalendar('');
+  calendar.render();
+  console.log('Iniciando carga del calendario...');
+  fetchAndRenderCalendar('').then(() => console.log('Calendario cargado.'));
 
   // ====== 2. LÓGICA DE CLICK EN FECHA ======
   function abrirModalNuevaClase(dateObj) {
@@ -125,8 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Lista dinámica JS -->
         </div>
 
-        <div style="margin-top:auto;">
-             <label style="display:block; font-size:11px; font-weight:800; color:#9ca3af; text-transform:uppercase; margin-bottom:8px;">AÑADIR ENTRENADOR</label>
+        <div style="margin-top:auto;" id="trainer-actions-wrapper">
+             ${(window.IS_ADMIN) ?
+        `<label style="display:block; font-size:11px; font-weight:800; color:#9ca3af; text-transform:uppercase; margin-bottom:8px;">AÑADIR ENTRENADOR</label>
              <div style="display:flex; gap:8px;">
                 <select id="select-add-trainer" class="modern-input" style="padding:10px;">
                     <option value="" selected disabled>Seleccionar...</option>
@@ -135,7 +138,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button type="button" id="btn-add-trainer-action" class="btn-design btn-solid-custom" style="padding:0 15px; width:auto; border-radius:10px;">
                     <i class="fa-solid fa-plus"></i>
                 </button>
-             </div>
+             </div>`
+        : (window.IS_TRAINER && window.CURRENT_USER_ID) ?
+          // Si es entrenador y NO está en la lista, mostrar botón de unirse
+          (!p.entrenadores || !p.entrenadores.find(t => t.id === window.CURRENT_USER_ID)) ?
+            `<button type="button" id="btn-join-session" class="btn-design btn-solid-custom" style="width:100%; border-radius:10px; background-color:#10b981;">
+                    <i class="fa-solid fa-user-plus"></i> Inscribirme a esta clase
+                 </button>`
+            : '<div style="font-size:12px; color:#10b981; text-align:center;"><i class="fa-solid fa-check"></i> Ya estás inscrito</div>'
+          : ''
+      }
         </div>
       </div>
     </div>`;
@@ -154,6 +166,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!trainerId) return;
 
         agregarEntrenadorSesion(trainerId, p.session_key, event);
+      });
+    }
+
+    // Event Listener para unirse (Entrenador)
+    const btnJoin = document.getElementById('btn-join-session');
+    if (btnJoin) {
+      btnJoin.addEventListener('click', () => {
+        // Usamos window.CURRENT_USER_ID
+        if (!window.CURRENT_USER_ID) return;
+        agregarEntrenadorSesion(window.CURRENT_USER_ID, p.session_key, event);
       });
     }
 
@@ -194,14 +216,18 @@ document.addEventListener('DOMContentLoaded', () => {
       div.innerHTML = `
              <div class="avatar-circle-sm">${t.initial || t.name.charAt(0)}</div>
              <span class="trainer-name" style="flex:1;">${t.name}</span>
-             <button type="button" class="btn-icon btn-delete-trainer" style="border:none; background:none; cursor:pointer; color:#ef4444;" title="Eliminar">
+             ${(window.IS_ADMIN || (window.IS_TRAINER && t.id === window.CURRENT_USER_ID)) ?
+          `<button type="button" class="btn-icon btn-delete-trainer" style="border:none; background:none; cursor:pointer; color:#ef4444;" title="Eliminar">
                 <i class="fa-solid fa-trash-can"></i>
-             </button>
+             </button>` : ''}
           `;
 
-      div.querySelector('.btn-delete-trainer').addEventListener('click', () => {
-        eliminarEntrenadorSesion(t.id, sessionKey);
-      });
+      const btnDelete = div.querySelector('.btn-delete-trainer');
+      if (btnDelete) {
+        btnDelete.addEventListener('click', () => {
+          eliminarEntrenadorSesion(t.id, sessionKey);
+        });
+      }
 
       container.appendChild(div);
     });

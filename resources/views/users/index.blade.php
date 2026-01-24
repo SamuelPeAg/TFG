@@ -184,12 +184,12 @@
       </div>
       <form id="formEditarUsuario" method="POST">
         @csrf @method('PUT')
-        <div class="form-group"><label class="form-label-custom">Nombre</label><div class="input-group-custom"><i class="fas fa-user"></i><input type="text" name="name" id="edit_name" class="form-control-custom" required readonly></div></div>
-        <div class="form-group"><label class="form-label-custom">Email</label><div class="input-group-custom"><i class="fas fa-envelope"></i><input type="email" name="email" id="edit_email" class="form-control-custom" required readonly></div></div>
-        <div class="form-group"><label class="form-label-custom">iban</label><div class="input-group-custom"><i class="fas fa-credit-card"></i><input type="text" name="iban" id="edit_iban" class="form-control-custom"></div></div>
-        <div class="form-group"><label class="form-label-custom">Firma</label><div class="input-group-custom"><i class="fas fa-pen-nib"></i><input type="text" name="firma_digital" id="edit_firma" class="form-control-custom"></div></div>
-        <div class="form-group"><label class="form-label-custom">Nueva Pass</label><div class="input-group-custom"><i class="fas fa-lock"></i><input type="password" name="password" class="form-control-custom"></div></div>
-        <div class="form-group"><label class="form-label-custom">Confirmar</label><div class="input-group-custom"><i class="fas fa-check-double"></i><input type="password" name="password_confirmation" class="form-control-custom"></div></div>
+        <div class="form-group"><label class="form-label-custom">Nombre</label><div class="input-group-custom"><i class="fas fa-user"></i><input type="text" name="name" id="edit_name" class="form-control-custom" placeholder="Nombre completo" required readonly></div></div>
+        <div class="form-group"><label class="form-label-custom">Email</label><div class="input-group-custom"><i class="fas fa-envelope"></i><input type="email" name="email" id="edit_email" class="form-control-custom" placeholder="correo@ejemplo.com" required readonly></div></div>
+        <div class="form-group"><label class="form-label-custom">IBAN</label><div class="input-group-custom"><i class="fas fa-credit-card"></i><input type="text" name="iban" id="edit_iban" class="form-control-custom" placeholder="ES00 0000 0000 0000 0000 0000"></div></div>
+        <div class="form-group"><label class="form-label-custom">Firma Digital</label><div class="input-group-custom"><i class="fas fa-pen-nib"></i><input type="text" name="firma_digital" id="edit_firma" class="form-control-custom" placeholder="Código de firma"></div></div>
+        <div class="form-group"><label class="form-label-custom">Nueva Contraseña</label><div class="input-group-custom"><i class="fas fa-lock"></i><input type="password" name="password" class="form-control-custom" placeholder="Nueva contraseña (opcional)"></div></div>
+        <div class="form-group"><label class="form-label-custom">Confirmar Contraseña</label><div class="input-group-custom"><i class="fas fa-check-double"></i><input type="password" name="password_confirmation" class="form-control-custom" placeholder="Repite la contraseña"></div></div>
         <button type="submit" class="btn-facto">Actualizar</button>
       </form>
     </div>

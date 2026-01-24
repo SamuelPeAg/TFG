@@ -175,6 +175,13 @@ class PagosController extends Controller
             'centro' => 'required|string'
         ]);
 
+        if (!$request->user()->hasRole('admin')) {
+            // Si no es admin, solo puede agregarse a sí mismo
+            if ($request->user()->id != $request->trainer_id) {
+                 return response()->json(['error' => 'No tienes permiso para modificar otros entrenadores.'], 403);
+            }
+        }
+
         $fecha = Carbon::parse($request->fecha_hora);
         
         // Buscar todos los pagos que coinciden con la "sesión"
@@ -218,6 +225,13 @@ class PagosController extends Controller
             'nombre_clase' => 'required|string',
             'centro' => 'required|string'
         ]);
+
+        if (!$request->user()->hasRole('admin')) {
+             // Si no es admin, solo puede quitarse a sí mismo
+             if ($request->user()->id != $request->trainer_id) {
+                return response()->json(['error' => 'No tienes permiso para modificar otros entrenadores.'], 403);
+             }
+        }
 
         $fecha = Carbon::parse($request->fecha_hora);
         
@@ -272,7 +286,7 @@ class PagosController extends Controller
     {
         $request->validate([
             'type' => 'required|in:user,trainer',
-            'id' => 'required|integer',
+            'id' => 'required|integer|exists:users,id',
             'start' => 'required|date',
             'end' => 'required|date|after_or_equal:start',
         ]);

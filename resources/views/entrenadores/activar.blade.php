@@ -36,7 +36,7 @@
 
         <!-- Form -->
         <div class="px-8 pb-10">
-            <form action="{{ route('entrenadores.update', $user->id) }}" method="POST">
+            <form action="{{ route('entrenadores.complete', $user->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="token" value="{{ $token }}">

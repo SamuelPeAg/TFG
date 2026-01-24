@@ -20,6 +20,7 @@ class RestrictEntrenadorMiddleware
                 'users',
                 'Pagos',
                 'usuarios/reservas',
+                'usuarios/Pagos', // Buscar pagos (AJAX)
                 'logout',
                 'calendario', // Permitir calendario
             ];

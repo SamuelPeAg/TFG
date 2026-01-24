@@ -30,16 +30,16 @@
 
             {{-- CAMPO PASS --}}
             <div class="form-group">
-                <label class="form-label-custom">Pass</label>
+                <label class="form-label-custom">Contraseña</label>
                 <div class="input-group-custom">
                     <i class="fas fa-lock"></i>
-                    <input type="password" name="password" class="form-control-custom" placeholder="********" required>
+                    <input type="password" name="password" class="form-control-custom" placeholder="Contraseña..." required>
                 </div>
             </div>
 
             {{-- CAMPO iban --}}
             <div class="form-group">
-                <label class="form-label-custom">iban</label>
+                <label class="form-label-custom">IBAN</label>
                 <div class="input-group-custom">
                     <i class="fas fa-credit-card"></i>
                     <input type="text" name="iban" class="form-control-custom" placeholder="ES00 0000 0000 0000...">
@@ -48,7 +48,7 @@
 
             {{-- CAMPO FIRMA --}}
             <div class="form-group">
-                <label class="form-label-custom">Firma</label>
+                <label class="form-label-custom">Firma Digital</label>
                 <div class="input-group-custom">
                     <i class="fas fa-pen-nib"></i>
                     <input type="text" name="firma_digital" class="form-control-custom" placeholder="Código de firma...">

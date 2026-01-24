@@ -95,7 +95,7 @@ class EntrenadorController extends Controller
 
     public function activarEntrenador($token)
     {
-    // Buscar el usuario con ese token
+        // Buscar el usuario con ese token
         $user = User::where('activation_token', $token)->first();
 
         // Verificar si el usuario fue encontrado
@@ -106,6 +106,36 @@ class EntrenadorController extends Controller
 
         // Si se encuentra el usuario, renderizamos la vista de activación
         return view('entrenadores.activar', compact('user', 'token'));
+    }
+
+    public function completeActivation(Request $request, $id)
+    {
+        $request->validate([
+            'password' => 'required|confirmed|min:8',
+            'token'    => 'required|string',
+        ], [
+            'password.required'  => 'La contraseña es obligatoria.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        // Security Check: Verify token matches
+        if ($user->activation_token !== $request->token) {
+             return back()->with('error', 'Token de seguridad inválido o expirado.');
+        }
+
+        $user->update([
+            'password' => Hash::make($request->password),
+            'activation_token' => null, 
+            'email_verified_at' => now(), // Mark as verified
+        ]);
+
+        // Auto login? Or redirect to login?
+        // Auth::login($user); 
+
+        return redirect()->route('login')->with('success', 'Cuenta activada correctamente. Ya puedes iniciar sesión.');
     }
 
 }
