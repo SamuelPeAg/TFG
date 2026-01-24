@@ -20,11 +20,27 @@ class EntrenadorController extends Controller
     }
 
     public function store(Request $request)
-        {
-            $request->validate([
-                'nombre' => ['required', 'string', 'min:3', 'max:255'],
-                'email'  => ['required', 'email', 'max:255'],
-            ]);
+    {
+        $request->validate([
+            'nombre'   => ['required', 'string', 'min:3', 'max:255'],
+            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+        ], [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
+            'email.required'  => 'El correo electrónico es obligatorio.',
+            'email.email'     => 'El formato del correo no es válido.',
+            'email.unique'    => 'Este correo electrónico ya está registrado.',
+        ]);
+        $token = Str::random(60);
+        // Crear el usuario entrenador (solo nombre y email)
+        $user = User::create([
+            'name'     => $request->nombre,
+            'email'    => $request->email,
+            'password' => Hash::make(Str::random(24)), 
+            'activation_token' => $token 
+        ]);
+        // Crear un token de activación para el entrenador
+        $user->assignRole('entrenador');
 
             $email = strtolower(trim($request->email));
 
@@ -83,10 +99,8 @@ class EntrenadorController extends Controller
         $user = User::whereKey($id)->firstOrFail();
 
         // Validar los campos
-        $request->validate([
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            // 'iban'     => ['required', 'string', 'min:15', 'max:34'],
-        ]);
+        // Validar los campos (ya validados arriba)
+        // $request->validate([...]);
 
         // Actualizar la información del usuario
         $user->update([

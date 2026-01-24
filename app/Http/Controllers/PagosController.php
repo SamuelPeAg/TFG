@@ -61,6 +61,20 @@ class PagosController extends Controller
             'metodo_pago'  => ['required', 'in:TPV,EF,DD,CC'],
             'fecha_hora'   => ['required', 'date'],
             'precio'       => ['required', 'numeric', 'min:0'],
+        ], [
+            'user_id.required' => 'El usuario es obligatorio.',
+            'user_id.exists' => 'El usuario seleccionado no es válido.',
+            'centro.required' => 'El centro es obligatorio.',
+            'centro.in' => 'El centro seleccionado no es válido.',
+            'nombre_clase.required' => 'El nombre de la clase es obligatorio.',
+            'nombre_clase.max' => 'El nombre de la clase no puede superar los 120 caracteres.',
+            'metodo_pago.required' => 'El método de pago es obligatorio.',
+            'metodo_pago.in' => 'El método de pago seleccionado no es válido.',
+            'fecha_hora.required' => 'La fecha y hora son obligatorias.',
+            'fecha_hora.date' => 'La fecha no es válida.',
+            'precio.required' => 'El precio es obligatorio.',
+            'precio.numeric' => 'El precio debe ser un número.',
+            'precio.min' => 'El precio no puede ser negativo.',
         ]);
 
         $user = User::findOrFail($data['user_id']);

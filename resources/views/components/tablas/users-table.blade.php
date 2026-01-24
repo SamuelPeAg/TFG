@@ -45,16 +45,10 @@
                         </button>
 
                         {{-- ELIMINAR --}}
-                        <form
-                            action="{{ route('users.destroy', $user->id) }}"
-                            method="POST"
-                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');"
-                        >
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn-icon btn-delete">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
+                        <button type="button" class="btn-icon btn-delete" 
+                            onclick="abrirModalEliminarUsuario('{{ $user->id }}', '{{ $user->name }}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
                 </td>
             </tr>

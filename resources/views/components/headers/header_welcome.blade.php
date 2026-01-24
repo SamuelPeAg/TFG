@@ -69,7 +69,7 @@
 </head>
 
 {{-- 4. BODY ADAPTADO A MODO OSCURO --}}
-<body class="text-darkText bg-gray-50 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden min-h-screen flex flex-col pt-20 transition-colors duration-300">
+<body class="text-darkText bg-gray-50 dark:bg-gray-900 dark:text-gray-100 overflow-x-hidden min-h-screen flex flex-col transition-colors duration-300">
 
     {{-- NAV ADAPTADO --}}
     <nav class="fixed w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm transition-all duration-300 top-0 border-b border-transparent dark:border-gray-800">
