@@ -208,6 +208,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', (e) => {
+      // Evitar cerrar el modal de nueva clase al hacer clic fuera
+      if (overlay.id === 'modalNuevaClase') return;
+
       if (e.target === overlay) closeModal(overlay);
     });
   });
