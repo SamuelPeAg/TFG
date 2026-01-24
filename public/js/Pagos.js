@@ -92,6 +92,21 @@ document.addEventListener('DOMContentLoaded', () => {
       btnCerrar.style.zIndex = "10";
     }
 
+    const btnCerrar2 = document.getElementById('btnCerrarPopup2');
+    if (btnCerrar2) {
+      btnCerrar2.style.background = "#eb567a";
+      btnCerrar2.style.color = "white";
+      btnCerrar2.style.border = "none";
+      btnCerrar2.style.fontSize = "14px";
+      btnCerrar2.style.fontWeight = "800";
+      btnCerrar2.style.textTransform = "uppercase";
+      btnCerrar2.style.padding = "14px";
+      btnCerrar2.style.borderRadius = "10px";
+      btnCerrar2.style.width = "calc(100% - 64px)";
+      btnCerrar2.style.margin = "0 32px 32px 32px";
+      btnCerrar2.style.boxShadow = "0 4px 12px rgba(235, 86, 122, 0.3)";
+    }
+
     // Preparar contenido modal
     // Preparar contenido modal
     let html = `
@@ -108,10 +123,23 @@ document.addEventListener('DOMContentLoaded', () => {
         
         .participant-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; transition: all 0.2s; margin-bottom: 10px; }
         .participant-card:hover { border-color: #d1d5db; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #0e7490, #0891b2); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; box-shadow: 0 2px 4px rgba(14, 116, 144, 0.2); }
+        
+        /* Modal Avatars: Adjusted to Green-Pink gradient as requested */
+        .modal-avatar, .t-avatar { 
+            width: 40px; height: 40px; 
+            background: linear-gradient(135deg, #39c5a7, #eb567a); 
+            color: white; 
+            border-radius: 50%; /* Uniform circular design */
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: 700; 
+            font-size: 16px; 
+            box-shadow: 0 2px 6px rgba(57, 197, 167, 0.3); 
+        }
+        
+        .modal-avatar { border-radius: 12px; } /* Clients sqircle */
         
         .trainer-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 8px; }
-        .trainer-item .t-avatar { width: 32px; height: 32px; background: #f3f4f6; color: #374151; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+        .trainer-item .t-avatar { width: 32px; height: 32px; font-size: 13px; box-shadow: 0 2px 4px rgba(235, 86, 122, 0.2); }
         
         @media (max-width: 768px) {
             .modal-grid { grid-template-columns: 1fr; }
@@ -140,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         html += `
           <div class="participant-card">
               <div style="display:flex; align-items:center; gap:12px;">
-                  <div class="user-avatar">
+                  <div class="modal-avatar">
                       ${alum.nombre.charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -148,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div style="font-size:12px; color:#6b7280;">Método: ${alum.pago}</div>
                   </div>
               </div>
-              <div style="font-weight:700; color:#0e7490; font-size:15px;">€${Number(alum.coste).toFixed(2)}</div>
+              <div style="font-weight:700; color:#000000; font-size:15px;">€${Number(alum.coste).toFixed(2)}</div>
           </div>
         `;
       });
@@ -181,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${generarOpcionesEntrenadores()}
                     </select>
                     <button type="button" id="btn-add-trainer-action" 
-                        style="background:#111827; color:white; border:none; width:40px; border-radius:8px; cursor:pointer;">
+                        style="background:#0e7490; color:white; border:none; width:40px; border-radius:8px; cursor:pointer;">
                         <i class="fa-solid fa-plus"></i>
                     </button>
                  </div>`
