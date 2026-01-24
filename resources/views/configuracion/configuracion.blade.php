@@ -126,6 +126,10 @@
                                         <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Email</label>
                                         <input type="email" name="email" value="{{ old('email', $user->email) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
                                     </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">IBAN</label>
+                                        <input type="text" name="iban" value="{{ old('iban', $user->iban) }}" placeholder="ES00 0000 0000 0000 0000 0000" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
+                                    </div>
                                 </div>
                             </div>
 
