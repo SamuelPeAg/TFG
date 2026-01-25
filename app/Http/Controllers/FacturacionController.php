@@ -21,10 +21,14 @@ class FacturacionController extends Controller
         $c_hasta = $request->query('c_hasta', '');
         $c_centro = $request->query('c_centro', 'todos');
 
+        // 3. FILTROS CLIENTES
+        $u_desde = $request->query('u_desde', '');
+        $u_hasta = $request->query('u_hasta', '');
+        $u_clienteId = $request->query('u_cliente_id', '');
+
         $comisionEntrenador = 0.50;
 
         // --- LÓGICA ENTRENADORES (Liquidaciones) ---
-        // Soportamos que una sesión tenga varios entrenadores
         $qe = Pago::query()->with(['entrenadores:id,name'])
             ->when($e_desde, fn($q) => $q->whereDate('fecha_registro', '>=', $e_desde))
             ->when($e_hasta, fn($q) => $q->whereDate('fecha_registro', '<=', $e_hasta))
@@ -40,7 +44,6 @@ class FacturacionController extends Controller
             } else {
                 $numTrainers = $assigned->count();
                 foreach ($assigned as $t) {
-                    // Si el usuario filtró por un entrenador específico, solo mostramos ese en el resumen
                     if ($e_entrenadorId && $t->id != $e_entrenadorId) continue;
                     $this->_sumarLiquidacion($resumenEntrenadores, $t->name, $s, $comisionEntrenador, $numTrainers);
                 }
@@ -48,8 +51,7 @@ class FacturacionController extends Controller
         }
 
         // --- LÓGICA CENTROS (Rentabilidad) ---
-        $qc = Pago::query()->with('entrenadores')
-            ->when($c_desde, fn($q) => $q->whereDate('fecha_registro', '>=', $c_desde))
+        $qc = Pago::query()->when($c_desde, fn($q) => $q->whereDate('fecha_registro', '>=', $c_desde))
             ->when($c_hasta, fn($q) => $q->whereDate('fecha_registro', '<=', $c_hasta))
             ->when($c_centro !== 'todos', fn($q) => $q->where('centro', $c_centro));
         
@@ -59,18 +61,49 @@ class FacturacionController extends Controller
 
         foreach ($pagosC as $s) {
             $c = $s->centro ?? 'Sin centro';
-            if (!isset($resumenCentros[$c])) {
-                $resumenCentros[$c] = ['sesiones' => 0, 'bruto' => 0, 'neto' => 0];
-            }
+            if (!isset($resumenCentros[$c])) $resumenCentros[$c] = ['sesiones' => 0, 'bruto' => 0, 'neto' => 0];
+            
+            $resumenCentros[$c]['sessions'] = ($resumenCentros[$c]['sesiones'] ?? 0) + 1; // Fix typo key consistency if needed, sticking to 'sesiones'
             $resumenCentros[$c]['sesiones']++;
+            
             $generado = (float) ($s->importe ?? 0);
             $resumenCentros[$c]['bruto'] += $generado;
             
-            // El gasto de personal de esta sesión es el 50% de lo generado
             $gastoSesion = $generado * $comisionEntrenador;
             $resumenCentros[$c]['neto'] += ($generado - $gastoSesion);
             $totalGastosPersonal += $gastoSesion;
         }
+
+        // --- LÓGICA CLIENTES (Facturación) ---
+        $qu = Pago::query()->with(['user', 'entrenadores'])
+            ->when($u_desde, fn($q) => $q->whereDate('fecha_registro', '>=', $u_desde))
+            ->when($u_hasta, fn($q) => $q->whereDate('fecha_registro', '<=', $u_hasta))
+            ->when($u_clienteId, fn($q) => $q->where('user_id', $u_clienteId));
+
+        $pagosU = $qu->get();
+        $resumenClientes = [];
+
+        foreach ($pagosU as $p) {
+            $clientId = $p->user_id;
+            $clientName = $p->user->name ?? 'Cliente Eliminado';
+            
+            if (!isset($resumenClientes[$clientId])) {
+                $resumenClientes[$clientId] = [
+                    'id' => $clientId,
+                    'nombre' => $clientName,
+                    'sesiones' => 0,
+                    'bruto' => 0,
+                    'entrenadores' => []
+                ];
+            }
+            $resumenClientes[$clientId]['sesiones']++;
+            $resumenClientes[$clientId]['bruto'] += (float) ($p->importe ?? 0);
+            
+            foreach ($p->entrenadores as $t) {
+                $resumenClientes[$clientId]['entrenadores'][$t->id] = $t->name; // Use ID as key to deduplicate
+            }
+        }
+
 
         $brutoGlobal = $pagosC->sum('importe');
         $statsGlobales = [
@@ -84,15 +117,22 @@ class FacturacionController extends Controller
 
         $centrosLista = Pago::query()->select('centro')->distinct()->pluck('centro');
         $entrenadoresLista = User::role('entrenador')->orderBy('name')->get(['id', 'name']);
+        
+        // Obtenemos clientes que tengan pagos o rol cliente. Para simplificar, los que tienen pagos.
+        // O mejor: User role cliente.
+        $clientesLista = User::role('cliente')->orderBy('name')->get(['id', 'name']);
 
         return view('facturacion.facturas', [
             'centros' => $centrosLista,
             'entrenadores' => $entrenadoresLista,
+            'clientes' => $clientesLista,
             'resumenEntrenadores' => $resumenEntrenadores,
             'resumenCentros' => $resumenCentros,
+            'resumenClientes' => $resumenClientes,
             'stats' => $statsGlobales,
             'e_desde' => $e_desde, 'e_hasta' => $e_hasta, 'e_entrenadorId' => $e_entrenadorId,
             'c_desde' => $c_desde, 'c_hasta' => $c_hasta, 'c_centro' => $c_centro,
+            'u_desde' => $u_desde, 'u_hasta' => $u_hasta, 'u_clienteId' => $u_clienteId,
         ]);
     }
 
@@ -104,7 +144,6 @@ class FacturacionController extends Controller
         $resumen[$nombre]['sesiones']++;
         $importe = (float) ($pago->importe ?? 0);
         $resumen[$nombre]['bruto'] += $importe;
-        // La liquidación se divide entre los entrenadores que impartieron la sesión
         $resumen[$nombre]['liquidacion'] += ($importe * $comision) / $divisor;
     }
 
@@ -113,18 +152,37 @@ class FacturacionController extends Controller
         $type = $request->query('type', 'trainer');
         $desde = $request->query('desde', '');
         $hasta = $request->query('hasta', '');
+        // Entrenador filters
         $entrenadorId = $request->query('entrenador_id', '');
+        // Centro filters
         $centro = $request->query('centro', 'todos');
+        // Client filters
+        $clienteId = $request->query('cliente_id', '');
+
         $comisionEntrenador = 0.50;
 
         $q = Pago::query()->with(['entrenadores', 'user'])
             ->when($desde, fn($qq) => $qq->whereDate('fecha_registro', '>=', $desde))
             ->when($hasta, fn($qq) => $qq->whereDate('fecha_registro', '<=', $hasta))
             ->when($type === 'trainer' && $entrenadorId, fn($qq) => $qq->whereHas('entrenadores', fn($t) => $t->where('users.id', $entrenadorId)))
-            ->when($type === 'center' && $centro !== 'todos', fn($qq) => $qq->where('centro', $centro));
+            ->when($type === 'center' && $centro !== 'todos', fn($qq) => $qq->where('centro', $centro))
+            ->when($type === 'client' && $clienteId, fn($qq) => $qq->where('user_id', $clienteId));
 
         $Pagos = $q->get();
 
+        // Si es cliente, usamos otra vista
+        if ($type === 'client') {
+             $cliente = $clienteId ? User::find($clienteId) : null;
+             return view('facturacion.invoice_client', [
+                 'pagos' => $Pagos,
+                 'cliente' => $cliente,
+                 'desde' => $desde,
+                 'hasta' => $hasta,
+                 'total' => $Pagos->sum('importe')
+             ]);
+        }
+
+        // Logic for Trainer/Center...
         $items = [];
         $totalLiquidacionCalculada = 0;
 
@@ -145,15 +203,13 @@ class FacturacionController extends Controller
             $importe = (float)($p->importe ?? 0);
             $items[$key]['total'] += $importe;
             
-            // Calculamos la liquidación para este reporte
             $numT = count($assignedTrainersList) ?: 1;
             if ($type === 'trainer' && $entrenadorId) {
-                // Si es factura para UN entrenador, solo sumamos SU parte
                 $parteEnte = ($importe * $comisionEntrenador) / $numT;
                 $items[$key]['liquidacion'] += $parteEnte;
                 $totalLiquidacionCalculada += $parteEnte;
             } else {
-                // Si es reporte de centro, sumamos el gasto TOTAL de personal de esa sesión (50%)
+                // center report
                 $gastoTotal = $importe * $comisionEntrenador;
                 $items[$key]['liquidacion'] += $gastoTotal;
                 $totalLiquidacionCalculada += $gastoTotal;

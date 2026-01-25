@@ -7,11 +7,14 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Auth;
+
 class EstadisticasController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $isAdmin = $user->hasRole('admin');
 
         $users = User::role('cliente')->orderBy('name')->get();
@@ -411,6 +414,7 @@ class EstadisticasController extends Controller
                 'fecha' => $p->fecha_registro->format('Y-m-d H:i'),
                 'clase' => $p->nombre_clase,
                 'centro' => $p->centro,
+                'entrenador' => $p->entrenadores->pluck('name')->implode(', ') ?: 'Sin asignar',
                 'alumno' => $p->user->name ?? 'Desconocido', 
                 'importe' => $p->importe,
                 'metodo' => $p->metodo_pago

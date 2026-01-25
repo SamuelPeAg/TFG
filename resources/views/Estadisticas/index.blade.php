@@ -144,7 +144,7 @@
                 <div class="stat-icon icon-active"><i class="fa-solid fa-building"></i></div>
                 <div class="stat-info">
                     <span class="stat-label">Centro Top</span>
-                    <span class="stat-value">{{ $statsPorCentro->sortByDesc('total')->first()->centro ?? 'N/A' }}</span>
+                    <span class="stat-value">{{ optional($statsPorCentro->sortByDesc('total')->first())->centro ?? 'Sin datos' }}</span>
                 </div>
             </div>
         </div>
@@ -316,7 +316,7 @@
                                 <th>Fecha</th>
                                 <th>Clase</th>
                                 <th>Centro</th>
-                                <th>Detalle</th>
+                                <th>Entrenador / es</th>
                                 <th>Pago</th>
                                 <th style="text-align:right;">Importe</th>
                             </tr>
@@ -431,7 +431,7 @@
                         <td style="font-weight:600;">${d.fecha}</td>
                         <td>${d.clase}</td>
                         <td><span style="font-size:11px; font-weight:800; background:#f3f4f6; padding:4px 8px; border-radius:6px;">${d.centro}</span></td>
-                        <td>${d.alumno}</td>
+                        <td><span style="font-size:12px; font-weight:600; color:#555;">${d.entrenador}</span></td>
                         <td>${d.metodo}</td>
                         <td style="text-align:right; font-weight:800;">€${Number(d.importe).toFixed(2)}</td>
                     </tr>

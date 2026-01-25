@@ -91,7 +91,7 @@
                                 <div style="width: 45px; height: 45px; background: #e0f2f1; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                                     <i class="fa-solid fa-user-tie" style="color:#4BB7AE;"></i>
                                 </div>
-                                Liquidación Profesionales
+                                Facturación Entrenadores
                             </h2>
                             <p style="color: #6b7280; font-size: 14px; margin-top: 5px; margin-left: 60px;">Gestiona los pagos y sesiones generadas por cada entrenador.</p>
                         </div>
@@ -165,7 +165,7 @@
                                 <div style="width: 45px; height: 45px; background: #fff1f2; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                                     <i class="fa-solid fa-building" style="color:#EF5D7A;"></i>
                                 </div>
-                                Rentabilidad Centros
+                                Facturación Centros
                             </h2>
                             <p style="color: #6b7280; font-size: 14px; margin-top: 5px; margin-left: 60px;">Análisis de ingresos y márgenes netos por ubicación.</p>
                         </div>
@@ -221,6 +221,92 @@
                                 </tr>
                             @empty
                                 <tr><td colspan="4" style="text-align: center; padding: 40px; color: #9ca3af;">No hay datos de centros registrados.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+                <!-- BLOQUE 3: CLIENTES -->
+                <div style="background: white; border-radius: 24px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid #f1f3f5;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;">
+                        <div>
+                            <h2 style="font-size: 26px; font-weight: 800; color: #111827; margin: 0; display: flex; align-items: center; gap: 15px;">
+                                <div style="width: 45px; height: 45px; background: #fff7ed; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid fa-users" style="color:#f97316;"></i>
+                                </div>
+                                Facturación Clientes
+                            </h2>
+                            <p style="color: #6b7280; font-size: 14px; margin-top: 5px; margin-left: 60px;">Gestiona los cobros y genera facturas detalladas para tus clientes.</p>
+                        </div>
+                    </div>
+
+                    <!-- Filtro Clientes -->
+                    <form method="GET" action="{{ route('facturas') }}" style="display: flex; gap: 15px; background: #fff7ed; padding: 20px; border-radius: 18px; margin-bottom: 25px; align-items: flex-end; flex-wrap: wrap; border: 1px solid #ffedd5;">
+                        <input type="hidden" name="e_desde" value="{{ $e_desde }}">
+                        <input type="hidden" name="e_hasta" value="{{ $e_hasta }}">
+                        <input type="hidden" name="c_desde" value="{{ $c_desde }}">
+                        <input type="hidden" name="c_hasta" value="{{ $c_hasta }}">
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="font-size: 13px; font-weight: 700; color: #c2410c;">Periodo Facturación</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="date" name="u_desde" value="{{ $u_desde }}" class="modern-input" style="max-width: 150px;">
+                                <input type="date" name="u_hasta" value="{{ $u_hasta }}" class="modern-input" style="max-width: 150px;">
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="font-size: 13px; font-weight: 700; color: #c2410c;">Buscar Cliente</label>
+                            <select name="u_cliente_id" class="modern-input" style="min-width: 200px;">
+                                <option value="">Todos los clientes</option>
+                                @foreach($clientes as $cli)
+                                    <option value="{{ $cli->id }}" @selected($u_clienteId == $cli->id)>{{ $cli->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-apply" style="height: 45px; margin-bottom: 0; background: #f97316;">
+                            <i class="fa-solid fa-filter"></i> Filtrar
+                        </button>
+                    </form>
+
+                    <table class="modern-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th style="text-align: center;">Sesiones</th>
+                                <th>Entrenadores</th>
+                                <th style="text-align: right;">Total Gastado</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($resumenClientes as $idCliente => $info)
+                                <tr>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 12px;">
+                                            <div class="avatar-mini" style="background: linear-gradient(135deg, #f97316, #fdba74);">{{ strtoupper(substr($info['nombre'],0,1)) }}</div>
+                                            <span style="font-weight: 700; color: #1f2937;">{{ $info['nombre'] }}</span>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center; font-weight: 800; color: #374151;">{{ $info['sesiones'] }}</td>
+                                    <td style="font-size: 13px; color: #6b7280;">
+                                        @foreach($info['entrenadores'] as $tName)
+                                            <span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; border: 1px solid #e5e7eb; margin-right: 4px;">{{ $tName }}</span>
+                                        @endforeach
+                                    </td>
+                                    <td style="text-align: right; font-weight: 800; color: #1f2937; font-size: 16px;">€{{ number_format($info['bruto'], 2, ',', '.') }}</td>
+                                    <td style="text-align: right;">
+                                        <a href="{{ route('facturas.invoice', ['type' => 'client', 'desde' => $u_desde, 'hasta' => $u_hasta, 'cliente_id' => $idCliente]) }}" 
+                                           target="_blank" 
+                                           style="color: #f97316; font-weight: 700; text-decoration: none; border: 1px solid #f97316; padding: 6px 12px; border-radius: 8px; font-size: 13px; transition: all 0.2s;"
+                                           onmouseover="this.style.background='#fff7ed'" onmouseout="this.style.background='transparent'">
+                                            <i class="fa-solid fa-file-pdf"></i> Factura
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" style="text-align: center; padding: 40px; color: #9ca3af;">No hay actividad de clientes en este periodo.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
