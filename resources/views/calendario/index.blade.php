@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pagos - Factomove</title>
+  <title>Calendario - Factomove</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <link rel="stylesheet" href="{{ asset('css/global.css') }}">
-  <link rel="stylesheet" href="{{ asset('css/Pagos.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/Estadisticas.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
@@ -227,7 +227,7 @@
       <div class="header-controls">
         
         <div class="title-section">
-          <h1>Historial de Pagos</h1>
+          <h1>Calendario de Sesiones</h1>
         </div>
 
         <div class="controls-bar">
@@ -275,7 +275,7 @@
     <div class="modal-box modal-expanded">
       <button type="button" class="close-icon" id="btnCerrarPopup" style="position: absolute; top: 15px; right: 15px; background:none; border:none; font-size:24px; color:#9ca3af; cursor:pointer;">&times;</button>
       <h2 id="modal-fecha-titulo">Detalles</h2>
-      <div id="lista-Pagos" class="modal-details"></div>
+      <div id="lista-Estadisticas" class="modal-details"></div>
       <br>
       <button type="button" class="btn-modal btn-cancel" id="btnCerrarPopup2">Cerrar</button>
     </div>
@@ -291,7 +291,7 @@
           <p class="modern-subtitle">Configura la sesión y asigna participantes.</p>
       </div>
 
-      <form id="formNuevaClase" action="{{ route('Pagos.store') }}" method="POST" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+      <form id="formNuevaClase" action="{{ route('Estadisticas.store') }}" method="POST" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
         @csrf
 
         <div class="modal-grid" style="flex:1; overflow-y:auto;">
@@ -442,7 +442,7 @@
     window.IS_TRAINER = {{ Auth::check() && Auth::user()->hasRole('entrenador') ? 'true' : 'false' }};
   </script>
 
-  <script src="{{ asset('js/Pagos.js') }}"></script>
+  <script src="{{ asset('js/Estadisticas.js') }}"></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {

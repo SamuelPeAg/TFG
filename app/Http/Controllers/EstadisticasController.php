@@ -202,7 +202,7 @@ class EstadisticasController extends Controller
             ]);
         }
 
-        return redirect()->route('Pagos')->with('success', 'Clase creada exitosamente.');
+        return redirect()->route('Estadisticas')->with('success', 'Clase creada exitosamente.');
     }
 
     // Método para añadir entrenador a una sesión completa

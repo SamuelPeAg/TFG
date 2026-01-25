@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputFechaHora = document.getElementById('fecha_hora');
 
   // === REFERENCIAS DETALLES ===
-  const listaPagosEl = document.getElementById('lista-Pagos');
+  const listaPagosEl = document.getElementById('lista-Estadisticas');
   const tituloFechaEl = document.getElementById('modal-fecha-titulo');
 
   // === REFERENCIAS LOGOUT (NUEVO) ===
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('nombre_clase', sessionKey.nombre_clase);
       formData.append('centro', sessionKey.centro);
 
-      const res = await fetch('/Pagos/add-trainer', {
+      const res = await fetch('/Estadisticas/add-trainer', {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
         body: formData
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('nombre_clase', sessionKey.nombre_clase);
       formData.append('centro', sessionKey.centro);
 
-      const res = await fetch('/Pagos/remove-trainer', {
+      const res = await fetch('/Estadisticas/remove-trainer', {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
         body: formData
@@ -379,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ====== 4. FETCH DATOS ======
   async function fetchAndRenderCalendar(q) {
     try {
-      const res = await fetch(`/usuarios/Pagos?q=${encodeURIComponent(q || '')}`);
+      const res = await fetch(`/usuarios/Estadisticas?q=${encodeURIComponent(q || '')}`);
       const data = await res.json();
       calendar.removeAllEvents();
       if (data.events) calendar.addEventSource(data.events);
