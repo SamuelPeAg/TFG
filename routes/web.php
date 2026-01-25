@@ -115,8 +115,6 @@ Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->na
 | OLVIDASTE CONTRASEÑA? (Requiere Login)
 |--------------------------------------------------------------------------
 */
-
-
 Route::get('/forgot-password', [AuthPasswordController::class, 'forgotForm'])->name('password.request');
 Route::post('/forgot-password', [AuthPasswordController::class, 'sendReset'])->name('password.email');
 
