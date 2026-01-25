@@ -24,13 +24,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ====== 1. CONFIGURACIÓN FULLCALENDAR ======
   let calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'timeGridWeek',
+    initialView: 'dayGridMonth',
     locale: 'es',
     firstDay: 1,
     slotMinTime: '06:00:00',
     slotMaxTime: '23:00:00',
     allDaySlot: false,
-    height: 'auto',
+    height: 1000,
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="margin-top:20px;" id="trainer-actions-wrapper">
                  ${(window.IS_ADMIN) ?
         `<label class="section-header" style="display:block; margin-bottom:10px;">Gestionar Personal</label>
-                 <div style="display:flex; gap:8px;">
+                 <div style="display:flex; gap:8px; margin-bottom:15px;">
                     <select id="select-add-trainer" class="modern-input" style="padding:10px; font-size:13px;">
                         <option value="" selected disabled>Añadir entrenador...</option>
                         ${generarOpcionesEntrenadores()}
@@ -223,7 +223,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         style="background:#0e7490; color:white; border:none; width:40px; border-radius:8px; cursor:pointer;">
                         <i class="fa-solid fa-plus"></i>
                     </button>
-                 </div>`
+                 </div>
+                 <hr style="border:0; border-top:1px solid #e5e7eb; margin:15px 0;">
+                 <button type="button" id="btn-delete-full-session" 
+                    style="width:100%; padding:12px; background:#fef2f2; color:#dc2626; border:1px solid #fee2e2; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition: all 0.2s;">
+                    <i class="fa-solid fa-trash-can"></i> Eliminar Sesión Completa
+                 </button>`
         : (window.IS_TRAINER && window.CURRENT_USER_ID) ?
           // Lógica de botón de inscripción para entrenador
           (!p.entrenadores || !p.entrenadores.find(t => t.id === window.CURRENT_USER_ID)) ?
@@ -264,6 +269,39 @@ document.addEventListener('DOMContentLoaded', () => {
         // Usamos window.CURRENT_USER_ID
         if (!window.CURRENT_USER_ID) return;
         agregarEntrenadorSesion(window.CURRENT_USER_ID, p.session_key, event);
+      });
+    }
+
+    // Event Listener para borrar sesión completa (Admin)
+    const btnDeleteSession = document.getElementById('btn-delete-full-session');
+    if (btnDeleteSession) {
+      btnDeleteSession.addEventListener('click', async () => {
+        try {
+          const res = await fetch('/Estadisticas/session', {
+            method: 'DELETE',
+            headers: {
+              'X-CSRF-TOKEN': csrfToken,
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              fecha_hora: p.session_key.fecha_hora,
+              nombre_clase: p.session_key.nombre_clase,
+              centro: p.session_key.centro
+            })
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            fetchAndRenderCalendar(document.getElementById('search-user')?.value || '');
+            closeModal(modalInfo);
+          } else {
+            alert(data.error || 'Error al eliminar la sesión');
+          }
+        } catch (e) {
+          console.error(e);
+          alert('Error técnico al intentar eliminar la sesión');
+        }
       });
     }
 
@@ -508,12 +546,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ====== 8. BUSCADOR Y AUTOCOMPLETE ======
-  const searchInput = document.getElementById('search-user');
-  if (searchInput) searchInput.addEventListener('input', (e) => {
-    clearTimeout(window.t); window.t = setTimeout(() => fetchAndRenderCalendar(e.target.value.trim()), 400);
-  });
-
   const usersJsonEl = document.getElementById('users_json');
   let USERS = [];
   try { USERS = JSON.parse(usersJsonEl.textContent || '[]'); } catch (e) { }
@@ -527,28 +559,31 @@ document.addEventListener('DOMContentLoaded', () => {
     inputEl.parentNode.replaceChild(newInput, inputEl);
     inputEl = newInput;
 
-    // Reasignar ID si es necesario para mantener referencias
-    // (Opcional, pero bueno para asegurar integridad)
-
     const show = (list) => {
       boxEl.hidden = !list.length;
       boxEl.innerHTML = list.map(u => `<div class="item" data-id="${u.id}" data-name="${u.name}">${u.name}</div>`).join('');
     };
 
     inputEl.addEventListener('input', (e) => {
+      // Solo limpiamos el ID si el evento viene de una acción real del usuario (teclado)
+      // Evitamos limpiar si el evento es disparado manualmente al SELECCIONAR un item
+      if (e.isTrusted && hiddenIdEl) {
+        hiddenIdEl.value = '';
+      }
+
       const q = e.target.value.toLowerCase().trim();
-      if (hiddenIdEl) hiddenIdEl.value = '';
       if (q.length < 1) { show([]); return; }
       show(USERS.filter(u => u.name.toLowerCase().includes(q)).slice(0, 8));
     });
 
-    // Se usa mousedown para evitar que el blur del input oculte la lista antes del click
     boxEl.addEventListener('mousedown', (e) => {
       const item = e.target.closest('.item');
       if (item) {
         inputEl.value = item.dataset.name;
         if (hiddenIdEl) hiddenIdEl.value = item.dataset.id;
         boxEl.hidden = true;
+        // DISPARAR EVENTO PARA QUE EL CALENDARIO SE FILTRE
+        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
 
@@ -563,6 +598,16 @@ document.addEventListener('DOMContentLoaded', () => {
     hiddenIdEl: null,
     boxEl: document.getElementById('search_user_suggestions')
   });
+
+  // ====== 8. BUSCADOR DEL CALENDARIO (Filtrar eventos) ======
+  // Lo ponemos después de initAutocomplete porque esa función clona el elemento
+  const searchInput = document.getElementById('search-user');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(window.t);
+      window.t = setTimeout(() => fetchAndRenderCalendar(e.target.value.trim()), 400);
+    });
+  }
 
   // Inicializar el primer input de usuario (EP por defecto)
   const firstUserInput = document.querySelector('.user-search[data-index="0"]');

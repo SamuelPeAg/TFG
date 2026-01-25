@@ -89,6 +89,7 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     // Gestión de Entrenadores en Sesiones
     Route::post('/Estadisticas/add-trainer', [EstadisticasController::class, 'addTrainerToSession'])->name('Estadisticas.addTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     Route::post('/Estadisticas/remove-trainer', [EstadisticasController::class, 'removeTrainerFromSession'])->name('Estadisticas.removeTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::delete('/Estadisticas/session', [EstadisticasController::class, 'destroySession'])->name('Estadisticas.destroySession')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     
     // Estadisticas
     Route::get('/Estadisticas', [EstadisticasController::class, 'index'])->name('Estadisticas')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);

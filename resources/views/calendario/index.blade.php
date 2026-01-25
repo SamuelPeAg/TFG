@@ -163,6 +163,12 @@
     .fc-col-header-cell-cushion { text-transform: capitalize; }
     .fc-toolbar-title { text-transform: lowercase; display: inline-block; }
     .fc-button-primary { background-color: #374151 !important; border-color: #374151 !important; text-transform: capitalize; }
+
+    /* Agrandar calendario al Máximo (Respetando márgenes) */
+    .calendar-layout { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    .calendar-panel { width: 100% !important; max-width: 100% !important; }
+    .calendar-container { width: 100% !important; }
+    .fc { height: 1000px !important; padding: 10px !important; border-radius: 20px !important; }
     .fc-button-active { background-color: #00897b !important; border-color: #00897b !important; }
     .fc-event { border: none; box-shadow: 0 2px 3px rgba(0,0,0,0.15); font-size: 0.85rem; cursor: pointer; }
 
@@ -235,7 +241,7 @@
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <div class="search-anchor">
-              <input type="text" id="search-user" placeholder="Buscar usuario..." autocomplete="off">
+              <input type="text" id="search-user" placeholder="Buscar alumno o entrenador..." autocomplete="off">
               <div id="search_user_suggestions" class="suggestions" hidden></div>
             </div>
           </div>
@@ -429,7 +435,12 @@
       </form>
 
       <script type="application/json" id="users_json">
-        @json($users->map(fn($u)=>['id'=>$u->id,'name'=>$u->name])->values())
+        @php
+            $todasLasPersonas = $users->map(fn($u)=>['id'=>$u->id,'name'=>$u->name])
+                ->concat($entrenadores->map(fn($e)=>['id'=>$e->id,'name'=>$e->name]))
+                ->values();
+        @endphp
+        @json($todasLasPersonas)
       </script>
 
     </div>

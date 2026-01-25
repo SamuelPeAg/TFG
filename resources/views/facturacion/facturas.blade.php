@@ -7,9 +7,33 @@
 
     <link rel="stylesheet" href="{{ asset('css/global.css') }}">
     <link rel="stylesheet" href="{{ asset('css/facturacion.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/facturacion.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <link rel="stylesheet" href="{{ asset('css/facturacion.css') }}">
+    <style>
+        .header-controls {
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 10px 0;
+        }
+
+        .title-section h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #333;
+            font-weight: 800; 
+        }
+        
+        .main-content {
+            padding: 20px 40px !important;
+        }
+
+        .content-wrapper {
+            width: 100%;
+        }
+    </style>
 </head>
 
 <body>
@@ -31,7 +55,8 @@
                 </div>
             </div>
 
-            <div class="facturacion-layout" style="display: flex; flex-direction: column; gap: 40px; width: 100%;">
+            <div class="content-wrapper">
+                <div class="facturacion-layout" style="display: flex; flex-direction: column; gap: 40px; width: 100%;">
 
                 <!-- RESUMEN GLOBAL (Opcional, pero ayuda a la empresa) -->
                 <section class="billing-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 100%;">

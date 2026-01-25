@@ -79,8 +79,15 @@ class EstadisticasController extends Controller
         $query = Pago::with(['user', 'entrenadores']);
 
         if ($nombre !== '') {
-            $query->whereHas('user', function ($q) use ($nombre) {
-                $q->where('name', 'like', "%{$nombre}%");
+            $query->where(function($q) use ($nombre) {
+                // Buscar por Alumno
+                $q->whereHas('user', function ($sq) use ($nombre) {
+                    $sq->where('name', 'like', "%{$nombre}%");
+                })
+                // O buscar por Entrenador
+                ->orWhereHas('entrenadores', function ($sq) use ($nombre) {
+                    $sq->where('users.name', 'like', "%{$nombre}%");
+                });
             });
         }
 
@@ -317,6 +324,32 @@ class EstadisticasController extends Controller
         return response()->json([
             'success' => true,
             'trainers' => $updatedTrainers
+        ]);
+    }
+
+    public function destroySession(Request $request)
+    {
+        $request->validate([
+            'fecha_hora' => 'required|date',
+            'nombre_clase' => 'required|string',
+            'centro' => 'required|string'
+        ]);
+
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['error' => 'No tienes permiso para eliminar la sesión completa.'], 403);
+        }
+
+        $fecha = Carbon::parse($request->fecha_hora);
+        
+        // Eliminar todos los pagos asociados a esta sesión
+        $deleted = Pago::where('fecha_registro', $fecha)
+                      ->where('nombre_clase', $request->nombre_clase)
+                      ->where('centro', $request->centro)
+                      ->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Sesión eliminada correctamente ($deleted registros borrados)."
         ]);
     }
 
