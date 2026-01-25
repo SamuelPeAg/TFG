@@ -8,6 +8,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PagosController;
+use App\Http\Controllers\AuthPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -108,5 +109,19 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
 });
 Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
 Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+
+/*
+|--------------------------------------------------------------------------
+| OLVIDASTE CONTRASEÑA? (Requiere Login)
+|--------------------------------------------------------------------------
+*/
+
+
+Route::get('/forgot-password', [AuthPasswordController::class, 'forgotForm'])->name('password.request');
+Route::post('/forgot-password', [AuthPasswordController::class, 'sendReset'])->name('password.email');
+
+Route::get('/reset-password/{token}', [AuthPasswordController::class, 'resetForm'])->name('password.reset');
+Route::post('/reset-password', [AuthPasswordController::class, 'updatePassword'])->name('password.update');
+
 
 

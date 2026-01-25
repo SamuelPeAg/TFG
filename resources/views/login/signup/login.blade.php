@@ -84,7 +84,7 @@
                                         <label for="password" class="block text-xs font-bold text-gray-600 uppercase tracking-wide">
                                             Contraseña
                                         </label>
-                                        <a href="#" class="text-xs text-brandTeal hover:text-brandTeal/80 font-semibold">
+                                        <a href="{{ route('password.request') }}" class="text-xs text-brandTeal hover:text-brandTeal/80 font-semibold">
                                             ¿Olvidaste tu contraseña?
                                         </a>
                                     </div>
