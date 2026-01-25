@@ -88,10 +88,10 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     Route::post('/Estadisticas/add-trainer', [EstadisticasController::class, 'addTrainerToSession'])->name('Estadisticas.addTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     Route::post('/Estadisticas/remove-trainer', [EstadisticasController::class, 'removeTrainerFromSession'])->name('Estadisticas.removeTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     
-    // Estadisticas (Solo ADMIN)
-    Route::get('/Estadisticas', [EstadisticasController::class, 'index'])->name('Estadisticas')->middleware(\App\Http\Middleware\AdminMiddleware::class);
-    Route::get('/Estadisticas/reporte', [EstadisticasController::class, 'getReporte'])->name('Estadisticas.reporte')->middleware(\App\Http\Middleware\AdminMiddleware::class);
-    Route::get('/Estadisticas/trainer-stats/{id}', [EstadisticasController::class, 'getTrainerStats'])->name('Estadisticas.trainerStats')->middleware(\App\Http\Middleware\AdminMiddleware::class);
+    // Estadisticas
+    Route::get('/Estadisticas', [EstadisticasController::class, 'index'])->name('Estadisticas')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::get('/Estadisticas/reporte', [EstadisticasController::class, 'getReporte'])->name('Estadisticas.reporte')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::get('/Estadisticas/trainer-stats/{id}', [EstadisticasController::class, 'getTrainerStats'])->name('Estadisticas.trainerStats')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     
    // Ejemplo en web.php
     // Gestión de usuarios para admin o entrenador

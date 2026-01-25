@@ -36,6 +36,12 @@
             <span>USUARIOS</span>
         </a>
 
+        <a href="{{ route('Estadisticas') }}" 
+           class="menu-item {{ request()->routeIs('Estadisticas') || request()->routeIs('Estadisticas.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>ESTADÍSTICAS</span>
+        </a>
+
         <a href="{{ route('calendario') }}" 
            class="menu-item {{ request()->routeIs('calendario') || request()->routeIs('calendario.*') ? 'active' : '' }}">
             <i class="fa-solid fa-calendar-check"></i>

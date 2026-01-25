@@ -116,7 +116,11 @@
         
         <div class="header-controls">
             <div class="title-section">
-                <h1 class="page-title">Estadísticas Factomove</h1>
+                @if(auth()->user()->hasRole('admin'))
+                    <h1 class="page-title">Estadísticas Factomove</h1>
+                @else
+                    <h1 class="page-title">Tus Estadísticas</h1>
+                @endif
             </div>
         </div>
 
@@ -125,7 +129,7 @@
             <div class="stat-card">
                 <div class="stat-icon icon-income"><i class="fa-solid fa-euro-sign"></i></div>
                 <div class="stat-info">
-                    <span class="stat-label">Ingresos Totales</span>
+                    <span class="stat-label">{{ auth()->user()->hasRole('admin') ? 'Ingresos Totales' : 'Ingresos Generados' }}</span>
                     <span class="stat-value">€{{ number_format($totalIngresos, 2) }}</span>
                 </div>
             </div>
@@ -164,6 +168,7 @@
                 </div>
             </div>
 
+            @if(auth()->user()->hasRole('admin'))
             <!-- 3. DESEMPEÑO ENTRENADOR -->
             <div class="top-trainers-card">
                 <h3 class="chart-title"><i class="fa-solid fa-ranking-star"></i> Rendimiento por Entrenador</h3>
@@ -200,6 +205,40 @@
                     <p style="font-size:13px;">Selecciona un entrenador para ver sus estadísticas de rendimiento.</p>
                 </div>
             </div>
+            @else
+            <!-- 3. TU RENDIMIENTO (ENTRENADOR) -->
+            <div class="top-trainers-card">
+                <h3 class="chart-title"><i class="fa-solid fa-ranking-star"></i> Tu Rendimiento</h3>
+                
+                <div id="trainer-perf-result" style="animation: fadeIn 0.3s;">
+                    <div style="display:flex; align-items:center; gap:15px; margin-bottom: 25px; padding: 15px; background: #f9fafb; border-radius: 16px;">
+                        <div class="trainer-img" style="width:50px; height:50px; font-size:20px;">{{ substr(auth()->user()->name, 0 ,1) }}</div>
+                        <div>
+                            <span class="t-name" style="font-size:18px;">{{ auth()->user()->name }}</span>
+                            <span class="t-count" style="font-size:14px; font-weight:700; color:#0e7490;">{{ $totalSesiones }} sesiones en total</span>
+                        </div>
+                    </div>
+
+                    <div style="padding: 20px; background: #111827; border-radius: 20px; color: white;">
+                        <span style="font-size:11px; font-weight:800; opacity:0.6; text-transform:uppercase;">Desglose por Tipo</span>
+                        <div style="margin-top: 20px;" id="perf-types-list">
+                            @foreach($statsTipos as $tipo)
+                            @php $percent = $totalSesiones > 0 ? ($tipo->total / $totalSesiones * 100) : 0; @endphp
+                            <div style="margin-bottom:18px;">
+                                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:8px;">
+                                    <span style="font-weight:600;">{{ $tipo->tipo_clase }}</span>
+                                    <span style="opacity:0.8;">{{ $tipo->total }} clases</span>
+                                </div>
+                                <div style="height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+                                    <div style="width:{{ $percent }}%; height:100%; background:linear-gradient(90deg, #4BB7AE, #A5EFE2); border-radius:4px;"></div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
 
         <!-- 4. GENERADOR DE REPORTES (EXISTENTE) -->
@@ -207,21 +246,31 @@
             <div class="section-header flex-header">
                 <div>
                     <h3 class="chart-title" style="margin:0;"><i class="fa-solid fa-file-export"></i> Histórico Detallado</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-top:4px;">Genera un desglose personalizado para una persona específica</p>
+                    <p style="font-size:13px; color:#6b7280; margin-top:4px;">{{ auth()->user()->hasRole('admin') ? 'Genera un desglose personalizado para una persona específica' : 'Consulta el detalle de tus sesiones' }}</p>
                 </div>
+                @if(auth()->user()->hasRole('admin'))
                 <div class="card-toggle">
                     <button class="toggle-btn active" onclick="selectType('user', this)">Alumnos</button>
                     <button class="toggle-btn" onclick="selectType('trainer', this)">Entrenadores</button>
                 </div>
+                @endif
             </div>
 
             <div class="form-grid">
+                @if(auth()->user()->hasRole('admin'))
                 <div class="input-group" style="position:relative;">
                     <label id="lbl-search">Persona</label>
                     <input type="text" id="search-input" class="modern-input" placeholder="Buscar nombre..." autocomplete="off">
                     <input type="hidden" id="selected-id">
                     <div id="suggestions-box" style="position:absolute; top:100%; left:0; right:0; background:white; border:1px solid #e5e7eb; border-radius:12px; z-index:50; max-height:200px; overflow-y:auto; box-shadow:0 10px 15px rgba(0,0,0,0.1); margin-top:5px;" hidden></div>
                 </div>
+                @else
+                <input type="hidden" id="selected-id" value="{{ auth()->user()->id }}">
+                <div class="input-group" style="grid-column: span 1;">
+                     <label>Tu Perfil</label>
+                     <input type="text" class="modern-input" value="{{ auth()->user()->name }}" disabled>
+                </div>
+                @endif
 
                 <div class="input-group">
                     <label>Desde</label>
@@ -316,7 +365,7 @@
     });
 
     // Lógica del Reporteador (Original Mejorada)
-    let currentType = 'user';
+    let currentType = '{{ auth()->user()->hasRole("admin") ? "user" : "trainer" }}';
     const today = new Date();
     document.getElementById('date-start').value = `${today.getFullYear()}-01-01`;
     document.getElementById('date-end').value = `${today.getFullYear()}-12-31`;
@@ -334,30 +383,32 @@
     const suggestionsBox = document.getElementById('suggestions-box');
     const hiddenId = document.getElementById('selected-id');
 
-    searchInput.addEventListener('input', function() {
-        const q = this.value.toLowerCase().trim();
-        suggestionsBox.innerHTML = '';
-        if(q.length < 1) { suggestionsBox.hidden = true; return; }
-        const source = currentType === 'user' ? window.usersData : window.trainersData;
-        const matches = source.filter(i => i.name.toLowerCase().includes(q)).slice(0, 10);
-        
-        matches.forEach(m => {
-            const div = document.createElement('div');
-            div.style.padding = '12px 15px';
-            div.style.cursor = 'pointer';
-            div.style.borderBottom = '1px solid #f3f4f6';
-            div.textContent = m.name;
-            div.onmouseover = () => div.style.background = '#f9fafb';
-            div.onmouseout = () => div.style.background = 'white';
-            div.onclick = () => {
-                searchInput.value = m.name;
-                hiddenId.value = m.id;
-                suggestionsBox.hidden = true;
-            };
-            suggestionsBox.appendChild(div);
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const q = this.value.toLowerCase().trim();
+            suggestionsBox.innerHTML = '';
+            if(q.length < 1) { suggestionsBox.hidden = true; return; }
+            const source = currentType === 'user' ? window.usersData : window.trainersData;
+            const matches = source.filter(i => i.name.toLowerCase().includes(q)).slice(0, 10);
+            
+            matches.forEach(m => {
+                const div = document.createElement('div');
+                div.style.padding = '12px 15px';
+                div.style.cursor = 'pointer';
+                div.style.borderBottom = '1px solid #f3f4f6';
+                div.textContent = m.name;
+                div.onmouseover = () => div.style.background = '#f9fafb';
+                div.onmouseout = () => div.style.background = 'white';
+                div.onclick = () => {
+                    searchInput.value = m.name;
+                    hiddenId.value = m.id;
+                    suggestionsBox.hidden = true;
+                };
+                suggestionsBox.appendChild(div);
+            });
+            suggestionsBox.hidden = matches.length === 0;
         });
-        suggestionsBox.hidden = matches.length === 0;
-    });
+    }
 
     document.getElementById('btn-generate').addEventListener('click', async () => {
         const id = hiddenId.value;
@@ -395,28 +446,30 @@
     const trainerPerfSuggestions = document.getElementById('trainer-perf-suggestions');
     const trainerPerfId = document.getElementById('trainer-perf-id');
 
-    trainerPerfSearch.addEventListener('input', function() {
-        const q = this.value.toLowerCase().trim();
-        trainerPerfSuggestions.innerHTML = '';
-        if(q.length < 1) { trainerPerfSuggestions.hidden = true; return; }
-        
-        const matches = window.trainersData.filter(i => i.name.toLowerCase().includes(q)).slice(0, 5);
-        matches.forEach(m => {
-            const div = document.createElement('div');
-            div.style.padding = '12px 15px';
-            div.style.cursor = 'pointer';
-            div.style.borderBottom = '1px solid #f3f4f6';
-            div.textContent = m.name;
-            div.onclick = () => {
-                trainerPerfSearch.value = m.name;
-                trainerPerfId.value = m.id;
-                trainerPerfSuggestions.hidden = true;
-                cargarStatsEntrenador(m.id);
-            };
-            trainerPerfSuggestions.appendChild(div);
+    if (trainerPerfSearch) {
+        trainerPerfSearch.addEventListener('input', function() {
+            const q = this.value.toLowerCase().trim();
+            trainerPerfSuggestions.innerHTML = '';
+            if(q.length < 1) { trainerPerfSuggestions.hidden = true; return; }
+            
+            const matches = window.trainersData.filter(i => i.name.toLowerCase().includes(q)).slice(0, 5);
+            matches.forEach(m => {
+                const div = document.createElement('div');
+                div.style.padding = '12px 15px';
+                div.style.cursor = 'pointer';
+                div.style.borderBottom = '1px solid #f3f4f6';
+                div.textContent = m.name;
+                div.onclick = () => {
+                    trainerPerfSearch.value = m.name;
+                    trainerPerfId.value = m.id;
+                    trainerPerfSuggestions.hidden = true;
+                    cargarStatsEntrenador(m.id);
+                };
+                trainerPerfSuggestions.appendChild(div);
+            });
+            trainerPerfSuggestions.hidden = matches.length === 0;
         });
-        trainerPerfSuggestions.hidden = matches.length === 0;
-    });
+    }
 
     async function cargarStatsEntrenador(id) {
         try {

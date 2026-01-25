@@ -11,38 +11,54 @@ class EstadisticasController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+        $isAdmin = $user->hasRole('admin');
+
         $users = User::role('cliente')->orderBy('name')->get();
         $entrenadores = User::role('entrenador')->orderBy('name')->get();
 
-        // --- ESTADÍSTICAS GLOBALES PARA EL DASHBOARD ---
+        // --- ESTADÍSTICAS PARA EL DASHBOARD ---
         
-        // 1. Ingresos y Sesiones Totales
-        $totalIngresos = Pago::sum('importe');
-        $totalSesiones = Pago::count();
+        // 1. Ingresos y Sesiones
+        $query = Pago::query();
+        if (!$isAdmin) {
+            // Si es entrenador, solo sus sesiones
+            $query->whereHas('entrenadores', function($q) use ($user) {
+                $q->where('users.id', $user->id);
+            });
+        }
+
+        $totalIngresos = $isAdmin ? $query->sum('importe') : 0; // O calcular parte proporcional si aplica, por ahora 0 o total de sus clases
+        // Nota: Para entrenadores, quizás 'ingresos' no es lo que cobran ellos sino lo generado por sus clases.
+        // Si el usuario quiere "dinero que ha generado", sumaremos el importe de sus clases.
+        $totalIngresos = $query->sum('importe');
+        $totalSesiones = $query->count();
 
         // 2. Estadísticas por Centro
-        $statsPorCentro = Pago::select('centro', \DB::raw('count(*) as total'), \DB::raw('sum(importe) as ingresos'))
+        $statsPorCentro = (clone $query)->select('centro', \DB::raw('count(*) as total'), \DB::raw('sum(importe) as ingresos'))
             ->groupBy('centro')
             ->get()
             ->keyBy('centro');
 
         // 3. Estadísticas por Método de Pago
-        $statsMetodos = Pago::select('metodo_pago', \DB::raw('count(*) as total'))
+        $statsMetodos = (clone $query)->select('metodo_pago', \DB::raw('count(*) as total'))
             ->groupBy('metodo_pago')
             ->get();
 
         // 4. Estadísticas por Tipo de Clase
-        $statsTipos = Pago::select('tipo_clase', \DB::raw('count(*) as total'))
+        $statsTipos = (clone $query)->select('tipo_clase', \DB::raw('count(*) as total'))
             ->groupBy('tipo_clase')
             ->get();
 
-        // 5. Top Entrenadores (por número de sesiones)
-        // Nota: Un pago puede tener múltiples entrenadores en la tabla intermedia pago_entrenador
-        $topEntrenadores = User::role('entrenador')
-            ->withCount('pagoEntrenador as sesiones_count')
-            ->orderBy('sesiones_count', 'desc')
-            ->take(5)
-            ->get();
+        // 5. Top Entrenadores (Solo para Admin)
+        $topEntrenadores = [];
+        if ($isAdmin) {
+            $topEntrenadores = User::role('entrenador')
+                ->withCount('pagoEntrenador as sesiones_count')
+                ->orderBy('sesiones_count', 'desc')
+                ->take(5)
+                ->get();
+        }
 
         return view('Estadisticas.index', compact(
             'users', 
