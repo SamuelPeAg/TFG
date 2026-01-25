@@ -24,7 +24,7 @@
                 </div>
                 <div style="display:flex;gap:10px;">
                     <span class="badge">
-                        Pagos: {{ $info['Pagos'] }}
+                        Sesiones: {{ $info['Pagos'] }}
                     </span>
                     <span class="badge">
                         {{ number_format($info['facturacion'], 2, ',', '.') }} €

@@ -19,7 +19,7 @@ class RestrictEntrenadorMiddleware
             $allowedPrefixes = [
                 'users',
                 'usuarios/reservas',
-                'usuarios/Pagos', // Buscar pagos (AJAX)
+                'usuarios/Estadisticas', // Buscar estadísticas (AJAX)
                 'logout',
                 'calendario', // Permitir calendario
             ];

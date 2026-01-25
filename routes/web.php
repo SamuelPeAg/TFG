@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\PagosController;
+use App\Http\Controllers\EstadisticasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,18 +79,19 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     Route::get('/facturas', [FacturacionController::class, 'index'])
         ->name('facturas');
     // 1. Ver la lista de Pagos (Solo ADMIN)
-    Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos')->middleware(\App\Http\Middleware\AdminMiddleware::class);
-    Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::post('/Estadisticas', [EstadisticasController::class, 'store'])->name('Estadisticas.store')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
 
     // Buscador
-    Route::get('/usuarios/Pagos', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::get('/usuarios/Estadisticas', [EstadisticasController::class, 'buscarPorUsuario'])->name('Estadisticas.buscar')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     
     // Gestión de Entrenadores en Sesiones
-    Route::post('/Pagos/add-trainer', [PagosController::class, 'addTrainerToSession'])->name('Pagos.addTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
-    Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])->name('Pagos.removeTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::post('/Estadisticas/add-trainer', [EstadisticasController::class, 'addTrainerToSession'])->name('Estadisticas.addTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
+    Route::post('/Estadisticas/remove-trainer', [EstadisticasController::class, 'removeTrainerFromSession'])->name('Estadisticas.removeTrainer')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     
-    // Reportes (Solo ADMIN)
-    Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte')->middleware(\App\Http\Middleware\AdminMiddleware::class);
+    // Estadisticas (Solo ADMIN)
+    Route::get('/Estadisticas', [EstadisticasController::class, 'index'])->name('Estadisticas')->middleware(\App\Http\Middleware\AdminMiddleware::class);
+    Route::get('/Estadisticas/reporte', [EstadisticasController::class, 'getReporte'])->name('Estadisticas.reporte')->middleware(\App\Http\Middleware\AdminMiddleware::class);
+    Route::get('/Estadisticas/trainer-stats/{id}', [EstadisticasController::class, 'getTrainerStats'])->name('Estadisticas.trainerStats')->middleware(\App\Http\Middleware\AdminMiddleware::class);
     
    // Ejemplo en web.php
     // Gestión de usuarios para admin o entrenador

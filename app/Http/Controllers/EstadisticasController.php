@@ -7,13 +7,53 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
-class PagosController extends Controller
+class EstadisticasController extends Controller
 {
     public function index()
     {
         $users = User::role('cliente')->orderBy('name')->get();
         $entrenadores = User::role('entrenador')->orderBy('name')->get();
-        return view('Pagos.index', compact('users', 'entrenadores'));
+
+        // --- ESTADÍSTICAS GLOBALES PARA EL DASHBOARD ---
+        
+        // 1. Ingresos y Sesiones Totales
+        $totalIngresos = Pago::sum('importe');
+        $totalSesiones = Pago::count();
+
+        // 2. Estadísticas por Centro
+        $statsPorCentro = Pago::select('centro', \DB::raw('count(*) as total'), \DB::raw('sum(importe) as ingresos'))
+            ->groupBy('centro')
+            ->get()
+            ->keyBy('centro');
+
+        // 3. Estadísticas por Método de Pago
+        $statsMetodos = Pago::select('metodo_pago', \DB::raw('count(*) as total'))
+            ->groupBy('metodo_pago')
+            ->get();
+
+        // 4. Estadísticas por Tipo de Clase
+        $statsTipos = Pago::select('tipo_clase', \DB::raw('count(*) as total'))
+            ->groupBy('tipo_clase')
+            ->get();
+
+        // 5. Top Entrenadores (por número de sesiones)
+        // Nota: Un pago puede tener múltiples entrenadores en la tabla intermedia pago_entrenador
+        $topEntrenadores = User::role('entrenador')
+            ->withCount('pagoEntrenador as sesiones_count')
+            ->orderBy('sesiones_count', 'desc')
+            ->take(5)
+            ->get();
+
+        return view('Estadisticas.index', compact(
+            'users', 
+            'entrenadores', 
+            'totalIngresos', 
+            'totalSesiones', 
+            'statsPorCentro', 
+            'statsMetodos', 
+            'statsTipos', 
+            'topEntrenadores'
+        ));
     }
 
     public function buscarPorUsuario(Request $request)
@@ -335,6 +375,26 @@ class PagosController extends Controller
                 'total' => number_format($totalImporte, 2)
             ],
             'detalles' => $detalles
+        ]);
+    }
+
+    public function getTrainerStats($id)
+    {
+        $trainer = User::findOrFail($id);
+
+        $totalSesiones = $trainer->pagoEntrenador()->count();
+        
+        $statsTipos = Pago::whereHas('entrenadores', function($q) use ($id) {
+            $q->where('users.id', $id);
+        })
+        ->select('tipo_clase', \DB::raw('count(*) as total'))
+        ->groupBy('tipo_clase')
+        ->get();
+
+        return response()->json([
+            'name' => $trainer->name,
+            'total' => $totalSesiones,
+            'tipos' => $statsTipos
         ]);
     }
 }

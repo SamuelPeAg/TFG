@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
-    <link rel="stylesheet" href="{{ asset('css/Pagos.css') }}"> 
+    <link rel="stylesheet" href="{{ asset('css/Estadisticas.css') }}"> 
 </head>
 <body>
 
@@ -39,8 +39,8 @@
                 <i class="fa-solid fa-clock"></i> HORARIOS
             </a>
             
-            <a href="{{ route('calendario.index') }}" class="menu-item {{ request()->routeIs('Pagos.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-calendar-check"></i> Pagos
+            <a href="{{ route('Estadisticas') }}" class="menu-item {{ request()->routeIs('Estadisticas.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-chart-line"></i> Estadísticas
             </a>
         </nav>
         <div class="utility-links">
@@ -56,7 +56,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="{{ asset('js/Pagos.js') }}"></script>
+<script src="{{ asset('js/Estadisticas.js') }}"></script>
 
 @stack('scripts')
 

@@ -45,4 +45,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(HorarioClase::class, 'entrenador_id');
     }
+
+    // Relación con los pagos a través de la tabla pivote (sesiones dadas)
+    public function pagoEntrenador()
+    {
+        return $this->belongsToMany(Pago::class, 'pago_entrenador', 'user_id', 'pago_id');
+    }
 }
