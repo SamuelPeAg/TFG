@@ -98,8 +98,8 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
     Route::resource('users', UserController::class)->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     Route::post('/users/crear-grupo', [UserController::class, 'storeGroup'])->name('users.group.store')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     Route::delete('/users/grupos/{id}', [UserController::class, 'destroyGroup'])->name('users.group.destroy')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
-    // Gestión de entrenadores (solo admin)
-    Route::resource('entrenadores', EntrenadorController::class)->middleware(\App\Http\Middleware\AdminMiddleware::class);
+    // Gestión de entrenadores
+    Route::resource('entrenadores', EntrenadorController::class)->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
     
    Route::get("/calendario",[CalendarioController::class,"index"])->name("calendario");
 

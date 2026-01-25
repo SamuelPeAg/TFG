@@ -21,6 +21,10 @@ class User extends Authenticatable
         'foto_de_perfil',
         'iban',
         'firma_digital',
+        'telefono',
+        'direccion',
+        'fecha_nacimiento',
+        'dni',
     ];
 
     // Campos ocultos que no queremos exponer al usuario

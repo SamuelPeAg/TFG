@@ -135,6 +135,24 @@
                                         <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">IBAN</label>
                                         <input type="text" name="iban" value="{{ old('iban', $user->iban) }}" placeholder="ES00 0000 0000 0000 0000 0000" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
                                     </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">DNI</label>
+                                            <input type="text" name="dni" value="{{ old('dni', $user->dni) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Teléfono</label>
+                                            <input type="text" name="telefono" value="{{ old('telefono', $user->telefono) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Dirección</label>
+                                        <input type="text" name="direccion" value="{{ old('direccion', $user->direccion) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Fecha de Nacimiento</label>
+                                        <input type="date" name="fecha_nacimiento" value="{{ old('fecha_nacimiento', $user->fecha_nacimiento ? \Carbon\Carbon::parse($user->fecha_nacimiento)->format('Y-m-d') : '') }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
+                                    </div>
                                 </div>
                             </div>
 

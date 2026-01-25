@@ -24,6 +24,8 @@ class EntrenadorController extends Controller
         $request->validate([
             'nombre'   => ['required', 'string', 'min:3', 'max:255'],
             'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+            'dni'      => ['nullable', 'string', 'max:20'],
+            'telefono' => ['nullable', 'string', 'max:20'],
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
@@ -37,7 +39,11 @@ class EntrenadorController extends Controller
             'name'     => $request->nombre,
             'email'    => $request->email,
             'password' => Hash::make(Str::random(24)), 
-            'activation_token' => $token 
+            'activation_token' => $token,
+            'dni'      => $request->dni,
+            'telefono' => $request->telefono,
+            'direccion' => $request->direccion,
+            'fecha_nacimiento' => $request->fecha_nacimiento,
         ]);
         // Crear un token de activación para el entrenador
         $user->assignRole('entrenador');
@@ -54,32 +60,42 @@ class EntrenadorController extends Controller
 
     public function update(Request $request, $id)
     {
-
-        $request->validate([
-        'password' => 'required|confirmed|min:8',
-        // 'iban'     => 'required|string|min:24', 
-    ], [
-        'password.required'  => 'La contraseña es obligatoria.',
-        'password.confirmed' => 'Las contraseñas no coinciden.',
-        'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
-        // 'iban.required'      => 'El campo IBAN es obligatorio.',
-        // 'iban.min'           => 'El IBAN debe tener el formato completo (24 caracteres).',
-    ]);
         $user = User::whereKey($id)->firstOrFail();
 
-        // Validar los campos
-        // Validar los campos (ya validados arriba)
-        // $request->validate([...]);
-
-        // Actualizar la información del usuario
-        $user->update([
-            'password' => Hash::make($request->password),
-            // 'iban'     => $request->iban,
-            'activation_token' => null,  // Borrar el token de activación
+        $request->validate([
+            'password' => 'nullable|confirmed|min:8',
+            'dni'      => 'nullable|string|max:20',
+            'telefono' => 'nullable|string|max:20',
         ]);
 
-        // Asignar rol de entrenador
-        $user->assignRole('entrenador');
+        $data = [
+            'dni'              => $request->dni,
+            'telefono'         => $request->telefono,
+            'direccion'        => $request->direccion,
+            'fecha_nacimiento' => $request->fecha_nacimiento,
+            'iban'             => $request->iban,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+            $data['activation_token'] = null;
+        }
+
+        $user->update($data);
+
+        // Si es admin logueado, redirigir a la lista. 
+        if (auth()->check()) {
+            // Manejar checkbox de admin
+            if (auth()->user()->hasRole('admin') && $request->has('make_admin')) {
+                if ($request->make_admin == '1') {
+                    $user->assignRole('admin');
+                } else {
+                    $user->removeRole('admin');
+                }
+            }
+            return redirect()->route('entrenadores.index')->with('success', 'Entrenador actualizado correctamente.');
+        }
+
         return redirect()->route('login')->with('success', 'Registro completado exitosamente.');
     }
 

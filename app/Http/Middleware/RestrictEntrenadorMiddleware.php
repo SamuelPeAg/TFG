@@ -21,6 +21,7 @@ class RestrictEntrenadorMiddleware
                 'usuarios/reservas',
                 'usuarios/Estadisticas', // Buscar estadísticas (AJAX)
                 'Estadisticas', // Panel de Estadísticas
+                'entrenadores', // Gestión/Lista de Entrenadores
                 'logout',
                 'calendario', // Permitir calendario
             ];

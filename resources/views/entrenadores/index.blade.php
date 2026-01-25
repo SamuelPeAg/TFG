@@ -145,13 +145,32 @@
                                             $u = \App\Models\User::where('email', $entrenador->email)->first();
                                             $isAdmin = ($u && method_exists($u,'hasRole') && $u->hasRole('admin')) ? '1' : '0';
                                         @endphp
+                                        <button type="button" class="btn-icon btn-view" title="Ver Perfil Detallado"
+                                            onclick="abrirModalPerfil(
+                                                '{{ $entrenador->id }}',
+                                                '{{ $entrenador->name }}',
+                                                '{{ $entrenador->email }}',
+                                                '{{ $entrenador->dni ?? 'No asignado' }}',
+                                                '{{ $entrenador->telefono ?? 'No asignado' }}',
+                                                '{{ $entrenador->direccion ?? 'No asignada' }}',
+                                                '{{ $entrenador->fecha_nacimiento ? \Carbon\Carbon::parse($entrenador->fecha_nacimiento)->format('d/m/Y') : 'No asignada' }}',
+                                                '{{ $entrenador->foto_de_perfil ? asset('storage/' . $entrenador->foto_de_perfil) : '' }}',
+                                                '{{ $entrenador->iban ?? 'No asignado' }}'
+                                            )">
+                                            <i class="fas fa-id-badge"></i>
+                                        </button>
+
                                         <button type="button" class="btn-icon btn-edit" 
                                             onclick="abrirModalEditar(
                                                 '{{ $entrenador->id }}', 
                                                 '{{ $entrenador->name }}', 
                                                 '{{ $entrenador->email }}', 
                                                 '{{ $entrenador->iban }}',
-                                                '{{ $isAdmin }}'
+                                                '{{ $isAdmin }}',
+                                                '{{ $entrenador->dni }}',
+                                                '{{ $entrenador->telefono }}',
+                                                '{{ $entrenador->direccion }}',
+                                                '{{ $entrenador->fecha_nacimiento }}'
                                             )">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
@@ -283,6 +302,38 @@
                 </div>
                 @endif
 
+                <div class="form-group">
+                    <label class="form-label-custom">DNI</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" name="dni" id="edit_dni" class="form-control-custom">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label-custom">Teléfono</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-phone"></i>
+                        <input type="text" name="telefono" id="edit_telefono" class="form-control-custom">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label-custom">Dirección</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <input type="text" name="direccion" id="edit_direccion" class="form-control-custom">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label-custom">Fecha de Nacimiento</label>
+                    <div class="input-group-custom">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="date" name="fecha_nacimiento" id="edit_fecha_nacimiento" class="form-control-custom">
+                    </div>
+                </div>
+
                 <button type="submit" class="btn-facto">Actualizar Datos</button>
             </form>
         </div>
@@ -300,10 +351,14 @@
         const btnCerrarEdit = document.getElementById('btnCerrarModalEditar');
         const formEdit = document.getElementById('formEditar');
 
-        function abrirModalEditar(id, nombre, email, iban, isAdmin) {
+        function abrirModalEditar(id, nombre, email, iban, isAdmin, dni, telefono, direccion, fecha_nacimiento) {
             document.getElementById('edit_nombre').value = nombre;
             document.getElementById('edit_email').value = email;
             document.getElementById('edit_iban').value = iban;
+            document.getElementById('edit_dni').value = dni || '';
+            document.getElementById('edit_telefono').value = telefono || '';
+            document.getElementById('edit_direccion').value = direccion || '';
+            document.getElementById('edit_fecha_nacimiento').value = fecha_nacimiento || '';
 
             let urlBase = "{{ route('entrenadores.update', 'temp_id') }}";
             let urlFinal = urlBase.replace('temp_id', id);
@@ -331,15 +386,136 @@
         }
 
         function cerrarModalEliminar() {
-            document.getElementById('modalEliminar').style.display = 'none';
         }
 
-        // Cerrar modal al hacer click fuera
-        document.getElementById('modalEliminar')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                cerrarModalEliminar();
+        // Funciones para Modal Perfil
+        function abrirModalPerfil(id, nombre, email, dni, telefono, direccion, fecha_nacimiento, foto, iban) {
+            document.getElementById('perfil_nombre').textContent = nombre;
+            document.getElementById('perfil_email').textContent = email;
+            document.getElementById('perfil_dni').textContent = dni || '-';
+            document.getElementById('perfil_telefono').textContent = telefono || '-';
+            document.getElementById('perfil_direccion').textContent = direccion || '-';
+            document.getElementById('perfil_fecha_nacimiento').textContent = fecha_nacimiento || '-';
+            document.getElementById('perfil_iban').textContent = iban || '-';
+
+            const visual = document.getElementById('perfil_visual');
+            if (foto && foto !== '') {
+                visual.innerHTML = `<img src="${foto}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            } else {
+                const initialText = nombre ? nombre.trim().charAt(0).toUpperCase() : '?';
+                visual.innerHTML = `<span style="font-size: 70px; font-weight: 900; color: #ffffff !important; display: block; line-height: 1; margin: 0; padding: 0;">${initialText}</span>`;
             }
+
+            document.getElementById('modalPerfil').style.display = 'flex';
+        }
+
+        function cerrarModalPerfil() {
+            document.getElementById('modalPerfil').style.display = 'none';
+        }
+
+        document.getElementById('modalPerfil')?.addEventListener('click', function(e) {
+            if (e.target === this) cerrarModalPerfil();
         });
     </script>
+
+    {{-- Modal Perfil Detallado Rediseñado --}}
+    <div id="modalPerfil" class="modal-overlay">
+        <div class="modal-card" style="max-width: 750px; padding: 0; overflow: hidden; border-radius: 30px; background: #fff; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+            <button type="button" class="close-btn" style="top: 25px; right: 25px; z-index: 50; background: rgba(0,0,0,0.05); width: 40px; height: 40px; border-radius: 50%; color: #64748b; font-size: 20px;" onclick="cerrarModalPerfil()">&times;</button>
+            
+            <div style="display: flex; flex-direction: row; min-height: 500px;">
+                <!-- COLUMNA IZQUIERDA: Identidad -->
+                <div style="width: 320px; background: linear-gradient(180deg, #4BB7AE 0%, #38C1A3 100%); padding: 50px 30px; color: #ffffff !important; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                    
+                    <div id="perfil_avatar_wrapper" style="width: 160px; height: 160px; border-radius: 50%; background: #ffffff; padding: 6px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); margin-bottom: 25px;">
+                        <div id="perfil_visual" style="width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4BB7AE, #EF5D7A);">
+                            <!-- PHOTO OR INITIAL INJECTED BY JS -->
+                        </div>
+                    </div>
+
+                    <h2 id="perfil_nombre" style="font-size: 28px; font-weight: 900; margin: 0; line-height: 1.2; text-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #ffffff !important;"></h2>
+                    <p id="perfil_email" style="font-size: 15px; color: rgba(255,255,255,1) !important; margin-top: 10px; word-break: break-all; font-weight: 650;"></p>
+                    
+                    <div style="margin-top: 30px; padding: 10px 25px; background: rgba(255,255,255,0.2); border-radius: 30px; font-size: 11px; font-weight: 850; text-transform: uppercase; letter-spacing: 1.5px; border: 1px solid rgba(255,255,255,0.4); color: #ffffff !important;">
+                        Entrenador Certificado
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: Datos -->
+                <div style="flex: 1; padding: 50px 45px; position: relative; background: #ffffff;">
+                    <h3 style="font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 35px; display: flex; align-items: center; gap: 12px;">
+                        <span style="width: 35px; height: 3px; background: #4BB7AE; border-radius: 2px;"></span>
+                        DATOS DEL PROFESIONAL
+                    </h3>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 28px;">
+                        <div style="display: flex; gap: 18px; align-items: flex-start;">
+                            <div style="width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #EF5D7A; font-size: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">DNI / Pasaporte</span>
+                                <span id="perfil_dni" style="font-size: 16px; font-weight: 700; color: #334155;"></span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 18px; align-items: flex-start;">
+                            <div style="width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #EF5D7A; font-size: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">Teléfono</span>
+                                <span id="perfil_telefono" style="font-size: 16px; font-weight: 700; color: #334155;"></span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 18px; align-items: flex-start;">
+                            <div style="width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #EF5D7A; font-size: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <span style="display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">IBAN / Cuenta</span>
+                                <span id="perfil_iban" style="font-size: 14px; font-weight: 700; color: #334155; font-family: 'JetBrains Mono', 'Courier New', monospace;"></span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 18px; align-items: flex-start;">
+                            <div style="width: 48px; height: 48px; border-radius: 14px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: #EF5D7A; font-size: 20px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <span style="display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">Dirección</span>
+                                <span id="perfil_direccion" style="font-size: 16px; font-weight: 700; color: #334155;"></span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 25px; border-top: 1px solid #f1f5f9;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <div style="color: #94a3b8; font-size: 18px;"><i class="fas fa-birthday-cake"></i></div>
+                                <div>
+                                    <span style="display: block; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Nacimiento</span>
+                                    <span id="perfil_fecha_nacimiento" style="font-size: 14px; font-weight: 700; color: #475569;"></span>
+                                </div>
+                            </div>
+                            <div style="background: #f0fdf4; padding: 8px 16px; border-radius: 10px; border: 1px solid #d1fae5;">
+                                <span style="color: #059669; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite;"></span>
+                                    ACTIVO
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <style>
+                @keyframes pulse {
+                    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+                    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+                    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+                }
+            </style>
+        </div>
+    </div>
 </body>
 </html>

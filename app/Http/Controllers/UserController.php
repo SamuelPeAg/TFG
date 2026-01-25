@@ -149,6 +149,10 @@ class UserController extends Controller
                 Rule::unique('users', 'iban')->ignore($user->id)
             ],
             'firma_digital' => ['nullable', 'string', 'max:255'],
+            'dni'           => ['nullable', 'string', 'max:20'],
+            'telefono'      => ['nullable', 'string', 'max:20'],
+            'direccion'     => ['nullable', 'string', 'max:255'],
+            'fecha_nacimiento' => ['nullable', 'date'],
 
             // Password opcional (solo si se rellena)
             'current_password' => ['nullable', 'string'],
@@ -161,6 +165,10 @@ class UserController extends Controller
             'email' => $validated['email'],
             'iban' => $validated['iban'] ?? $user->iban,
             'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
+            'dni' => $validated['dni'] ?? $user->dni,
+            'telefono' => $validated['telefono'] ?? $user->telefono,
+            'direccion' => $validated['direccion'] ?? $user->direccion,
+            'fecha_nacimiento' => $validated['fecha_nacimiento'] ?? $user->fecha_nacimiento,
         ];
 
         // Cambiar contraseña SOLO si el usuario escribe una nueva
