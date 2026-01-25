@@ -1,180 +1,226 @@
-:root {
-    --teal: #5BA8A0;
-    --teal-dark: #4A8F88;
-    --teal-light: #E0F2F1;
-}
-
-.facturacion-dashboard {
-    padding: 20px;
+/* Dashboard de Facturación - Factomove Premium */
+.facturacion-layout {
     display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: 24px;
+    grid-template-columns: 280px 1fr;
+    gap: 30px;
+    margin-top: 20px;
 }
 
-.btn-big {
-    height: 150px;
+/* Sidebar de Filtros */
+.filters-sidebar {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.filter-group {
+    margin-bottom: 25px;
+}
+
+.filter-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+}
+
+.modern-input {
+    width: 100%;
+    padding: 12px 15px;
     border-radius: 12px;
-    border: 1px solid var(--teal-light);
-    background: #fff;
-    color: #00695C;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    outline: none;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+.modern-input:focus {
+    border-color: #0e7490;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(14, 116, 144, 0.1);
+}
+
+.btn-apply {
+    width: 100%;
+    background: #111827;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    cursor: pointer;
+    gap: 10px;
 }
 
-.btn-big i {
-    font-size: 2rem;
-    margin-bottom: 8px;
-    color: var(--teal);
+.btn-apply:hover {
+    background: #1f2937;
+    transform: translateY(-2px);
 }
 
-.card {
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid #eee;
-    padding: 16px;
-}
-
-.filters {
+/* Main Content Area */
+.main-dashboard {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 30px;
 }
 
-.row {
+/* Stat Cards */
+.billing-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.billing-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     display: flex;
-    gap: 12px;
-}
-
-.col {
-    flex: 1;
-}
-
-label {
-    font-weight: 600;
-    font-size: .9rem;
-    margin-bottom: 4px;
-    display: block;
-}
-
-input,
-select {
-    width: 100%;
-    padding: .55rem .7rem;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, .2);
-}
-
-button.apply {
-    background: var(--teal);
-    color: #fff;
-    border: 0;
-    border-radius: 10px;
-    padding: .6rem;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.summary-card {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: #f7f7f7;
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 12px;
+    gap: 15px;
 }
 
-.badge {
-    background: var(--teal-light);
-    color: #00695C;
-    padding: 4px 12px;
-    border-radius: 999px;
+.billing-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.icon-cyan {
+    background: #ecfeff;
+    color: #0891b2;
+}
+
+.icon-rose {
+    background: #fff1f2;
+    color: #e11d48;
+}
+
+.icon-emerald {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.icon-amber {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.billing-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.billing-label {
+    font-size: 11px;
     font-weight: 700;
-    font-size: .85rem;
+    color: #6b7280;
+    text-transform: uppercase;
 }
 
-/* ================================
-   RESPONSIVE DESIGN
-================================ */
-
-/* TABLET (< 1024px) */
-@media (max-width: 1023px) {
-    .facturacion-dashboard {
-        grid-template-columns: 180px 1fr;
-        gap: 20px;
-    }
-
-    .btn-big {
-        height: 130px;
-    }
-
-    .btn-big i {
-        font-size: 1.7rem;
-    }
+.billing-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
 }
 
-/* MÓVIL (< 768px) */
-@media (max-width: 767px) {
-    .facturacion-dashboard {
+/* Tables Area */
+.tables-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.table-section {
+    background: white;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-table th {
+    text-align: left;
+    padding: 12px 15px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #9ca3af;
+    font-weight: 800;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.modern-table td {
+    padding: 15px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #374151;
+    font-size: 14px;
+}
+
+.modern-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Misc */
+.avatar-mini {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4BB7AE, #EF5D7A);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+@media (max-width: 1200px) {
+    .billing-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .tables-grid {
         grid-template-columns: 1fr;
-        padding: 15px;
-        gap: 16px;
-    }
-
-    .btn-big {
-        height: 100px;
-    }
-
-    .btn-big i {
-        font-size: 1.5rem;
-    }
-
-    .row {
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    .filters {
-        gap: 12px;
-    }
-
-    input,
-    select {
-        padding: 0.5rem 0.6rem;
-        font-size: 0.9rem;
-    }
-
-    button.apply {
-        padding: 0.55rem;
-        font-size: 0.9rem;
-    }
-
-    .summary-card {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
     }
 }
 
-/* MÓVIL PEQUEÑO (< 480px) */
-@media (max-width: 479px) {
-    .facturacion-dashboard {
-        padding: 10px;
+@media (max-width: 992px) {
+    .facturacion-layout {
+        grid-template-columns: 1fr;
     }
 
-    .card {
-        padding: 12px;
-    }
-
-    .btn-big {
-        height: 90px;
-    }
-
-    label {
-        font-size: 0.85rem;
+    .filters-sidebar {
+        position: static;
     }
 }

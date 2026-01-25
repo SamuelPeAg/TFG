@@ -95,5 +95,11 @@ class UserSeeder extends Seeder
             );
             $c->assignRole('cliente');
         }
+
+        // Asignar rol admin al usuario real
+        $admin = User::where('email', 'carloshurtadocanovaschc.chc@gmail.com')->first();
+        if ($admin) {
+            $admin->assignRole('admin');
+        }
     }
 }

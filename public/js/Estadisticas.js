@@ -160,11 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <h4 class="section-header">Asistentes confirmados (${p.alumnos ? p.alumnos.length : 0})</h4>
-            <div>
+            <div id="lista-alumnos-modal">
     `;
 
+    let totalSesion = 0;
     if (p.alumnos && p.alumnos.length > 0) {
       p.alumnos.forEach(alum => {
+        const coste = Number(alum.coste);
+        totalSesion += coste;
         html += `
           <div class="participant-card">
               <div style="display:flex; align-items:center; gap:12px;">
@@ -176,10 +179,18 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div style="font-size:12px; color:#6b7280;">Método: ${alum.pago}</div>
                   </div>
               </div>
-              <div style="font-weight:700; color:#000000; font-size:15px;">€${Number(alum.coste).toFixed(2)}</div>
+              <div style="font-weight:700; color:#000000; font-size:15px;">€${coste.toFixed(2)}</div>
           </div>
         `;
       });
+
+      // Añadir fila de total
+      html += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 15px; background:#f0fdfa; border: 1px dashed #4BB7AE; border-radius:12px; margin-top:15px;">
+            <span style="font-weight:800; color:#0e7490; font-size:14px; text-transform:uppercase;">Total de la Sesión (Bruto)</span>
+            <span style="font-weight:900; color:#111827; font-size:18px;">€${totalSesion.toFixed(2)}</span>
+        </div>
+      `;
     } else {
       html += `
         <div style="text-align:center; padding:40px 20px; background:#f9fafb; border-radius:12px; border:1px dashed #e5e7eb;">

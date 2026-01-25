@@ -33,6 +33,11 @@ class Pago extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function entrenador()
+    {
+        return $this->belongsTo(User::class, 'entrenador_id');
+    }
+
     public function entrenadores()
     {
         return $this->belongsToMany(User::class, 'pago_entrenador', 'pago_id', 'user_id');

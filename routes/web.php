@@ -78,6 +78,8 @@ Route::middleware(['auth', \App\Http\Middleware\RestrictEntrenadorMiddleware::cl
 
     Route::get('/facturas', [FacturacionController::class, 'index'])
         ->name('facturas');
+    Route::get('/facturas/descargar', [FacturacionController::class, 'descargarFactura'])
+        ->name('facturas.invoice');
     // 1. Ver la lista de Pagos (Solo ADMIN)
     Route::post('/Estadisticas', [EstadisticasController::class, 'store'])->name('Estadisticas.store')->middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class);
 
