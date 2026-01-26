@@ -6,7 +6,6 @@
 
 .facturacion-dashboard {
     padding: 20px;
-    display: grid;
     grid-template-columns: 220px 1fr;
     gap: 24px;
 }
