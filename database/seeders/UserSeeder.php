@@ -82,7 +82,7 @@ class UserSeeder extends Seeder
         $client->assignRole('cliente');
 
         // Crear 5 clientes numerados
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 8; $i++) {
             $c = User::firstOrCreate(
                 ['email' => "cliente{$i}@example.com"],
                 [

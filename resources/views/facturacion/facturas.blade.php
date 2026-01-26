@@ -77,15 +77,10 @@
 
         <div class="facturacion-dashboard">
 
-            {{-- Acción: Se queda EXACTAMENTE como estaba antes (btn-big) --}}
+            {{-- el pilar --}}
             <div>
-                <button class="btn-big" type="button">
-                    <i class="fa-solid fa-file-invoice"></i>
-                    Generar reporte global
-                </button>
             </div>
 
-            {{-- Contenido --}}
             <div>
 
                 {{-- Filtros: solo Entrenador y Cliente --}}
