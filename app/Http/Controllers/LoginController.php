@@ -39,13 +39,12 @@ class LoginController extends Controller
         $user = Auth::user();
         
         if ($user->hasRole('admin')) {
-            return redirect()->intended('/users');
+            return redirect('/calendario');
         } elseif ($user->hasRole('entrenador')) {
-            // Los entrenadores suelen empezar en el calendario
-            return redirect()->intended('/calendario');
+            return redirect('/calendario');
         }
 
-        return redirect()->intended('/users');
+        return redirect('/calendario');
     }
 
     // Si falla la autenticación

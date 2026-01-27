@@ -226,6 +226,16 @@ document.addEventListener('DOMContentLoaded', () => {
           : ''
       }
             </div>
+
+            ${(window.IS_ADMIN) ?
+        `<div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #f3f4f6;">
+                <button type="button" id="btn-delete-full-session" 
+                    style="width:100%; padding:12px; background:#fee2e2; color:#ef4444; border:1px solid #fecaca; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition: all 0.2s;">
+                    <i class="fa-solid fa-trash"></i> ELIMINAR SESIÓN
+                </button>
+                <p style="font-size:10px; color:#9ca3af; margin-top:8px; text-align:center;">Esta acción eliminará todos los pagos asociados.</p>
+             </div>` : ''
+      }
         </div>
       </div>`;
 
@@ -233,6 +243,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Renderizar entrenadores actuales
     renderEntrenadoresSesion(p.entrenadores || [], p.session_key);
+
+    // Event Listener ELIMINAR SESIÓN COMPLETA (ADMIN)
+    const btnDeleteFull = document.getElementById('btn-delete-full-session');
+    if (btnDeleteFull) {
+      btnDeleteFull.addEventListener('click', () => {
+        eliminarSesionCompleta(p.session_key);
+      });
+    }
 
     // Event Listener para añadir entrenador
     const btnAdd = document.getElementById('btn-add-trainer-action');
@@ -376,6 +394,34 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) { console.error(e); }
   }
 
+  async function eliminarSesionCompleta(sessionKey) {
+    try {
+      const formData = new FormData();
+      formData.append('fecha_hora', sessionKey.fecha_hora);
+      formData.append('nombre_clase', sessionKey.nombre_clase);
+      formData.append('centro', sessionKey.centro);
+
+      const res = await fetch('/Pagos/delete-session', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // 1. Recargar calendario
+        const currentSearch = document.getElementById('search-user')?.value || '';
+        fetchAndRenderCalendar(currentSearch);
+
+        // 2. Cerrar el modal
+        closeModal(modalInfo);
+      } else {
+        alert(data.error || 'Error al eliminar la sesión');
+      }
+    } catch (e) { console.error(e); }
+  }
+
   // ====== 4. FETCH DATOS ======
   async function fetchAndRenderCalendar(q) {
     try {
@@ -388,100 +434,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ====== 5. GUARDAR FORMULARIO (AJAX) ======
   if (formNuevaClase) {
-  formNuevaClase.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    formNuevaClase.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    // Limpieza visual
-    document.querySelectorAll('.error-message').forEach(el => el.remove());
-    document.querySelectorAll('.modern-input').forEach(el => el.style.borderColor = '');
+      // Limpieza visual
+      document.querySelectorAll('.error-message').forEach(el => el.remove());
+      document.querySelectorAll('.modern-input').forEach(el => el.style.borderColor = '');
 
-    const formData = new FormData(formNuevaClase);
-    const payload = Object.fromEntries(formData);
+      const formData = new FormData(formNuevaClase);
+      const payload = Object.fromEntries(formData);
 
-    // Arrays reales
-    payload.users = formData.getAll('users[]').filter(v => v && v.trim() !== '');
-    payload.trainers = formData.getAll('trainers[]').filter(v => v && v.trim() !== '');
+      // Arrays reales
+      payload.users = formData.getAll('users[]').filter(v => v && v.trim() !== '');
+      payload.trainers = formData.getAll('trainers[]').filter(v => v && v.trim() !== '');
 
-    try {
-      const res = await fetch(formNuevaClase.action, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken,
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      // 👉 DEBUG CLAVE
-      console.log('STATUS:', res.status);
-      console.log('CONTENT-TYPE:', res.headers.get('content-type'));
-
-      const text = await res.text();
-      console.log('RESPONSE RAW:', text.slice(0, 300));
-
-      // ⛔ Control de permisos ANTES de JSON
-      if (res.status === 401) {
-        alert('Sesión caducada. Vuelve a iniciar sesión.');
-        return;
-      }
-
-      if (res.status === 403) {
-        alert('No tienes permisos para realizar esta acción.');
-        return;
-      }
-
-      if (res.status === 419) {
-        alert('Error CSRF. Recarga la página.');
-        return;
-      }
-
-      // Intentar parsear JSON solo si es JSON
-      let json = null;
-      if (text.trim().startsWith('{')) {
-        json = JSON.parse(text);
-      }
-
-      // Errores de validación Laravel
-      if (res.status === 422 && json?.errors) {
-        Object.keys(json.errors).forEach(key => {
-          if (key.startsWith('users.')) {
-            const index = key.split('.')[1];
-            const group = document.getElementById(`user-group-${index}`);
-            if (group) mostrarError(group, json.errors[key][0]);
-          } else {
-            alert(json.errors[key][0]);
-          }
+      try {
+        const res = await fetch(formNuevaClase.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify(payload)
         });
-        return;
-      }
 
-      if (!res.ok) {
-        alert('Error inesperado del servidor.');
-        return;
-      }
+        // 👉 DEBUG CLAVE
+        console.log('STATUS:', res.status);
+        console.log('CONTENT-TYPE:', res.headers.get('content-type'));
 
-      if (json?.success) {
-        const currentSearch = document.getElementById('search-user')?.value || '';
-        fetchAndRenderCalendar(currentSearch);
+        const text = await res.text();
+        console.log('RESPONSE RAW:', text.slice(0, 300));
 
-        closeModal(modalNueva);
-        formNuevaClase.reset();
+        // ⛔ Control de permisos ANTES de JSON
+        if (res.status === 401) {
+          alert('Sesión caducada. Vuelve a iniciar sesión.');
+          return;
+        }
 
-        summaryEl.innerHTML = `
+        if (res.status === 403) {
+          alert('No tienes permisos para realizar esta acción.');
+          return;
+        }
+
+        if (res.status === 419) {
+          alert('Error CSRF. Recarga la página.');
+          return;
+        }
+
+        // Intentar parsear JSON solo si es JSON
+        let json = null;
+        if (text.trim().startsWith('{')) {
+          json = JSON.parse(text);
+        }
+
+        // Errores de validación Laravel
+        if (res.status === 422 && json?.errors) {
+          Object.keys(json.errors).forEach(key => {
+            if (key.startsWith('users.')) {
+              const index = key.split('.')[1];
+              const group = document.getElementById(`user-group-${index}`);
+              if (group) mostrarError(group, json.errors[key][0]);
+            } else {
+              alert(json.errors[key][0]);
+            }
+          });
+          return;
+        }
+
+        if (!res.ok) {
+          alert('Error inesperado del servidor.');
+          return;
+        }
+
+        if (json?.success) {
+          const currentSearch = document.getElementById('search-user')?.value || '';
+          fetchAndRenderCalendar(currentSearch);
+
+          closeModal(modalNueva);
+          formNuevaClase.reset();
+
+          summaryEl.innerHTML = `
           <p style="color:#00897b">
             <strong>¡Guardado!</strong> Clase añadida correctamente.
           </p>
         `;
-      }
+        }
 
-    } catch (error) {
-      console.error('CATCH ERROR:', error);
-      alert('Error inesperado al guardar la clase.');
-    }
-  });
-}
+      } catch (error) {
+        console.error('CATCH ERROR:', error);
+        alert('Error inesperado al guardar la clase.');
+      }
+    });
+  }
 
 
   function mostrarError(container, msg) {

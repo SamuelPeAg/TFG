@@ -105,7 +105,7 @@
                         @else
                             <div class="flex items-center gap-3">
                                 
-                                <a href="{{ auth()->user()->hasRole('admin') ? route('Pagos') : route('calendario') }}" class="flex items-center gap-3 group hover:opacity-80 transition-opacity duration-200">
+                                <a href="{{ route('calendario') }}" class="flex items-center gap-3 group hover:opacity-80 transition-opacity duration-200">
                                     
                                     <div class="hidden md:flex flex-col items-end leading-tight">
                                         <span class="font-bold text-gray-700 dark:text-gray-200 text-sm group-hover:text-brandTeal transition-colors">
@@ -162,7 +162,7 @@
                             </a>
                         @else
                             <div class="space-y-3">
-                                <a href="{{ auth()->user()->hasRole('admin') ? route('Pagos') : route('calendario') }}" class="flex items-center gap-3 py-2">
+                                <a href="{{ route('calendario') }}" class="flex items-center gap-3 py-2">
                                     <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg">
                                         {{ substr(auth()->user()->name, 0, 1) }}
                                     </div>

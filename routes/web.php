@@ -147,6 +147,9 @@ Route::middleware('auth')->group(function () {
         // Reporte pagos (solo admin)
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
 
+        // Eliminar sesión completa (solo admin)
+        Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
+
         // Gestión entrenadores (solo admin)
         Route::resource('entrenadores', EntrenadorController::class);
     });

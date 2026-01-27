@@ -291,8 +291,8 @@ class PagosController extends Controller
             'end' => 'required|date|after_or_equal:start',
         ]);
 
-        $start = Carbon::parse($request->start)->startOfDay();
-        $end = Carbon::parse($request->end)->endOfDay();
+        $start = \Carbon\Carbon::parse($request->start)->startOfDay();
+        $end = \Carbon\Carbon::parse($request->end)->endOfDay();
         $type = $request->type;
         $id = $request->id;
 
@@ -335,6 +335,36 @@ class PagosController extends Controller
                 'total' => number_format($totalImporte, 2)
             ],
             'detalles' => $detalles
+        ]);
+    }
+
+    public function deleteSession(Request $request)
+    {
+        $request->validate([
+            'fecha_hora' => 'required|date',
+            'nombre_clase' => 'required|string',
+            'centro' => 'required|string'
+        ]);
+
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+        }
+
+        $fecha = \Carbon\Carbon::parse($request->fecha_hora);
+
+        // Borrar todos los pagos que coinciden con la sesión
+        $deletedCount = Pago::where('fecha_registro', $fecha)
+                            ->where('nombre_clase', $request->nombre_clase)
+                            ->where('centro', $request->centro)
+                            ->delete();
+
+        if ($deletedCount === 0) {
+            return response()->json(['error' => 'No se encontraron registros para eliminar'], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Se han eliminado {$deletedCount} registros correctamente."
         ]);
     }
 }
