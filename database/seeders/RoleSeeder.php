@@ -27,6 +27,14 @@ class RoleSeeder extends Seeder
                 'password' => Hash::make('admin12345'),
             ]
         );
+        $adminjavi = User::firstOrCreate(
+            ['email' => 'javier.ruiz@doc.medac.es'],
+            [
+                'name' => 'admin',
+                'password' => Hash::make('password'),
+            ]
+        );
+        
         $entrenador = User::firstOrCreate(
             ['email' => 'entrenador@factomove'],
             [
@@ -37,6 +45,7 @@ class RoleSeeder extends Seeder
 
         $entrenador->syncRoles(["entrenador"]);
         $admin->syncRoles(['admin']);
+        $adminjavi->syncRoles(['admin']);
         // (Opcional) Crear permisos y asignarlos a roles si los necesitas
         // Permission::firstOrCreate(['name' => 'manage users']);
         // $role = Role::findByName('admin');
