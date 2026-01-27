@@ -388,70 +388,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ====== 5. GUARDAR FORMULARIO (AJAX) ======
   if (formNuevaClase) {
-    formNuevaClase.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  formNuevaClase.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      // Limpiar errores previos
-      document.querySelectorAll('.error-message').forEach(el => el.remove());
-      document.querySelectorAll('.modern-input').forEach(el => el.style.borderColor = '');
+    // Limpieza visual
+    document.querySelectorAll('.error-message').forEach(el => el.remove());
+    document.querySelectorAll('.modern-input').forEach(el => el.style.borderColor = '');
 
-      const formData = new FormData(formNuevaClase);
-      const payload = Object.fromEntries(formData);
+    const formData = new FormData(formNuevaClase);
+    const payload = Object.fromEntries(formData);
 
-      // Enviar array de usuarios tal cual (incluyendo vacíos) para que falle la validación en el servidor si es necesario
-      payload.users = formData.getAll('users[]');
-      if (payload['users[]']) delete payload['users[]'];
+    // Arrays reales
+    payload.users = formData.getAll('users[]').filter(v => v && v.trim() !== '');
+    payload.trainers = formData.getAll('trainers[]').filter(v => v && v.trim() !== '');
 
-      // Enviar array de entrenadores
-      payload.trainers = formData.getAll('trainers[]');
-      if (payload['trainers[]']) delete payload['trainers[]'];
+    try {
+      const res = await fetch(formNuevaClase.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(payload)
+      });
 
-      try {
-        const res = await fetch(formNuevaClase.action, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+      // 👉 DEBUG CLAVE
+      console.log('STATUS:', res.status);
+      console.log('CONTENT-TYPE:', res.headers.get('content-type'));
 
-        const json = await res.json();
+      const text = await res.text();
+      console.log('RESPONSE RAW:', text.slice(0, 300));
 
-        if (res.status === 422) {
-          // Manejar errores de validación
-          if (json.errors) {
-            Object.keys(json.errors).forEach(key => {
-              // Si el error es de users.X (ej: users.0)
-              if (key.startsWith('users.')) {
-                const index = key.split('.')[1];
-                const group = document.getElementById(`user-group-${index}`);
-                if (group) {
-                  mostrarError(group, json.errors[key][0]);
-                }
-              } else {
-                // Otros errores genéricos
-                alert(json.errors[key][0]);
-              }
-            });
-          }
-          return;
-        }
-
-        if (!res.ok) throw new Error('Error al guardar');
-
-        if (json.success) {
-          // Recargar el calendario para que se muestren los eventos agrupados correctamente
-          const currentSearch = document.getElementById('search-user')?.value || '';
-          fetchAndRenderCalendar(currentSearch);
-
-          closeModal(modalNueva);
-          formNuevaClase.reset();
-          summaryEl.innerHTML = `<p style="color:#00897b"><strong>¡Guardado!</strong> Clase añadida.</p>`;
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Error inesperado al guardar la clase.");
+      // ⛔ Control de permisos ANTES de JSON
+      if (res.status === 401) {
+        alert('Sesión caducada. Vuelve a iniciar sesión.');
+        return;
       }
-    });
-  }
+
+      if (res.status === 403) {
+        alert('No tienes permisos para realizar esta acción.');
+        return;
+      }
+
+      if (res.status === 419) {
+        alert('Error CSRF. Recarga la página.');
+        return;
+      }
+
+      // Intentar parsear JSON solo si es JSON
+      let json = null;
+      if (text.trim().startsWith('{')) {
+        json = JSON.parse(text);
+      }
+
+      // Errores de validación Laravel
+      if (res.status === 422 && json?.errors) {
+        Object.keys(json.errors).forEach(key => {
+          if (key.startsWith('users.')) {
+            const index = key.split('.')[1];
+            const group = document.getElementById(`user-group-${index}`);
+            if (group) mostrarError(group, json.errors[key][0]);
+          } else {
+            alert(json.errors[key][0]);
+          }
+        });
+        return;
+      }
+
+      if (!res.ok) {
+        alert('Error inesperado del servidor.');
+        return;
+      }
+
+      if (json?.success) {
+        const currentSearch = document.getElementById('search-user')?.value || '';
+        fetchAndRenderCalendar(currentSearch);
+
+        closeModal(modalNueva);
+        formNuevaClase.reset();
+
+        summaryEl.innerHTML = `
+          <p style="color:#00897b">
+            <strong>¡Guardado!</strong> Clase añadida correctamente.
+          </p>
+        `;
+      }
+
+    } catch (error) {
+      console.error('CATCH ERROR:', error);
+      alert('Error inesperado al guardar la clase.');
+    }
+  });
+}
+
 
   function mostrarError(container, msg) {
     const input = container.querySelector('.modern-input');

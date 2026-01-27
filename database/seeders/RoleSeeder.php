@@ -27,7 +27,15 @@ class RoleSeeder extends Seeder
                 'password' => Hash::make('admin12345'),
             ]
         );
+        $entrenador = User::firstOrCreate(
+            ['email' => 'entrenador@factomove'],
+            [
+                'name' => 'entrenador',
+                'password' => Hash::make('entrenador'),
+            ]
+        );
 
+        $entrenador->syncRoles(["entrenador"]);
         $admin->syncRoles(['admin']);
         // (Opcional) Crear permisos y asignarlos a roles si los necesitas
         // Permission::firstOrCreate(['name' => 'manage users']);
