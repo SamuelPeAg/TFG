@@ -104,11 +104,9 @@ class EntrenadorController extends Controller
             return redirect()->route('login')->with('error', 'Token de activación inválido.');
         }
 
-        // Cargar los entrenadores
-        $entrenadores = User::role('entrenador')->get();
 
         // Si se encuentra el usuario, renderizamos la vista de activación
-        return view('entrenadores.index', compact('user', 'token', 'entrenadores'));
+        return view('entrenadores.activar', compact('user', 'token'));
     }
 
 
