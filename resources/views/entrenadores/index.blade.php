@@ -273,16 +273,6 @@
                     </div>
                 </div>
 
-                @if(auth()->check() && auth()->user()->hasRole('admin'))
-                <div class="form-group" style="margin-top:10px;">
-                    <label class="form-label-custom">Dar rol de admin</label>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" name="make_admin" id="edit_make_admin" value="1">
-                        <small>Marcar para dar/quitar rol <strong>admin</strong></small>
-                    </div>
-                </div>
-                @endif
-
                 <button type="submit" class="btn-facto">Actualizar Datos</button>
             </form>
         </div>

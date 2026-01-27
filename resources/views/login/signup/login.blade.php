@@ -3,7 +3,7 @@
 @section('content')
 
     {{-- Contenedor principal con menos padding superior --}}
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-brandTeal/10 to-brandCoral/10 pt-20">
+    <div class="bg-gradient-to-br from-gray-50 via-brandTeal/10 to-brandCoral/10 pt-20">
 
         <div class="flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
             
@@ -122,8 +122,7 @@
             </div>
         </div>
         
-        <x-footers.footer_welcome />
-
     </div>
+    <x-footers.footer_welcome />
 
 @endsection
