@@ -18,11 +18,22 @@ class FacturacionController extends Controller
         $centro = $request->query('centro', 'todos');
         $entrenadorId = $request->query('entrenador_id', '');
         $clienteId = $request->query('cliente_id', '');
+        $anio = $request->query('anio', date('Y'));
+        $mes = $request->query('mes', '');
+
+        // Si se especifica mes y año, calcular desde y hasta
+        if ($mes && $anio) {
+            $desde = $anio . '-' . $mes . '-01';
+            $hasta = date('Y-m-t', strtotime($desde)); // Último día del mes
+        } elseif ($anio && !$mes) {
+            $desde = $anio . '-01-01';
+            $hasta = $anio . '-12-31';
+        }
 
         $q = Pago::query()
             ->with(['entrenador:id,name'])
-            ->when($desde, fn($qq) => $qq->whereDate('Fecharegistro', '>=', $desde))
-            ->when($hasta, fn($qq) => $qq->whereDate('Fecharegistro', '<=', $hasta))
+            ->when($desde, fn($qq) => $qq->whereDate('fecha_registro', '>=', $desde))
+            ->when($hasta, fn($qq) => $qq->whereDate('fecha_registro', '<=', $hasta))
             ->when($centro !== 'todos', fn($qq) => $qq->where('centro', $centro))
             ->when($entrenadorId, fn($qq) => $qq->where('entrenador_id', $entrenadorId));
 
@@ -125,6 +136,12 @@ class FacturacionController extends Controller
 
         // 1) Preferimos contar desde la tabla `pagos` para evitar dobles: por cada pago, contamos cada entrenador una vez
         $pagosQuery = Pago::with('entrenadores')->select('id', 'user_id', 'entrenador_id', 'fecha_registro', 'centro');
+        if ($desde) {
+            $pagosQuery->whereDate('fecha_registro', '>=', $desde);
+        }
+        if ($hasta) {
+            $pagosQuery->whereDate('fecha_registro', '<=', $hasta);
+        }
         if ($clienteId) {
             $pagosQuery->where('user_id', $clienteId);
         }
@@ -179,6 +196,21 @@ class FacturacionController extends Controller
             ];
         }
 
+        // Filtrar clientes que no tienen clases en el período
+        $clientesConDatos = array_keys($matrix);
+        $clientes = $clientes->whereIn('id', $clientesConDatos)->values();
+
+        // Filtrar entrenadores que no tienen clases en el período
+        $entrenadoresIds = [];
+        foreach ($matrix as $clienteData) {
+            $entrenadoresIds = array_merge($entrenadoresIds, array_keys($clienteData));
+        }
+        $entrenadoresIds = array_unique($entrenadoresIds);
+        $entrenadores = $entrenadores->whereIn('id', $entrenadoresIds)->values();
+
+        // Filtrar clienteTotals para que coincida con los clientes filtrados
+        $clienteTotals = array_filter($clienteTotals, fn($key) => in_array($key, $clientesConDatos), ARRAY_FILTER_USE_KEY);
+
         return view('facturacion.facturas', [
             'centros' => $centros,
             'entrenadores' => $entrenadores,
@@ -191,6 +223,8 @@ class FacturacionController extends Controller
             'centro' => $centro,
             'entrenadorId' => $entrenadorId,
             'clienteId' => $clienteId,
+            'anio' => $anio,
+            'mes' => $mes,
         ]);
     }
 

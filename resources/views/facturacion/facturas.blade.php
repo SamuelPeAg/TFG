@@ -52,6 +52,46 @@
                         </div>
 
                         <div class="input-group">
+                            <label>Año</label>
+                            <select name="anio" class="modern-input">
+                                @php
+                                    $currentYear = date('Y');
+                                    $selectedAnio = $anio ?? $currentYear;
+                                @endphp
+                                @for($year = $currentYear - 5; $year <= $currentYear + 1; $year++)
+                                    <option value="{{ $year }}" @selected($selectedAnio == $year)>{{ $year }}</option>
+                                @endfor
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Mes</label>
+                            <select name="mes" class="modern-input">
+                                @php
+                                    $selectedMes = $mes ?? '';
+                                    $meses = [
+                                        '01' => 'Enero',
+                                        '02' => 'Febrero',
+                                        '03' => 'Marzo',
+                                        '04' => 'Abril',
+                                        '05' => 'Mayo',
+                                        '06' => 'Junio',
+                                        '07' => 'Julio',
+                                        '08' => 'Agosto',
+                                        '09' => 'Septiembre',
+                                        '10' => 'Octubre',
+                                        '11' => 'Noviembre',
+                                        '12' => 'Diciembre'
+                                    ];
+                                @endphp
+                                <option value="">Todos</option>
+                                @foreach($meses as $num => $nombre)
+                                    <option value="{{ $num }}" @selected($selectedMes == $num)>{{ $nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="input-group">
                             <label>Entrenador</label>
                             <select name="entrenador_id" class="modern-input">
                                 <option value="">Todos</option>
