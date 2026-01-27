@@ -121,7 +121,6 @@
 
             </div>
         </div>
-        
     </div>
     <x-footers.footer_welcome />
 

@@ -22,8 +22,8 @@ class EntrenadorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre'   => ['required', 'string', 'min:3', 'max:255'],
-            'email'    => ['required', 'email', 'max:255', 'unique:users,email'],
+            'nombre'   => ['required', 'string', 'min:3', 'max:50'],
+            'email'    => ['required', 'email', 'max:191', 'unique:users,email'],
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
