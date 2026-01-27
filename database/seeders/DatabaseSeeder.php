@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -18,7 +19,8 @@ class DatabaseSeeder extends Seeder
             // 0. Roles y permisos (primero)
             RoleSeeder::class,
             // 1. Cuentas y perfiles
-            UserSeeder::class,      // Crea las cuentas de login
+            
+   // Crea las cuentas de login
 
             // 2. Datos base
             CentroSeeder::class,
@@ -32,5 +34,7 @@ class DatabaseSeeder extends Seeder
             // 5. Reservas (al final)
             ReservaSeeder::class,       // Usuarios apuntándose a clases
         ]);
+        User::factory()->count(2)->entrenador()->create();
+        User::factory()->count(20)->cliente()->create();
     }
 }
