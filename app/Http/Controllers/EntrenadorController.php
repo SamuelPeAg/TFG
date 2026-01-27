@@ -90,7 +90,7 @@ class EntrenadorController extends Controller
 
         $user->delete();
 
-        return redirect()->route('entrenadores.index')->with('success', 'Entrenador eliminado correctamente.');
+        return redirect()->route('entrenadores.index');
     }
 
     public function activarEntrenador($token)
@@ -105,7 +105,7 @@ class EntrenadorController extends Controller
         }
 
         // Si se encuentra el usuario, renderizamos la vista de activación
-        return view('entrenadores.activar', compact('user', 'token'));
+        return view('entrenadores.index', compact('user', 'token'));
     }
 
     public function completeActivation(Request $request, $id)
