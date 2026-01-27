@@ -41,7 +41,7 @@ class FacturacionController extends Controller
             }
 
             $resumen[$nombre]['Pagos'] += 1;
-            $resumen[$nombre]['facturacion'] += (float) ($s->Pago ?? 0);
+            $resumen[$nombre]['facturacion'] += (float) ($s->importe ?? 0);
         }
 
         foreach ($resumen as $k => $v) {
@@ -164,6 +164,20 @@ class FacturacionController extends Controller
             }
         }
 
+        // Calcular totales por cliente
+        $clienteTotals = [];
+        foreach ($clientes as $c) {
+            $totalClases = 0;
+            if (isset($matrix[$c->id])) {
+                $totalClases = array_sum($matrix[$c->id]);
+            }
+            // Total coste: sumar importes de pagos del cliente
+            $totalCoste = $Pagos->where('user_id', $c->id)->sum('importe');
+            $clienteTotals[$c->id] = [
+                'total_clases' => $totalClases,
+                'total_coste' => round($totalCoste, 2)
+            ];
+        }
 
         return view('facturacion.facturas', [
             'centros' => $centros,
@@ -171,6 +185,7 @@ class FacturacionController extends Controller
             'clientes' => $clientes,
             'matrix' => $matrix,
             'resumen' => $resumen,
+            'clienteTotals' => $clienteTotals,
             'desde' => $desde,
             'hasta' => $hasta,
             'centro' => $centro,

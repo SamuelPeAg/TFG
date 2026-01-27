@@ -19,7 +19,6 @@ class DatabaseSeeder extends Seeder
             // 0. Roles y permisos (primero)
             RoleSeeder::class,
             // 1. Cuentas y perfiles
-            
    // Crea las cuentas de login
 
             // 2. Datos base
