@@ -129,7 +129,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Email</label>
-                                        <input type="email" name="email" value="{{ old('email', $user->email) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
+                                        <input type="email" name="email" value="{{ old('email', $user->email) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none" readonly>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">IBAN</label>
@@ -160,11 +160,11 @@
                             </div>
 
                             {{-- SECCIÓN PREFERENCIAS --}}
-                            <div id="preferencias" class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
-                                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Preferencias</h3>
+                            {{-- <div id="preferencias" class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Preferencias</h3> --}}
                                 
                                 {{-- Switch Modo Oscuro --}}
-                                <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
+                                {{-- <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
                                     <div class="flex items-center gap-3">
                                         <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-brandCoral dark:text-brandAqua">
                                             <i id="theme-icon" class="fa-solid fa-moon"></i>
@@ -177,7 +177,7 @@
                                         <span id="theme-toggle-circle" class="translate-x-1 inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 dark:translate-x-6"></span>
                                     </button>
                                 </div>
-                            </div>
+                            </div> --}}
 
                             {{-- BOTONES DE ACCIÓN --}}
                             <div class="flex justify-end gap-4 pt-4">

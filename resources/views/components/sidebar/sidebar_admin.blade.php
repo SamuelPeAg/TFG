@@ -41,11 +41,12 @@
             <span>USUARIOS</span>
         </a>
 
-        <a href="{{ route('Pagos') }}" 
+        {{-- <a href="{{ route('Pagos') }}" 
            class="menu-item {{ request()->routeIs('Pagos') || request()->routeIs('Pagos.*') ? 'active' : '' }}">
             <i class="fa-solid fa-calendar-check"></i>
             <span>PAGOS</span>
-        </a>
+        </a> --}}
+        
         <a href="{{ route('calendario') }}" 
            class="menu-item {{ request()->routeIs('calendario') || request()->routeIs('calendario.*') ? 'active' : '' }}">
             <i class="fa-solid fa-calendar-check"></i>
