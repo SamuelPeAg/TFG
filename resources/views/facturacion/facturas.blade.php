@@ -44,7 +44,7 @@
                         <div class="input-group">
                             <label>Centro</label>
                             <select name="centro" class="modern-input">
-                                <option value="todos">Todos</option>
+                                <option value="todos" @selected(($centro ?? 'todos') == 'todos')>Todos</option>
                                 @foreach($centros as $cen)
                                     <option value="{{ $cen }}" @selected(($centro ?? 'todos') == $cen)>{{ $cen }}</option>
                                 @endforeach
@@ -99,7 +99,7 @@
                             <tbody>
                                 @foreach($clientes as $c)
                                     <tr>
-                                        <td style="position:sticky; left:0; background:#fff; border:1px solid #ddd; cursor: pointer; z-index:3;" data-client-id="{{ $c->id }}">
+                                        <td data-label="Cliente" style="position:sticky; left:0; background:#fff; border:1px solid #ddd; cursor: pointer; z-index:3;" data-client-id="{{ $c->id }}">
                                             <div style="display: flex; align-items: center;">
                                                 <div style="margin-right: 10px; font-size: 12px; color: #666;">
                                                     <div>Total clases: {{ $clienteTotals[$c->id]['total_clases'] }}</div>
@@ -209,7 +209,15 @@ document.addEventListener('DOMContentLoaded', function(){
                 html += '<thead><tr><th style="text-align:left; padding:8px;">Cliente</th><th style="text-align:left; padding:8px;">Entrenador</th><th style="padding:8px;">Fecha</th><th style="padding:8px;">Centro</th><th style="padding:8px;">Método</th><th style="padding:8px; text-align:right;">Coste</th><th style="padding:8px;">Clase</th></tr></thead>';
                 html += '<tbody>';
                 data.forEach(d => {
-                    html += `<tr><td style="padding:8px;">${d.cliente ?? '-'}</td><td style="padding:8px;">${d.entrenador ?? '-'}</td><td style="padding:8px;">${d.fecha ?? '-'}</td><td style="padding:8px;">${d.centro ?? '-'}</td><td style="padding:8px;">${d.metodo ?? '-'}</td><td style="padding:8px; text-align:right;">${d.importe ? d.importe + ' €' : '-'}</td><td style="padding:8px;">${d.nombre_clase ?? '-'}</td></tr>`;
+                    html += `<tr>
+                        <td data-label="Cliente" style="padding:8px;">${d.cliente ?? '-'}</td>
+                        <td data-label="Entrenador" style="padding:8px;">${d.entrenador ?? '-'}</td>
+                        <td data-label="Fecha" style="padding:8px;">${d.fecha ?? '-'}</td>
+                        <td data-label="Centro" style="padding:8px;">${d.centro ?? '-'}</td>
+                        <td data-label="Método" style="padding:8px;">${d.metodo ?? '-'}</td>
+                        <td data-label="Coste" style="padding:8px; text-align:right;">${d.importe ? d.importe + ' €' : '-'}</td>
+                        <td data-label="Clase" style="padding:8px;">${d.nombre_clase ?? '-'}</td>
+                    </tr>`;
                 });
                 html += '</tbody></table>';
 
@@ -245,7 +253,15 @@ document.addEventListener('DOMContentLoaded', function(){
                 html += '<thead><tr><th style="text-align:left; padding:8px;">Cliente</th><th style="text-align:left; padding:8px;">Entrenador</th><th style="padding:8px;">Fecha</th><th style="padding:8px;">Centro</th><th style="padding:8px;">Método</th><th style="padding:8px; text-align:right;">Coste</th><th style="padding:8px;">Clase</th></tr></thead>';
                 html += '<tbody>';
                 data.forEach(d => {
-                    html += `<tr><td style="padding:8px;">${d.cliente ?? '-'}</td><td style="padding:8px;">${d.entrenador ?? '-'}</td><td style="padding:8px;">${d.fecha ?? '-'}</td><td style="padding:8px;">${d.centro ?? '-'}</td><td style="padding:8px;">${d.metodo ?? '-'}</td><td style="padding:8px; text-align:right;">${d.importe ? d.importe + ' €' : '-'}</td><td style="padding:8px;">${d.nombre_clase ?? '-'}</td></tr>`;
+                    html += `<tr>
+                        <td data-label="Cliente" style="padding:8px;">${d.cliente ?? '-'}</td>
+                        <td data-label="Entrenador" style="padding:8px;">${d.entrenador ?? '-'}</td>
+                        <td data-label="Fecha" style="padding:8px;">${d.fecha ?? '-'}</td>
+                        <td data-label="Centro" style="padding:8px;">${d.centro ?? '-'}</td>
+                        <td data-label="Método" style="padding:8px;">${d.metodo ?? '-'}</td>
+                        <td data-label="Coste" style="padding:8px; text-align:right;">${d.importe ? d.importe + ' €' : '-'}</td>
+                        <td data-label="Clase" style="padding:8px;">${d.nombre_clase ?? '-'}</td>
+                    </tr>`;
                 });
                 html += '</tbody></table>';
 
