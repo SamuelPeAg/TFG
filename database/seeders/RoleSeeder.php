@@ -30,7 +30,7 @@ class RoleSeeder extends Seeder
         $adminjavi = User::firstOrCreate(
             ['email' => 'javier.ruiz@doc.medac.es'],
             [
-                'name' => 'admin',
+                'name' => 'javi',
                 'password' => Hash::make('password'),
             ]
         );
