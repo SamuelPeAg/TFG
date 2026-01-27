@@ -52,7 +52,7 @@ class UserController extends Controller
         // --- 1. VALIDACIONES ROBUSTAS (Mínimo 2 por campo) ---
         $request->validate([
             // Nombre: Obligatorio + Texto + Mínimo 3 letras + Máximo 255
-            'name'          => 'required|string|min:3|max:255',
+            'name'          => 'required|string|min:3|max:50',
             
             // Email: Obligatorio + Formato email + Único en la tabla
             'email'         => 'required|email|unique:users,email',
@@ -85,7 +85,7 @@ class UserController extends Controller
     {
         // --- VALIDACIONES AL ACTUALIZAR ---
         $request->validate([
-            'name'          => 'required|string|min:3|max:255',
+            'name'          => 'required|string|min:3|max:50',
             // Ignoramos el ID del usuario actual para que no falle el "unique"
             'email'         => 'required|email|unique:users,email,' . $user->id,
             'iban'          => 'nullable|string|min:15|unique:users,iban,' . $user->id,
