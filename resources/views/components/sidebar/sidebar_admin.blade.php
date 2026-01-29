@@ -17,7 +17,7 @@
         </a>
     </div>
 
-    <div class="user-profile-card">
+    <a href="{{ route('configuracion.edit') }}" class="user-profile-card">
         <div class="user-avatar">
             {{ substr(auth()->user()->name, 0, 1) }}
         </div>
@@ -25,7 +25,7 @@
             <span class="name">{{ auth()->user()->name }}</span>
             <span class="role">Panel de Gestión</span>
         </div>
-    </div>
+    </a>
 
     <nav class="main-menu">
         
@@ -40,12 +40,6 @@
             <i class="fa-solid fa-users"></i>
             <span>USUARIOS</span>
         </a>
-
-        {{-- <a href="{{ route('Pagos') }}" 
-           class="menu-item {{ request()->routeIs('Pagos') || request()->routeIs('Pagos.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-calendar-check"></i>
-            <span>PAGOS</span>
-        </a> --}}
         
         <a href="{{ route('calendario') }}" 
            class="menu-item {{ request()->routeIs('calendario') || request()->routeIs('calendario.*') ? 'active' : '' }}">
@@ -63,11 +57,7 @@
 
     <div class="sidebar-footer">
         
-        <a href="{{ route('configuracion.edit') }}" 
-           class="menu-item {{ request()->routeIs('configuracion.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-gear"></i>
-            <span>CONFIGURACIÓN</span>
-        </a>
+        <!-- Configuración movida al perfil de usuario -->
 
         <a href="{{ route('welcome') }}" class="menu-item">
             <i class="fa-solid fa-house"></i>

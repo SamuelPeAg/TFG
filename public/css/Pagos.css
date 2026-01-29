@@ -501,3 +501,234 @@
     font-size: 0.85rem;
   }
 }
+
+/* =========================
+   NUEVO MODAL REDISEÑADO (Responsive)
+   ========================= */
+.modal-expanded {
+  max-width: 900px !important;
+  width: 95% !important;
+  padding: 0 !important;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+}
+
+.modal-grid {
+  display: flex;
+  flex-direction: row;
+  height: auto;
+  text-align: left;
+  max-height: 80vh;
+  /* Limitar altura encajonada en desktop */
+  overflow: hidden;
+}
+
+.modal-col-left {
+  flex: 1;
+  padding: 30px 40px;
+  background: #fff;
+  border-right: 1px solid #f3f4f6;
+  overflow-y: auto;
+}
+
+.modal-col-right {
+  flex: 0.9;
+  padding: 30px 40px;
+  background: #fcfcfc;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.section-title {
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 800;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+}
+
+.form-row .modern-form-group {
+  flex: 1;
+}
+
+/* Lista Entrenadores */
+.trainers-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 5px;
+  margin-bottom: 20px;
+}
+
+.trainer-option {
+  margin: 0;
+}
+
+.trainer-option input {
+  display: none;
+}
+
+.trainer-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.trainer-option input:checked+.trainer-card {
+  border-color: #4BB7AE;
+  background: #f0fdf9;
+  box-shadow: 0 2px 5px rgba(75, 183, 174, 0.1);
+}
+
+.trainer-option input:checked+.trainer-card .check-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.check-icon {
+  color: #4BB7AE;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+/* Scroll para la lista de usuarios (evita que el modal crezca) */
+#usuarios-container {
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  /* Asegurar que se apilen correctamente */
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Wrapper input con acción (papelera) */
+.input-with-action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-with-action .modern-input {
+  flex: 1;
+  /* El input toma el espacio disponible */
+}
+
+/* Botón eliminar (papelera) */
+.btn-delete-input {
+  background: #fee2e2;
+  border: none;
+  color: #ef4444;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-delete-input:hover {
+  background: #fecaca;
+  transform: scale(1.05);
+}
+
+.avatar-circle-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #39c5a7, #eb567a);
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.trainer-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.btn-outline-custom {
+  background: transparent;
+  border: 2px dashed #e5e7eb;
+  color: #9ca3af;
+  height: auto;
+  padding: 10px;
+  width: 100%;
+}
+
+.btn-outline-custom:hover {
+  border-color: #4BB7AE;
+  color: #4BB7AE;
+  background: #f0fdf9;
+}
+
+.modal-footer {
+  padding: 20px 40px;
+  background: #fff;
+  border-top: 1px solid #f3f4f6;
+  text-align: center;
+}
+
+/* RESPONSIVE MODAL (< 1024px: Tablets y Móviles) */
+@media(max-width: 1023px) {
+  .modal-expanded {
+    max-width: 95% !important;
+    max-height: 90vh;
+    display: block !important;
+    overflow-y: auto;
+  }
+
+  .modal-grid {
+    flex-direction: column;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .modal-col-left,
+  .modal-col-right {
+    padding: 25px;
+    border-right: none;
+    flex: none;
+    overflow: visible;
+  }
+
+  .modal-col-left {
+    border-bottom: 1px solid #eee;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}

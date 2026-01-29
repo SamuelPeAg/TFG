@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>calendario - Factomove</title>
+  <title>Calendario - Factomove</title>
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <link rel="stylesheet" href="{{ asset('css/global.css') }}">
@@ -170,46 +170,7 @@
     .search-anchor input:focus { border: none !important; outline: none !important; }
     .form-group label i { color: #00897b; margin-right: 8px; width: 20px; text-align: center; }
 
-    /* New Modal Styles for Redesign */
-    .modal-expanded { max-width: 900px !important; width: 95% !important; padding: 0 !important; overflow: hidden; display: flex; flex-direction: column; }
-    .modal-grid { display: flex; flex-direction: row; height: auto; text-align: left; }
-    .modal-col-left { flex: 1; padding: 30px 40px; background: #fff; border-right: 1px solid #f3f4f6; }
-    .modal-col-right { flex: 0.9; padding: 30px 40px; background: #fcfcfc; display: flex; flex-direction: column; }
-    .section-title { font-size: 13px; color: #9ca3af; font-weight: 800; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    .form-row { display: flex; gap: 15px; }
-    .form-row .modern-form-group { flex: 1; }
 
-    /* Entrenadores List */
-    .trainers-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 5px; margin-bottom: 20px; }
-    .trainer-option { margin: 0; }
-    .trainer-option input { display: none; }
-    .trainer-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: white; }
-    .trainer-option input:checked + .trainer-card { border-color: #4BB7AE; background: #f0fdf9; box-shadow: 0 2px 5px rgba(75, 183, 174, 0.1); }
-    .trainer-option input:checked + .trainer-card .check-icon { opacity: 1; transform: scale(1); }
-    .check-icon { color: #4BB7AE; opacity: 0; transform: scale(0.5); transition: all 0.2s; margin-left: auto; }
-    .avatar-circle-sm { 
-        width: 32px; height: 32px; 
-        border-radius: 50%; 
-        display: flex; align-items: center; justify-content: center; 
-        font-size: 12px; font-weight: 800; flex-shrink: 0;
-        background: linear-gradient(135deg, #39c5a7, #eb567a);
-        color: white;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-    .trainer-name { font-size: 14px; font-weight: 600; color: #374151; }
-
-    .btn-outline-custom { background: transparent; border: 2px dashed #e5e7eb; color: #9ca3af; height: auto; padding: 10px; }
-    .btn-outline-custom:hover { border-color: #4BB7AE; color: #4BB7AE; background: #f0fdf9; }
-    
-    .modal-footer { padding: 20px 40px; background: #fff; border-top: 1px solid #f3f4f6; text-align: center; }
-
-    /* Responsive */
-    @media(max-width: 768px) {
-        .modal-grid { flex-direction: column; }
-        .modal-col-left, .modal-col-right { padding: 25px; border-right: none; }
-        .modal-col-left { border-bottom: 1px solid #eee; }
-        .modal-expanded { max-width: 95% !important; overflow-y: auto; max-height: 90vh; display: block; }
-    }
   </style>
 </head>
 

@@ -85,6 +85,25 @@ a:hover {
 
   background: linear-gradient(180deg, var(--color-turquesa) 0%, #53565A 100%);
   border-right: 1px solid rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Overlay para cerrar sidebar en movil */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.sidebar-overlay.active {
+  display: block;
+  /* o flex */
+  opacity: 1;
 }
 
 .sidebar a,
@@ -428,10 +447,12 @@ h2 {
 @media (max-width: 1023px) {
 
   /* Contenido principal sin margin-left (sidebar oculto) */
+  /* Contenido principal sin margin-left (sidebar oculto) */
   .main-content {
     margin-left: 0;
-    padding: 60px 20px 20px 20px;
-    /* Espacio para botón hamburguesa */
+    padding: 20px 20px 20px 20px;
+    padding-top: 80px;
+    /* Espacio para el header bar móvil */
   }
 
   /* Header controls en columna */

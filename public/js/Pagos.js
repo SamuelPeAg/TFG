@@ -17,14 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const tituloFechaEl = document.getElementById('modal-fecha-titulo');
 
   // === REFERENCIAS LOGOUT (NUEVO) ===
-  const btnSideLogout = document.getElementById('btnSideLogout');
-  const btnCancelarSalir = document.getElementById('btnCancelarSalir');
   const btnConfirmarSalir = document.getElementById('btnConfirmarSalir');
   const logoutForm = document.getElementById('logout-form');
 
+
+
+  // Helper detect view
+  const getInitialView = () => window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek';
+
   // ====== 1. CONFIGURACIÓN FULLCALENDAR ======
   let calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'timeGridWeek',
+    initialView: getInitialView(),
+    windowResizeDelay: 100,
     locale: 'es',
     firstDay: 1,
     slotMinTime: '06:00:00',
@@ -44,6 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dateClick: function (info) {
       abrirModalNuevaClase(info.date);
+    },
+    
+    windowResize: function(arg) {
+        const newView = getInitialView();
+        if (calendar.view.type !== newView) {
+            calendar.changeView(newView);
+        }
     }
   });
 
@@ -673,11 +684,11 @@ document.addEventListener('DOMContentLoaded', () => {
     div.style.position = 'relative';
     div.innerHTML = `
           <label class="modern-label">Cliente ${index + 1}</label>
-          <div class="input-wrapper">
+      <div class="input-wrapper input-with-action">
             <i class="fa-solid fa-user input-icon"></i>
             <input type="text" class="modern-input user-search" placeholder="Buscar alumno..." autocomplete="off" data-index="${index}" required>
             <input type="hidden" name="users[]" class="user-id-input" id="user_id_${index}">
-            ${index > 0 ? `<button type="button" onclick="eliminarInput(${index})" style="position:absolute; right:-30px; top:10px; border:none; background:none; color:red; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>` : ''}
+            ${index > 0 ? `<button type="button" onclick="eliminarInput(${index})" class="btn-delete-input"><i class="fa-solid fa-trash"></i></button>` : ''}
           </div>
           <div id="suggestions_${index}" class="suggestions" hidden></div>
       `;
