@@ -127,25 +127,25 @@
                             <div id="scrollbar-inner" style="height: 1px;"></div>
                         </div>
                         <div class="matrix-wrap">
-                            <table class="matrix-table" style="min-width:600px; border-collapse:collapse;">
+                            <table class="matrix-table">
                             <thead>
                                 <tr>
-                                    <th style="position:sticky; left:0; background:#f7f7f7; border:1px solid #ddd; z-index:3;">Cliente</th>
+                                    <th class="sticky-col-header">Cliente</th>
                                     @foreach($entrenadores as $e)
-                                        <th style="border:1px solid #ddd; text-align:center; white-space:nowrap;">{{ $e->name }}</th>
+                                        <th class="trainer-header">{{ $e->name }}</th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($clientes as $c)
                                     <tr>
-                                        <td data-label="Cliente" style="position:sticky; left:0; background:#fff; border:1px solid #ddd; cursor: pointer; z-index:3;" data-client-id="{{ $c->id }}">
-                                            <div style="display: flex; align-items: center;">
-                                                <div style="margin-right: 10px; font-size: 12px; color: #666;">
+                                        <td data-label="Cliente" class="sticky-col-cell" data-client-id="{{ $c->id }}">
+                                            <div class="client-cell-content">
+                                                <div class="client-meta">
                                                     <div>Total clases: {{ $clienteTotals[$c->id]['total_clases'] }}</div>
                                                     <div>Coste total: {{ $clienteTotals[$c->id]['total_coste'] }} €</div>
                                                 </div>
-                                                <div>
+                                                <div class="client-info">
                                                     {{ $c->name }}<br><small>{{ $c->email }}</small>
                                                 </div>
                                             </div>
@@ -154,7 +154,7 @@
                                             @php
                                                 $count = $matrix[$c->id][$e->id] ?? 0;
                                             @endphp
-                                            <td data-label="{{ $e->name }}" data-client-id="{{ $c->id }}" data-trainer-id="{{ $e->id }}" style="border:1px solid #ddd; text-align:center; cursor: pointer;">
+                                            <td data-label="{{ $e->name }}" data-client-id="{{ $c->id }}" data-trainer-id="{{ $e->id }}" class="data-cell">
                                                 <span class="count-value">{{ $count }}</span>
                                             </td>
                                         @endforeach

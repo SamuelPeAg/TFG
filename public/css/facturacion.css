@@ -335,9 +335,106 @@ body {
 }
 
 .matrix-wrap::-webkit-scrollbar {
-    display: none;
+    height: 10px;
+}
+
+.matrix-wrap::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 5px;
 }
 
 .matrix-container {
     /* No special styles */
+}
+
+/* Nuevas clases para sticky columns en desktop */
+.sticky-col-header {
+    position: sticky;
+    left: 0;
+    background: #f7f7f7;
+    border: 1px solid #e2e8f0;
+    z-index: 3;
+    min-width: 250px;
+    text-align: left !important;
+}
+
+.trainer-header {
+    border: 1px solid #e2e8f0;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.sticky-col-cell {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+    z-index: 3;
+    text-align: left !important;
+}
+
+.data-cell {
+    border: 1px solid #e2e8f0;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Client cell internals */
+.client-cell-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.client-meta {
+    font-size: 11px;
+    color: #6b7280;
+    text-align: right;
+    min-width: 80px;
+}
+
+.client-info {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.client-info small {
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+/* MOBILE OVERRIDES REFINED */
+@media (max-width: 767px) {
+    .matrix-table {
+        min-width: 100% !important;
+        /* Desactiva min-width desktop */
+    }
+
+    /* Sticky reset for mobile */
+    .sticky-col-header,
+    .sticky-col-cell {
+        position: static !important;
+        background: transparent !important;
+        border: none !important;
+        z-index: auto !important;
+        min-width: 0 !important;
+    }
+
+    .client-cell-content {
+        flex-direction: row-reverse;
+        /* Meta info a la derecha o abajo */
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .client-meta {
+        text-align: right;
+    }
+
+    .data-cell {
+        border: none !important;
+        border-bottom: 1px solid #f3f4f6 !important;
+    }
 }
