@@ -15,7 +15,7 @@
         <tbody>
             @forelse($users as $user)
             <tr>
-                <td>
+                <td data-label="Usuario">
                     <div class="user-info">
                         <div class="avatar-circle">
                             {{ strtoupper(substr($user->name, 0, 1)) }}
@@ -24,12 +24,12 @@
                     </div>
                 </td>
 
-                <td>{{ $user->email }}</td>
+                <td data-label="Email">{{ $user->email }}</td>
 
-                <td style="font-family: monospace;">{{ $user->iban ?? '---' }}</td>
-                <td style="font-family: monospace;">{{ $user->firma_digital ?? 'No' }}</td>
+                <td data-label="IBAN" style="font-family: monospace;">{{ $user->iban ?? '---' }}</td>
+                <td data-label="Firma" style="font-family: monospace;">{{ $user->firma_digital ?? 'No' }}</td>
 
-                <td>
+                <td data-label="Acciones">
                     <div class="action-buttons">
                         {{-- EDITAR --}}
                         <button

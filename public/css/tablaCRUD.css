@@ -489,3 +489,111 @@
     font-size: 18px;
   }
 }
+
+/* ===============================
+   RESPONSIVE CARD LAYOUT (New)
+   =============================== */
+@media (max-width: 768px) {
+
+  /* Esconder encabezados de tabla para layout tipo tarjeta */
+  .facto-table thead {
+    display: none;
+  }
+
+  /* Convertir filas en tarjetas con borde/sombra */
+  .facto-table,
+  .facto-table tbody,
+  .facto-table tr,
+  .facto-table td {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    /* IMPORTANTE: Resetear ancho mínimo heredado para evitar scroll horizontal */
+    box-sizing: border-box;
+    /* Asegurar que padding no aumente ancho */
+  }
+
+  .facto-table tr {
+    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 5px;
+    /* Un poco de padding interno a la tarjeta */
+  }
+
+  /* Estilo para cada celda que ahora actúa como fila de la tarjeta */
+  .facto-table td {
+    display: grid;
+    /* Usamos Grid para mejor control */
+    grid-template-columns: 1fr 2fr;
+    /* Columna etiqueta (1 parte), Columna contenido (2 partes) */
+    gap: 10px;
+    align-items: center;
+    text-align: right;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    position: relative;
+  }
+
+  /* Pseudo-elemento para etiquetas (Label: Valor) */
+  .facto-table td::before {
+    content: attr(data-label);
+    font-weight: 800;
+    color: var(--facto-text-label);
+    font-size: 11px;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+    /* Evitar que la etiqueta se rompa */
+  }
+
+  /* Ajustes específicos para elementos dentro de las celdas */
+  .user-info {
+    justify-content: flex-end;
+    width: 100%;
+    overflow: hidden;
+    /* Evitar desbordamiento */
+  }
+
+  .user-info span {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+  }
+
+  /* Romper textos largos como emails */
+  .facto-table td {
+    word-break: break-all;
+    /* Más agresivo para asegurar que no desborde */
+  }
+
+  .action-buttons {
+    width: auto;
+    /* IMPORTANTE: No usar 100% aquí porque empuja el contenido fuera */
+    flex-grow: 1;
+    /* Ocupar el espacio restante */
+    display: flex;
+    justify-content: flex-end;
+    /* Alinear botones a la derecha */
+    gap: 15px;
+  }
+
+  /* Layout específico para la fila de acciones (sin grid forzado para centrar) */
+  .facto-table td:last-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: none;
+    padding-top: 15px;
+    gap: 10px;
+    /* Espacio mínimo entre etiqueta y botones */
+  }
+
+  .facto-table td:last-child .action-buttons {
+    justify-content: flex-end;
+  }
+}

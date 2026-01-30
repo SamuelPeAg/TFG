@@ -129,7 +129,7 @@
                         <tbody>
                             @forelse($entrenadores as $entrenador)
                             <tr>
-                                <td>
+                                <td data-label="Entrenador">
                                     <div class="user-info">
                                         <div class="avatar-circle">
                                             {{ strtoupper(substr($entrenador->name, 0, 1)) }}
@@ -137,9 +137,9 @@
                                         <span>{{ $entrenador->name }}</span>
                                     </div>
                                 </td>
-                                <td>{{ $entrenador->email }}</td>
-                                <td style="font-family: monospace;">{{ $entrenador->iban }}</td>
-                                <td>
+                                <td data-label="Email">{{ $entrenador->email }}</td>
+                                <td data-label="IBAN" style="font-family: monospace;">{{ $entrenador->iban }}</td>
+                                <td data-label="Acciones">
                                     <div class="action-buttons">
                                         @php
                                             $u = \App\Models\User::where('email', $entrenador->email)->first();
