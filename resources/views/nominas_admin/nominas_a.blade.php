@@ -44,32 +44,32 @@
             @endif
         @endauth
 
-        <main class="flex-1 p-8 ml-[250px] fade-in max-w-7xl mx-auto">
+        <main class="flex-1 p-4 md:p-8 lg:ml-[250px] ml-0 fade-in max-w-7xl mx-auto transition-all duration-300">
             
             {{-- HEADER --}}
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900">
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-700 to-gray-900">
                         Gestión de Nóminas
                     </h1>
-                    <p class="text-slate-400 mt-1 font-medium">Supervisión y control de pagos a entrenadores</p>
+                    <p class="text-slate-400 mt-1 font-medium text-sm md:text-base">Supervisión y control de pagos a entrenadores</p>
                 </div>
                 
                 <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                     {{-- Search Bar --}}
                     <div class="relative w-full md:w-64">
                         <input type="text" id="searchInput" placeholder="Buscar entrenador..." 
-                               class="pl-10 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-brand-teal focus:outline-none w-full transition-colors font-medium text-slate-600"
+                               class="pl-10 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-brand-teal focus:outline-none w-full transition-colors font-medium text-slate-600 shadow-sm"
                                onkeyup="filterTable()">
                         <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                     </div>
 
-                    <form action="{{ route('admin.nominas.generar') }}" method="POST">
+                    <form action="{{ route('admin.nominas.generar') }}" method="POST" class="w-full md:w-auto">
                         @csrf
                         <button type="submit" onclick="return confirm('¿Calcular nóminas para el mes actual?')"
                                 class="w-full md:w-auto group flex items-center justify-center gap-2 bg-gradient-to-r from-brand-teal to-teal-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-brand-teal/40 hover:-translate-y-0.5 transition-all duration-200">
                             <i class="fas fa-bolt group-hover:animate-pulse"></i> 
-                            Generar Mes Actual
+                            <span class="whitespace-nowrap">Generar Mes Actual</span>
                         </button>
                     </form>
                 </div>
@@ -84,7 +84,7 @@
 
 
             {{-- SUMMARY CARDS --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-10">
                 <!-- Card 1: Borradores -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-all">
                     <div class="absolute top-0 left-0 w-1.5 h-full bg-orange-500"></div>
@@ -150,8 +150,8 @@
                     <h3 class="text-xl font-bold text-slate-800">Pendientes de Revisión</h3>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <table class="w-full text-left">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
+                    <table class="w-full text-left min-w-[800px]">
                         <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase">Entrenador</th>
@@ -215,8 +215,8 @@
                     <h3 class="text-xl font-bold text-slate-800">Historial de Pagos</h3>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <table class="w-full text-left">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
+                    <table class="w-full text-left min-w-[800px]">
                         <thead class="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th class="py-4 px-6 text-xs font-bold text-slate-500 uppercase">Entrenador</th>
