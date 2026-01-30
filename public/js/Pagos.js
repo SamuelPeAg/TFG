@@ -49,12 +49,12 @@ document.addEventListener('DOMContentLoaded', () => {
     dateClick: function (info) {
       abrirModalNuevaClase(info.date);
     },
-    
-    windowResize: function(arg) {
-        const newView = getInitialView();
-        if (calendar.view.type !== newView) {
-            calendar.changeView(newView);
-        }
+
+    windowResize: function (arg) {
+      const newView = getInitialView();
+      if (calendar.view.type !== newView) {
+        calendar.changeView(newView);
+      }
     }
   });
 
@@ -634,21 +634,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  // Inicializar autocomplete global
+  // Inicializar autocomplete (REMOVED GLOBAL for modal approach on client inputs)
   initAutocomplete({
     inputEl: document.getElementById('search-user'),
     hiddenIdEl: null,
     boxEl: document.getElementById('search_user_suggestions')
   });
 
-  // Inicializar el primer input de usuario (EP por defecto)
+  // Client inputs are now modal-driven.
+
+  // But we still init the first one as readonly/clickable in `cambiarTipoClase` logic
+
+
+  // Inicializar el primer input de usuario is handled by manual logic or HTML, 
+  // but we need to ensure the first one rendered by HTML also has the event if we don't rebuild it.
+  // Actually index.blade.php usually starts empty or with one static logic.
+  // We'll rely on changing the HTML generation or just re-running 'cambiarTipoClase' logic on load if needed.
+  // For safety, let's attach the listener to the existing static one if present
   const firstUserInput = document.querySelector('.user-search[data-index="0"]');
   if (firstUserInput) {
-    initAutocomplete({
-      inputEl: firstUserInput,
-      hiddenIdEl: document.getElementById('user_id_0'),
-      boxEl: document.getElementById('suggestions_0')
-    });
+    // Make it readonly and add click if it exists statically (though dynamic 'cambiarTipoClase' is safer)
+    firstUserInput.readOnly = true;
+    firstUserInput.style.cursor = 'pointer';
+    firstUserInput.style.backgroundColor = 'white';
+    firstUserInput.placeholder = "Clic para seleccionar...";
+    firstUserInput.addEventListener('click', () => openClientModal());
   }
 
   // === EXPORTAR FUNCIONES GLOBALES PARA EL HTML ===
@@ -674,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.agregarInputUsuario = function (index = null) {
+  window.agregarInputUsuario = function (index = null, userData = null) {
     const container = document.getElementById('usuarios-container');
     if (index === null) index = container.children.length; // Si no se pasa indice, es el siguiente
 
@@ -686,19 +696,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <label class="modern-label">Cliente ${index + 1}</label>
       <div class="input-wrapper input-with-action">
             <i class="fa-solid fa-user input-icon"></i>
-            <input type="text" class="modern-input user-search" placeholder="Buscar alumno..." autocomplete="off" data-index="${index}" required>
-            <input type="hidden" name="users[]" class="user-id-input" id="user_id_${index}">
+            <input type="text" class="modern-input user-search" placeholder="Clic para seleccionar..." autocomplete="off" data-index="${index}" readonly style="cursor:pointer; background-color:white;" value="${userData ? userData.name : ''}">
+            <input type="hidden" name="users[]" class="user-id-input" id="user_id_${index}" value="${userData ? userData.id : ''}">
             ${index > 0 ? `<button type="button" onclick="eliminarInput(${index})" class="btn-delete-input"><i class="fa-solid fa-trash"></i></button>` : ''}
           </div>
-          <div id="suggestions_${index}" class="suggestions" hidden></div>
+          <!-- Suggestions div removed as we use modal now -->
       `;
     container.appendChild(div);
 
-    // Inicializar autocomplete
-    initAutocomplete({
-      inputEl: div.querySelector('.user-search'),
-      hiddenIdEl: div.querySelector('.user-id-input'),
-      boxEl: div.querySelector('.suggestions')
+    // Evento Click para abrir modal
+    const inputEl = div.querySelector('.user-search');
+    inputEl.addEventListener('click', () => {
+      openClientModal();
     });
   };
 
@@ -710,6 +719,157 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('btnAddUser')) {
     document.getElementById('btnAddUser').addEventListener('click', () => {
       agregarInputUsuario();
+    });
+  }
+
+  // ====== 9. LÓGICA MODAL SELECCIÓN CLIENTES ======
+  // ====== 9. LÓGICA MODAL SELECCIÓN CLIENTES ======
+  const modalClientes = document.getElementById('modalSeleccionClientes');
+  // const btnOpenClients = document.getElementById('btnOpenSelectClients'); // REMOVED
+  const btnCloseClients = document.querySelector('.btn-close-clients');
+  const btnConfirmClients = document.getElementById('btnConfirmarClientes');
+  const listContainer = document.getElementById('listaClientesModal');
+  const searchModalInput = document.getElementById('inputBuscarClientesModal');
+
+  window.openClientModal = function () {
+    if (!modalClientes) return;
+    openModal(modalClientes);
+
+    // Obtener límite según tipo de clase
+    const tipo = document.getElementById('tipo_clase').value;
+    const max = getMaxClients(tipo);
+
+    // Mostrar límite en el título
+    const titleSubtitle = modalClientes.querySelector('.modern-subtitle');
+    if (titleSubtitle) {
+      titleSubtitle.innerHTML = `Selecciona hasta <b>${max}</b> participantes para <b>${tipo}</b>`;
+      titleSubtitle.dataset.max = max; // Guardar para uso en render
+    }
+
+    // Marcar los que ya están seleccionados
+    const currentIds = Array.from(document.querySelectorAll('.user-id-input')).map(el => el.value).filter(v => v);
+
+    renderListaClientes('', currentIds, max);
+
+    if (searchModalInput) {
+      searchModalInput.value = '';
+      setTimeout(() => searchModalInput.focus(), 100);
+    }
+  };
+
+  if (btnCloseClients) {
+    btnCloseClients.addEventListener('click', () => closeModal(modalClientes));
+  }
+
+  if (searchModalInput) {
+    searchModalInput.addEventListener('input', (e) => {
+      const currentIds = Array.from(document.querySelectorAll('.user-id-input')).map(el => el.value).filter(v => v);
+      const tipo = document.getElementById('tipo_clase').value;
+      const max = getMaxClients(tipo);
+
+      renderListaClientes(e.target.value, currentIds, max);
+    });
+  }
+
+  if (btnConfirmClients) {
+    btnConfirmClients.addEventListener('click', () => {
+      // Obtener seleccionados del modal
+      const checked = document.querySelectorAll('input[name="modal_client[]"]:checked');
+
+      // Reconstruir TODOS los inputs
+      const container = document.getElementById('usuarios-container');
+      container.innerHTML = ''; // Limpiar
+
+      if (checked.length === 0) {
+        // Si no hay nadie, dejar al menos uno vacío
+        agregarInputUsuario(0);
+      } else {
+        checked.forEach((chk, idx) => {
+          agregarInputUsuario(idx, { id: chk.value, name: chk.dataset.name });
+        });
+      }
+
+      closeModal(modalClientes);
+    });
+  }
+
+  function getMaxClients(tipo) {
+    switch (tipo) {
+      case 'EP': return 1;
+      case 'DUO': return 2;
+      case 'TRIO': return 3;
+      case 'GRUPO_PRIVADO':
+      case 'GRUPO':
+        return 6;
+      default: return 100;
+    }
+  }
+
+  function renderListaClientes(query, selectedIds = [], maxLimit = 100) {
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    const q = query.toLowerCase().trim();
+    const filtered = USERS.filter(u => u.name.toLowerCase().includes(q));
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = `<div style="text-align:center; color:#9ca3af; padding:20px;">No se encontraron clientes</div>`;
+      return;
+    }
+
+    const currentCount = selectedIds.length;
+    // Si ya alcanzamos el límite, los no seleccionados deben estar disabled
+    const limitReached = currentCount >= maxLimit;
+
+    // Limitar a 50 para rendimiento
+    const toRender = filtered.slice(0, 100);
+
+    toRender.forEach(u => {
+      const isChecked = selectedIds.includes(String(u.id));
+      const isDisabled = !isChecked && limitReached;
+
+      const label = document.createElement('label');
+      label.className = 'client-option';
+      if (isDisabled) label.style.opacity = '0.5';
+
+      label.innerHTML = `
+            <input type="checkbox" name="modal_client[]" value="${u.id}" data-name="${u.name}" 
+                ${isChecked ? 'checked' : ''} 
+                ${isDisabled ? 'disabled' : ''}>
+            <div class="client-card" style="${isDisabled ? 'cursor:not-allowed;' : ''}">
+                <div class="client-info">
+                    <div class="avatar-circle-sm" style="background:${isChecked ? '#4BB7AE' : '#ccc'};">
+                        ${u.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span style="font-size:14px; font-weight:600; color:#374151;">${u.name}</span>
+                </div>
+                <i class="fa-solid fa-check check-icon" style="color:#4BB7AE;"></i>
+            </div>
+          `;
+
+      const chk = label.querySelector('input');
+      const card = label.querySelector('.client-card');
+      const avatar = label.querySelector('.avatar-circle-sm');
+
+      // Change listener para manejar lógica de límites en tiempo real
+      chk.addEventListener('change', () => {
+        // Actualizar visuales
+        avatar.style.background = chk.checked ? '#4BB7AE' : '#ccc';
+
+        // Recalcular estado de todos los checkboxes
+        const checkedCount = listContainer.querySelectorAll('input[type="checkbox"]:checked').length;
+        const nowFull = checkedCount >= maxLimit;
+
+        // Seleccionar todos los no checkeados para deshabilitarlos
+        const allChecks = listContainer.querySelectorAll('input[type="checkbox"]:not(:checked)');
+        allChecks.forEach(c => {
+          c.disabled = nowFull;
+          c.closest('.client-option').style.opacity = nowFull ? '0.5' : '1';
+          c.nextElementSibling.style.cursor = nowFull ? 'not-allowed' : 'pointer';
+        });
+      });
+
+      listContainer.appendChild(label);
     });
   }
 

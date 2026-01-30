@@ -1,0 +1,780 @@
+/* =========================
+   CALENDARIO STYLE (Refactorizado desde Pagos.css)
+   ========================= */
+
+:root {
+    --primary-color: #4BB7AE;
+    --primary-dark: #EF5D7A;
+    --accent-color: #A5EFE2;
+    --bg-input: #f9fafb;
+    --text-gray: #6b7280;
+}
+
+/* =========================
+   HEADER & LAYOUT
+   ========================= */
+.header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 10px 0;
+}
+
+.title-section h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #333;
+    font-weight: 800;
+}
+
+
+.controls-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* =========================
+   BUSCADOR (Ajustado a 45px de alto)
+   ========================= */
+.search-box {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0 15px;
+    height: 45px;
+    width: 260px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.search-box i {
+    color: #a0aec0;
+    margin-right: 10px;
+}
+
+.search-anchor {
+    flex-grow: 1;
+}
+
+.search-anchor input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    background: transparent;
+    color: #4a5568;
+}
+
+/* =========================
+   BOTÓN NUEVA CLASE
+   ========================= */
+.btn-design {
+    height: 45px;
+    padding: 0 25px;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.btn-solid-custom {
+    background-color: #38C1A3;
+}
+
+.btn-solid-custom:hover {
+    background-color: #32ac91;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================
+   CONTENEDOR CALENDARIO
+   ========================= */
+.calendar-layout {
+    display: flex;
+    justify-content: center;
+    padding: 18px 0;
+}
+
+.calendar-panel {
+    width: 100%;
+    max-width: 1200px;
+    background: #fff;
+    padding: 26px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    min-height: 620px;
+}
+
+.calendar-container {
+    flex: 1 1 auto;
+    width: 100%;
+}
+
+.calendar-summary {
+    margin-top: 16px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+/* =========================
+   MODALES (ESTILO MODERNO / PREMIUM)
+   ========================= */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: center;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.active .modal-box {
+    transform: translateY(0) scale(1);
+}
+
+.modern-modal-header {
+    margin-bottom: 30px;
+}
+
+.modern-logo {
+    width: 60px;
+    margin-bottom: 15px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.modern-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin: 0;
+}
+
+.modern-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin-top: 5px;
+}
+
+.close-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-icon:hover {
+    color: var(--accent-color);
+}
+
+/* =========================
+   FORMULARIO MODERNO (INPUTS CON ICONOS)
+   ========================= */
+.modern-form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.modern-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #9ca3af;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    color: var(--accent-color);
+    font-size: 16px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.modern-input {
+    width: 100%;
+    padding: 14px 16px 14px 48px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background-color: var(--bg-input);
+    font-size: 0.95rem;
+    color: #374151;
+    transition: all 0.2s ease;
+    outline: none;
+    appearance: none;
+}
+
+.modern-input:focus {
+    background-color: #fff;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(239, 93, 122, 0.1);
+}
+
+/* Botón Degradado (Formulario Modal) */
+.btn-gradient {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px -5px rgba(53, 53, 53, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 10px;
+}
+
+/* =========================
+   SUGERENCIAS AUTOCOMPLETE
+   ========================= */
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    z-index: 50;
+    max-height: 160px;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-top: 5px;
+}
+
+.suggestions .item {
+    padding: 12px 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f3f4f6;
+    text-align: left;
+}
+
+.suggestions .item:hover {
+    background-color: #f9fafb;
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* =========================
+   MODAL INFO (DETALLES)
+   ========================= */
+.modal-details {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.sesion-card {
+    background: #f8fafc;
+    border-left: 5px solid var(--primary-color) !important;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-confirm {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* =========================
+   AJUSTES FULLCALENDAR
+   ========================= */
+.fc {
+    font-family: inherit;
+}
+
+/* TÍTULO DEL MES (Grande y Negro) */
+.fc .fc-toolbar-title {
+    font-size: 2rem !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    text-transform: capitalize !important;
+    letter-spacing: -0.5px;
+}
+
+/* Botones del calendario (Mes, Semana, Día) */
+.fc-button {
+    background-color: var(--primary-color) !important;
+    border: none !important;
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
+}
+
+/* Día actual (Fondo suave) */
+.fc-day-today {
+    background-color: rgba(75, 183, 174, 0.08) !important;
+}
+
+/* ================================
+   RESPONSIVE DESIGN
+================================ */
+
+/* TABLET Y MÓVIL (< 1024px) */
+@media (max-width: 1023px) {
+    .calendar-panel {
+        padding: 20px;
+    }
+
+    .search-box {
+        width: 200px;
+    }
+
+    .modal-box {
+        max-width: 90%;
+        padding: 32px;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.6rem !important;
+    }
+}
+
+/* MÓVIL (< 768px) */
+@media (max-width: 767px) {
+
+    /* Header responsive */
+    .header-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .controls-bar {
+        width: 100%;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .btn-design {
+        width: 100%;
+    }
+
+    /* Calendario más compacto */
+    .calendar-panel {
+        padding: 15px;
+        border-radius: 16px;
+    }
+
+    .calendar-layout {
+        padding: 10px 0;
+    }
+
+    /* Título del calendario más pequeño */
+    .fc .fc-toolbar-title {
+        font-size: 1.3rem !important;
+    }
+
+    /* Botones del calendario más pequeños */
+    .fc-button {
+        font-size: 0.85rem !important;
+        padding: 0.4rem 0.7rem !important;
+    }
+
+    /* Modal responsive */
+    .modal-box {
+        max-width: 95%;
+        padding: 24px;
+        border-radius: 16px;
+    }
+
+    .modern-title {
+        font-size: 1.4rem;
+    }
+
+    .modern-logo {
+        width: 50px;
+    }
+
+    .modern-input {
+        padding: 12px 14px 12px 44px;
+        font-size: 0.9rem;
+    }
+
+    .btn-gradient {
+        padding: 14px;
+        font-size: 0.9rem;
+    }
+
+    /* Sugerencias */
+    .suggestions .item {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+/* MÓVIL PEQUEÑO (< 480px) */
+@media (max-width: 479px) {
+    .calendar-panel {
+        padding: 12px;
+    }
+
+    .fc .fc-toolbar-title {
+        font-size: 1.1rem !important;
+    }
+
+    .fc-button {
+        font-size: 0.75rem !important;
+        padding: 0.3rem 0.5rem !important;
+    }
+
+    .modal-box {
+        padding: 20px;
+    }
+
+    .modern-title {
+        font-size: 1.2rem;
+    }
+
+    .modern-input {
+        padding: 10px 12px 10px 40px;
+        font-size: 0.85rem;
+    }
+}
+
+/* =========================
+   NUEVO MODAL REDISEÑADO (Responsive)
+   ========================= */
+.modal-expanded {
+    max-width: 900px !important;
+    width: 95% !important;
+    padding: 0 !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+}
+
+.modal-grid {
+    display: flex;
+    flex-direction: row;
+    height: auto;
+    text-align: left;
+    max-height: 80vh;
+    /* Limitar altura encajonada en desktop */
+    overflow: hidden;
+}
+
+.modal-col-left {
+    flex: 1;
+    padding: 30px 40px;
+    background: #fff;
+    border-right: 1px solid #f3f4f6;
+    overflow-y: auto;
+}
+
+.modal-col-right {
+    flex: 0.9;
+    padding: 30px 40px;
+    background: #fcfcfc;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.section-title {
+    font-size: 13px;
+    color: #9ca3af;
+    font-weight: 800;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .modern-form-group {
+    flex: 1;
+}
+
+/* Lista Entrenadores */
+.trainers-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-bottom: 20px;
+}
+
+.trainer-option {
+    margin: 0;
+}
+
+.trainer-option input {
+    display: none;
+}
+
+.trainer-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.trainer-option input:checked+.trainer-card {
+    border-color: #4BB7AE;
+    background: #f0fdf9;
+    box-shadow: 0 2px 5px rgba(75, 183, 174, 0.1);
+}
+
+.trainer-option input:checked+.trainer-card .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.check-icon {
+    color: #4BB7AE;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s;
+    margin-left: auto;
+}
+
+/* Scroll para la lista de usuarios (evita que el modal crezca) */
+#usuarios-container {
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-bottom: 10px;
+    display: flex;
+    /* Asegurar que se apilen correctamente */
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Wrapper input con acción (papelera) */
+.input-with-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-with-action .modern-input {
+    flex: 1;
+    /* El input toma el espacio disponible */
+}
+
+/* Botón eliminar (papelera) */
+.btn-delete-input {
+    background: #fee2e2;
+    border: none;
+    color: #ef4444;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-delete-input:hover {
+    background: #fecaca;
+    transform: scale(1.05);
+}
+
+.avatar-circle-sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #39c5a7, #eb567a);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.trainer-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.btn-outline-custom {
+    background: transparent;
+    border: 2px dashed #e5e7eb;
+    color: #9ca3af;
+    height: auto;
+    padding: 10px;
+    width: 100%;
+}
+
+.btn-outline-custom:hover {
+    border-color: #4BB7AE;
+    color: #4BB7AE;
+    background: #f0fdf9;
+}
+
+.modal-footer {
+    padding: 20px 40px;
+    background: #fff;
+    border-top: 1px solid #f3f4f6;
+    text-align: center;
+}
+
+/* RESPONSIVE MODAL (< 1024px: Tablets y Móviles) */
+@media(max-width: 1023px) {
+    .modal-expanded {
+        max-width: 95% !important;
+        max-height: 90vh;
+        display: block !important;
+        overflow-y: auto;
+    }
+
+    .modal-grid {
+        flex-direction: column;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .modal-col-left,
+    .modal-col-right {
+        padding: 25px;
+        border-right: none;
+        flex: none;
+        overflow: visible;
+    }
+
+    .modal-col-left {
+        border-bottom: 1px solid #eee;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
+
+/* =========================
+   SELECCIÓN CLIENTES MODAL
+   ========================= */
+.client-option {
+    margin: 0;
+    display: block;
+}
+
+.client-option input {
+    display: none;
+}
+
+.client-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border: 1px solid #f3f4f6;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+}
+
+.client-card:hover {
+    border-color: #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.client-option input:checked+.client-card {
+    border-color: #4BB7AE;
+    background: #f0fdf9;
+    box-shadow: 0 4px 10px rgba(75, 183, 174, 0.1);
+}
+
+.client-option input:checked+.client-card .check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.client-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}

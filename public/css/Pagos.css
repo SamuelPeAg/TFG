@@ -732,3 +732,49 @@
     gap: 0;
   }
 }
+
+/* =========================
+   SELECCIÓN CLIENTES MODAL
+   ========================= */
+.client-option {
+  margin: 0;
+  display: block;
+}
+
+.client-option input {
+  display: none;
+}
+
+.client-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid #f3f4f6;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+
+.client-card:hover {
+  border-color: #e5e7eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.client-option input:checked+.client-card {
+  border-color: #4BB7AE;
+  background: #f0fdf9;
+  box-shadow: 0 4px 10px rgba(75, 183, 174, 0.1);
+}
+
+.client-option input:checked+.client-card .check-icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.client-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
