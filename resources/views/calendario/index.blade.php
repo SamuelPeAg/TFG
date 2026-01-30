@@ -196,7 +196,7 @@
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <div class="search-anchor">
-              <input type="text" id="search-user" placeholder="Buscar usuario..." autocomplete="off">
+              <input type="text" id="search-user" placeholder="Buscar usuario o centro..." autocomplete="off">
               <div id="search_user_suggestions" class="suggestions" hidden></div>
             </div>
           </div>

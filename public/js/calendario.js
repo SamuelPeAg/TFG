@@ -533,10 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const searchInput = document.getElementById('search-user');
-    if (searchInput) searchInput.addEventListener('input', (e) => {
-        clearTimeout(window.t); window.t = setTimeout(() => fetchAndRenderCalendar(e.target.value.trim()), 400);
-    });
+    // Moved below initAutocomplete to avoid losing listener after clone
 
     const usersJsonEl = document.getElementById('users_json');
     let USERS = [];
@@ -563,6 +560,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputEl.value = item.dataset.name;
                 if (hiddenIdEl) hiddenIdEl.value = item.dataset.id;
                 boxEl.hidden = true;
+                // Trigger calendar search after selection
+                fetchAndRenderCalendar(inputEl.value.trim());
             }
         });
         document.addEventListener('click', (e) => {
@@ -575,6 +574,15 @@ document.addEventListener('DOMContentLoaded', () => {
         hiddenIdEl: null,
         boxEl: document.getElementById('search_user_suggestions')
     });
+
+    // Re-attach search listener to the cloned/final input
+    const searchInput = document.getElementById('search-user');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(window.t);
+            window.t = setTimeout(() => fetchAndRenderCalendar(e.target.value.trim()), 400);
+        });
+    }
 
     const firstUserInput = document.querySelector('.user-search[data-index="0"]');
     if (firstUserInput) {

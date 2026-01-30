@@ -23,8 +23,10 @@ class PagosController extends Controller
         $query = Pago::with(['user', 'entrenadores']);
 
         if ($nombre !== '') {
-            $query->whereHas('user', function ($q) use ($nombre) {
-                $q->where('name', 'like', "%{$nombre}%");
+            $query->where(function ($q) use ($nombre) {
+                $q->whereHas('user', function ($sub) use ($nombre) {
+                    $sub->where('name', 'like', "%{$nombre}%");
+                })->orWhere('centro', 'like', "%{$nombre}%");
             });
         }
 
