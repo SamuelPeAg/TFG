@@ -15,9 +15,11 @@ use App\Http\Controllers\PagosController;
 
 /*
 |--------------------------------------------------------------------------
-| RUTAS PÚBLICAS
+| 1. RUTAS PÚBLICAS
 |--------------------------------------------------------------------------
 */
+
+// Home
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
@@ -41,7 +43,7 @@ Route::post('/contacto/enviar', function (Request $request) {
         ->with('success', '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.');
 })->name('contact.send');
 
-// Activación entrenador (público)
+// Activación entrenador
 Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'activarEntrenador'])
     ->name('entrenadores.activar');
 
@@ -51,36 +53,31 @@ Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'c
 
 /*
 |--------------------------------------------------------------------------
-| RUTAS GUEST (solo si NO estás logueado)
+| 2. AUTENTICACIÓN (GUEST)
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
+    // Login
     Route::get('/login', function () {
         return view('login.signup.login');
     })->name('login');
-
     Route::post('/login', [LoginController::class, 'login']);
 
+    // Registro
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
+
+    // Recuperación de Contraseña
+    Route::get('/forgot-password', [AuthPasswordController::class, 'forgotForm'])->name('password.request');
+    Route::post('/forgot-password', [AuthPasswordController::class, 'sendReset'])->name('password.email');
+    Route::get('/reset-password/{token}', [AuthPasswordController::class, 'resetForm'])->name('password.reset');
+    Route::post('/reset-password', [AuthPasswordController::class, 'updatePassword'])->name('password.update');
 });
 
 
 /*
 |--------------------------------------------------------------------------
-| PASSWORD RESET (NO requiere login)
-|--------------------------------------------------------------------------
-*/
-Route::get('/forgot-password', [AuthPasswordController::class, 'forgotForm'])->name('password.request');
-Route::post('/forgot-password', [AuthPasswordController::class, 'sendReset'])->name('password.email');
-
-Route::get('/reset-password/{token}', [AuthPasswordController::class, 'resetForm'])->name('password.reset');
-Route::post('/reset-password', [AuthPasswordController::class, 'updatePassword'])->name('password.update');
-
-
-/*
-|--------------------------------------------------------------------------
-| RUTAS PROTEGIDAS (requiere login)
+| 3. RUTAS PROTEGIDAS (AUTH)
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -94,63 +91,53 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | ADMIN O ENTRENADOR
+    | 3.1 COMPARTIDO (ADMIN & ENTRENADOR)
     |--------------------------------------------------------------------------
     */
     Route::middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class)->group(function () {
 
-        // Calendario
+        // Calendario (Vista principal)
         Route::get('/calendario', [CalendarioController::class, 'index'])
-            ->name('calendario');
+            ->name('calendario'); // Revertido para evitar error RouteNotFoundException
 
-        // Facturas (si también deben verlas admin/entrenador; si no, mueve a Admin)
+        // Gestión de Pagos / Clases (Acciones del Calendario)
+        Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
+        Route::get('/usuarios/Pagos', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar');
+        Route::post('/Pagos/add-trainer', [PagosController::class, 'addTrainerToSession'])->name('Pagos.addTrainer');
+        Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])->name('Pagos.removeTrainer');
+
+        // Facturación
         Route::get('/facturas', [FacturacionController::class, 'index'])->name('facturas');
         Route::get('/facturas/clases', [FacturacionController::class, 'clases'])->name('facturas.clases');
 
-        // Pagos (acciones que usan admin y entrenador)
-        Route::post('/Pagos', [PagosController::class, 'store'])
-            ->name('Pagos.store');
-
-        Route::get('/usuarios/Pagos', [PagosController::class, 'buscarPorUsuario'])
-            ->name('Pagos.buscar');
-
-        Route::post('/Pagos/add-trainer', [PagosController::class, 'addTrainerToSession'])
-            ->name('Pagos.addTrainer');
-
-        Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])
-            ->name('Pagos.removeTrainer');
-
-        // Users (admin o entrenador)
+        // Usuarios (Resource)
         Route::resource('users', UserController::class);
 
-        Route::post('/users/crear-grupo', [UserController::class, 'storeGroup'])
-            ->name('users.group.store');
-
-        Route::delete('/users/grupos/{id}', [UserController::class, 'destroyGroup'])
-            ->name('users.group.destroy');
-
-        // Configuración (NO fuera del auth)
+        // Configuración de Perfil
         Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
         Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
+
+        /* RUTAS DE GRUPOS (DESHABILITADAS TEMPORALMENTE)
+        Route::post('/users/crear-grupo', [UserController::class, 'storeGroup'])->name('users.group.store');
+        Route::delete('/users/grupos/{id}', [UserController::class, 'destroyGroup'])->name('users.group.destroy');
+        */
     });
 
     /*
     |--------------------------------------------------------------------------
-    | SOLO ADMIN
+    | 3.2 SOLO ADMINISTRADOR
     |--------------------------------------------------------------------------
     */
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
 
-        // Pagos index (solo admin)
-        Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos');
+        // Gestión de Entrenadores
+        Route::resource('entrenadores', EntrenadorController::class);
 
-        // Reporte pagos (solo admin)
+        // Acciones Avanzadas de Pagos (Solo Admin)
+        Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos.index'); // Listado completo
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
-
-        // Eliminar sesión completa (solo admin)
         Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
 
-        // Gestión entrenadores (solo admin)
-        Route::resource('entrenadores', EntrenadorController::class);
     });
+
 });
