@@ -328,6 +328,13 @@ document.addEventListener('DOMContentLoaded', () => {
             payload.users = formData.getAll('users[]').filter(v => v && v.trim() !== '');
             payload.trainers = formData.getAll('trainers[]').filter(v => v && v.trim() !== '');
 
+            // Validacion Minimo 4 personas para Grupos
+            const tipo = document.getElementById('tipo_clase').value;
+            if ((tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') && payload.users.length < 4) {
+                alert('Para las clases de GRUPO o GRUPO PRIVADO, el mínimo de participantes es 4.');
+                return;
+            }
+
             try {
                 const res = await fetch(formNuevaClase.action, {
                     method: 'POST',
