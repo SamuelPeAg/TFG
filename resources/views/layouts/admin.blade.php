@@ -39,7 +39,7 @@
                 <i class="fa-solid fa-clock"></i> HORARIOS
             </a>
             
-            <a href="{{ route('calendario.index') }}" class="menu-item {{ request()->routeIs('Pagos.*') ? 'active' : '' }}">
+            <a href="{{ route('calendario') }}" class="menu-item {{ request()->routeIs('calendario') ? 'active' : '' }}">
                 <i class="fa-solid fa-calendar-check"></i> Pagos
             </a>
         </nav>

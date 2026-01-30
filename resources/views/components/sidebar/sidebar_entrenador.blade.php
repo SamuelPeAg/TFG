@@ -36,6 +36,12 @@
             <span>USUARIOS</span>
         </a>
 
+           <a href="{{ route('nominas_e') }}" 
+           class="menu-item {{ request()->routeIs('nominas_e') || request()->routeIs('nominas_e.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-money-bill"></i>
+            <span>NOMINAS</span>
+        </a>
+
         <a href="{{ route('calendario') }}" 
            class="menu-item {{ request()->routeIs('calendario') || request()->routeIs('calendario.*') ? 'active' : '' }}">
             <i class="fa-solid fa-calendar-check"></i>
