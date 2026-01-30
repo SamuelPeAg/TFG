@@ -76,15 +76,25 @@ class PagosController extends Controller
             
             $entrenadoresList = array_values($entrenadoresMap);
 
+            $color = '#A5EFE2'; // OPEN
+            $textColor = '#1f2937'; // Darker text for light background
+            if ($first->centro === 'AIRA') {
+                $color = '#4BB7AE';
+                $textColor = '#ffffff';
+            } elseif ($first->centro === 'CLINICA') {
+                $color = '#EF5D7A';
+                $textColor = '#ffffff';
+            }
+
             $events[] = [
                 'id' => $first->id, 
                 // Usamos propiedades personalizadas para identificar la sesión única y poder editar todos
                 'groupId' => $key, 
                 'title' => $title,
                 'start' => $first->fecha_registro ? $first->fecha_registro->toIso8601String() : null,
-                'backgroundColor' => '#00897b',
-                'borderColor' => '#00897b',
-                'textColor' => '#ffffff',
+                'backgroundColor' => $color,
+                'borderColor' => $color,
+                'textColor' => $textColor,
                 'extendedProps' => [
                     'hora' => $first->fecha_registro ? $first->fecha_registro->format('H:i') : '',
                     'centro' => $first->centro,
@@ -262,6 +272,96 @@ class PagosController extends Controller
             'success' => true,
             'trainers' => $updatedTrainers
         ]);
+    }
+
+    // Método para AÑADIR CLIENTE a una sesión existente
+    public function addClientToSession(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'fecha_hora' => 'required|date',
+            'nombre_clase' => 'required|string',
+            'centro' => 'required|string'
+        ]);
+
+        if (!$request->user()->hasRole('admin')) {
+             return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+        }
+
+        $fecha = Carbon::parse($request->fecha_hora);
+        
+        // 1. Buscar un pago existente de esa sesión para copiar datos (importe, tipo, método, entrenadores)
+        $existingPago = Pago::where('fecha_registro', $fecha)
+                     ->where('nombre_clase', $request->nombre_clase)
+                     ->where('centro', $request->centro)
+                     ->first();
+
+        if (!$existingPago) {
+            return response()->json(['error' => 'Sesión no encontrada o vacía'], 404);
+        }
+
+        // 2. Verificar que el usuario no esté ya en esa sesión
+        $exists = Pago::where('fecha_registro', $fecha)
+                    ->where('nombre_clase', $request->nombre_clase)
+                    ->where('centro', $request->centro)
+                    ->where('user_id', $request->user_id)
+                    ->exists();
+
+        if ($exists) {
+            return response()->json(['error' => 'El usuario ya está inscrito en esta clase.'], 422);
+        }
+
+        $newUser = User::find($request->user_id);
+
+        // 3. Crear el nuevo pago
+        $newPago = Pago::create([
+            'user_id'        => $newUser->id,
+            'entrenador_id'  => $existingPago->entrenador_id, // Legacy
+            'iban'           => $newUser->iban,
+            'importe'        => $existingPago->importe, 
+            'fecha_registro' => $fecha,
+            'centro'         => $existingPago->centro,
+            'nombre_clase'   => $existingPago->nombre_clase,
+            'tipo_clase'     => $existingPago->tipo_clase,
+            'metodo_pago'    => $existingPago->metodo_pago, // Asume mismo método por defecto, o podría pedirse
+        ]);
+
+        // 4. Copiar relaciones de entrenadores
+        $trainers = $existingPago->entrenadores->pluck('id')->toArray();
+        if (!empty($trainers)) {
+            $newPago->entrenadores()->sync($trainers);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Cliente añadido correctamente']);
+    }
+
+    // Método para ELIMINAR CLIENTE de una sesión
+    public function removeClientFromSession(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'fecha_hora' => 'required|date',
+            'nombre_clase' => 'required|string',
+            'centro' => 'required|string'
+        ]);
+
+        if (!$request->user()->hasRole('admin')) {
+             return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+        }
+
+        $fecha = Carbon::parse($request->fecha_hora);
+
+        $deleted = Pago::where('fecha_registro', $fecha)
+                    ->where('nombre_clase', $request->nombre_clase)
+                    ->where('centro', $request->centro)
+                    ->where('user_id', $request->user_id)
+                    ->delete();
+
+        if ($deleted) {
+             return response()->json(['success' => true, 'message' => 'Cliente eliminado correctamente']);
+        } else {
+             return response()->json(['error' => 'No se encontró el registro para eliminar'], 404);
+        }
     }
 
     private function _getTrainersForSession($pagos) {

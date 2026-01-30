@@ -155,10 +155,22 @@ document.addEventListener('DOMContentLoaded', () => {
                       <div style="font-size:12px; color:#6b7280;">Método: ${alum.pago}</div>
                   </div>
               </div>
-              <div style="font-weight:700; color:#000000; font-size:15px;">€${Number(alum.coste).toFixed(2)}</div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                  <div style="font-weight:700; color:#000000; font-size:15px;">€${Number(alum.coste).toFixed(2)}</div>
+                  ${(window.IS_ADMIN) ? `<button type="button" class="btn-icon btn-delete-client" data-id="${alum.id}" style="border:none; background:none; cursor:pointer; color:#ef4444;" title="Eliminar Alumno"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+              </div>
           </div>
         `;
             });
+            // Add Delete Listeners after render
+            setTimeout(() => {
+                document.querySelectorAll('.btn-delete-client').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const uid = e.currentTarget.dataset.id;
+                        eliminarClienteSesion(uid, p.session_key);
+                    });
+                });
+            }, 100);
         } else {
             html += `
         <div style="text-align:center; padding:40px 20px; background:#f9fafb; border-radius:12px; border:1px dashed #e5e7eb;">
@@ -168,6 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         html += `
             </div>
+            ${(window.IS_ADMIN) ? `
+             <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #e5e7eb;">
+                <label style="display:block; font-size:12px; font-weight:700; color:#6b7280; margin-bottom:10px;">AÑADIR ALUMNO</label>
+                <button type="button" id="btn-open-add-client-modal" style="width:100%; padding:10px; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:8px; font-weight:600; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                    <i class="fa-solid fa-user-plus"></i> Seleccionar Cliente
+                </button>
+             </div>
+            ` : ''}
         </div>
         <div class="modal-sidebar">
             <h4 class="section-header" style="margin-top:0;">Equipo Técnico</h4>
@@ -205,12 +225,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnAdd = document.getElementById('btn-add-trainer-action');
         if (btnAdd) btnAdd.addEventListener('click', () => {
             const select = document.getElementById('select-add-trainer');
-            if (select.value) agregarEntrenadorSesion(select.value, p.session_key, event);
+            if (select.value) agregarEntrenadorSesion(select.value, p.session_key);
         });
         const btnJoin = document.getElementById('btn-join-session');
         if (btnJoin) btnJoin.addEventListener('click', () => {
-            if (window.CURRENT_USER_ID) agregarEntrenadorSesion(window.CURRENT_USER_ID, p.session_key, event);
+            if (window.CURRENT_USER_ID) agregarEntrenadorSesion(window.CURRENT_USER_ID, p.session_key);
         });
+
+        // Add Client Logic
+        const btnOpenAddClient = document.getElementById('btn-open-add-client-modal');
+        if (btnOpenAddClient) {
+            btnOpenAddClient.addEventListener('click', () => {
+                const currentIds = (p.alumnos || []).map(a => String(a.id));
+                const max = getMaxClients(p.tipo_clase);
+
+                openClientModal({
+                    title: `Añadir a alumnos a <b>${p.clase_nombre}</b>`,
+                    currentIds: currentIds,
+                    maxLimit: max,
+                    onConfirm: async (selectedUsers) => {
+                        const newUsers = selectedUsers.filter(u => !currentIds.includes(String(u.id)));
+                        if (newUsers.length === 0) {
+                            closeModal(modalClientes); // Close the selector logic only
+                            return;
+                        }
+
+                        // Add each user
+                        for (const user of newUsers) {
+                            await agregarClienteSesion(user.id, p.session_key, false);
+                        }
+                        // Refresh once at the end
+                        await refreshModal(p.session_key);
+                        // NO alert here as requested
+                    }
+                });
+            });
+        }
+
         openModal(modalInfo);
     }
 
@@ -247,7 +298,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function agregarEntrenadorSesion(trainerId, sessionKey, eventCal) {
+    // === NEW: REFRESH HELPER ===
+    async function refreshModal(sessionKey) {
+        // 1. Refresh calendar data
+        const currentSearch = document.getElementById('search-user')?.value || '';
+        await fetchAndRenderCalendar(currentSearch);
+
+        // 2. Find the event with the same session key
+        // We need to look through the calendar's client events
+        const allEvents = calendar.getEvents();
+
+        // Helper to match key
+        const match = (ev) => {
+            const ep = ev.extendedProps;
+            if (!ep || !ep.session_key) return false;
+            // Compare key fields. Note: formatting might vary (string vs number), try loose equality or strict if confident.
+            return ep.session_key.fecha_hora === sessionKey.fecha_hora &&
+                ep.session_key.nombre_clase === sessionKey.nombre_clase &&
+                ep.session_key.centro === sessionKey.centro;
+        };
+
+        const found = allEvents.find(match);
+
+        if (found) {
+            // 3. Re-render modal with new event data
+            mostrarDetallesEvento(found);
+        } else {
+            // If not found (maybe it was deleted?), close modal
+            closeModal(modalInfo);
+        }
+    }
+
+    async function agregarEntrenadorSesion(trainerId, sessionKey) {
         try {
             const formData = new FormData();
             formData.append('trainer_id', trainerId);
@@ -261,9 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                const currentSearch = document.getElementById('search-user')?.value || '';
-                fetchAndRenderCalendar(currentSearch);
-                if (data.trainers) renderEntrenadoresSesion(data.trainers, sessionKey);
+                // Refresh modal, no alert, no close
+                await refreshModal(sessionKey);
             } else { alert('Error al añadir entrenador'); }
         } catch (e) { console.error(e); }
     }
@@ -282,10 +363,50 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                const currentSearch = document.getElementById('search-user')?.value || '';
-                fetchAndRenderCalendar(currentSearch);
-                if (data.trainers) renderEntrenadoresSesion(data.trainers, sessionKey);
+                await refreshModal(sessionKey);
             } else { alert('Error al eliminar entrenador'); }
+        } catch (e) { console.error(e); }
+    }
+
+    async function agregarClienteSesion(userId, sessionKey, shouldRefresh = true) {
+        try {
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('fecha_hora', sessionKey.fecha_hora);
+            formData.append('nombre_clase', sessionKey.nombre_clase);
+            formData.append('centro', sessionKey.centro);
+            const res = await fetch('/Pagos/add-client', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                if (shouldRefresh) {
+                    await refreshModal(sessionKey);
+                    // alert('Cliente añadido correctamente'); // REMOVED
+                }
+            } else { alert(data.error || 'Error al añadir cliente'); }
+        } catch (e) { console.error(e); }
+    }
+
+    async function eliminarClienteSesion(userId, sessionKey) {
+        try {
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('fecha_hora', sessionKey.fecha_hora);
+            formData.append('nombre_clase', sessionKey.nombre_clase);
+            formData.append('centro', sessionKey.centro);
+            const res = await fetch('/Pagos/remove-client', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                await refreshModal(sessionKey);
+                // alert('Cliente eliminado correctamente'); // REMOVED
+            } else { alert(data.error || 'Error al eliminar cliente'); }
         } catch (e) { console.error(e); }
     }
 
@@ -304,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok && data.success) {
                 const currentSearch = document.getElementById('search-user')?.value || '';
                 fetchAndRenderCalendar(currentSearch);
-                closeModal(modalInfo);
+                closeModal(modalInfo); // Delete action still closes modal
             } else { alert(data.error || 'Error al eliminar la sesión'); }
         } catch (e) { console.error(e); }
     }
@@ -328,12 +449,9 @@ document.addEventListener('DOMContentLoaded', () => {
             payload.users = formData.getAll('users[]').filter(v => v && v.trim() !== '');
             payload.trainers = formData.getAll('trainers[]').filter(v => v && v.trim() !== '');
 
-            // Validacion Minimo 4 personas para Grupos
-            const tipo = document.getElementById('tipo_clase').value;
-            if ((tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') && payload.users.length < 4) {
-                alert('Para las clases de GRUPO o GRUPO PRIVADO, el mínimo de participantes es 4.');
-                return;
-            }
+            // Validacion Minimo 4 personas para Grupos (ELIMINADA por solicitud)
+            // const tipo = document.getElementById('tipo_clase').value;
+            // if ((tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') && payload.users.length < 4) { ... }
 
             try {
                 const res = await fetch(formNuevaClase.action, {
@@ -396,6 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', (e) => {
             if (overlay.id === 'modalNuevaClase') return;
+            if (overlay.id === 'infoPopup') return; // Do not close Details on background click
             if (e.target === overlay) closeModal(overlay);
         });
     });
@@ -463,7 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         firstUserInput.style.cursor = 'pointer';
         firstUserInput.style.backgroundColor = 'white';
         firstUserInput.placeholder = "Clic para seleccionar...";
-        firstUserInput.addEventListener('click', () => openClientModal());
+        firstUserInput.addEventListener('click', () => openClientModalForNewClass());
     }
 
     window.cambiarTipoClase = function () {
@@ -497,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
         container.appendChild(div);
         const inputEl = div.querySelector('.user-search');
-        inputEl.addEventListener('click', () => openClientModal());
+        inputEl.addEventListener('click', () => openClientModalForNewClass());
     };
 
     window.eliminarInput = function (index) {
@@ -514,22 +633,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnConfirmClients = document.getElementById('btnConfirmarClientes');
     const listContainer = document.getElementById('listaClientesModal');
     const searchModalInput = document.getElementById('inputBuscarClientesModal');
+    let clientModalConfirmCallback = null;
 
-    window.openClientModal = function () {
+    // Helper wrapper for New Class context
+    window.openClientModalForNewClass = function () {
+        const tipo = document.getElementById('tipo_clase').value;
+        const max = getMaxClients(tipo);
+        const currentIds = Array.from(document.querySelectorAll('.user-id-input')).map(el => el.value).filter(v => v);
+
+        openClientModal({
+            title: `Selecciona hasta <b>${max}</b> participantes para <b>${tipo}</b>`,
+            currentIds: currentIds,
+            maxLimit: max,
+            onConfirm: (selectedUsers) => {
+                const container = document.getElementById('usuarios-container');
+                container.innerHTML = '';
+                if (selectedUsers.length === 0) {
+                    agregarInputUsuario(0);
+                } else {
+                    selectedUsers.forEach((user, idx) => agregarInputUsuario(idx, { id: user.id, name: user.name }));
+                }
+            }
+        });
+    }
+
+    window.openClientModal = function ({ title, currentIds, maxLimit, onConfirm }) {
         if (!modalClientes) return;
         openModal(modalClientes);
 
-        const tipo = document.getElementById('tipo_clase').value;
-        const max = getMaxClients(tipo);
+        clientModalConfirmCallback = onConfirm;
 
         const titleSubtitle = modalClientes.querySelector('.modern-subtitle');
         if (titleSubtitle) {
-            titleSubtitle.innerHTML = `Selecciona hasta <b>${max}</b> participantes para <b>${tipo}</b>`;
-            titleSubtitle.dataset.max = max;
+            titleSubtitle.innerHTML = title || 'Seleccionar Clientes';
+            titleSubtitle.dataset.max = maxLimit || 100;
         }
 
-        const currentIds = Array.from(document.querySelectorAll('.user-id-input')).map(el => el.value).filter(v => v);
-        renderListaClientes('', currentIds, max);
+        renderListaClientes('', currentIds || [], maxLimit || 100);
         if (searchModalInput) {
             searchModalInput.value = '';
             setTimeout(() => searchModalInput.focus(), 100);
@@ -540,22 +680,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (searchModalInput) {
         searchModalInput.addEventListener('input', (e) => {
-            const currentIds = Array.from(document.querySelectorAll('.user-id-input')).map(el => el.value).filter(v => v);
-            const tipo = document.getElementById('tipo_clase').value;
-            const max = getMaxClients(tipo);
-            renderListaClientes(e.target.value, currentIds, max);
+            const subtitle = modalClientes.querySelector('.modern-subtitle');
+            const max = subtitle ? parseInt(subtitle.dataset.max) : 100;
+            const currentIdsFromDom = Array.from(document.querySelectorAll('input[name="modal_client[]"]:checked')).map(c => c.value);
+            renderListaClientes(e.target.value, currentIdsFromDom, max);
         });
     }
 
     if (btnConfirmClients) {
         btnConfirmClients.addEventListener('click', () => {
-            const checked = document.querySelectorAll('input[name="modal_client[]"]:checked');
-            const container = document.getElementById('usuarios-container');
-            container.innerHTML = '';
-            if (checked.length === 0) {
-                agregarInputUsuario(0);
-            } else {
-                checked.forEach((chk, idx) => agregarInputUsuario(idx, { id: chk.value, name: chk.dataset.name }));
+            if (clientModalConfirmCallback) {
+                const checked = document.querySelectorAll('input[name="modal_client[]"]:checked');
+                const selectedUsers = Array.from(checked).map(chk => ({ id: chk.value, name: chk.dataset.name }));
+                clientModalConfirmCallback(selectedUsers);
             }
             closeModal(modalClientes);
         });
