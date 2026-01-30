@@ -248,6 +248,21 @@
                                 </td>
                                 <td class="py-4 px-6 text-right">
                                     <div class="flex justify-end gap-2">
+                                        <button data-nomina="{{ json_encode([
+                                                    'concepto' => $nomina->concepto,
+                                                    'mes' => $nomina->mes,
+                                                    'anio' => $nomina->anio,
+                                                    'importe' => number_format($nomina->importe, 2),
+                                                    'estado' => $nomina->estado_nomina,
+                                                    'entrenador' => $nomina->user->name,
+                                                    'fecha_pago' => $nomina->fecha_pago ? $nomina->fecha_pago->format('d/m/Y') : 'Pendiente',
+                                                    'archivo_url' => $nomina->archivo_path ? asset('storage/'.$nomina->archivo_path) : ''
+                                                ]) }}"
+                                                onclick="abrirModalDetalle(JSON.parse(this.dataset.nomina))"
+                                                class="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Ver Detalles">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+
                                         @if($nomina->estado_nomina == 'pendiente_pago')
                                             <form action="{{ route('admin.nominas.pagar', $nomina->id) }}" method="POST">
                                                 @csrf
@@ -340,6 +355,56 @@
         </div>
     </div>
 
+    <div id="modalDetalleAdmin" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] hidden items-center justify-center fade-in">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-8 shadow-2xl relative">
+            <button onclick="cerrarModalDetalle()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Detalle de Nómina</h2>
+                <p class="text-slate-500 mt-1" id="modalDetalleEntrenador"></p>
+            </div>
+
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-500 font-medium">Concepto</span>
+                    <span class="text-slate-800 font-bold text-right text-sm" id="modalDetalleConcepto">--</span>
+                </div>
+
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-500 font-medium">Periodo</span>
+                    <span class="text-slate-800 font-bold" id="modalDetallePeriodo">--</span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-500 font-medium">Importe</span>
+                    <span class="text-2xl font-black text-slate-800" id="modalDetalleImporte">-- €</span>
+                </div>
+
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-500 font-medium">Estado</span>
+                    <span id="modalDetalleEstadoBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold">
+                        --
+                    </span>
+                </div>
+            </div>
+
+            <a id="btnDescargarPDFAdmin" href="#" target="_blank" class="flex items-center justify-center gap-3 w-full py-4 bg-slate-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                <i class="fas fa-file-pdf text-red-400 text-xl"></i>
+                <span>Ver documento PDF</span>
+            </a>
+            
+            <div id="noPDFMessageAdmin" class="hidden text-center text-slate-400 italic mt-4 text-sm">
+                No hay documento PDF adjunto.
+            </div>
+
+        </div>
+    </div>
+
     <script>
         function filterTable() {
             const input = document.getElementById('searchInput');
@@ -359,7 +424,7 @@
 
         function abrirModalRevision(btn) {
             const id = btn.dataset.id;
-            const userid = btn.dataset.userid; // Make sure this matches data-userid in HTML
+            const userid = btn.dataset.userid; 
             const importe = btn.dataset.importe;
             const archivo = btn.dataset.archivo;
 
@@ -396,6 +461,51 @@
         document.getElementById('modalRevision').addEventListener('click', function(e) {
             if (e.target === this) {
                 cerrarModalRevision();
+            }
+        });
+
+        // --- NUEVO: Modal Detalle (Read Only) ---
+        function abrirModalDetalle(data) {
+            document.getElementById('modalDetalleEntrenador').textContent = data.entrenador;
+            document.getElementById('modalDetalleConcepto').textContent = data.concepto;
+            document.getElementById('modalDetallePeriodo').textContent = data.mes + '/' + data.anio;
+            document.getElementById('modalDetalleImporte').textContent = data.importe + ' €';
+            
+            const badge = document.getElementById('modalDetalleEstadoBadge');
+            if (data.estado === 'pagado') {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100';
+                badge.innerHTML = '<i class="fas fa-check"></i> Pagado';
+            } else {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100';
+                badge.innerHTML = '<i class="fas fa-hourglass-half"></i> Pendiente';
+            }
+
+            const btnPDF = document.getElementById('btnDescargarPDFAdmin');
+            const msgPDF = document.getElementById('noPDFMessageAdmin');
+
+            if (data.archivo_url) {
+                btnPDF.href = data.archivo_url;
+                btnPDF.classList.remove('hidden');
+                btnPDF.classList.add('flex');
+                msgPDF.classList.add('hidden');
+            } else {
+                btnPDF.classList.add('hidden');
+                btnPDF.classList.remove('flex');
+                msgPDF.classList.remove('hidden');
+            }
+
+            document.getElementById('modalDetalleAdmin').classList.remove('hidden');
+            document.getElementById('modalDetalleAdmin').classList.add('flex');
+        }
+
+        function cerrarModalDetalle() {
+            document.getElementById('modalDetalleAdmin').classList.add('hidden');
+            document.getElementById('modalDetalleAdmin').classList.remove('flex');
+        }
+
+        document.getElementById('modalDetalleAdmin').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModalDetalle();
             }
         });
     </script>

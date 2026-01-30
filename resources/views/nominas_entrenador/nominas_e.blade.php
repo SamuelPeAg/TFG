@@ -131,15 +131,19 @@
                                 @endif
                             </td>
                             <td class="py-4 px-6 text-right">
-                                @if($nomina->archivo_path)
-                                    <a href="{{ route('nominas_e.descargar', $nomina->id) }}" 
-                                       class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition-all border border-slate-200" 
-                                       title="Descargar PDF">
-                                        <i class="fas fa-file-pdf text-red-500"></i> PDF
-                                    </a>
-                                @else
-                                    <span class="text-slate-300 text-xs italic">No disponible</span>
-                                @endif
+                                <button data-nomina="{{ json_encode([
+                                            'concepto' => $nomina->concepto,
+                                            'mes' => $nomina->mes,
+                                            'anio' => $nomina->anio,
+                                            'importe' => number_format($nomina->importe, 2),
+                                            'estado' => $nomina->estado_nomina,
+                                            'fecha_pago' => $nomina->fecha_pago ? $nomina->fecha_pago->format('d/m/Y') : 'Pendiente',
+                                            'archivo_url' => $nomina->archivo_path ? route('nominas_e.descargar', $nomina->id) : ''
+                                        ]) }}" 
+                                        onclick="abrirModalDetalle(JSON.parse(this.dataset.nomina))"
+                                        class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition-all border border-slate-200">
+                                    <i class="fas fa-eye text-brand-teal"></i> Ver Detalle
+                                </button>
                             </td>
                         </tr>
                         @empty
@@ -159,6 +163,57 @@
         </main>
     </div>
 
+    {{-- MODAL DETALLE (Tailwind) --}}
+    <div id="modalDetalle" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] hidden items-center justify-center fade-in">
+        <div class="bg-white w-full max-w-lg rounded-2xl p-8 shadow-2xl relative">
+            <button onclick="cerrarModalDetalle()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-teal-50 text-brand-teal rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Detalle de Nómina</h2>
+                <p class="text-slate-500 mt-1" id="modalConcepto">concept_placeholder</p>
+            </div>
+
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-500 font-medium">Periodo</span>
+                    <span class="text-slate-800 font-bold" id="modalPeriodo">--</span>
+                </div>
+                
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-500 font-medium">Importe</span>
+                    <span class="text-2xl font-black text-slate-800" id="modalImporte">-- €</span>
+                </div>
+
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-500 font-medium">Estado</span>
+                    <span id="modalEstadoBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold">
+                        --
+                    </span>
+                </div>
+
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                    <span class="text-slate-500 font-medium">Fecha de Pago</span>
+                    <span class="text-slate-800 font-bold" id="modalFechaPago">--</span>
+                </div>
+            </div>
+
+            <a id="btnDescargarPDF" href="#" class="flex items-center justify-center gap-3 w-full py-4 bg-brand-dark text-white rounded-xl font-bold shadow-lg hover:shadow-brand-teal/20 transition-all hover:-translate-y-1">
+                <i class="fas fa-file-pdf text-red-400 text-xl"></i>
+                <span>Descargar Nómina (PDF)</span>
+            </a>
+            
+            <div id="noPDFMessage" class="hidden text-center text-slate-400 italic mt-4 text-sm">
+                No hay documento PDF adjunto.
+            </div>
+
+        </div>
+    </div>
+
     <script>
         function filterTable() {
             const input = document.getElementById('searchInput');
@@ -168,7 +223,6 @@
             rows.forEach(row => {
                 const conceptCell = row.querySelector('.concept-cell');
                 const concept = conceptCell.textContent.toLowerCase();
-                // También buscamos por fecha si queremos
                 if (concept.includes(filter)) {
                     row.style.display = '';
                 } else {
@@ -176,6 +230,51 @@
                 }
             });
         }
+
+        function abrirModalDetalle(data) {
+            document.getElementById('modalConcepto').textContent = data.concepto;
+            document.getElementById('modalPeriodo').textContent = data.mes + '/' + data.anio;
+            document.getElementById('modalImporte').textContent = data.importe + ' €';
+            
+            const badge = document.getElementById('modalEstadoBadge');
+            if (data.estado === 'pagado') {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100';
+                badge.innerHTML = '<i class="fas fa-check"></i> Pagado';
+            } else {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100';
+                badge.innerHTML = '<i class="fas fa-hourglass-half"></i> Pendiente';
+            }
+
+            document.getElementById('modalFechaPago').textContent = data.fecha_pago;
+
+            const btnPDF = document.getElementById('btnDescargarPDF');
+            const msgPDF = document.getElementById('noPDFMessage');
+
+            if (data.archivo_url) {
+                btnPDF.href = data.archivo_url;
+                btnPDF.classList.remove('hidden');
+                btnPDF.classList.add('flex');
+                msgPDF.classList.add('hidden');
+            } else {
+                btnPDF.classList.add('hidden');
+                btnPDF.classList.remove('flex');
+                msgPDF.classList.remove('hidden');
+            }
+
+            document.getElementById('modalDetalle').classList.remove('hidden');
+            document.getElementById('modalDetalle').classList.add('flex');
+        }
+
+        function cerrarModalDetalle() {
+            document.getElementById('modalDetalle').classList.add('hidden');
+            document.getElementById('modalDetalle').classList.remove('flex');
+        }
+        
+        document.getElementById('modalDetalle').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModalDetalle();
+            }
+        });
     </script>
 </body>
 </html>
