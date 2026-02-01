@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string("nombre");
             $table->string("direccion");
+            $table->text("google_maps_link")->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

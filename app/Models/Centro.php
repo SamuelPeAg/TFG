@@ -15,7 +15,8 @@ class Centro extends Model
 
     protected $fillable = [
         "nombre",
-        "direccion"
+        "direccion",
+        "google_maps_link"
     ];
 
 

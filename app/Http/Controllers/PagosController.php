@@ -13,7 +13,8 @@ class PagosController extends Controller
     {
         $users = User::role('cliente')->orderBy('name')->get();
         $entrenadores = User::role('entrenador')->orderBy('name')->get();
-        return view('Pagos.index', compact('users', 'entrenadores'));
+        $centros = \App\Models\Centro::all();
+        return view('Pagos.index', compact('users', 'entrenadores', 'centros'));
     }
 
     public function buscarPorUsuario(Request $request)
@@ -78,12 +79,13 @@ class PagosController extends Controller
             
             $entrenadoresList = array_values($entrenadoresMap);
 
-            $color = '#A5EFE2'; // OPEN
-            $textColor = '#1f2937'; // Darker text for light background
-            if ($first->centro === 'AIRA') {
+            $centroUpper = strtoupper($first->centro);
+            $color = '#A5EFE2'; // Default / Open Arena
+            $textColor = '#1f2937';
+            if (str_contains($centroUpper, 'AIRA')) {
                 $color = '#4BB7AE';
                 $textColor = '#ffffff';
-            } elseif ($first->centro === 'CLINICA') {
+            } elseif (str_contains($centroUpper, 'CLINICA')) {
                 $color = '#EF5D7A';
                 $textColor = '#ffffff';
             }
@@ -124,7 +126,7 @@ class PagosController extends Controller
             'users.*'      => ['exists:users,id'],
             'trainers'     => ['nullable', 'array'],
             'trainers.*'   => ['exists:users,id'],
-            'centro'       => ['required', 'in:CLINICA,AIRA,OPEN'],
+            'centro'       => ['required', 'string'],
             'nombre_clase' => ['required', 'string', 'max:120'],
             'tipo_clase'   => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
             'metodo_pago'  => ['required', 'in:TPV,EF,DD,CC'],

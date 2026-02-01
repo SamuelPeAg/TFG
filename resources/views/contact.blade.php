@@ -26,94 +26,44 @@
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Nuestros 3 Centros</h2>
                     
                     <div class="space-y-4">
-                        
-                        {{-- Centro AIRA --}}
+                        @foreach($centros as $index => $centro)
+                        @php
+                            $colors = ['brandTeal', 'brandCoral', 'brandAqua'];
+                            $color = $colors[$index % count($colors)];
+                            $icon = ['fa-dumbbell', 'fa-sun', 'fa-heart-pulse'][$index % 3];
+                            $tag = ['Maquinaria especializada', 'Aire libre y funcional', 'Salud y ejercicio'][$index % 3];
+                            
+                            // Usar el link de la base de datos o uno genérico si está vacío
+                            $mapUrl = $centro->google_maps_link ?? "https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=" . urlencode($centro->nombre . " " . $centro->direccion);
+                        @endphp
                         <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition">
                             <div class="flex flex-col sm:flex-row">
                                 <div class="sm:w-2/5 h-40 sm:h-auto relative">
                                     <iframe
                                         class="absolute inset-0 w-full h-full"
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12594.463651533495!2d-4.780209212841773!3d37.89266410000003!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6cdf7288300331%3A0x1bd6b7761e69d9a9!2sMoverte%20da%20vida%20-%20Aira%20fitness%20club!5e0!3m2!1ses!2ses!4v1768325180952!5m2!1ses!2ses"
+                                        src="{{ $mapUrl }}"
                                         style="border:0;" allowfullscreen="" loading="lazy">
                                     </iframe>
                                 </div>
                                 <div class="sm:w-3/5 p-4">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <span class="bg-brandTeal text-white px-2 py-1 rounded-full text-xs font-bold">AIRA</span>
-                                        <h3 class="text-lg font-bold text-gray-900">Aira Fitness Club</h3>
+                                        <span class="bg-{{ $color }} {{ $color == 'brandAqua' ? 'text-gray-900' : 'text-white' }} px-2 py-1 rounded-full text-xs font-bold">{{ strtoupper($centro->nombre) }}</span>
+                                        <h3 class="text-lg font-bold text-gray-900">{{ $centro->nombre }}</h3>
                                     </div>
                                     <div class="space-y-1 text-sm text-gray-600">
                                         <p class="flex items-center gap-2">
                                             <i class="fas fa-map-marker-alt text-brandTeal w-4"></i>
-                                            Córdoba, España
+                                            {{ $centro->direccion }}
                                         </p>
                                         <p class="flex items-center gap-2">
-                                            <i class="fas fa-dumbbell text-brandTeal w-4"></i>
-                                            Maquinaria especializada
+                                            <i class="fas {{ $icon }} text-brandTeal w-4"></i>
+                                            {{ $tag }}
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        {{-- Centro OPEN --}}
-                        <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition">
-                            <div class="flex flex-col sm:flex-row">
-                                <div class="sm:w-2/5 h-40 sm:h-auto relative">
-                                    <iframe
-                                        class="absolute inset-0 w-full h-full"
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12596.662396816844!2d-4.821452712841789!3d37.879809800000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6d21986110736b%3A0xd2b686fab1dd9bb5!2sMoverte%20da%20Vida%20-%20Open%20Arena!5e0!3m2!1ses!2ses!4v1768325263249!5m2!1ses!2ses"
-                                        style="border:0;" allowfullscreen="" loading="lazy">
-                                    </iframe>
-                                </div>
-                                <div class="sm:w-3/5 p-4">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span class="bg-brandCoral text-white px-2 py-1 rounded-full text-xs font-bold">OPEN</span>
-                                        <h3 class="text-lg font-bold text-gray-900">Open Arena</h3>
-                                    </div>
-                                    <div class="space-y-1 text-sm text-gray-600">
-                                        <p class="flex items-center gap-2">
-                                            <i class="fas fa-map-marker-alt text-brandCoral w-4"></i>
-                                            Córdoba, España
-                                        </p>
-                                        <p class="flex items-center gap-2">
-                                            <i class="fas fa-sun text-brandCoral w-4"></i>
-                                            Aire libre y funcional
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Centro PRINCIPAL --}}
-                        <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition">
-                            <div class="flex flex-col sm:flex-row">
-                                <div class="sm:w-2/5 h-40 sm:h-auto relative">
-                                    <iframe
-                                        class="absolute inset-0 w-full h-full"
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12596.662396816844!2d-4.821452712841789!3d37.879809800000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6d210ee12d99e3%3A0x2e64896407139591!2sMoverte%20da%20vida%20-%20centro%20de%20salud%20y%20ejercicio!5e0!3m2!1ses!2ses!4v1768326010698!5m2!1ses!2ses"
-                                        style="border:0;" allowfullscreen="" loading="lazy">
-                                    </iframe>
-                                </div>
-                                <div class="sm:w-3/5 p-4">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span class="bg-brandAqua text-gray-900 px-2 py-1 rounded-full text-xs font-bold">PRINCIPAL</span>
-                                        <h3 class="text-lg font-bold text-gray-900">Centro Principal</h3>
-                                    </div>
-                                    <div class="space-y-1 text-sm text-gray-600">
-                                        <p class="flex items-center gap-2">
-                                            <i class="fas fa-map-marker-alt text-brandTeal w-4"></i>
-                                            Córdoba, España
-                                        </p>
-                                        <p class="flex items-center gap-2">
-                                            <i class="fas fa-heart-pulse text-brandTeal w-4"></i>
-                                            Salud y ejercicio
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
+                        @endforeach
                     </div>
 
                     {{-- Información de contacto --}}

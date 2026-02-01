@@ -59,12 +59,7 @@ class FacturacionController extends Controller
             $resumen[$k]['facturacion'] = round($v['facturacion'], 2);
         }
 
-        $centros = Pago::query()
-            ->select('centro')
-            ->distinct()
-            ->orderBy('centro')
-            ->pluck('centro')
-            ->values();
+        $centros = \App\Models\Centro::all();
 
         $entrenadores = User::role('entrenador')
             ->orderBy('name')

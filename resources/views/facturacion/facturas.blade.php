@@ -46,7 +46,7 @@
                             <select name="centro" class="modern-input">
                                 <option value="todos" @selected(($centro ?? 'todos') == 'todos')>Todos</option>
                                 @foreach($centros as $cen)
-                                    <option value="{{ $cen }}" @selected(($centro ?? 'todos') == $cen)>{{ $cen }}</option>
+                                    <option value="{{ $cen->nombre }}" @selected(($centro ?? 'todos') == $cen->nombre)>{{ $cen->nombre }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function(){
             try {
                 const centroSel = document.querySelector('select[name="centro"]');
                 if (centroSel && centroSel.value) params.append('centro', centroSel.value);
-                const res = await fetch('{{ route('facturas.clases') }}?' + params.toString(), { headers: { 'Accept': 'application/json' }});
+                const res = await fetch("{{ route('facturas.clases') }}?" + params.toString(), { headers: { 'Accept': 'application/json' }});
                 const data = await res.json();
 
                 if (!data || data.length === 0) {
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function(){
             openModal('<p>Cargando...</p>');
 
             try {
-                const res = await fetch('{{ route('facturas.clases') }}?' + params.toString(), { headers: { 'Accept': 'application/json' }});
+                const res = await fetch("{{ route('facturas.clases') }}?" + params.toString(), { headers: { 'Accept': 'application/json' }});
                 const data = await res.json();
 
                 if (!data || data.length === 0) {

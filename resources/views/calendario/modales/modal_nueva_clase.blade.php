@@ -23,9 +23,9 @@
                     <i class="fa-solid fa-building input-icon"></i>
                     <select id="centro" name="centro" class="modern-input" required>
                         <option value="" disabled selected>Selecciona un centro...</option>
-                        <option value="OPEN">OPEN</option>
-                        <option value="AIRA">AIRA</option>
-                        <option value="CLINICA">CLINICA</option>
+                        @foreach($centros as $centro)
+                            <option value="{{ $centro->nombre }}">{{ $centro->nombre }}</option>
+                        @endforeach
                     </select>
                   </div>
                 </div>

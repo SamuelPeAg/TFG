@@ -28,7 +28,10 @@ Route::get('/', function () {
 Route::view('/aviso-legal', 'legal.notice')->name('legal.notice');
 Route::view('/politica-privacidad', 'legal.privacy')->name('privacy.policy');
 Route::view('/politica-cookies', 'legal.cookies')->name('cookies.policy');
-Route::view('/contacto', 'contact')->name('contact');
+Route::get('/contacto', function () {
+    $centros = \App\Models\Centro::all();
+    return view('contact', compact('centros'));
+})->name('contact');
 
 // Contacto (POST)
 Route::post('/contacto/enviar', function (Request $request) {
