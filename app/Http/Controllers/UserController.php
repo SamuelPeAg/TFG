@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Entrenador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
     /**
      * Array centralizado de mensajes de error en español.
-     * Así reutilizamos los mismos textos para crear y actualizar.
      */
     protected function validationMessages()
     {
@@ -40,30 +41,18 @@ class UserController extends Controller
 
     public function index()
     {
-        // Mostrar solo clientes en la interfaz de usuarios
-        $users = User::role('cliente')->get();
-        
-
-        return view('users.index', compact('users',));
+        // El modelo User ahora solo contiene clientes
+        $users = User::all();
+        return view('users.index', compact('users'));
     }
 
     public function store(Request $request)
     {
-        // --- 1. VALIDACIONES ROBUSTAS (Mínimo 2 por campo) ---
         $request->validate([
-            // Nombre: Obligatorio + Texto + Mínimo 3 letras + Máximo 255
             'name'          => 'required|string|min:3|max:50',
-            
-            // Email: Obligatorio + Formato email + Único en la tabla
             'email'         => 'required|email|unique:users,email',
-            
-            // Password: Obligatorio + Mínimo 6 caracteres
             'password'      => 'required|string|min:6',
-            
-            // iban: Opcional + Texto + Único + Mínimo 15 caracteres (validez básica)
             'iban'          => 'nullable|string|unique:users,iban|min:15|max:34',
-            
-            // Firma: Opcional + Texto + Máximo 255
             'firma_digital' => 'nullable|string|max:255',
         ], $this->validationMessages());
 
@@ -75,7 +64,7 @@ class UserController extends Controller
             'firma_digital' => $request->firma_digital,
         ]);
 
-        // Asignar rol cliente por defecto
+        // Sigue teniendo el rol cliente por si se usa Spatie para permisos
         $user->assignRole('cliente');
 
         return redirect()->route('users.index')->with('success', 'Usuario creado correctamente.');
@@ -83,10 +72,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
-        // --- VALIDACIONES AL ACTUALIZAR ---
         $request->validate([
             'name'          => 'required|string|min:3|max:50',
-            // Ignoramos el ID del usuario actual para que no falle el "unique"
             'email'         => 'required|email|unique:users,email,' . $user->id,
             'iban'          => 'nullable|string|min:15|unique:users,iban,' . $user->id,
             'firma_digital' => 'nullable|string|max:255',
@@ -99,10 +86,9 @@ class UserController extends Controller
             'firma_digital' => $request->firma_digital,
         ];
 
-        // Solo actualizar contraseña si se ha rellenado
         if ($request->filled('password')) {
             $request->validate([
-                'password' => 'string|min:6', // Validamos también aquí
+                'password' => 'string|min:6',
             ], $this->validationMessages());
             
             $data['password'] = Hash::make($request->password);
@@ -119,43 +105,46 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 
-
-
-    // --- MÉTODOS DE CONFIGURACIÓN (PERFIL) ---
     public function configuracion(Request $request)
     {
+        // Obtener el usuario de cualquiera de los dos guards
+        $user = Auth::guard('entrenador')->user() ?: Auth::guard('web')->user();
+
         return view('configuracion.configuracion', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 
     public function updateConfiguracion(Request $request)
     {
-        $user = $request->user();
+        $user = Auth::guard('entrenador')->user() ?: Auth::guard('web')->user();
+        
+        if (!$user) {
+            abort(403);
+        }
 
-        // Validaciones en español
+        // Determinar tabla para validación de email único
+        $table = ($user instanceof Entrenador) ? 'entrenadores' : 'users';
+
         $validated = $request->validate([
             'name'  => ['required', 'string', 'min:3', 'max:50'],
             'email' => [
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->ignore($user->id),
+                Rule::unique($table, 'email')->ignore($user->id),
             ],
             'iban' => [
                 'nullable', 
                 'string', 
                 'min:15', 
-                Rule::unique('users', 'iban')->ignore($user->id)
+                Rule::unique($table, 'iban')->ignore($user->id)
             ],
             'firma_digital' => ['nullable', 'string', 'max:255'],
-
-            // Password opcional (solo si se rellena)
             'current_password' => ['nullable', 'string'],
             'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
-        ], $this->validationMessages()); // Usamos los mensajes comunes
+        ], $this->validationMessages());
 
-        // Datos básicos
         $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -163,9 +152,7 @@ class UserController extends Controller
             'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
         ];
 
-        // Cambiar contraseña SOLO si el usuario escribe una nueva
         if ($request->filled('password')) {
-            // Validación extra para la contraseña actual
             $request->validate([
                 'current_password' => ['required'],
             ], [

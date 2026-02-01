@@ -17,12 +17,15 @@
         </a>
     </div>
 
+    @php
+        $user = auth('entrenador')->user() ?: auth('web')->user();
+    @endphp
     <div class="user-profile-card">
         <div class="user-avatar">
-            {{ substr(auth()->user()->name, 0, 1) }}
+            {{ $user ? substr($user->name, 0, 1) : 'U' }}
         </div>
         <a href="{{ route('calendario') }}" class="user-info-text hover:opacity-80 transition-opacity">
-            <span class="name">{{ auth()->user()->name }}</span>
+            <span class="name">{{ $user ? $user->name : 'Usuario' }}</span>
             <span class="role">Panel de Gestión</span>
         </a>
     </div>

@@ -176,13 +176,14 @@
 
 <body>
   <div class="dashboard-container">
-     @auth
-        @if(auth()->user()->hasRole('admin'))
-            @include('components.sidebar.sidebar_admin')
-        @elseif(auth()->user()->hasRole('entrenador'))
-            @include('components.sidebar.sidebar_entrenador')
-        @endif
-    @endauth
+     @php
+        $user = auth('entrenador')->user() ?: auth('web')->user();
+     @endphp
+     @if($user && $user->hasRole('admin'))
+         @include('components.sidebar.sidebar_admin')
+     @elseif($user && $user->hasRole('entrenador'))
+         @include('components.sidebar.sidebar_entrenador')
+     @endif
 
     <main class="main-content">
       <div class="header-controls">
@@ -230,10 +231,17 @@
   @include('calendario.modales.modal_seleccion_clientes')
 
   <script>
-    window.CURRENT_USER_ROLE = "{{ Auth::check() ? (Auth::user()->roles->pluck('name')->first() ?? '') : '' }}";
-    window.CURRENT_USER_ID = {{ Auth::id() ?? 'null' }};
-    window.IS_ADMIN = {{ Auth::check() && Auth::user()->hasRole('admin') ? 'true' : 'false' }};
-    window.IS_TRAINER = {{ Auth::check() && Auth::user()->hasRole('entrenador') ? 'true' : 'false' }};
+    @php
+        $user = auth('entrenador')->user() ?: auth('web')->user();
+        $role = $user ? ($user->roles->pluck('name')->first() ?? '') : '';
+        $id = $user ? $user->id : 'null';
+        $isAdmin = $user && $user->hasRole('admin') ? 'true' : 'false';
+        $isTrainer = $user && $user->hasRole('entrenador') ? 'true' : 'false';
+    @endphp
+    window.CURRENT_USER_ROLE = "{{ $role }}";
+    window.CURRENT_USER_ID = {{ $id }};
+    window.IS_ADMIN = {{ $isAdmin }};
+    window.IS_TRAINER = {{ $isTrainer }};
   </script>
 
   <script src="{{ asset('js/calendario.js') }}"></script>

@@ -53,13 +53,14 @@
 <body class="transition-colors duration-300">
 
     {{-- INCLUIMOS EL COMPONENTE SIDEBAR --}}
-    @auth
-        @if(auth()->user()->hasRole('admin'))
-            @include('components.sidebar.sidebar_admin')
-        @elseif(auth()->user()->hasRole('entrenador'))
-            @include('components.sidebar.sidebar_entrenador')
-        @endif
-    @endauth
+    @php
+        $authUser = auth('entrenador')->user() ?: auth('web')->user();
+    @endphp
+    @if($authUser && $authUser->hasRole('admin'))
+        @include('components.sidebar.sidebar_admin')
+    @elseif($authUser && $authUser->hasRole('entrenador'))
+        @include('components.sidebar.sidebar_entrenador')
+    @endif
     {{-- CONTENIDO PRINCIPAL --}}
     <main class="dashboard-main">
         

@@ -13,8 +13,8 @@ class RestrictEntrenadorMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-        if ($user && method_exists($user, 'hasRole') && $user->hasRole('entrenador')) {
+        $user = auth('entrenador')->user();
+        if ($user && $user->hasRole('entrenador')) {
             // Normalizar sin slashes al inicio
             $allowedPrefixes = [
                 'users',
