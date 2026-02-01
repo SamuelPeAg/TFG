@@ -15,40 +15,45 @@ class RoleSeeder extends Seeder
         // Limpiar caché de permisos
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Crear roles básicos
-        Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'cliente']);
-        Role::firstOrCreate(['name' => 'entrenador']);
-        
-         $admin = User::firstOrCreate(
+        // Crear roles para el guard 'web' (clientes)
+        Role::firstOrCreate(['name' => 'cliente', 'guard_name' => 'web']);
+
+        // Crear roles para el guard 'entrenador' (entrenadores y admins)
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'entrenador']);
+        Role::firstOrCreate(['name' => 'entrenador', 'guard_name' => 'entrenador']);
+
+        // Crear Admins en la tabla de entrenadores
+        $admin = \App\Models\Entrenador::firstOrCreate(
             ['email' => 'admin@factomove'],
             [
                 'name' => 'admin',
                 'password' => Hash::make('admin12345'),
+                'email_verified_at' => now(),
             ]
         );
-        $adminjavi = User::firstOrCreate(
+
+        $adminjavi = \App\Models\Entrenador::firstOrCreate(
             ['email' => 'javier.ruiz@doc.medac.es'],
             [
                 'name' => 'javi',
                 'password' => Hash::make('password'),
+                'email_verified_at' => now(),
             ]
         );
-        
-        $entrenador = User::firstOrCreate(
+
+        // Crear un Entrenador de prueba en la tabla de entrenadores
+        $entrenador = \App\Models\Entrenador::firstOrCreate(
             ['email' => 'entrenador@factomove'],
             [
                 'name' => 'entrenador',
                 'password' => Hash::make('entrenador'),
+                'email_verified_at' => now(),
             ]
         );
 
-        $entrenador->syncRoles(["entrenador"]);
+        // Asignar roles (Spatie detectará automáticamente el guard basado en el modelo Entrenador)
         $admin->syncRoles(['admin']);
         $adminjavi->syncRoles(['admin']);
-        // (Opcional) Crear permisos y asignarlos a roles si los necesitas
-        // Permission::firstOrCreate(['name' => 'manage users']);
-        // $role = Role::findByName('admin');
-        // $role->givePermissionTo('manage users');
+        $entrenador->syncRoles(['entrenador']);
     }
 }

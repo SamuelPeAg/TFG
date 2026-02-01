@@ -13,6 +13,7 @@ class Entrenador extends Authenticatable
     use HasFactory, SoftDeletes, Notifiable, HasRoles;
 
     protected $table = 'entrenadores';
+    protected $guard_name = 'entrenador';
 
     protected $fillable = [
         'name',

@@ -59,7 +59,7 @@ Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'c
 | 2. AUTENTICACIÓN (GUEST)
 |--------------------------------------------------------------------------
 */
-Route::middleware('guest')->group(function () {
+Route::middleware('guest:web,entrenador')->group(function () {
     // Login
     Route::get('/login', function () {
         return view('login.signup.login');
@@ -83,10 +83,12 @@ Route::middleware('guest')->group(function () {
 | 3. RUTAS PROTEGIDAS (AUTH)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web,entrenador')->group(function () {
 
     // Logout
     Route::post('/logout', function () {
+        Auth::guard('web')->logout();
+        Auth::guard('entrenador')->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
         return redirect('/');

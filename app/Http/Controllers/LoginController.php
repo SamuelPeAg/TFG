@@ -30,22 +30,24 @@ class LoginController extends Controller
         ]);
 
         // Intentar autenticar usando el guard 'entrenador' (Admin o Entrenador)
-        if (Auth::guard('entrenador')->attempt($credentials)) {
+        if (Auth::guard('entrenador')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect('/calendario');
+            
+            // Forzar que el guard por defecto de esta sesión sea entrenador para evitar conflictos
+            return redirect()->intended('/calendario');
         }
 
         // Intentar autenticar usando el guard 'web' (Clientes)
-        if (Auth::attempt($credentials)) {
+        if (Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             
-            $user = Auth::user();
-            // Aseguramos que el usuario tiene el rol cliente (según petición del usuario)
-            if (!$user->hasRole('cliente')) {
+            $user = Auth::guard('web')->user();
+            // Aseguramos que el usuario tiene el rol cliente
+            if (!$user->hasRole('cliente', 'web')) {
                 $user->assignRole('cliente');
             }
 
-            return redirect('/calendario');
+            return redirect()->intended('/calendario');
         }
 
         // Si falla la autenticación

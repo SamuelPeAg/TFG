@@ -12,6 +12,8 @@ class User extends Authenticatable
 {
     use HasFactory, SoftDeletes, Notifiable, HasRoles;
 
+    protected $guard_name = 'web';
+
     // Aquí añadimos 'activation_token' al array $fillable
     protected $fillable = [
         'name',

@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             // 5. Reservas (al final)
             ReservaSeeder::class,       // Usuarios apuntándose a clases
         ]);
-        User::factory()->count(2)->entrenador()->create();
+        \App\Models\Entrenador::factory()->count(2)->entrenador()->create();
         User::factory()->count(20)->cliente()->create();
     }
 }
