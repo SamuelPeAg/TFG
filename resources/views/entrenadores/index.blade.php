@@ -253,7 +253,7 @@
                     <label class="form-label-custom">iban</label>
                     <div class="input-group-custom">
                         <i class="fas fa-credit-card"></i>
-                        <input type="text" name="iban" id="edit_iban" class="form-control-custom" required>
+                        <input type="text" name="iban" id="edit_iban" class="form-control-custom" placeholder="ES00 0000 0000 0000 0000 0000">
                     </div>
                 </div>
 

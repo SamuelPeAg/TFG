@@ -22,27 +22,27 @@ class EntrenadorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre'   => ['required', 'string', 'min:3', 'max:50'],
-            'email'    => ['required', 'email', 'max:191', 'unique:users,email'],
+            'nombre' => ['required', 'string', 'min:3', 'max:50'],
+            'email' => ['required', 'email', 'max:191', 'unique:users,email'],
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
-            'nombre.min'      => 'El nombre debe tener al menos 3 caracteres.',
-            'email.required'  => 'El correo electrónico es obligatorio.',
-            'email.email'     => 'El formato del correo no es válido.',
-            'email.unique'    => 'Este correo electrónico ya está registrado.',
+            'nombre.min' => 'El nombre debe tener al menos 3 caracteres.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El formato del correo no es válido.',
+            'email.unique' => 'Este correo electrónico ya está registrado.',
         ]);
         $token = Str::random(60);
         // Crear el usuario entrenador (solo nombre y email)
         $user = User::create([
-            'name'     => $request->nombre,
-            'email'    => $request->email,
-            'password' => Hash::make(Str::random(24)), 
-            'activation_token' => $token 
+            'name' => $request->nombre,
+            'email' => $request->email,
+            'password' => Hash::make(Str::random(24)),
+            'activation_token' => $token
         ]);
         // Crear un token de activación para el entrenador
         $user->assignRole('entrenador');
 
-        
+
 
         // Enviar el email con el enlace de activación
         Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
@@ -54,33 +54,27 @@ class EntrenadorController extends Controller
 
     public function update(Request $request, $id)
     {
-
         $request->validate([
-        'password' => 'required|confirmed|min:8',
-        // 'iban'     => 'required|string|min:24', 
-    ], [
-        'password.required'  => 'La contraseña es obligatoria.',
-        'password.confirmed' => 'Las contraseñas no coinciden.',
-        'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
-        // 'iban.required'      => 'El campo IBAN es obligatorio.',
-        // 'iban.min'           => 'El IBAN debe tener el formato completo (24 caracteres).',
-    ]);
-        $user = User::whereKey($id)->firstOrFail();
-
-        // Validar los campos
-        // Validar los campos (ya validados arriba)
-        // $request->validate([...]);
-
-        // Actualizar la información del usuario
-        $user->update([
-            'password' => Hash::make($request->password),
-            // 'iban'     => $request->iban,
-            'activation_token' => null,  // Borrar el token de activación
+            'password' => 'nullable|confirmed|min:8',
+            'iban' => 'nullable|string|max:34',
+        ], [
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
-        // Asignar rol de entrenador
-        $user->assignRole('entrenador');
-        return redirect()->route('login')->with('success', 'Registro completado exitosamente.');
+        $user = User::findOrFail($id);
+
+        $data = [
+            'iban' => $request->iban,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+
+        return redirect()->route('entrenadores.index')->with('success', 'Datos del entrenador actualizados correctamente.');
     }
 
 
@@ -114,23 +108,23 @@ class EntrenadorController extends Controller
     {
         $request->validate([
             'password' => 'required|confirmed|min:8',
-            'token'    => 'required|string',
+            'token' => 'required|string',
         ], [
-            'password.required'  => 'La contraseña es obligatoria.',
+            'password.required' => 'La contraseña es obligatoria.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
-            'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
         $user = User::findOrFail($id);
 
         // Security Check: Verify token matches
         if ($user->activation_token !== $request->token) {
-             return back()->with('error', 'Token de seguridad inválido o expirado.');
+            return back()->with('error', 'Token de seguridad inválido o expirado.');
         }
 
         $user->update([
             'password' => Hash::make($request->password),
-            'activation_token' => null, 
+            'activation_token' => null,
             'email_verified_at' => now(), // Mark as verified
         ]);
 
