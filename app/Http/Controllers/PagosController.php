@@ -20,14 +20,30 @@ class PagosController extends Controller
     public function buscarPorUsuario(Request $request)
     {
         $nombre = trim((string) $request->input('q', ''));
+        $centro = $request->input('centro');
+        $start  = $request->input('start');
+        $end    = $request->input('end');
 
         $query = Pago::with(['user', 'entrenadores']);
 
+        if ($start) {
+            try {
+                $query->where('fecha_registro', '>=', Carbon::parse($start)->format('Y-m-d H:i:s'));
+            } catch (\Exception $e) {}
+        }
+        if ($end) {
+            try {
+                $query->where('fecha_registro', '<=', Carbon::parse($end)->format('Y-m-d H:i:s'));
+            } catch (\Exception $e) {}
+        }
+
+        if ($centro) {
+            $query->where('centro', $centro);
+        }
+
         if ($nombre !== '') {
-            $query->where(function ($q) use ($nombre) {
-                $q->whereHas('user', function ($sub) use ($nombre) {
-                    $sub->where('name', 'like', "%{$nombre}%");
-                })->orWhere('centro', 'like', "%{$nombre}%");
+            $query->whereHas('user', function ($sub) use ($nombre) {
+                $sub->where('name', 'like', "%{$nombre}%");
             });
         }
 

@@ -45,6 +45,26 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
 
+        // Dynamic events source with dual filters
+        events: function (info, successCallback, failureCallback) {
+            const centro = document.getElementById('filter-center')?.value || '';
+            const userQ = document.getElementById('search-user')?.value || '';
+            const url = `/usuarios/Pagos?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}`;
+
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error('Error en el servidor: ' + res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    successCallback(data.events || []);
+                })
+                .catch(e => {
+                    console.error('Error cargando eventos:', e);
+                    failureCallback(e);
+                });
+        },
+
         eventClick: function (info) {
             mostrarDetallesEvento(info.event);
         },
@@ -62,8 +82,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     calendar.render();
-    console.log('Iniciando carga del calendario...');
-    fetchAndRenderCalendar('').then(() => console.log('Calendario cargado.'));
+
+    // ====== PERSISTENCIA DE CENTRO ======
+    const filterCenter = document.getElementById('filter-center');
+    if (filterCenter) {
+        // Cargar desde localStorage
+        const savedCenter = localStorage.getItem('factomove_preferred_center');
+        if (savedCenter) {
+            filterCenter.value = savedCenter;
+            calendar.refetchEvents();
+        }
+
+        // Guardar al cambiar
+        filterCenter.addEventListener('change', () => {
+            localStorage.setItem('factomove_preferred_center', filterCenter.value);
+            calendar.refetchEvents();
+        });
+    }
 
     // ====== 2. LÓGICA DE CLICK EN FECHA ======
     function abrirModalNuevaClase(dateObj) {
@@ -430,14 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) { console.error(e); }
     }
 
-    async function fetchAndRenderCalendar(q) {
-        try {
-            const res = await fetch(`/usuarios/Pagos?q=${encodeURIComponent(q || '')}`);
-            const data = await res.json();
-            calendar.removeAllEvents();
-            if (data.events) calendar.addEventSource(data.events);
-        } catch (e) { console.error(e); }
-    }
+    // fetchAndRenderCalendar is now handled by calendar.refetchEvents() via the events source
 
     if (formNuevaClase) {
         formNuevaClase.addEventListener('submit', async (e) => {
@@ -482,8 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 if (!res.ok) { alert('Error inesperado.'); return; }
                 if (json?.success) {
-                    const currentSearch = document.getElementById('search-user')?.value || '';
-                    fetchAndRenderCalendar(currentSearch);
+                    calendar.refetchEvents();
                     closeModal(modalNueva);
                     formNuevaClase.reset();
                     summaryEl.innerHTML = `<p style="color:#00897b"><strong>¡Guardado!</strong> Clase añadida correctamente.</p>`;
@@ -561,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (hiddenIdEl) hiddenIdEl.value = item.dataset.id;
                 boxEl.hidden = true;
                 // Trigger calendar search after selection
-                fetchAndRenderCalendar(inputEl.value.trim());
+                calendar.refetchEvents();
             }
         });
         document.addEventListener('click', (e) => {
@@ -580,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             clearTimeout(window.t);
-            window.t = setTimeout(() => fetchAndRenderCalendar(e.target.value.trim()), 400);
+            window.t = setTimeout(() => calendar.refetchEvents(), 400);
         });
     }
 

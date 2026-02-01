@@ -193,11 +193,25 @@
 
         <div class="controls-bar">
           
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <div class="search-anchor">
-              <input type="text" id="search-user" placeholder="Buscar usuario o centro..." autocomplete="off">
-              <div id="search_user_suggestions" class="suggestions" hidden></div>
+          <div class="filters-group" style="display: flex; gap: 10px; align-items: center; flex-grow: 1; max-width: 600px;">
+            <div class="search-box" style="flex: 1;">
+              <i class="fa-solid fa-house-medical"></i>
+              <div class="search-anchor">
+                <select id="filter-center" class="modern-select-no-border" style="width: 100%; border: none; outline: none; background: transparent; cursor: pointer; color: #374151; font-size: 14px;">
+                  <option value="">Todos los centros</option>
+                  @foreach($centros as $centro)
+                    <option value="{{ $centro->nombre }}">{{ $centro->nombre }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+
+            <div class="search-box" style="flex: 1.5;">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <div class="search-anchor">
+                <input type="text" id="search-user" placeholder="Buscar usuario..." autocomplete="off">
+                <div id="search_user_suggestions" class="suggestions" hidden></div>
+              </div>
             </div>
           </div>
 
