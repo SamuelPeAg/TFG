@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Entrenador;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Entrenador>
@@ -19,7 +21,7 @@ class EntrenadorFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'password' => Hash::make('password'),
             'foto_de_perfil' => 'perfil_' . $this->faker->numberBetween(1, 20) . '.jpg',
             'iban' => $this->faker->iban(),
             'firma_digital' => 'firma_' . $this->faker->uuid(),
@@ -29,7 +31,7 @@ class EntrenadorFactory extends Factory
 
     public function entrenador(): static
     {
-        return $this->afterCreating(function (\App\Models\Entrenador $entrenador) {
+        return $this->afterCreating(function (Entrenador $entrenador) {
             $entrenador->assignRole('entrenador');
         });
     }

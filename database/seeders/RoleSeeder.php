@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Entrenador;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -23,7 +24,7 @@ class RoleSeeder extends Seeder
         Role::firstOrCreate(['name' => 'entrenador', 'guard_name' => 'entrenador']);
 
         // Crear Admins en la tabla de entrenadores
-        $admin = \App\Models\Entrenador::firstOrCreate(
+        $admin = Entrenador::firstOrCreate(
             ['email' => 'admin@factomove'],
             [
                 'name' => 'admin',
@@ -32,7 +33,7 @@ class RoleSeeder extends Seeder
             ]
         );
 
-        $adminjavi = \App\Models\Entrenador::firstOrCreate(
+        $adminjavi = Entrenador::firstOrCreate(
             ['email' => 'javier.ruiz@doc.medac.es'],
             [
                 'name' => 'javi',
@@ -42,7 +43,7 @@ class RoleSeeder extends Seeder
         );
 
         // Crear un Entrenador de prueba en la tabla de entrenadores
-        $entrenador = \App\Models\Entrenador::firstOrCreate(
+        $entrenador = Entrenador::firstOrCreate(
             ['email' => 'entrenador@factomove'],
             [
                 'name' => 'entrenador',

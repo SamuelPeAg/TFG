@@ -12,6 +12,9 @@ use App\Http\Controllers\EntrenadorController;
 use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PagosController;
+use App\Models\Centro;
+use App\Http\Middleware\AdminOrEntrenadorMiddleware;
+use App\Http\Middleware\AdminMiddleware;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +32,7 @@ Route::view('/aviso-legal', 'legal.notice')->name('legal.notice');
 Route::view('/politica-privacidad', 'legal.privacy')->name('privacy.policy');
 Route::view('/politica-cookies', 'legal.cookies')->name('cookies.policy');
 Route::get('/contacto', function () {
-    $centros = \App\Models\Centro::all();
+    $centros = Centro::all();
     return view('contact', compact('centros'));
 })->name('contact');
 
@@ -99,7 +102,7 @@ Route::middleware('auth:web,entrenador')->group(function () {
     | 3.1 COMPARTIDO (ADMIN & ENTRENADOR)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class)->group(function () {
+    Route::middleware(AdminOrEntrenadorMiddleware::class)->group(function () {
 
         // Calendario (Vista principal)
         Route::get('/calendario', [CalendarioController::class, 'index'])
@@ -135,7 +138,7 @@ Route::middleware('auth:web,entrenador')->group(function () {
     | 3.2 SOLO ADMINISTRADOR
     |--------------------------------------------------------------------------
     */
-    Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+    Route::middleware(AdminMiddleware::class)->group(function () {
 
         // Gestión de Entrenadores
         Route::resource('entrenadores', EntrenadorController::class);

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Entrenador;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -33,7 +34,7 @@ class DatabaseSeeder extends Seeder
             // 5. Reservas (al final)
             ReservaSeeder::class,       // Usuarios apuntándose a clases
         ]);
-        \App\Models\Entrenador::factory()->count(2)->entrenador()->create();
+        Entrenador::factory()->count(2)->entrenador()->create();
         User::factory()->count(20)->cliente()->create();
     }
 }
