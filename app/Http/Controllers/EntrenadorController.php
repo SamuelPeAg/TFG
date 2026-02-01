@@ -56,10 +56,12 @@ class EntrenadorController extends Controller
     {
         $request->validate([
             'password' => 'nullable|confirmed|min:8',
-            'iban' => 'nullable|string|max:34',
+            'iban' => 'nullable|string|min:8|max:34',
         ], [
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'iban.max' => 'El IBAN no puede tener más de 34 caracteres.',
+            'iban.min' => 'El IBAN debe tener al menos 8 caracteres.',
         ]);
 
         $user = User::findOrFail($id);

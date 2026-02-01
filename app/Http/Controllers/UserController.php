@@ -31,7 +31,8 @@ class UserController extends Controller
             
             'iban.string'        => 'El iban debe ser un texto.',
             'iban.unique'        => 'Este iban ya pertenece a otro usuario.',
-            'iban.min'           => 'El iban parece incompleto (mínimo 15 caracteres).',
+            'iban.min'           => 'El iban parece incompleto (mínimo 8 caracteres).',
+            'iban.max'           => 'El IBAN no puede tener más de 34 caracteres.',
             
             'firma_digital.string' => 'La firma digital debe ser texto.',
             'firma_digital.max'    => 'La firma digital es demasiado larga.',
@@ -60,8 +61,8 @@ class UserController extends Controller
             // Password: Obligatorio + Mínimo 6 caracteres
             'password'      => 'required|string|min:6',
             
-            // iban: Opcional + Texto + Único + Mínimo 15 caracteres (validez básica)
-            'iban'          => 'nullable|string|unique:users,iban|min:15|max:34',
+            // iban: Opcional + Texto + Único + Mínimo 8 caracteres (validez básica)
+            'iban'          => 'nullable|string|unique:users,iban|min:8|max:34',
             
             // Firma: Opcional + Texto + Máximo 255
             'firma_digital' => 'nullable|string|max:255',
@@ -88,7 +89,7 @@ class UserController extends Controller
             'name'          => 'required|string|min:3|max:50',
             // Ignoramos el ID del usuario actual para que no falle el "unique"
             'email'         => 'required|email|unique:users,email,' . $user->id,
-            'iban'          => 'nullable|string|min:15|unique:users,iban,' . $user->id,
+            'iban'          => 'nullable|string|min:8|max:34|unique:users,iban,' . $user->id,
             'firma_digital' => 'nullable|string|max:255',
         ], $this->validationMessages());
 
@@ -145,7 +146,9 @@ class UserController extends Controller
             'iban' => [
                 'nullable', 
                 'string', 
-                'min:15', 
+                'string', 
+                'min:8', 
+                'max:34',
                 Rule::unique('users', 'iban')->ignore($user->id)
             ],
             'firma_digital' => ['nullable', 'string', 'max:255'],
