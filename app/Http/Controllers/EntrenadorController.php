@@ -56,7 +56,7 @@ class EntrenadorController extends Controller
     {
 
         $request->validate([
-        'password' => 'required|confirmed|min:8',
+        'password' => 'nullable|confirmed|min:8',
         // 'iban'     => 'required|string|min:24', 
     ], [
         'password.required'  => 'La contraseña es obligatoria.',
