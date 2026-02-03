@@ -27,7 +27,7 @@
         body {
             background-color: #f3f4f6;
             margin: 0;
-            font-family: sans-serif;
+            margin: 0;
         }
         /* Ajuste clave para empujar el contenido a la derecha del sidebar */
         .dashboard-main {

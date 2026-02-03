@@ -35,7 +35,7 @@
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         width: 90%; max-width: 400px;
         text-align: center;
-        font-family: 'Segoe UI', sans-serif;
+        text-align: center;
         animation: fadeIn 0.2s ease-out;
         position: relative; 
     }
@@ -155,7 +155,7 @@
         padding: 15px;
         border-radius: 12px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         z-index: 1;
     }
     

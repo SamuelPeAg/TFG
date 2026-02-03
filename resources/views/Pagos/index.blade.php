@@ -11,7 +11,7 @@
   
   <style>
     /* Estilos Específicos Dashboard */
-    body { background-color: #f3f4f6; font-family: 'Inter', system-ui, sans-serif; }
+    body { background-color: #f3f4f6; }
     
     .dashboard-container { display: flex; min-height: 100vh; }
     .main-content { flex: 1; padding: 30px; overflow-y: auto; }
