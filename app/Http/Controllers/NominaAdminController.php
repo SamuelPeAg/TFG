@@ -37,39 +37,131 @@ class NominaAdminController extends Controller
         $mes = $request->input('mes', date('n'));
         $anio = $request->input('anio', date('Y'));
 
-        // 1. Buscar pagos de ese mes/año agrupados por entrenador
-        $pagosPorEntrenador = Pago::whereMonth('fecha_registro', $mes)
-                                ->whereYear('fecha_registro', $anio)
-                                ->get()
-                                ->groupBy('entrenador_id');
+        // 1. Obtener TODOS los entrenadores
+        $entrenadores = User::role('entrenador')->get();
 
         $generadas = 0;
+        $actualizadas = 0;
 
-        foreach ($pagosPorEntrenador as $entrenadorId => $pagos) {
-            // Verificar si ya existe nómina para este entrenador/mes/año
-            $existe = Nomina_entrenador::where('user_id', $entrenadorId)
+        foreach ($entrenadores as $entrenador) {
+            // 2. Buscar sus pagos COMPLETED (fecha < now) para este mes
+            $pagos = Pago::where('entrenador_id', $entrenador->id)
+                        ->whereMonth('fecha_registro', $mes)
+                        ->whereYear('fecha_registro', $anio)
+                        ->where('fecha_registro', '<', now())
+                        ->get();
+
+            // AGRUPAR POR SESIONES ÚNICAS
+            // Clave: fecha + hora + nombre clase (para evitar contar alumnos duplicados como horas extra)
+            $sesiones = $pagos->groupBy(function($p) {
+                return $p->fecha_registro->format('Y-m-d H:i') . '|' . strtolower(trim($p->nombre_clase));
+            });
+
+            $totalMinutos = 0;
+            
+            foreach ($sesiones as $clave => $grupoPagos) {
+                // Tomamos el nombre de clase del primer pago del grupo
+                $nombreClase = $grupoPagos->first()->nombre_clase;
+                
+                // Buscar duración en modelo Clase (aproximación por nombre)
+                $claseDB = \App\Models\Clase::where('nombre', $nombreClase)->first();
+                $duracion = $claseDB ? $claseDB->duracion_minutos : 60; // Default 1h si no encuentra
+                
+                $totalMinutos += $duracion;
+            }
+
+            $horasTrabajadas = $totalMinutos / 60;
+            $precioHora = $entrenador->precio_hora > 0 ? $entrenador->precio_hora : 0; // Si no tiene, 0
+
+            $totalEntrenador = $horasTrabajadas * $precioHora;
+
+            // Datos para guardar en JSON
+            $detalles = [
+                'horas_trabajadas' => number_format($horasTrabajadas, 2),
+                'precio_hora' => $precioHora,
+                'sesiones_count' => $sesiones->count(),
+                'total_recaudado' => $pagos->sum('importe'), // Informativo
+                'cantidad_pagos' => $pagos->count()
+            ];
+
+            // 3. Crear o Actualizar Nómina
+            $nomina = Nomina_entrenador::where('user_id', $entrenador->id)
                         ->where('mes', $mes)
                         ->where('anio', $anio)
-                        ->exists();
+                        ->first();
 
-            if (!$existe) {
-                $total = $pagos->sum('importe');
-
+            if ($nomina) {
+                if ($nomina->estado_nomina === 'pendiente_revision') {
+                    $nomina->importe = $totalEntrenador;
+                    $nomina->detalles = $detalles;
+                    $nomina->save();
+                    $actualizadas++;
+                }
+            } else {
                 Nomina_entrenador::create([
-                    'user_id' => $entrenadorId,
+                    'user_id' => $entrenador->id,
                     'mes' => $mes,
                     'anio' => $anio,
                     'concepto' => 'Nómina ' . $this->getNombreMes($mes),
-                    'importe' => $total,
+                    'importe' => $totalEntrenador,
                     'estado_nomina' => 'pendiente_revision',
                     'es_auto_generada' => true,
+                    'detalles' => $detalles
                 ]);
-
                 $generadas++;
             }
         }
 
-        return back()->with('success', "Se han generado $generadas borradores de nóminas para el mes $mes/$anio.");
+        return back()->with('success', "Proceso finalizado: $generadas nóminas creadas y $actualizadas actualizadas para el mes $mes/$anio.");
+    }
+
+    // CALCULAR NÓMINA DINÁMICA
+    public function calcularNomina(Request $request, $userId)
+    {
+        $mes = $request->input('mes', date('n'));
+        $anio = $request->input('anio', date('Y'));
+        
+        $entrenador = User::find($userId);
+
+        // Buscar pagos del usuario para ese mes/año
+        $pagos = Pago::where('entrenador_id', $userId)
+                    ->whereMonth('fecha_registro', $mes)
+                    ->whereYear('fecha_registro', $anio)
+                    ->where('fecha_registro', '<', now())
+                    ->get();
+        
+        // Agrupar sesiones
+        $sesiones = $pagos->groupBy(function($p) {
+            return $p->fecha_registro->format('Y-m-d H:i') . '|' . strtolower(trim($p->nombre_clase));
+        });
+
+        $totalMinutos = 0;
+        foreach ($sesiones as $clave => $grupoPagos) {
+            $nombreClase = $grupoPagos->first()->nombre_clase;
+            $claseDB = \App\Models\Clase::where('nombre', $nombreClase)->first();
+            $duracion = $claseDB ? $claseDB->duracion_minutos : 60;
+            $totalMinutos += $duracion;
+        }
+
+        $horasTrabajadas = $totalMinutos / 60;
+        
+        // Si viene un precio en el request (ej: editado en modal), usarlo. Si no, el de la DB.
+        $precioHora = $request->input('precio_hora') ? floatval($request->input('precio_hora')) : ($entrenador->precio_hora ?? 0);
+
+        $totalEntrenador = $horasTrabajadas * $precioHora;
+
+        $detalles = [
+            'horas_trabajadas' => number_format($horasTrabajadas, 2),
+            'precio_hora' => $precioHora,
+            'sesiones_count' => $sesiones->count(),
+            'total_recaudado' => $pagos->sum('importe'),
+            'cantidad_pagos' => $pagos->count()
+        ];
+
+        return response()->json([
+            'importe' => $totalEntrenador,
+            'detalles' => $detalles
+        ]);
     }
 
     // ACTUALIZAR (CONFIRMAR O EDITAR)
@@ -86,6 +178,17 @@ class NominaAdminController extends Controller
 
         $nomina->importe = $request->importe;
         $nomina->user_id = $request->user_id; // Actualizar entrenador asignado
+
+        // ACTUALIZAR DETALLES CON LOS VALORES MANUALES
+        $detalles = $nomina->detalles ?? [];
+        // Si vienen en el request (que deberían si están en el form)
+        if($request->has('precio_hora')) {
+            $detalles['precio_hora'] = $request->precio_hora;
+        }
+        if($request->has('horas_trabajadas')) {
+            $detalles['horas_trabajadas'] = $request->horas_trabajadas;
+        }
+        $nomina->detalles = $detalles;
 
         // Subida de PDF
         if ($request->hasFile('archivo')) {
@@ -109,7 +212,7 @@ class NominaAdminController extends Controller
         return back()->with('success', $mensaje);
     }
     
-    // PAGAR (Marcar como pagado) - Opcional, si queremos botón de "Marcar Pagado"
+    // PAGAR (Marcar como pagado)
     public function marcarPagado($id)
     {
          $nomina = Nomina_entrenador::findOrFail($id);

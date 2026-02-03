@@ -20,12 +20,14 @@ class Nomina_entrenador extends Model
         'estado_nomina', 
         'fecha_pago', 
         'archivo_path',
-        'es_auto_generada'
+        'es_auto_generada',
+        'detalles'
     ];
 
     protected $casts = [
         'fecha_pago' => 'date',
         'es_auto_generada' => 'boolean',
+        'detalles' => 'array',
     ];
 
     public function user()

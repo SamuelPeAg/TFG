@@ -44,7 +44,7 @@
             @endif
         @endauth
 
-        <main class="flex-1 p-4 md:p-8 lg:ml-[250px] ml-0 fade-in max-w-7xl mx-auto transition-all duration-300">
+        <main class="flex-1 p-4 md:p-8 lg:ml-[260px] ml-0 fade-in w-full transition-all duration-300">
             
             {{-- HEADER --}}
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -180,15 +180,28 @@
                                     </span>
                                 </td>
                                 <td class="py-4 px-6 text-right">
-                                    <button onclick="abrirModalRevision(this)"
-                                            data-id="{{ $nomina->id }}" 
-                                            data-userid="{{ $nomina->user_id }}"
-                                            data-name="{{ $nomina->user->name }}" 
-                                            data-importe="{{ $nomina->importe }}"
-                                            data-archivo="{{ $nomina->archivo_path ? asset('storage/'.$nomina->archivo_path) : '' }}"
-                                            class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg shadow hover:bg-slate-700 transition-all">
-                                        Revisar
-                                    </button>
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button onclick="abrirModalRevision(this)"
+                                                data-id="{{ $nomina->id }}" 
+                                                data-userid="{{ $nomina->user_id }}"
+                                                data-name="{{ $nomina->user->name }}" 
+                                                data-importe="{{ $nomina->importe }}"
+                                                data-mes="{{ $nomina->mes }}"
+                                                data-anio="{{ $nomina->anio }}"
+                                                data-detalles="{{ json_encode($nomina->detalles) }}"
+                                                data-archivo="{{ $nomina->archivo_path ? asset('storage/'.$nomina->archivo_path) : '' }}"
+                                                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg shadow hover:bg-slate-700 transition-all">
+                                            Revisar
+                                        </button>
+
+                                        <form action="{{ route('admin.nominas.destroy', $nomina->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este borrador?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors shadow-sm" title="Eliminar Borrador">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -256,7 +269,8 @@
                                                     'estado' => $nomina->estado_nomina,
                                                     'entrenador' => $nomina->user->name,
                                                     'fecha_pago' => $nomina->fecha_pago ? $nomina->fecha_pago->format('d/m/Y') : 'Pendiente',
-                                                    'archivo_url' => $nomina->archivo_path ? asset('storage/'.$nomina->archivo_path) : ''
+                                                    'archivo_url' => $nomina->archivo_path ? asset('storage/'.$nomina->archivo_path) : '',
+                                                    'detalles' => $nomina->detalles
                                                 ]) }}"
                                                 onclick="abrirModalDetalle(JSON.parse(this.dataset.nomina))"
                                                 class="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Ver Detalles">
@@ -295,9 +309,9 @@
     </div>
 
     {{-- MODAL REVISION (Tailwind) --}}
-    <div id="modalRevision" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000] hidden items-center justify-center fade-in">
+    <div id="modalRevision" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] hidden items-center justify-center fade-in">
         <div class="bg-white w-full max-w-md rounded-2xl p-8 shadow-2xl relative">
-            <button onclick="cerrarModalRevision()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+            <button type="button" onclick="cerrarModalRevision()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                 <i class="fas fa-times text-xl"></i>
             </button>
             
@@ -322,6 +336,35 @@
                             @endforeach
                         </select>
                         <i class="fas fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="mb-6 grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Precio/Hora (€)</label>
+                        <input type="number" step="0.5" name="precio_hora" id="modalPrecioHora"  value="0"
+                               class="w-full p-4 rounded-xl border-2 border-slate-200 text-lg font-bold text-slate-700 focus:outline-none focus:border-brand-teal transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Horas Realizadas</label>
+                        <input type="number" step="0.5" name="horas_trabajadas" id="modalHoras" value="0"
+                               class="w-full p-4 rounded-xl border-2 border-slate-200 text-lg font-bold text-slate-700 focus:outline-none focus:border-brand-teal transition-colors">
+                    </div>
+                </div>
+
+                <div id="modalRevisionDesglose" class="bg-slate-50 p-4 rounded-xl mb-6 hidden">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-3 border-b border-slate-200 pb-2">Cálculo (Horas x Precio)</h4>
+                    <div class="flex justify-between items-center mb-1 text-sm">
+                        <span class="text-slate-600">Sesiones Impartidas:</span>
+                        <span id="revSesiones" class="font-bold text-slate-800">0</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-1 text-sm">
+                        <span class="text-slate-600">Horas Totales:</span>
+                        <span id="revHoras" class="font-bold text-slate-800">0.00 h</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-brand-teal mt-2 pt-2 border-t border-slate-200">
+                        <span class="font-medium">Total a Pagar:</span>
+                        <span id="revTotalEntrenador" class="font-bold text-lg">0.00 €</span>
                     </div>
                 </div>
 
@@ -379,6 +422,24 @@
                     <span class="text-slate-500 font-medium">Periodo</span>
                     <span class="text-slate-800 font-bold" id="modalDetallePeriodo">--</span>
                 </div>
+
+                <div id="modalDetalleDesglose" class="bg-white border-2 border-slate-100 p-4 rounded-xl hidden">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-3 text-center">Desglose de Pago</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Recaudado Total:</span>
+                            <span id="detRecaudado" class="font-bold text-slate-800">--</span>
+                        </div>
+                        <div class="flex justify-between text-brand-teal">
+                            <span class="font-medium">Entrenador (<span id="detPorcentaje">--%</span>):</span>
+                            <span id="detTotalEntrenador" class="font-bold">--</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400 text-xs mt-2 pt-2 border-t border-slate-50">
+                            <span>Beneficio Admin:</span>
+                            <span id="detTotalAdmin">--</span>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
                     <span class="text-slate-500 font-medium">Importe</span>
@@ -422,11 +483,75 @@
             });
         }
 
+        // --- NUEVO: Modal Detalle (Read Only) ---
+        function abrirModalDetalle(data) {
+            document.getElementById('modalDetalleEntrenador').textContent = data.entrenador;
+            document.getElementById('modalDetalleConcepto').textContent = data.concepto;
+            document.getElementById('modalDetallePeriodo').textContent = data.mes + '/' + data.anio;
+            document.getElementById('modalDetalleImporte').textContent = data.importe + ' €';
+            
+            // --- MOSTRAR DESGLOSE ---
+            const container = document.getElementById('modalDetalleDesglose');
+            if (data.detalles && data.detalles.total_recaudado) {
+                document.getElementById('detRecaudado').textContent = parseFloat(data.detalles.total_recaudado).toFixed(2) + ' €';
+                document.getElementById('detPorcentaje').textContent = data.detalles.porcentaje_entrenador + '%';
+                document.getElementById('detTotalEntrenador').textContent = parseFloat(data.detalles.total_entrenador).toFixed(2) + ' €';
+                document.getElementById('detTotalAdmin').textContent = parseFloat(data.detalles.total_admin).toFixed(2) + ' €';
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+            // ------------------------
+
+            const badge = document.getElementById('modalDetalleEstadoBadge');
+            if (data.estado === 'pagado') {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100';
+                badge.innerHTML = '<i class="fas fa-check"></i> Pagado';
+            } else {
+                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100';
+                badge.innerHTML = '<i class="fas fa-hourglass-half"></i> Pendiente';
+            }
+
+            const btnPDF = document.getElementById('btnDescargarPDFAdmin');
+            const msgPDF = document.getElementById('noPDFMessageAdmin');
+
+            if (data.archivo_url) {
+                btnPDF.href = data.archivo_url;
+                btnPDF.classList.remove('hidden');
+                btnPDF.classList.add('flex');
+                msgPDF.classList.add('hidden');
+            } else {
+                btnPDF.classList.add('hidden');
+                btnPDF.classList.remove('flex');
+                msgPDF.classList.remove('hidden');
+            }
+
+            document.getElementById('modalDetalleAdmin').classList.remove('hidden');
+            document.getElementById('modalDetalleAdmin').classList.add('flex');
+        }
+
         function abrirModalRevision(btn) {
             const id = btn.dataset.id;
             const userid = btn.dataset.userid; 
             const importe = btn.dataset.importe;
             const archivo = btn.dataset.archivo;
+            
+            // Asumimos que la tabla muestra el mes actual o tenemos acceso a él. 
+            // Para simplificar, extraemos el mes/año de la columna 'Periodo' de la fila correspondiente si es posible,
+            // O mejor, pasamos mes/año en el botón "Revisar".
+            // Vamos a modificar el botón Revisar para incluir data-mes y data-anio.
+            const mes = btn.dataset.mes || new Date().getMonth() + 1;
+            const anio = btn.dataset.anio || new Date().getFullYear();
+
+            const modal = document.getElementById('modalRevision');
+            modal.dataset.mes = mes;
+            modal.dataset.anio = anio;
+            
+            // Parsear detalles si existen
+            let detalles = null;
+            try {
+                detalles = JSON.parse(btn.dataset.detalles || 'null');
+            } catch(e) { console.error('Error parsing detalles', e); }
 
             // Pre-seleccionar entrenador
             const select = document.getElementById('modalEntrenadorSelect');
@@ -435,6 +560,27 @@
             }
 
             document.getElementById('modalImporte').value = importe;
+
+            // Rellenar Precio y Horas si existen en detalles
+            if (detalles) {
+                document.getElementById('modalPrecioHora').value = detalles.precio_hora || 0;
+                document.getElementById('modalHoras').value = detalles.horas_trabajadas || 0;
+            } else {
+                document.getElementById('modalPrecioHora').value = 0;
+                document.getElementById('modalHoras').value = 0;
+            }
+
+            // --- MOSTRAR DESGLOSE EN REVISIÓN ---
+            const containerRev = document.getElementById('modalRevisionDesglose');
+            if (detalles && detalles.horas_trabajadas) {
+                document.getElementById('revSesiones').textContent = detalles.sesiones_count;
+                document.getElementById('revHoras').textContent = detalles.horas_trabajadas + ' h';
+                document.getElementById('revTotalEntrenador').textContent = parseFloat(importe).toFixed(2) + ' €';
+                containerRev.classList.remove('hidden');
+            } else {
+                containerRev.classList.add('hidden');
+            }
+            // -----------------------------------
             
             // Mostrar enlace si hay archivo
             const linkDiv = document.getElementById('linkArchivoActual');
@@ -464,40 +610,6 @@
             }
         });
 
-        // --- NUEVO: Modal Detalle (Read Only) ---
-        function abrirModalDetalle(data) {
-            document.getElementById('modalDetalleEntrenador').textContent = data.entrenador;
-            document.getElementById('modalDetalleConcepto').textContent = data.concepto;
-            document.getElementById('modalDetallePeriodo').textContent = data.mes + '/' + data.anio;
-            document.getElementById('modalDetalleImporte').textContent = data.importe + ' €';
-            
-            const badge = document.getElementById('modalDetalleEstadoBadge');
-            if (data.estado === 'pagado') {
-                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100';
-                badge.innerHTML = '<i class="fas fa-check"></i> Pagado';
-            } else {
-                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100';
-                badge.innerHTML = '<i class="fas fa-hourglass-half"></i> Pendiente';
-            }
-
-            const btnPDF = document.getElementById('btnDescargarPDFAdmin');
-            const msgPDF = document.getElementById('noPDFMessageAdmin');
-
-            if (data.archivo_url) {
-                btnPDF.href = data.archivo_url;
-                btnPDF.classList.remove('hidden');
-                btnPDF.classList.add('flex');
-                msgPDF.classList.add('hidden');
-            } else {
-                btnPDF.classList.add('hidden');
-                btnPDF.classList.remove('flex');
-                msgPDF.classList.remove('hidden');
-            }
-
-            document.getElementById('modalDetalleAdmin').classList.remove('hidden');
-            document.getElementById('modalDetalleAdmin').classList.add('flex');
-        }
-
         function cerrarModalDetalle() {
             document.getElementById('modalDetalleAdmin').classList.add('hidden');
             document.getElementById('modalDetalleAdmin').classList.remove('flex');
@@ -508,6 +620,65 @@
                 cerrarModalDetalle();
             }
         });
+
+        // Función para calcular localmente (sin ir al servidor)
+        function calcularLocalmente() {
+             const precio = parseFloat(document.getElementById('modalPrecioHora').value) || 0;
+             const horas = parseFloat(document.getElementById('modalHoras').value) || 0;
+             const total = (precio * horas).toFixed(2);
+
+             document.getElementById('modalImporte').value = total;
+             
+             // Actualizar Desglose Visual
+             document.getElementById('revHoras').textContent = horas + ' h';
+             document.getElementById('revTotalEntrenador').textContent = total + ' €';
+             
+             const containerRev = document.getElementById('modalRevisionDesglose');
+             containerRev.classList.remove('hidden');
+        }
+
+        // Función para obtener datos reales del servidor (solo al cambiar entrenador)
+        function obtenerDatosEntrenador() {
+            const trainerId = document.getElementById('modalEntrenadorSelect').value;
+            if (!trainerId) return;
+
+            const mes = document.getElementById('modalRevision').dataset.mes || new Date().getMonth() + 1;
+            const anio = document.getElementById('modalRevision').dataset.anio || new Date().getFullYear();
+
+            // Llamamos al server SIN pasar precio manual, para que nos den los defaults de la DB
+            fetch(`/admin/nominas/calcular/${trainerId}?mes=${mes}&anio=${anio}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Actualizamos los inputs con lo que dice la BD
+                    if(data.detalles) {
+                       document.getElementById('modalHoras').value = data.detalles.horas_trabajadas;
+                       document.getElementById('modalPrecioHora').value = data.detalles.precio_hora;
+                       document.getElementById('revSesiones').textContent = data.detalles.sesiones_count;
+                    }
+                    
+                    // Calculamos localmente para actualizar totales y visuales
+                    calcularLocalmente();
+                })
+                .catch(error => console.error('Error obteniendo datos:', error));
+        }
+
+        // --- LISTENERS ---
+        const selectEntrenador = document.getElementById('modalEntrenadorSelect');
+        if (selectEntrenador) {
+            selectEntrenador.addEventListener('change', obtenerDatosEntrenador);
+        }
+
+        const inputPrecio = document.getElementById('modalPrecioHora');
+        if (inputPrecio) {
+            inputPrecio.addEventListener('change', calcularLocalmente);
+            inputPrecio.addEventListener('keyup', calcularLocalmente);
+        }
+
+        const inputHoras = document.getElementById('modalHoras');
+        if (inputHoras) {
+            inputHoras.addEventListener('change', calcularLocalmente);
+            inputHoras.addEventListener('keyup', calcularLocalmente);
+        }
     </script>
 </body>
 </html>
