@@ -21,20 +21,22 @@ class PagosController extends Controller
     {
         $nombre = trim((string) $request->input('q', ''));
         $centro = $request->input('centro');
-        $start  = $request->input('start');
-        $end    = $request->input('end');
+        $start = $request->input('start');
+        $end = $request->input('end');
 
         $query = Pago::with(['user', 'entrenadores']);
 
         if ($start) {
             try {
                 $query->where('fecha_registro', '>=', Carbon::parse($start)->format('Y-m-d H:i:s'));
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
         if ($end) {
             try {
                 $query->where('fecha_registro', '<=', Carbon::parse($end)->format('Y-m-d H:i:s'));
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
 
         if ($centro) {
@@ -58,7 +60,7 @@ class PagosController extends Controller
         foreach ($grouped as $key => $grupo) {
             $first = $grupo->first();
             $count = $grupo->count();
-            
+
             // Determinar título
             if ($count === 1) {
                 $title = $first->nombre_clase . ' - ' . ($first->user->name ?? 'Usuario');
@@ -78,7 +80,7 @@ class PagosController extends Controller
 
             // Recopilar entrenadores (únicos para el grupo)
             $entrenadoresMap = [];
-            
+
             foreach ($grupo as $p) {
                 if ($p->entrenadores) {
                     foreach ($p->entrenadores as $t) {
@@ -92,7 +94,7 @@ class PagosController extends Controller
                     }
                 }
             }
-            
+
             $entrenadoresList = array_values($entrenadoresMap);
 
             $centroUpper = strtoupper($first->centro);
@@ -107,9 +109,9 @@ class PagosController extends Controller
             }
 
             $events[] = [
-                'id' => $first->id, 
+                'id' => $first->id,
                 // Usamos propiedades personalizadas para identificar la sesión única y poder editar todos
-                'groupId' => $key, 
+                'groupId' => $key,
                 'title' => $title,
                 'start' => $first->fecha_registro ? $first->fecha_registro->toIso8601String() : null,
                 'backgroundColor' => $color,
@@ -137,47 +139,42 @@ class PagosController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'users'        => ['required', 'array', 'min:1'],
-            'users.*'      => ['exists:users,id'],
-            'trainers'     => ['nullable', 'array'],
-            'trainers.*'   => ['exists:users,id'],
-            'centro'       => ['required', 'string'],
+        $request->validate([
+            'centro' => ['required', 'string'],
             'nombre_clase' => ['required', 'string', 'max:120'],
-            'tipo_clase'   => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
-            'metodo_pago'  => ['required', 'in:TPV,EF,DD,CC'],
-            'fecha_hora'   => ['required', 'date'],
-            'precio'       => ['required', 'numeric', 'min:0'],
-        ], [
-            'users.required' => 'Debes seleccionar al menos un usuario.',
-            'users.array' => 'Formato de usuarios incorrecto.',
-            'users.*.exists' => 'El usuario seleccionado no existe o no es válido.',
-            'centro.required' => 'El centro es obligatorio.',
+            'tipo_clase' => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
+            'fecha_hora' => ['required', 'date'],
+            'trainers' => ['nullable', 'array'],
+            'trainers.*' => ['exists:users,id'],
+            // New structure: participants array
+            'participants' => ['required', 'array', 'min:1'],
+            'participants.*.user_id' => ['required', 'exists:users,id'],
+            'participants.*.precio' => ['required', 'numeric', 'min:0'],
+            'participants.*.metodo_pago' => ['required', 'in:TPV,EF,DD,CC'],
         ]);
 
-        $fecha = Carbon::parse($data['fecha_hora']);
+        $fecha = Carbon::parse($request->input('fecha_hora'));
         $createdEvents = [];
-        
-        // Entrenadores seleccionados
-        $trainers = $data['trainers'] ?? [];
+
+        $trainers = $request->input('trainers', []);
         $firstTrainerId = !empty($trainers) ? $trainers[0] : null;
 
-        foreach ($data['users'] as $userId) {
+        foreach ($request->input('participants') as $pData) {
+            $userId = $pData['user_id'];
             $user = User::findOrFail($userId);
-            
+
             $pago = Pago::create([
-                'user_id'        => $user->id,
-                'entrenador_id'  => $firstTrainerId, // Legacy: primer entrenador
-                'iban'           => $user->iban,
-                'importe'        => $data['precio'], 
+                'user_id' => $user->id,
+                'entrenador_id' => $firstTrainerId,
+                'iban' => $user->iban,
+                'importe' => $pData['precio'],
                 'fecha_registro' => $fecha,
-                'centro'         => $data['centro'],
-                'nombre_clase'   => $data['nombre_clase'],
-                'tipo_clase'     => $data['tipo_clase'],
-                'metodo_pago'    => $data['metodo_pago'],
+                'centro' => $request->input('centro'),
+                'nombre_clase' => $request->input('nombre_clase'),
+                'tipo_clase' => $request->input('tipo_clase'),
+                'metodo_pago' => $pData['metodo_pago'],
             ]);
 
-            // Guardar relación de múltiples entrenadores
             if (!empty($trainers)) {
                 $pago->entrenadores()->sync($trainers);
             }
@@ -196,7 +193,7 @@ class PagosController extends Controller
     }
 
     // Método para añadir entrenador a una sesión completa
-    public function addTrainerToSession(Request $request) 
+    public function addTrainerToSession(Request $request)
     {
         $request->validate([
             'trainer_id' => 'required|exists:users,id',
@@ -208,27 +205,27 @@ class PagosController extends Controller
         if (!$request->user()->hasRole('admin')) {
             // Si no es admin, solo puede agregarse a sí mismo
             if ($request->user()->id != $request->trainer_id) {
-                 return response()->json(['error' => 'No tienes permiso para modificar otros entrenadores.'], 403);
+                return response()->json(['error' => 'No tienes permiso para modificar otros entrenadores.'], 403);
             }
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
-        
+
         // Buscar todos los pagos que coinciden con la "sesión"
         $pagos = Pago::where('fecha_registro', $fecha)
-                     ->where('nombre_clase', $request->nombre_clase)
-                     ->where('centro', $request->centro)
-                     ->get();
+            ->where('nombre_clase', $request->nombre_clase)
+            ->where('centro', $request->centro)
+            ->get();
 
         if ($pagos->isEmpty()) {
             return response()->json(['error' => 'Sesión no encontrada'], 404);
         }
 
-        foreach($pagos as $pago) {
+        foreach ($pagos as $pago) {
             // Attach si no existe ya
             if (!$pago->entrenadores()->where('user_id', $request->trainer_id)->exists()) {
                 $pago->entrenadores()->attach($request->trainer_id);
-                
+
                 // Actualizar legacy column si estaba vacía
                 if (!$pago->entrenador_id) {
                     $pago->entrenador_id = $request->trainer_id;
@@ -247,7 +244,7 @@ class PagosController extends Controller
     }
 
     // Método para quitar entrenador de una sesión completa
-    public function removeTrainerFromSession(Request $request) 
+    public function removeTrainerFromSession(Request $request)
     {
         $request->validate([
             'trainer_id' => 'required|exists:users,id',
@@ -257,26 +254,26 @@ class PagosController extends Controller
         ]);
 
         if (!$request->user()->hasRole('admin')) {
-             // Si no es admin, solo puede quitarse a sí mismo
-             if ($request->user()->id != $request->trainer_id) {
+            // Si no es admin, solo puede quitarse a sí mismo
+            if ($request->user()->id != $request->trainer_id) {
                 return response()->json(['error' => 'No tienes permiso para modificar otros entrenadores.'], 403);
-             }
+            }
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
-        
+
         $pagos = Pago::where('fecha_registro', $fecha)
-                     ->where('nombre_clase', $request->nombre_clase)
-                     ->where('centro', $request->centro)
-                     ->get();
+            ->where('nombre_clase', $request->nombre_clase)
+            ->where('centro', $request->centro)
+            ->get();
 
         if ($pagos->isEmpty()) {
             return response()->json(['error' => 'Sesión no encontrada'], 404);
         }
 
-        foreach($pagos as $pago) {
+        foreach ($pagos as $pago) {
             $pago->entrenadores()->detach($request->trainer_id);
-            
+
             // Si quitamos el que estaba en legacy column, ponemos otro o null
             if ($pago->entrenador_id == $request->trainer_id) {
                 $next = $pago->entrenadores()->first();
@@ -305,16 +302,16 @@ class PagosController extends Controller
         ]);
 
         if (!$request->user()->hasRole('admin')) {
-             return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
-        
+
         // 1. Buscar un pago existente de esa sesión para copiar datos (importe, tipo, método, entrenadores)
         $existingPago = Pago::where('fecha_registro', $fecha)
-                     ->where('nombre_clase', $request->nombre_clase)
-                     ->where('centro', $request->centro)
-                     ->first();
+            ->where('nombre_clase', $request->nombre_clase)
+            ->where('centro', $request->centro)
+            ->first();
 
         if (!$existingPago) {
             return response()->json(['error' => 'Sesión no encontrada o vacía'], 404);
@@ -322,10 +319,10 @@ class PagosController extends Controller
 
         // 2. Verificar que el usuario no esté ya en esa sesión
         $exists = Pago::where('fecha_registro', $fecha)
-                    ->where('nombre_clase', $request->nombre_clase)
-                    ->where('centro', $request->centro)
-                    ->where('user_id', $request->user_id)
-                    ->exists();
+            ->where('nombre_clase', $request->nombre_clase)
+            ->where('centro', $request->centro)
+            ->where('user_id', $request->user_id)
+            ->exists();
 
         if ($exists) {
             return response()->json(['error' => 'El usuario ya está inscrito en esta clase.'], 422);
@@ -335,15 +332,15 @@ class PagosController extends Controller
 
         // 3. Crear el nuevo pago
         $newPago = Pago::create([
-            'user_id'        => $newUser->id,
-            'entrenador_id'  => $existingPago->entrenador_id, // Legacy
-            'iban'           => $newUser->iban,
-            'importe'        => $existingPago->importe, 
+            'user_id' => $newUser->id,
+            'entrenador_id' => $existingPago->entrenador_id, // Legacy
+            'iban' => $newUser->iban,
+            'importe' => $existingPago->importe,
             'fecha_registro' => $fecha,
-            'centro'         => $existingPago->centro,
-            'nombre_clase'   => $existingPago->nombre_clase,
-            'tipo_clase'     => $existingPago->tipo_clase,
-            'metodo_pago'    => $existingPago->metodo_pago, // Asume mismo método por defecto, o podría pedirse
+            'centro' => $existingPago->centro,
+            'nombre_clase' => $existingPago->nombre_clase,
+            'tipo_clase' => $existingPago->tipo_clase,
+            'metodo_pago' => $existingPago->metodo_pago, // Asume mismo método por defecto, o podría pedirse
         ]);
 
         // 4. Copiar relaciones de entrenadores
@@ -366,31 +363,32 @@ class PagosController extends Controller
         ]);
 
         if (!$request->user()->hasRole('admin')) {
-             return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
 
         $deleted = Pago::where('fecha_registro', $fecha)
-                    ->where('nombre_clase', $request->nombre_clase)
-                    ->where('centro', $request->centro)
-                    ->where('user_id', $request->user_id)
-                    ->delete();
+            ->where('nombre_clase', $request->nombre_clase)
+            ->where('centro', $request->centro)
+            ->where('user_id', $request->user_id)
+            ->delete();
 
         if ($deleted) {
-             return response()->json(['success' => true, 'message' => 'Cliente eliminado correctamente']);
+            return response()->json(['success' => true, 'message' => 'Cliente eliminado correctamente']);
         } else {
-             return response()->json(['error' => 'No se encontró el registro para eliminar'], 404);
+            return response()->json(['error' => 'No se encontró el registro para eliminar'], 404);
         }
     }
 
-    private function _getTrainersForSession($pagos) {
+    private function _getTrainersForSession($pagos)
+    {
         $entrenadores = collect();
         // Recargar las relaciones para tener datos frescos
         $pagos->each->load('entrenadores');
-        
-        $pagos->each(function($p) use ($entrenadores) {
-            foreach($p->entrenadores as $t) {
+
+        $pagos->each(function ($p) use ($entrenadores) {
+            foreach ($p->entrenadores as $t) {
                 if (!$entrenadores->contains('id', $t->id)) {
                     $entrenadores->push([
                         'id' => $t->id,
@@ -417,14 +415,14 @@ class PagosController extends Controller
         $id = $request->id;
 
         $query = Pago::with(['user', 'entrenadores'])
-                     ->whereBetween('fecha_registro', [$start, $end]);
+            ->whereBetween('fecha_registro', [$start, $end]);
 
         if ($type === 'user') {
             $query->where('user_id', $id);
             $persona = User::find($id);
         } else {
             // Entrenador: Buscar en la relación muchos a muchos
-            $query->whereHas('entrenadores', function($q) use ($id) {
+            $query->whereHas('entrenadores', function ($q) use ($id) {
                 $q->where('users.id', $id);
             });
             $persona = User::find($id);
@@ -433,16 +431,16 @@ class PagosController extends Controller
         $pagos = $query->orderBy('fecha_registro', 'asc')->get();
 
         // Calcular totales
-        $totalSesiones = $pagos->count(); 
+        $totalSesiones = $pagos->count();
         $totalImporte = $pagos->sum('importe');
 
         // Formatear para la tabla
-        $detalles = $pagos->map(function($p) {
+        $detalles = $pagos->map(function ($p) {
             return [
                 'fecha' => $p->fecha_registro->format('Y-m-d H:i'),
                 'clase' => $p->nombre_clase,
                 'centro' => $p->centro,
-                'alumno' => $p->user->name ?? 'Desconocido', 
+                'alumno' => $p->user->name ?? 'Desconocido',
                 'importe' => $p->importe,
                 'metodo' => $p->metodo_pago
             ];
@@ -474,9 +472,9 @@ class PagosController extends Controller
 
         // Borrar todos los pagos que coinciden con la sesión
         $deletedCount = Pago::where('fecha_registro', $fecha)
-                            ->where('nombre_clase', $request->nombre_clase)
-                            ->where('centro', $request->centro)
-                            ->delete();
+            ->where('nombre_clase', $request->nombre_clase)
+            ->where('centro', $request->centro)
+            ->delete();
 
         if ($deletedCount === 0) {
             return response()->json(['error' => 'No se encontraron registros para eliminar'], 404);

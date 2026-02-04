@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const getInitialView = () => window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek';
 
     // ====== 1. CONFIGURACIÓN FULLCALENDAR ======
-    let calendar = new FullCalendar.Calendar(calendarEl, {
+    window.calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: getInitialView(),
         windowResizeDelay: 100,
         locale: 'es',
@@ -112,59 +112,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ====== 3. MOSTRAR DETALLES EVENTO (REDISEÑADO) ======
     function mostrarDetallesEvento(event) {
-        const p = event.extendedProps;
-        const fechaObj = event.start;
-        const diaSemana = fechaObj.toLocaleDateString('es-ES', { weekday: 'long' });
-        const diaNum = fechaObj.getDate();
-        const mes = fechaObj.toLocaleDateString('es-ES', { month: 'long' });
+        try {
+            const p = event.extendedProps;
+            if (!p) throw new Error("Faltan datos en el evento");
 
-        tituloFechaEl.innerHTML = `<span style="display:block; font-size:1.2rem; font-weight:400; opacity:0.9; text-transform:capitalize;">${diaSemana}</span><span style="display:block; font-size:2rem; font-weight:800; letter-spacing:-1px;">${diaNum} de ${mes}</span>`;
-        tituloFechaEl.style.background = "linear-gradient(135deg, #00897b 0%, #0e7490 100%)";
-        tituloFechaEl.style.color = "white";
-        tituloFechaEl.style.padding = "30px 20px";
-        tituloFechaEl.style.margin = "0";
-        tituloFechaEl.style.textAlign = "center";
-        tituloFechaEl.style.textTransform = "capitalize";
-        tituloFechaEl.style.position = "relative";
+            const fechaObj = event.start;
+            const diaSemana = fechaObj.toLocaleDateString('es-ES', { weekday: 'long' });
+            const diaNum = fechaObj.getDate();
+            const mes = fechaObj.toLocaleDateString('es-ES', { month: 'long' });
 
-        const btnCerrar = document.getElementById('btnCerrarPopup');
-        if (btnCerrar) {
-            btnCerrar.style.color = "white";
-            btnCerrar.style.opacity = "0.8";
-            btnCerrar.style.zIndex = "10";
-        }
+            tituloFechaEl.innerHTML = `<span style="display:block; font-size:1.2rem; font-weight:400; opacity:0.9; text-transform:capitalize;">${diaSemana}</span><span style="display:block; font-size:2rem; font-weight:800; letter-spacing:-1px;">${diaNum} de ${mes}</span>`;
+            tituloFechaEl.style.background = "linear-gradient(135deg, #00897b 0%, #0e7490 100%)";
+            tituloFechaEl.style.color = "white";
+            tituloFechaEl.style.padding = "30px 20px";
+            tituloFechaEl.style.margin = "0";
+            tituloFechaEl.style.textAlign = "center";
+            tituloFechaEl.style.textTransform = "capitalize";
+            tituloFechaEl.style.position = "relative";
 
-        const btnCerrar2 = document.getElementById('btnCerrarPopup2');
-        if (btnCerrar2) {
-            btnCerrar2.style.background = "#eb567a";
-            btnCerrar2.style.color = "white";
-            btnCerrar2.style.border = "none";
-            btnCerrar2.style.fontSize = "14px";
-            btnCerrar2.style.fontWeight = "800";
-            btnCerrar2.style.textTransform = "uppercase";
-            btnCerrar2.style.padding = "14px";
-            btnCerrar2.style.borderRadius = "10px";
-            btnCerrar2.style.width = "calc(100% - 64px)";
-            btnCerrar2.style.margin = "0 32px 32px 32px";
-            btnCerrar2.style.boxShadow = "0 4px 12px rgba(235, 86, 122, 0.3)";
-        }
+            const btnCerrar = document.getElementById('btnCerrarPopup');
+            if (btnCerrar) {
+                btnCerrar.style.color = "white";
+                btnCerrar.style.opacity = "0.8";
+                btnCerrar.style.zIndex = "10";
+            }
 
-        let html = `
+            const btnCerrar2 = document.getElementById('btnCerrarPopup2');
+            if (btnCerrar2) {
+                btnCerrar2.style.background = "#eb567a";
+                btnCerrar2.style.color = "white";
+                btnCerrar2.style.border = "none";
+                btnCerrar2.style.fontSize = "14px";
+                btnCerrar2.style.fontWeight = "800";
+                btnCerrar2.style.textTransform = "uppercase";
+                btnCerrar2.style.padding = "14px";
+                btnCerrar2.style.borderRadius = "10px";
+                btnCerrar2.style.width = "calc(100% - 64px)";
+                btnCerrar2.style.margin = "0 32px 32px 32px";
+                btnCerrar2.style.boxShadow = "0 4px 12px rgba(235, 86, 122, 0.3)";
+            }
+
+            let html = `
       <style>
-        .modal-grid { display: grid; grid-template-columns: 2fr 1fr; min-height: 400px; border-top: 1px solid #f3f4f6; }
-        .modal-main { padding: 32px; }
-        .modal-sidebar { background-color: #f9fafb; padding: 32px; border-left: 1px solid #f3f4f6; display: flex; flex-direction: column; }
-        .class-title { font-size: 28px; font-weight: 800; color: #111827; margin: 0 0 12px 0; letter-spacing: -0.5px; }
+        .modal-grid { display: grid; grid-template-columns: 2fr 1fr; min-height: 400px; border-top: 1px solid #f3f4f6; width: 100%; }
+        .modal-main { padding: 32px; background: white; }
+        .modal-sidebar { background-color: #f9fafb; padding: 32px; border-left: 1px solid #f3f4f6; display: flex; flex-direction: column; background: #f8fafc; }
+        .class-title { font-size: 28px; font-weight: 800; color: #111827; margin: 0 0 12px 0; letter-spacing: -0.5px; line-height: 1.2; }
         .meta-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #f3f4f6; border-radius: 99px; font-size: 13px; color: #4b5563; font-weight: 600; }
         .meta-pill i { color: #0e7490; }
         .section-header { font-size: 12px; font-weight: 800; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; margin-top: 32px; }
         .participant-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; transition: all 0.2s; margin-bottom: 10px; }
         .participant-card:hover { border-color: #d1d5db; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .modal-avatar, .t-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #39c5a7, #eb567a); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; box-shadow: 0 2px 6px rgba(57, 197, 167, 0.3); }
-        .modal-avatar { border-radius: 12px; }
+        .modal-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #39c5a7, #eb567a); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; box-shadow: 0 2px 6px rgba(57, 197, 167, 0.3); }
         .trainer-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 8px; }
-        .trainer-item .t-avatar { width: 32px; height: 32px; font-size: 13px; box-shadow: 0 2px 4px rgba(235, 86, 122, 0.2); }
-        @media (max-width: 768px) { .modal-grid { grid-template-columns: 1fr; } .modal-sidebar { border-left: none; border-top: 1px solid #f3f4f6; } }
+        .trainer-item .t-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #39c5a7, #eb567a); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+        @media (max-width: 768px) { 
+            .modal-grid { grid-template-columns: 1fr; display: flex; flex-direction: column; } 
+            .modal-sidebar { border-left: none; border-top: 1px solid #f3f4f6; } 
+        }
       </style>
       <div class="modal-grid">
         <div class="modal-main">
@@ -179,9 +184,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <h4 class="section-header">Asistentes confirmados (${p.alumnos ? p.alumnos.length : 0})</h4>
             <div>
     `;
-        if (p.alumnos && p.alumnos.length > 0) {
-            p.alumnos.forEach(alum => {
-                html += `
+            if (p.alumnos && p.alumnos.length > 0) {
+                p.alumnos.forEach(alum => {
+                    html += `
           <div class="participant-card">
               <div style="display:flex; align-items:center; gap:12px;">
                   <div class="modal-avatar">${alum.nombre.charAt(0).toUpperCase()}</div>
@@ -196,24 +201,24 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
           </div>
         `;
-            });
-            // Add Delete Listeners after render
-            setTimeout(() => {
-                document.querySelectorAll('.btn-delete-client').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const uid = e.currentTarget.dataset.id;
-                        eliminarClienteSesion(uid, p.session_key);
-                    });
                 });
-            }, 100);
-        } else {
-            html += `
+                // Add Delete Listeners after render
+                setTimeout(() => {
+                    document.querySelectorAll('.btn-delete-client').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            const uid = e.currentTarget.dataset.id;
+                            eliminarClienteSesion(uid, p.session_key);
+                        });
+                    });
+                }, 100);
+            } else {
+                html += `
         <div style="text-align:center; padding:40px 20px; background:#f9fafb; border-radius:12px; border:1px dashed #e5e7eb;">
             <i class="fa-solid fa-users-slash" style="color:#d1d5db; font-size:24px; margin-bottom:10px;"></i>
             <p style="color:#6b7280; font-size:14px; margin:0;">No hay alumnos inscritos aún.</p>
         </div>`;
-        }
-        html += `
+            }
+            html += `
             </div>
             ${(window.IS_ADMIN) ? `
              <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #e5e7eb;">
@@ -229,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div id="lista-entrenadores-sesion" style="flex: 1;"></div>
             <div style="margin-top:20px;" id="trainer-actions-wrapper">
                  ${(window.IS_ADMIN) ?
-                `<label class="section-header" style="display:block; margin-bottom:10px;">Gestionar Personal</label>
+                    `<label class="section-header" style="display:block; margin-bottom:10px;">Gestionar Personal</label>
                  <div style="display:flex; gap:8px;">
                     <select id="select-add-trainer" class="modern-input" style="padding:10px; font-size:13px;">
                         <option value="" selected disabled>Añadir entrenador...</option>
@@ -237,75 +242,85 @@ document.addEventListener('DOMContentLoaded', () => {
                     </select>
                     <button type="button" id="btn-add-trainer-action" style="background:#0e7490; color:white; border:none; width:40px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-plus"></i></button>
                  </div>`
-                : (window.IS_TRAINER && window.CURRENT_USER_ID) ?
-                    (!p.entrenadores || !p.entrenadores.find(t => t.id === window.CURRENT_USER_ID)) ?
-                        `<button type="button" id="btn-join-session" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px -1px rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-user-plus"></i> Inscribirme</button>`
-                        : `<div style="padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; color:#166534; font-size:13px; display:flex; gap:8px; align-items:center;"><i class="fa-solid fa-circle-check"></i> <span>Estás asignado a esta clase</span></div>`
-                    : ''
-            }
+                    : (window.IS_TRAINER && window.CURRENT_USER_ID) ?
+                        (!p.entrenadores || !p.entrenadores.find(t => t.id === window.CURRENT_USER_ID)) ?
+                            `<button type="button" id="btn-join-session" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px -1px rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-user-plus"></i> Inscribirme</button>`
+                            : `<div style="padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; color:#166534; font-size:13px; display:flex; gap:8px; align-items:center;"><i class="fa-solid fa-circle-check"></i> <span>Estás asignado a esta clase</span></div>`
+                        : ''
+                }
             </div>
             ${(window.IS_ADMIN) ?
-                `<div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #f3f4f6;">
+                    `<div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #f3f4f6;">
                 <button type="button" id="btn-delete-full-session" style="width:100%; padding:12px; background:#fee2e2; color:#ef4444; border:1px solid #fecaca; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition: all 0.2s;"><i class="fa-solid fa-trash"></i> ELIMINAR SESIÓN</button>
                 <p style="font-size:10px; color:#9ca3af; margin-top:8px; text-align:center;">Esta acción eliminará todos los pagos asociados.</p>
              </div>` : ''
-            }
+                }
         </div>
       </div>`;
-        listaPagosEl.innerHTML = html;
-        renderEntrenadoresSesion(p.entrenadores || [], p.session_key);
+            listaPagosEl.innerHTML = html;
+            renderEntrenadoresSesion(p.entrenadores || [], p.session_key);
 
-        const btnDeleteFull = document.getElementById('btn-delete-full-session');
-        if (btnDeleteFull) btnDeleteFull.addEventListener('click', () => eliminarSesionCompleta(p.session_key));
-        const btnAdd = document.getElementById('btn-add-trainer-action');
-        if (btnAdd) btnAdd.addEventListener('click', () => {
-            const select = document.getElementById('select-add-trainer');
-            if (select.value) agregarEntrenadorSesion(select.value, p.session_key);
-        });
-        const btnJoin = document.getElementById('btn-join-session');
-        if (btnJoin) btnJoin.addEventListener('click', () => {
-            if (window.CURRENT_USER_ID) agregarEntrenadorSesion(window.CURRENT_USER_ID, p.session_key);
-        });
-
-        // Add Client Logic
-        const btnOpenAddClient = document.getElementById('btn-open-add-client-modal');
-        if (btnOpenAddClient) {
-            btnOpenAddClient.addEventListener('click', () => {
-                const currentIds = (p.alumnos || []).map(a => String(a.id));
-                const max = getMaxClients(p.tipo_clase);
-
-                openClientModal({
-                    title: `Añadir a alumnos a <b>${p.clase_nombre}</b>`,
-                    currentIds: currentIds,
-                    maxLimit: max,
-                    onConfirm: async (selectedUsers) => {
-                        const newUsers = selectedUsers.filter(u => !currentIds.includes(String(u.id)));
-                        if (newUsers.length === 0) {
-                            closeModal(modalClientes); // Close the selector logic only
-                            return;
-                        }
-
-                        // Add each user
-                        for (const user of newUsers) {
-                            await agregarClienteSesion(user.id, p.session_key, false);
-                        }
-                        // Refresh once at the end
-                        await refreshModal(p.session_key);
-                        // NO alert here as requested
-                    }
-                });
+            const btnDeleteFull = document.getElementById('btn-delete-full-session');
+            if (btnDeleteFull) btnDeleteFull.addEventListener('click', () => eliminarSesionCompleta(p.session_key));
+            const btnAdd = document.getElementById('btn-add-trainer-action');
+            if (btnAdd) btnAdd.addEventListener('click', () => {
+                const select = document.getElementById('select-add-trainer');
+                if (select.value) agregarEntrenadorSesion(select.value, p.session_key);
             });
-        }
+            const btnJoin = document.getElementById('btn-join-session');
+            if (btnJoin) btnJoin.addEventListener('click', () => {
+                if (window.CURRENT_USER_ID) agregarEntrenadorSesion(window.CURRENT_USER_ID, p.session_key);
+            });
 
-        openModal(modalInfo);
+            // Add Client Logic
+            const btnOpenAddClient = document.getElementById('btn-open-add-client-modal');
+            if (btnOpenAddClient) {
+                btnOpenAddClient.addEventListener('click', () => {
+                    const currentIds = (p.alumnos || []).map(a => String(a.id));
+                    const max = getMaxClients(p.tipo_clase);
+
+                    openClientModal({
+                        title: `Añadir a alumnos a <b>${p.clase_nombre}</b>`,
+                        currentIds: currentIds,
+                        maxLimit: max,
+                        onConfirm: async (selectedUsers) => {
+                            const newUsers = selectedUsers.filter(u => !currentIds.includes(String(u.id)));
+                            if (newUsers.length === 0) {
+                                closeModal(modalClientes); // Close the selector logic only
+                                return;
+                            }
+
+                            // Add each user
+                            for (const user of newUsers) {
+                                // Pass full user object. The last one triggers refresh.
+                                const refresh = (user === newUsers[newUsers.length - 1]);
+                                await agregarClienteSesion(user, p.session_key, refresh);
+                            }
+                            // NO alert here as requested
+                        }
+                    });
+                });
+            }
+
+            openModal(modalInfo);
+        } catch (e) {
+            console.error("Error al mostrar detalles:", e);
+            alert("Error JS: " + e.message);
+        }
     }
 
     function generarOpcionesEntrenadores() {
         const checkboxes = document.querySelectorAll('input[name="trainers[]"]');
         let opts = '';
         checkboxes.forEach(chk => {
-            const name = chk.closest('.trainer-option').querySelector('.trainer-name').textContent;
-            opts += `<option value="${chk.value}">${name}</option>`;
+            // Support new and old classes just in case
+            const card = chk.closest('.trainer-card-clean') || chk.closest('.trainer-option');
+            if (card) {
+                const nameEl = card.querySelector('.t-name') || card.querySelector('.trainer-name');
+                if (nameEl) {
+                    opts += `<option value="${chk.value}">${nameEl.textContent.trim()}</option>`;
+                }
+            }
         });
         return opts;
     }
@@ -333,38 +348,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === NEW: REFRESH HELPER ===
-    async function refreshModal(sessionKey) {
-        // 1. Refresh calendar data
-        const currentSearch = document.getElementById('search-user')?.value || '';
-        await fetchAndRenderCalendar(currentSearch);
-
-        // 2. Find the event with the same session key
-        // We need to look through the calendar's client events
-        const allEvents = calendar.getEvents();
-
-        // Helper to match key
-        const match = (ev) => {
+    // === OPTIMISTIC UI HELPER ===
+    function findEventBySessionKey(sessionKey) {
+        if (!calendar) return null;
+        const all = calendar.getEvents();
+        return all.find(ev => {
             const ep = ev.extendedProps;
             if (!ep || !ep.session_key) return false;
-            // Compare key fields. Note: formatting might vary (string vs number), try loose equality or strict if confident.
             return ep.session_key.fecha_hora === sessionKey.fecha_hora &&
                 ep.session_key.nombre_clase === sessionKey.nombre_clase &&
                 ep.session_key.centro === sessionKey.centro;
-        };
-
-        const found = allEvents.find(match);
-
-        if (found) {
-            // 3. Re-render modal with new event data
-            mostrarDetallesEvento(found);
-        } else {
-            // If not found (maybe it was deleted?), close modal
-            closeModal(modalInfo);
-        }
+        });
     }
 
     async function agregarEntrenadorSesion(trainerId, sessionKey) {
+        // Optimistic Update
+        const event = findEventBySessionKey(sessionKey);
+        const originalTrainers = event ? [...(event.extendedProps.entrenadores || [])] : [];
+
+        if (event) {
+            // Find name from select if possible, provisional
+            const select = document.getElementById('select-add-trainer');
+            const trainerName = select ? select.options[select.selectedIndex].text : 'Cargando...';
+            const newTrainers = [...originalTrainers, { id: parseInt(trainerId), name: trainerName, initial: trainerName.charAt(0) }];
+            event.setExtendedProp('entrenadores', newTrainers);
+            mostrarDetallesEvento(event);
+        }
+
         try {
             const formData = new FormData();
             formData.append('trainer_id', trainerId);
@@ -378,13 +388,38 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                // Refresh modal, no alert, no close
-                await refreshModal(sessionKey);
-            } else { alert('Error al añadir entrenador'); }
-        } catch (e) { console.error(e); }
+                // Update with real data from server (cleaner)
+                if (event) {
+                    event.setExtendedProp('entrenadores', data.trainers);
+                    mostrarDetallesEvento(event);
+                }
+            } else {
+                alert('Error al añadir entrenador');
+                if (event) {
+                    event.setExtendedProp('entrenadores', originalTrainers);
+                    mostrarDetallesEvento(event);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            if (event) {
+                event.setExtendedProp('entrenadores', originalTrainers);
+                mostrarDetallesEvento(event);
+            }
+        }
     }
 
     async function eliminarEntrenadorSesion(trainerId, sessionKey) {
+        // Optimistic
+        const event = findEventBySessionKey(sessionKey);
+        const originalTrainers = event ? [...(event.extendedProps.entrenadores || [])] : [];
+
+        if (event) {
+            const newTrainers = originalTrainers.filter(t => t.id != trainerId);
+            event.setExtendedProp('entrenadores', newTrainers);
+            mostrarDetallesEvento(event);
+        }
+
         try {
             const formData = new FormData();
             formData.append('trainer_id', trainerId);
@@ -398,15 +433,46 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                await refreshModal(sessionKey);
-            } else { alert('Error al eliminar entrenador'); }
-        } catch (e) { console.error(e); }
+                if (event) {
+                    event.setExtendedProp('entrenadores', data.trainers);
+                    mostrarDetallesEvento(event);
+                }
+            } else {
+                alert('Error al eliminar entrenador');
+                if (event) {
+                    event.setExtendedProp('entrenadores', originalTrainers);
+                    mostrarDetallesEvento(event);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            if (event) {
+                event.setExtendedProp('entrenadores', originalTrainers);
+                mostrarDetallesEvento(event);
+            }
+        }
     }
 
-    async function agregarClienteSesion(userId, sessionKey, shouldRefresh = true) {
+    async function agregarClienteSesion(user, sessionKey, shouldRefresh = true) {
+        // Optimistic
+        const event = findEventBySessionKey(sessionKey);
+        const originalAlumnos = event ? [...(event.extendedProps.alumnos || [])] : [];
+
+        if (event) {
+            // Fake entry
+            const newAlumnos = [...originalAlumnos, {
+                id: user.id,
+                nombre: user.name,
+                pago: '...',
+                coste: '...'
+            }];
+            event.setExtendedProp('alumnos', newAlumnos);
+            mostrarDetallesEvento(event);
+        }
+
         try {
             const formData = new FormData();
-            formData.append('user_id', userId);
+            formData.append('user_id', user.id);
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
@@ -417,15 +483,35 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                if (shouldRefresh) {
-                    await refreshModal(sessionKey);
-                    // alert('Cliente añadido correctamente'); // REMOVED
+                // Background refresh to get real price/method
+                if (shouldRefresh) refreshModal(sessionKey);
+            } else {
+                alert(data.error || 'Error al añadir cliente');
+                if (event) {
+                    event.setExtendedProp('alumnos', originalAlumnos);
+                    mostrarDetallesEvento(event);
                 }
-            } else { alert(data.error || 'Error al añadir cliente'); }
-        } catch (e) { console.error(e); }
+            }
+        } catch (e) {
+            console.error(e);
+            if (event) {
+                event.setExtendedProp('alumnos', originalAlumnos);
+                mostrarDetallesEvento(event);
+            }
+        }
     }
 
     async function eliminarClienteSesion(userId, sessionKey) {
+        // Optimistic
+        const event = findEventBySessionKey(sessionKey);
+        const originalAlumnos = event ? [...(event.extendedProps.alumnos || [])] : [];
+
+        if (event) {
+            const newAlumnos = originalAlumnos.filter(a => a.id != userId);
+            event.setExtendedProp('alumnos', newAlumnos);
+            mostrarDetallesEvento(event);
+        }
+
         try {
             const formData = new FormData();
             formData.append('user_id', userId);
@@ -439,13 +525,27 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                await refreshModal(sessionKey);
-                // alert('Cliente eliminado correctamente'); // REMOVED
-            } else { alert(data.error || 'Error al eliminar cliente'); }
-        } catch (e) { console.error(e); }
+                // Success - state is already good. Maybe passive refresh.
+                // refreshModal(sessionKey); // Not strictly needed if we trust the delete.
+            } else {
+                alert(data.error || 'Error al eliminar cliente');
+                if (event) {
+                    event.setExtendedProp('alumnos', originalAlumnos);
+                    mostrarDetallesEvento(event);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+            if (event) {
+                event.setExtendedProp('alumnos', originalAlumnos);
+                mostrarDetallesEvento(event);
+            }
+        }
     }
 
     async function eliminarSesionCompleta(sessionKey) {
+        if (!confirm('¿Estás seguro de eliminar esta sesión y todos sus pagos?')) return;
+
         try {
             const formData = new FormData();
             formData.append('fecha_hora', sessionKey.fecha_hora);
@@ -458,9 +558,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                const currentSearch = document.getElementById('search-user')?.value || '';
-                fetchAndRenderCalendar(currentSearch);
-                closeModal(modalInfo); // Delete action still closes modal
+                // Remove from calendar
+                const event = findEventBySessionKey(sessionKey);
+                if (event) event.remove();
+
+                closeModal(modalInfo);
             } else { alert(data.error || 'Error al eliminar la sesión'); }
         } catch (e) { console.error(e); }
     }

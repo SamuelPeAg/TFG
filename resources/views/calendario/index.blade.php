@@ -44,6 +44,13 @@
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
     }
+
+    .modal-expanded {
+        max-width: 900px !important;
+        width: 95% !important;
+        padding: 0 !important; /* Reset padding for grid layout */
+        overflow: hidden; /* Ensure rounded corners */
+    }
     
     .modal-title { 
         color: #333; 
