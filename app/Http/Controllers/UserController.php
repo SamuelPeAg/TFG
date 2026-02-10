@@ -130,47 +130,59 @@ class UserController extends Controller
     }
 
     public function updateConfiguracion(Request $request)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $validated = $request->validate([
-        'name'  => ['required', 'string', 'min:3', 'max:50'],
+        $validated = $request->validate([
+            'name'  => ['required', 'string', 'min:3', 'max:50'],
 
-        'iban' => [
-            'nullable',
-            'string',
-            'min:15',
-            Rule::unique('users', 'iban')->ignore($user->id)
-        ],
-        'firma_digital' => ['nullable', 'string', 'max:255'],
+            'iban' => [
+                'nullable',
+                'string',
+                'min:15',
+                Rule::unique('users', 'iban')->ignore($user->id)
+            ],
+            'foto_de_perfil' => ['nullable', 'image', 'max:2048'], // Validar imagen (max 2MB)
+            'firma_digital' => ['nullable', 'string', 'max:255'],
 
-        'current_password' => ['nullable', 'string'],
-        'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
-    ], $this->validationMessages());
+            'current_password' => ['nullable', 'string'],
+            'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
+        ], $this->validationMessages());
 
-    $data = [
-        'name' => $validated['name'],
-        'iban' => $validated['iban'] ?? $user->iban,
-        'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
+        $data = [
+            'name' => $validated['name'],
+            'iban' => $validated['iban'] ?? $user->iban,
+            'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
+            'email' => $user->email,
+        ];
 
-        'email' => $user->email,
-    ];
-
-    if ($request->filled('password')) {
-        $request->validate([
-            'current_password' => ['required'],
-        ], [
-            'current_password.required' => 'Por seguridad, debes escribir tu contraseña actual para cambiarla.',
-        ]);
-
-        if (!Hash::check($request->current_password, $user->password)) {
-            return back()
-                ->withErrors(['current_password' => 'La contraseña actual no es correcta.'])
-                ->withInput();
+        // Manejo de la subida de la imagen
+        if ($request->hasFile('foto_de_perfil')) {
+            // Eliminar imagen anterior si existe (opcional, buena práctica)
+            /* if ($user->foto_de_perfil && \Storage::disk('public')->exists($user->foto_de_perfil)) {
+                \Storage::disk('public')->delete($user->foto_de_perfil);
+            } */
+            
+            // Guardar nueva imagen en 'profile-photos' dentro del disco 'public'
+            $path = $request->file('foto_de_perfil')->store('profile-photos', 'public');
+            $data['foto_de_perfil'] = $path;
         }
 
-        $data['password'] = Hash::make($request->password);
-    }
+        if ($request->filled('password')) {
+            $request->validate([
+                'current_password' => ['required'],
+            ], [
+                'current_password.required' => 'Por seguridad, debes escribir tu contraseña actual para cambiarla.',
+            ]);
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return back()
+                    ->withErrors(['current_password' => 'La contraseña actual no es correcta.'])
+                    ->withInput();
+            }
+
+            $data['password'] = Hash::make($request->password);
+        }
 
         $user->update($data);
 
