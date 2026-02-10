@@ -121,7 +121,7 @@ class UserController extends Controller
 
 
 
-    // --- MÉTODOS DE CONFIGURACIÓN (PERFIL) ---
+    //Metodos de configuración
     public function configuracion(Request $request)
     {
         return view('configuracion.configuracion', [
@@ -130,59 +130,51 @@ class UserController extends Controller
     }
 
     public function updateConfiguracion(Request $request)
-    {
-        $user = $request->user();
+{
+    $user = $request->user();
 
-        // Validaciones en español
-        $validated = $request->validate([
-            'name'  => ['required', 'string', 'min:3', 'max:50'],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($user->id),
-            ],
-            'iban' => [
-                'nullable', 
-                'string', 
-                'min:15', 
-                Rule::unique('users', 'iban')->ignore($user->id)
-            ],
-            'firma_digital' => ['nullable', 'string', 'max:255'],
+    $validated = $request->validate([
+        'name'  => ['required', 'string', 'min:3', 'max:50'],
 
-            // Password opcional (solo si se rellena)
-            'current_password' => ['nullable', 'string'],
-            'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
-        ], $this->validationMessages()); // Usamos los mensajes comunes
+        'iban' => [
+            'nullable',
+            'string',
+            'min:15',
+            Rule::unique('users', 'iban')->ignore($user->id)
+        ],
+        'firma_digital' => ['nullable', 'string', 'max:255'],
 
-        // Datos básicos
-        $data = [
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'iban' => $validated['iban'] ?? $user->iban,
-            'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
-        ];
+        'current_password' => ['nullable', 'string'],
+        'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
+    ], $this->validationMessages());
 
-        // Cambiar contraseña SOLO si el usuario escribe una nueva
-        if ($request->filled('password')) {
-            // Validación extra para la contraseña actual
-            $request->validate([
-                'current_password' => ['required'],
-            ], [
-                'current_password.required' => 'Por seguridad, debes escribir tu contraseña actual para cambiarla.',
-            ]);
+    $data = [
+        'name' => $validated['name'],
+        'iban' => $validated['iban'] ?? $user->iban,
+        'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
 
-            if (!Hash::check($request->current_password, $user->password)) {
-                return back()
-                    ->withErrors(['current_password' => 'La contraseña actual no es correcta.'])
-                    ->withInput();
-            }
+        'email' => $user->email,
+    ];
 
-            $data['password'] = Hash::make($request->password);
+    if ($request->filled('password')) {
+        $request->validate([
+            'current_password' => ['required'],
+        ], [
+            'current_password.required' => 'Por seguridad, debes escribir tu contraseña actual para cambiarla.',
+        ]);
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()
+                ->withErrors(['current_password' => 'La contraseña actual no es correcta.'])
+                ->withInput();
         }
+
+        $data['password'] = Hash::make($request->password);
+    }
 
         $user->update($data);
 
         return back()->with('success', 'Configuración actualizada correctamente.');
     }
+
 }
