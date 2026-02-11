@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Centro;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use function fake;
 
 class CentroFactory extends Factory
 {

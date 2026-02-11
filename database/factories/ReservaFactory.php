@@ -6,6 +6,7 @@ use App\Models\HorarioClase;
 use App\Models\Reserva;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use function fake;
 
 class ReservaFactory extends Factory
 {
