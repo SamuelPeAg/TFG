@@ -1,131 +1,322 @@
 @extends('components.headers.header_welcome')
 
 @section('content')
+<style>
+    /* --- REWORK PREMIUM LIGHT CSS --- */
+    :root {
+        --brand-teal: #4BB7AE;
+        --brand-coral: #EF5D7A;
+    }
 
-    {{-- 1. HERO SECTION MODERNIZADO --}}
-    <section class="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gray-50">
-        {{-- Fondos Abstractos (Mesh Gradients) --}}
-        <div class="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-brandTeal/20 rounded-full blur-[100px] animate-pulse"></div>
-        <div class="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-brandCoral/15 rounded-full blur-[120px]"></div>
+    @keyframes float {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(1deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
+    }
 
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-gray-200 shadow-sm mb-8 animate-fade-in-up">
-                <span class="w-2 h-2 rounded-full bg-brandCoral animate-ping"></span>
-                <span class="text-xs font-bold tracking-wider text-gray-500 uppercase">Factomove Lifestyle</span>
-            </div>
+    .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-            <h1 class="text-5xl md:text-8xl font-black text-gray-900 tracking-tight leading-none mb-8">
-                El movimiento <br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandCoral to-brandTeal">es medicina.</span>
-            </h1>
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
 
-            <p class="mt-6 max-w-2xl mx-auto text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
-                Tu cuerpo no está diseñado para estar quieto. <br>
-                <span class="font-medium text-gray-900">Empieza hoy tu cambio real.</span>
-            </p>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.4s ease;
+    }
 
-            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-                <a href="#reservas" class="px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg hover:bg-brandTeal transition-all duration-300 shadow-lg hover:shadow-brandTeal/50 transform hover:-translate-y-1">
-                    Reservar Sesión
-                </a>
-                <a href="#filosofia" class="px-8 py-4 bg-white text-gray-900 border border-gray-200 rounded-full font-bold text-lg hover:bg-gray-50 transition-all duration-300">
-                    Nuestra Filosofía
-                </a>
-            </div>
-        </div>
-    </section>
+    .glass-card:hover {
+        background: white;
+        border-color: var(--brand-teal);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
+    }
 
-    {{-- 2. FILOSOFÍA (DISEÑO ASIMÉTRICO / BENTO) --}}
-    <section id="filosofia" class="py-24 bg-white relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="mb-16 text-center md:text-left">
-                <h2 class="text-brandTeal font-bold tracking-widest uppercase text-sm mb-2">Por qué Factomove</h2>
-                <h3 class="text-4xl font-extrabold text-gray-900">Más allá de la estética</h3>
-            </div>
+    .excel-grid {
+        background-size: 50px 50px;
+        background-image: 
+            linear-gradient(to right, rgba(75, 183, 174, 0.03) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(75, 183, 174, 0.03) 1px, transparent 1px);
+    }
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-2 bg-gray-50 rounded-3xl p-8 md:p-12 hover:shadow-xl transition-shadow duration-300 border border-gray-100 group relative overflow-hidden">
-                    <div class="absolute right-0 top-0 w-64 h-64 bg-brandTeal/10 rounded-full blur-3xl group-hover:bg-brandTeal/20 transition-all"></div>
-                    <div class="relative z-10">
-                        <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-brandTeal text-3xl shadow-sm mb-6">
-                            <i class="fa-solid fa-heart-pulse"></i>
-                        </div>
-                        <h4 class="text-2xl font-bold text-gray-900 mb-3">Salud Metabólica</h4>
-                        <p class="text-gray-600 text-lg leading-relaxed max-w-lg">
-                            El movimiento regula tus hormonas y mantiene tu corazón fuerte. No se trata solo de verse bien, sino de que tu cuerpo funcione como una máquina perfecta.
-                        </p>
-                    </div>
-                </div>
+    .text-gradient {
+        background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-coral) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 
-                <div class="bg-brandCoral text-white rounded-3xl p-8 md:p-12 shadow-lg shadow-brandCoral/30 transform transition-transform hover:-translate-y-1">
-                    <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-white text-2xl mb-6 backdrop-blur-sm">
-                        <i class="fa-solid fa-brain"></i>
-                    </div>
-                    <h4 class="text-xl font-bold mb-3">Claridad Mental</h4>
-                    <p class="text-white/90 leading-relaxed">
-                        Reduce el estrés y la ansiedad a través de la liberación de neurotransmisores.
-                    </p>
-                </div>
+    .stat-card {
+        background: white;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 10px 30px -5px rgba(0,0,0,0.03);
+    }
 
-                <div class="bg-white border border-gray-100 rounded-3xl p-8 md:p-12 hover:border-brandAqua transition-colors duration-300">
-                    <div class="w-14 h-14 bg-brandAqua/20 rounded-2xl flex items-center justify-center text-brandTeal text-2xl mb-6">
-                        <i class="fa-solid fa-person-running"></i>
-                    </div>
-                    <h4 class="text-xl font-bold text-gray-900 mb-3">Funcionalidad</h4>
-                    <p class="text-gray-600 leading-relaxed">
-                        Entrenamos para la vida real. Gana vitalidad para afrontar tu día a día sin dolores.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
+    .floating-shape {
+        position: absolute;
+        z-index: 0;
+        filter: blur(100px);
+        border-radius: 50%;
+        pointer-events: none;
+    }
 
-    {{-- 3. ROMPE EL SEDENTARISMO --}}
-    <section class="py-24 bg-gray-900 text-white relative overflow-hidden">
-        {{-- Decoración de fondo --}}
-        <div class="absolute top-0 right-0 w-1/2 h-full bg-brandTeal/5 skew-x-12"></div>
+    .advantage-box {
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col md:flex-row items-center gap-16">
-            <div class="w-full md:w-1/2">
-                <div class="relative group">
-                    <div class="absolute -inset-1 bg-gradient-to-r from-brandCoral to-brandTeal rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                    <div class="relative rounded-2xl overflow-hidden ring-1 ring-gray-800">
-                        <img src="{{ asset('img/entrenador.png') }}" class="w-full object-cover transform transition duration-500 group-hover:scale-105" alt="Entrenador Factomove">
-                    </div>
-                </div>
-            </div>
+    .advantage-box:hover {
+        border-color: #f1f5f9;
+        background: #fcfdfe;
+    }
+</style>
+
+<div class="excel-grid min-h-screen bg-white text-gray-900 overflow-hidden">
+
+    {{-- Shapes decorativas suaves --}}
+    <div class="floating-shape w-96 h-96 bg-brandTeal/5 top-[-10%] left-[-10%] animate-pulse"></div>
+    <div class="floating-shape w-[600px] h-[600px] bg-brandCoral/5 bottom-[-20%] right-[-10%]"></div>
+
+    {{-- 1. HERO SECTION --}}
+    <section class="relative min-h-[90vh] flex items-center pt-24 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             
-            <div class="w-full md:w-1/2">
-                <h2 class="text-3xl md:text-5xl font-black mb-6 leading-tight">
-                    Rompe con el <br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandCoral to-white">sedentarismo.</span>
-                </h2>
-                <p class="text-gray-400 text-lg mb-8 leading-relaxed">
-                    Vivimos en una sociedad que nos empuja a estar sentados. En <strong class="text-white">Factomove</strong> utilizamos tecnología y metodología para monitorizar tu actividad diaria y asegurar que el cambio sea real y sostenible.
+            <div class="reveal active">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-100 mb-8">
+                    <span class="w-2 h-2 rounded-full bg-brandTeal animate-ping"></span>
+                    <span class="text-xs font-black uppercase tracking-widest text-gray-400">Impulsado por Moverte da Vida</span>
+                </div>
+
+                <h1 class="text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter mb-8">
+                    Tu centro, <br>
+                    <span class="text-gradient">sincronizado.</span>
+                </h1>
+
+                <p class="text-xl md:text-2xl text-gray-500 font-medium leading-relaxed mb-12 max-w-xl">
+                    Desde el control de sesiones a pie de pista hasta la liquidación final. Una sola herramienta limpia y eficiente.
                 </p>
 
-                <ul class="space-y-4">
-                    <li class="flex items-center gap-4">
-                        <div class="w-8 h-8 rounded-full bg-brandTeal flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-check"></i>
+                <div class="flex flex-col sm:flex-row gap-5">
+                    <a href="{{ route('login') }}" class="px-10 py-5 bg-gray-900 text-white rounded-2xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center gap-3 transition-all">
+                        Acceder al Sistema <i class="fa-solid fa-chevron-right text-brandTeal"></i>
+                    </a>
+                    <a href="#solucion" class="px-10 py-5 bg-white border border-gray-200 rounded-2xl font-black text-xl hover:bg-gray-50 text-center transition-all">
+                        ¿Cómo funciona?
+                    </a>
+                </div>
+            </div>
+
+            <div class="relative reveal active" style="transition-delay: 200ms;">
+                <div style="animation: float 8s ease-in-out infinite;">
+                    <div class="glass-card p-6 rounded-[3rem] shadow-2xl border-white">
+                        <div class="bg-gray-50 rounded-[2.5rem] p-8 overflow-hidden aspect-video relative group border border-gray-100">
+                            <div class="flex justify-between items-start mb-10">
+                                <div>
+                                    <p class="text-brandTeal text-xs font-black uppercase tracking-[0.2em]">Agenda de Hoy</p>
+                                    <h4 class="text-gray-900 text-2xl font-black">Mis Sesiones</h4>
+                                </div>
+                                <div class="bg-brandCoral/10 p-3 rounded-2xl">
+                                    <i class="fa-solid fa-calendar-day text-brandCoral text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="bg-white border border-gray-100 p-4 rounded-2xl flex justify-between items-center group-hover:border-brandTeal transition-all shadow-sm">
+                                    <span class="text-gray-800 font-bold">10:00 - Yoga Vinyasa</span>
+                                    <span class="text-xs bg-brandTeal/10 text-brandTeal px-3 py-1 rounded-full font-black">CONFIRMAR</span>
+                                </div>
+                                <div class="bg-white border border-gray-100 p-4 rounded-2xl flex justify-between items-center opacity-60">
+                                    <span class="text-gray-400 font-bold">12:30 - Personal Tr.</span>
+                                    <span class="text-xs bg-gray-100 text-gray-400 px-3 py-1 rounded-full font-black">PENDIENTE</span>
+                                </div>
+                            </div>
                         </div>
-                        <span class="font-medium text-gray-200">Monitorización de actividad diaria</span>
-                    </li>
-                    <li class="flex items-center gap-4">
-                        <div class="w-8 h-8 rounded-full bg-brandCoral flex items-center justify-center text-xs">
-                            <i class="fa-solid fa-check"></i>
-                        </div>
-                        <span class="font-medium text-gray-200">Planes 100% adaptados a tu ritmo</span>
-                    </li>
-                </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-   
+    {{-- 2. SECCIÓN DEL PROBLEMA AL ÉXITO --}}
+    <section id="solucion" class="py-32 relative bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+                <div class="reveal">
+                    <h2 class="text-brandCoral font-black uppercase tracking-[0.5em] text-xs mb-4">La Transformación</h2>
+                    <h3 class="text-4xl md:text-6xl font-black tracking-tighter mb-8 leading-tight">Del caos del Excel a la gestión viva.</h3>
+                    <p class="text-xl text-gray-600 leading-relaxed mb-8 font-medium">
+                        Antiguamente, la gestión en **Moverte da Vida** se basaba en el intercambio constante de archivos. Al final de mes, el director recibía **20 archivos distintos**. Un caos de 240 documentos al año donde era imposible cuadrar cobros y horas.
+                    </p>
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <div class="stat-card p-6 rounded-3xl text-center border-l-4 border-l-brandCoral bg-gray-50/50">
+                                <p class="text-3xl font-black text-brandCoral">240</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Archivos/Año</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="stat-card p-6 rounded-3xl text-center border-l-4 border-l-brandTeal bg-gray-50/50">
+                                <p class="text-3xl font-black text-brandTeal">100%</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Digitalizado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="border-t border-gray-100"></div>
+                <div class="space-y-12 reveal" style="transition-delay: 300ms;">
+                    <div class="flex gap-6">
+                        <div class="w-14 h-14 bg-brandTeal/5 rounded-2xl flex items-center justify-center text-brandTeal text-2xl flex-shrink-0 border border-brandTeal/10">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-black mb-2 italic text-gray-900">El Entrenador conectado</h4>
+                            <p class="text-gray-500">Cada coach tiene su propio panel personal para consultar sus horarios y gestionar la asistencia al momento.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="w-14 h-14 bg-brandCoral/5 rounded-2xl flex items-center justify-center text-brandCoral text-2xl flex-shrink-0 border border-brandCoral/10">
+                            <i class="fa-solid fa-cash-register"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-black mb-2 italic text-gray-900">Control total de cobros</h4>
+                            <p class="text-gray-500">Registro inmediato del método de pago. El entrenador valida el cobro al terminar la sesión.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-6">
+                        <div class="w-14 h-14 bg-brandAqua/10 rounded-2xl flex items-center justify-center text-brandTeal text-2xl flex-shrink-0 border border-brandTeal/10">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-black mb-2 italic text-gray-900">Nóminas automáticas</h4>
+                            <p class="text-gray-500">Toda la actividad del equipo alimenta el generador de nóminas masivo. Cálculos perfectos en 1 clic.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- 3. RESUMEN DE VENTAJAS Y FUNCIONALIDADES --}}
+    <section class="py-32 bg-gray-50 rounded-[4rem] mx-4 sm:mx-8 mb-32 relative overflow-hidden border border-gray-100">
+        <div class="max-w-7xl mx-auto px-10 relative z-10">
+            <div class="text-center mb-24 reveal">
+                <h2 class="text-brandTeal font-black uppercase tracking-[0.4em] text-xs mb-4">Core Benefits</h2>
+                <h3 class="text-5xl md:text-7xl font-black tracking-tighter text-gray-900">Todo lo que hacemos por ti.</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 reveal">
+                
+                {{-- Ventaja 1 --}}
+                <div class="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-brandTeal/10 text-brandTeal rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-hotel"></i>
+                    </div>
+                    <h5 class="font-black text-gray-900 uppercase tracking-tighter mb-4">Gestión <br> Multi-Centro</h5>
+                    <p class="text-gray-500 text-sm leading-relaxed">Controla todas tus sedes (Aira, Open Arena...) desde una única cuenta maestra.</p>
+                </div>
+
+                {{-- Ventaja 2 --}}
+                <div class="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-brandCoral/10 text-brandCoral rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <h5 class="font-black text-gray-900 uppercase tracking-tighter mb-4">Cálculo de <br> Tramos</h5>
+                    <p class="text-gray-500 text-sm leading-relaxed">Lógica de precios automática integrada según la duración y tipo de sesión.</p>
+                </div>
+
+                {{-- Ventaja 3 --}}
+                <div class="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-brandAqua/20 text-brandTeal rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <h5 class="font-black text-gray-900 uppercase tracking-tighter mb-4">Control de <br> Asistencia</h5>
+                    <p class="text-gray-500 text-sm leading-relaxed">Los entrenadores marcan la presencia del cliente al instante desde el móvil.</p>
+                </div>
+
+                {{-- Ventaja 4 --}}
+                <div class="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
+                    <div class="w-14 h-14 bg-gray-100 text-gray-600 rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    <h5 class="font-black text-gray-900 uppercase tracking-tighter mb-4">PDFs <br> Automáticos</h5>
+                    <p class="text-gray-500 text-sm leading-relaxed">Generación instantánea de borradores de nóminas listos para su revisión.</p>
+                </div>
+
+                {{-- Ventaja 5 --}}
+                <div class="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
+                    <div class="w-14 h-14 bg-brandTeal/10 text-brandTeal rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h5 class="font-black text-gray-900 uppercase tracking-tighter mb-4">Seguridad <br> Bancaria</h5>
+                    <p class="text-gray-500 text-sm leading-relaxed">Almacenamiento cifrado de IBANs y firmas digitales de todo el personal.</p>
+                </div>
+
+                {{-- Ventaja 6 --}}
+                <div class="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
+                    <div class="w-14 h-14 bg-brandCoral/10 text-brandCoral rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h5 class="font-black text-gray-900 uppercase tracking-tighter mb-4">Métricas <br> Reales</h5>
+                    <p class="text-gray-500 text-sm leading-relaxed">Dashboards interactivos con la evolución de ingresos y rentabilidad mensual.</p>
+                </div>
+
+                {{-- Ventaja 7 --}}
+                <div class="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
+                    <div class="w-14 h-14 bg-brandAqua/20 text-brandTeal rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <h5 class="font-black text-gray-900 uppercase tracking-tighter mb-4">Roles de <br> Acceso</h5>
+                    <p class="text-gray-500 text-sm leading-relaxed">Paneles diferenciados para administradores y staff de entrenamiento.</p>
+                </div>
+
+                {{-- Ventaja 8 --}}
+                <div class="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
+                    <div class="w-14 h-14 bg-gray-100 text-gray-600 rounded-2xl flex items-center justify-center text-xl mb-6">
+                        <i class="fa-solid fa-cloud"></i>
+                    </div>
+                    <h5 class="font-black text-gray-900 uppercase tracking-tighter mb-4">Adiós al <br> Papel</h5>
+                    <p class="text-gray-500 text-sm leading-relaxed">Elimina los excels y el papel. Información siempre disponible en la nube.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    {{-- 4. FINAL CTA --}}
+    <section class="py-32 text-center reveal">
+        <div class="max-w-4xl mx-auto px-4">
+            <h3 class="text-5xl md:text-7xl font-black tracking-tighter mb-8">Impulsa tu centro hacia el futuro.</h3>
+            <p class="text-xl text-gray-500 mb-12 font-medium">
+                La digitalización inteligente es la ventaja competitiva para centros de alto rendimiento como **Moverte da Vida**.
+            </p>
+            <div class="flex justify-center">
+                <a href="{{ route('login') }}" class="inline-block px-12 py-6 bg-brandCoral text-white rounded-3xl font-black text-2xl shadow-xl hover:scale-110 hover:-rotate-2 transition-all">
+                    Acceder al Sistema
+                </a>
+            </div>
+        </div>
+    </section>
 
     <x-footers.footer_welcome />
+
+</div>
+
+<script>
+    const observerOptions = { threshold: 0.1 };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, observerOptions);
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
 
 @endsection
