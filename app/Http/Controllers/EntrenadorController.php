@@ -74,6 +74,15 @@ class EntrenadorController extends Controller
             $data['password'] = Hash::make($request->password);
         }
 
+        // Eliminar foto de perfil si se solicita
+        if ($request->has('delete_profile_photo') && $request->delete_profile_photo == '1') {
+            if ($user->foto_de_perfil) {
+                // Opcional: Eliminar archivo del disco
+                // \Storage::disk('public')->delete($user->foto_de_perfil);
+                $data['foto_de_perfil'] = null;
+            }
+        }
+
         $user->update($data);
 
         return redirect()->route('entrenadores.index')->with('success', 'Datos del entrenador actualizados correctamente.');

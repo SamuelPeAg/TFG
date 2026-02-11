@@ -100,7 +100,8 @@
                                                 '{{ $entrenador->name }}', 
                                                 '{{ $entrenador->email }}', 
                                                 '{{ $entrenador->iban }}',
-                                                '{{ $isAdmin }}'
+                                                '{{ $isAdmin }}',
+                                                '{{ $entrenador->foto_de_perfil }}'
                                             )">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>

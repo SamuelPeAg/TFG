@@ -47,7 +47,8 @@
                                 '{{ $entrenador->id }}', 
                                 '{{ $entrenador->name }}', 
                                 '{{ $entrenador->email }}',
-                                '{{ $entrenador->iban ?? '' }}' 
+                                '{{ $entrenador->iban ?? '' }}',
+                                '{{ $entrenador->foto_de_perfil }}'
                             )">
                             <i class="fas fa-pencil-alt"></i>
                         </button>

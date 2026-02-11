@@ -48,6 +48,7 @@
                             data-email="{{ $user->email }}"
                             data-iban="{{ $user->iban }}"
                             data-firma="{{ $user->firma_digital }}"
+                            data-photo="{{ $user->foto_de_perfil }}"
                         >
                             <i class="fas fa-pencil-alt"></i>
                         </button>

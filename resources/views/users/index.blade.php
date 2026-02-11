@@ -179,11 +179,29 @@
     <div class="modal-card">
       <button type="button" class="close-btn" id="btnCerrarModalEditarUsuario">&times;</button>
       <div class="modal-header-custom">
-        <div class="logo-simulado"><i class="fas fa-user-edit"></i></div>
+        <div id="default_header_icon" class="logo-simulado"><i class="fas fa-user-edit"></i></div>
+        
+        <!-- Contenedor Foto Perfil (Oculto por defecto) -->
+        <div id="photo_header_container" style="display:none; position: relative; width: 100px; height: 100px; margin: 0 auto 15px;">
+            <img id="modal_edit_photo_img" src="" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 3px solid white;">
+            
+            <button type="button" id="btn_delete_photo_action" style="position: absolute; bottom: 0; right: 0; background: #ef5d7a; color: white; border: 2px solid white; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                <i class="fas fa-trash-alt" style="font-size: 12px;"></i>
+            </button>
+        </div>
+
         <h2>Editar Usuario</h2>
       </div>
       <form id="formEditarUsuario" method="POST">
         @csrf @method('PUT')
+        
+        <input type="checkbox" name="delete_profile_photo" id="delete_profile_photo_input" value="1" style="display:none;">
+        
+        {{-- 
+        <div id="divDeletePhoto" class="form-group" style="display:none; margin-bottom: 15px;">
+           ...
+        </div> 
+        --}}
         <div class="form-group"><label class="form-label-custom">Nombre</label><div class="input-group-custom"><i class="fas fa-user"></i><input type="text" name="name" id="edit_name" class="form-control-custom" placeholder="Nombre completo" required readonly></div></div>
         <div class="form-group"><label class="form-label-custom">Email</label><div class="input-group-custom"><i class="fas fa-envelope"></i><input type="email" name="email" id="edit_email" class="form-control-custom" placeholder="correo@ejemplo.com" required readonly></div></div>
         <div class="form-group"><label class="form-label-custom">IBAN</label><div class="input-group-custom"><i class="fas fa-credit-card"></i><input type="text" name="iban" id="edit_iban" class="form-control-custom" placeholder="ES00 0000 0000 0000 0000 0000"></div></div>
