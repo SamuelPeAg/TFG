@@ -13,10 +13,10 @@ class ClaseFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->randomElement(['Yoga', 'Pilates', 'Crossfit', 'Spinning']),
-            'descripcion' => $this->faker->sentence(),
-            'duracion_minutos' => $this->faker->randomElement([45, 60, 90]),
-            'nivel' => $this->faker->randomElement(['facil', 'medio', 'dificil']),
+            'nombre' => fake()->randomElement(['Yoga', 'Pilates', 'Crossfit', 'Spinning']),
+            'descripcion' => fake()->sentence(),
+            'duracion_minutos' => fake()->randomElement([45, 60, 90]),
+            'nivel' => fake()->randomElement(['facil', 'medio', 'dificil']),
             'id_centro' => Centro::factory(),
         ];
     }

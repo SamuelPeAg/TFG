@@ -13,15 +13,12 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'email' => $this->faker->unique()->safeEmail(),
-
-            // Password fija para seeders (más rápido y cómodo)
+            'name' => fake()->name(),
+            'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
-
-            'foto_de_perfil' => 'perfil_' . $this->faker->numberBetween(1, 20) . '.jpg',
-            'iban' => $this->faker->iban(),
-            'firma_digital' => 'firma_' . $this->faker->uuid(),
+            'foto_de_perfil' => 'perfil_' . fake()->numberBetween(1, 20) . '.jpg',
+            'iban' => fake()->iban(),
+            'firma_digital' => 'firma_' . fake()->uuid(),
         ];
     }
 

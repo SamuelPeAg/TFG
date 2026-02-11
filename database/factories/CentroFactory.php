@@ -12,8 +12,8 @@ class CentroFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->company() . ' Fitness',
-            'direccion' => $this->faker->address(),
+            'nombre' => fake()->company() . ' Fitness',
+            'direccion' => fake()->address(),
         ];
     }
 }
