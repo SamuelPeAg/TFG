@@ -116,7 +116,13 @@
                                     <label class="trainer-card-clean">
                                         <input type="checkbox" name="trainers[]" value="{{ $coach->id }}">
                                         <div class="t-card-content">
-                                            <div class="t-avatar">{{ strtoupper(substr($coach->name, 0, 1)) }}</div>
+                                            <div class="t-avatar">
+                                                @if($coach->foto_de_perfil)
+                                                    <img src="{{ asset('storage/' . $coach->foto_de_perfil) }}" alt="{{ $coach->name }}">
+                                                @else
+                                                    {{ strtoupper(substr($coach->name, 0, 1)) }}
+                                                @endif
+                                            </div>
                                             <div class="t-info">
                                                 <span class="t-name">{{ $coach->name }}</span>
                                                 <span class="t-role">Entrenador</span>
@@ -271,6 +277,13 @@
         background: linear-gradient(135deg, #39c5a7, #eb567a); 
         border-radius: 50%; display: flex; align-items: center; justify-content: center; 
         font-weight: 700; color: white; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        overflow: hidden;
+    }
+
+    .t-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
     
     .t-info { flex: 1; display: flex; flex-direction: column; }

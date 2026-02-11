@@ -116,8 +116,12 @@
                                         </span>
                                     </div>
                                     
-                                    <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white dark:border-gray-700 ring-1 ring-gray-100 dark:ring-gray-700 group-hover:ring-brandTeal transition-all">
-                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white dark:border-gray-700 ring-1 ring-gray-100 dark:ring-gray-700 group-hover:ring-brandTeal transition-all overflow-hidden">
+                                        @if(auth()->user()->foto_de_perfil)
+                                            <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
+                                        @else
+                                            {{ substr(auth()->user()->name, 0, 1) }}
+                                        @endif
                                     </div>
                                 </a>
 
@@ -163,8 +167,12 @@
                         @else
                             <div class="space-y-3">
                                 <a href="{{ route('calendario') }}" class="flex items-center gap-3 py-2">
-                                    <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg">
-                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg overflow-hidden">
+                                        @if(auth()->user()->foto_de_perfil)
+                                            <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
+                                        @else
+                                            {{ substr(auth()->user()->name, 0, 1) }}
+                                        @endif
                                     </div>
                                     <div class="flex flex-col">
                                         <span class="font-bold text-gray-700 dark:text-gray-200 text-sm">

@@ -101,8 +101,12 @@
                                         </span>
                                     </div>
                                     
-                                    <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white ring-1 ring-gray-100 group-hover:ring-brandTeal transition-all">
-                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white ring-1 ring-gray-100 group-hover:ring-brandTeal transition-all overflow-hidden">
+                                        @if(auth()->user()->foto_de_perfil)
+                                            <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
+                                        @else
+                                            {{ substr(auth()->user()->name, 0, 1) }}
+                                        @endif
                                     </div>
                                 </a>
 

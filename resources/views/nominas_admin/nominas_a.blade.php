@@ -166,8 +166,12 @@
                             <tr class="hover:bg-slate-50/80 transition-colors search-item">
                                 <td class="py-4 px-6">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">
-                                            {{ substr($nomina->user->name, 0, 1) }}
+                                        <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden">
+                                            @if($nomina->user->foto_de_perfil)
+                                                <img src="{{ asset('storage/' . $nomina->user->foto_de_perfil) }}" alt="{{ $nomina->user->name }}" class="h-full w-full object-cover">
+                                            @else
+                                                {{ substr($nomina->user->name, 0, 1) }}
+                                            @endif
                                         </div>
                                         <span class="font-semibold text-slate-700 name-cell">{{ $nomina->user->name }}</span>
                                     </div>
