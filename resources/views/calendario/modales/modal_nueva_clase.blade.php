@@ -101,8 +101,16 @@
                                 <label class="trainer-option">
                                     <input type="checkbox" name="trainers[]" value="{{ $coach->id }}">
                                     <div class="trainer-card">
-                                        <div class="avatar-circle-sm">
-                                            {{ strtoupper(substr($coach->name, 0, 1)) }}
+                                        <div class="avatar-circle-sm" style="display: flex; align-items: center; justify-content: center;">
+                                            @if($coach->foto_de_perfil)
+                                                <img src="{{ asset('storage/' . $coach->foto_de_perfil) }}" 
+                                                     alt="{{ $coach->name }}" 
+                                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                <span style="display:none;">{{ strtoupper(substr($coach->name, 0, 1)) }}</span>
+                                            @else
+                                                {{ strtoupper(substr($coach->name, 0, 1)) }}
+                                            @endif
                                         </div>
                                         <span class="trainer-name">{{ $coach->name }}</span>
                                         <i class="fa-solid fa-check check-icon"></i>

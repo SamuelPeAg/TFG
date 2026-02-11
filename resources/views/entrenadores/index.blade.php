@@ -131,8 +131,16 @@
                             <tr>
                                 <td data-label="Entrenador">
                                     <div class="user-info">
-                                        <div class="avatar-circle">
-                                            {{ strtoupper(substr($entrenador->name, 0, 1)) }}
+                                        <div class="avatar-circle" style="display: flex; align-items: center; justify-content: center;">
+                                            @if($entrenador->foto_de_perfil)
+                                                <img src="{{ asset('storage/' . $entrenador->foto_de_perfil) }}" 
+                                                     alt="{{ $entrenador->name }}" 
+                                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                <span style="display:none;">{{ strtoupper(substr($entrenador->name, 0, 1)) }}</span>
+                                            @else
+                                                {{ strtoupper(substr($entrenador->name, 0, 1)) }}
+                                            @endif
                                         </div>
                                         <span>{{ $entrenador->name }}</span>
                                     </div>
