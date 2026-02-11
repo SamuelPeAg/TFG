@@ -30,43 +30,12 @@
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: PERSONAS -->
-            <div class="modal-col-right">
-                <!-- Sección Entrenadores -->
-                <h4 class="section-title">EQUIPO TÉCNICO</h4>
-                <div class="modern-form-group">
-                    <label class="modern-label" style="display:flex; justify-content:space-between;">
-                        <span>ENTRENADORES</span>
-                        <span style="font-size:10px; opacity:0.7;">(Selecciona uno o varios)</span>
-                    </label>
-                    <div class="trainers-list-container">
-                        @if(isset($entrenadores) && $entrenadores->count() > 0)
-                            @foreach($entrenadores as $coach)
-                                <label class="trainer-option">
-                                    <input type="checkbox" name="trainers[]" value="{{ $coach->id }}">
-                                    <div class="trainer-card">
-                                        <div class="avatar-circle-sm" style="display: flex; align-items: center; justify-content: center;">
-                                            @if($coach->foto_de_perfil)
-                                                <img src="{{ asset('storage/' . $coach->foto_de_perfil) }}" 
-                                                     alt="{{ $coach->name }}" 
-                                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
-                                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                                                <span style="display:none;">{{ strtoupper(substr($coach->name, 0, 1)) }}</span>
-                                            @else
-                                                {{ strtoupper(substr($coach->name, 0, 1)) }}
-                                            @endif
-                                        </div>
-                                        <span class="trainer-name">{{ $coach->name }}</span>
-                                        <i class="fa-solid fa-check check-icon"></i>
-                                    </div>
-                                </label>
-                            @endforeach
-                        @else
-                            <div style="padding:15px; text-align:center; color:#9ca3af; border:1px dashed #e5e7eb; border-radius:10px;">
-                                <small>No hay entrenadores disponibles</small>
-                            </div>
-                        @endif
-                    </div>
+            <!-- Step 3 Item -->
+            <div class="nav-step" data-step="3">
+                <div class="nav-step-icon">3</div>
+                <div class="nav-step-info">
+                    <span class="step-label">Facturación</span>
+                    <span class="step-desc">Detalles de pagos</span>
                 </div>
             </div>
         </div>
