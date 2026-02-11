@@ -11,7 +11,9 @@ use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\EntrenadorController;
 use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\NominaEntrenadorController;
 use App\Http\Controllers\PagosController;
+use App\Http\Controllers\NominaAdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -92,6 +94,11 @@ Route::middleware('auth')->group(function () {
         return redirect('/');
     })->name('logout');
 
+    // --- NÓMINAS ENTRENADOR (Ruta Mixta/Entrenador) ---
+    Route::get('/mis-nominas', [NominaEntrenadorController::class, 'index'])->name('nominas_e');
+    Route::get('/mis-nominas/{id}/descargar', [NominaEntrenadorController::class, 'descargar'])->name('nominas_e.descargar');
+
+
     /*
     |--------------------------------------------------------------------------
     | 3.1 COMPARTIDO (ADMIN & ENTRENADOR)
@@ -143,6 +150,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
         Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
 
+        // Gestión entrenadores (solo admin)
+        // Gestión entrenadores (solo admin)
+        Route::resource('entrenadores', EntrenadorController::class);
+
+        // --- NÓMINAS (Admin) ---
+        Route::get('/admin/nominas', [NominaAdminController::class, 'index'])->name('admin.nominas');
+        Route::post('/admin/nominas/generar', [NominaAdminController::class, 'generar'])->name('admin.nominas.generar');
+        Route::put('/admin/nominas/{id}', [NominaAdminController::class, 'update'])->name('admin.nominas.update');
+        Route::post('/admin/nominas/{id}/pagar', [NominaAdminController::class, 'marcarPagado'])->name('admin.nominas.pagar');
+        Route::delete('/admin/nominas/{id}', [NominaAdminController::class, 'destroy'])->name('admin.nominas.destroy');
+        Route::get('/admin/nominas/calcular/{user_id}', [NominaAdminController::class, 'calcularNomina'])->name('admin.nominas.calcular');
     });
 
 });

@@ -31,28 +31,53 @@ class FacturacionController extends Controller
         }
 
         $q = Pago::query()
-            ->with(['entrenador:id,name'])
+            ->with(['entrenador:id,name', 'entrenadores:id,name'])
             ->when($desde, fn($qq) => $qq->whereDate('fecha_registro', '>=', $desde))
             ->when($hasta, fn($qq) => $qq->whereDate('fecha_registro', '<=', $hasta))
             ->when($centro !== 'todos', fn($qq) => $qq->where('centro', $centro))
-            ->when($entrenadorId, fn($qq) => $qq->where('entrenador_id', $entrenadorId));
+            ->when($entrenadorId, function($qq) use ($entrenadorId) {
+                $qq->where(function($sub) use ($entrenadorId) {
+                    $sub->where('entrenador_id', $entrenadorId)
+                        ->orWhereHas('entrenadores', fn($h) => $h->where('users.id', $entrenadorId));
+                });
+            });
 
         $Pagos = $q->get();
 
         // Mantener compatibilidad con la vista antigua (resumen basado en Pagos)
         $resumen = [];
-        foreach ($Pagos as $s) {
-            $nombre = $s->entrenador?->name ?? 'Sin entrenador';
-
-            if (!isset($resumen[$nombre])) {
-                $resumen[$nombre] = [
-                    'Pagos' => 0,
-                    'facturacion' => 0,
-                ];
+        foreach ($Pagos as $pago) {
+            $trainerIds = [];
+            $trainerNames = [];
+            
+            if ($pago->entrenador_id) {
+                $trainerIds[] = $pago->entrenador_id;
+                $trainerNames[$pago->entrenador_id] = $pago->entrenador->name ?? 'Sin nombre';
+            }
+            
+            foreach ($pago->entrenadores as $t) {
+                if (!in_array($t->id, $trainerIds)) {
+                    $trainerIds[] = $t->id;
+                    $trainerNames[$t->id] = $t->name;
+                }
             }
 
-            $resumen[$nombre]['Pagos'] += 1;
-            $resumen[$nombre]['facturacion'] += (float) ($s->importe ?? 0);
+            if (empty($trainerIds)) {
+                $trainerIds[] = 0;
+                $trainerNames[0] = 'Sin entrenador';
+            }
+
+            foreach ($trainerIds as $tid) {
+                $nombre = $trainerNames[$tid];
+                if (!isset($resumen[$nombre])) {
+                    $resumen[$nombre] = [
+                        'Pagos' => 0,
+                        'facturacion' => 0,
+                    ];
+                }
+                $resumen[$nombre]['Pagos'] += 1;
+                $resumen[$nombre]['facturacion'] += (float) ($pago->importe ?? 0);
+            }
         }
 
         foreach ($resumen as $k => $v) {
