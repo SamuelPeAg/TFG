@@ -181,6 +181,12 @@
                                 </td>
                                 <td class="py-4 px-6 text-right">
                                     <div class="flex items-center justify-end gap-2">
+                                        {{-- BOTÓN VISTA PREVIA --}}
+                                        <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
+                                                class="w-10 h-10 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors shadow-sm" title="Vista Previa PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </button>
+
                                         <button onclick="abrirModalRevision(this)"
                                                 data-id="{{ $nomina->id }}" 
                                                 data-userid="{{ $nomina->user_id }}"
@@ -261,6 +267,12 @@
                                 </td>
                                 <td class="py-4 px-6 text-right">
                                     <div class="flex justify-end gap-2">
+                                        {{-- BOTÓN VISTA PREVIA --}}
+                                        <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
+                                                class="w-9 h-9 rounded-lg flex items-center justify-center bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors" title="Vista Previa PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </button>
+
                                         <button data-nomina="{{ json_encode([
                                                     'concepto' => $nomina->concepto,
                                                     'mes' => $nomina->mes,
@@ -789,6 +801,70 @@
 
         // Al cambiar de entrenador, opcionalmente podrías recalcular sessions pero lo dejaremos manual por ahora
         // document.getElementById('modalEntrenadorSelect').addEventListener('change', function() { ... });
+    </script>
+
+    {{-- MODAL VISTA PREVIA PDF --}}
+    <div id="modalPDFPreview" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[3000] hidden items-center justify-center fade-in">
+        <div class="bg-white w-full max-w-5xl h-[90vh] rounded-3xl overflow-hidden shadow-2xl relative flex flex-col">
+            {{-- Header del Modal --}}
+            <div class="px-8 py-4 bg-slate-900 text-white flex justify-between items-center whitespace-nowrap overflow-x-auto">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-brand-teal/20 rounded-xl flex items-center justify-center text-brand-teal">
+                        <i class="fas fa-file-invoice-dollar text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg">Vista Previa de Nómina</h3>
+                        <p class="text-xs text-slate-400">Verifica los datos antes de descargar</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a id="btnDownloadPDFModal" href="#" class="flex items-center gap-2 px-5 py-2 bg-brand-teal hover:bg-teal-600 rounded-xl font-bold transition-all text-sm">
+                        <i class="fas fa-download"></i> Descargar
+                    </a>
+                    <button onclick="cerrarModalPreview()" class="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-xl transition-all">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Contenedor del Iframe --}}
+            <div class="flex-1 bg-slate-100 relative">
+                <div id="pdfLoadingSpinner" class="absolute inset-0 flex items-center justify-center z-10 bg-slate-100/80">
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-12 h-12 border-4 border-slate-200 border-t-brand-teal rounded-full animate-spin"></div>
+                        <p class="text-slate-500 font-bold text-sm tracking-widest uppercase">Generando PDF...</p>
+                    </div>
+                </div>
+                <iframe id="pdfPreviewIframe" class="w-full h-full border-none" src="" onload="document.getElementById('pdfLoadingSpinner').classList.add('hidden')"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirModalPreview(previewUrl, downloadUrl) {
+            const modal = document.getElementById('modalPDFPreview');
+            const iframe = document.getElementById('pdfPreviewIframe');
+            const downloadBtn = document.getElementById('btnDownloadPDFModal');
+            const spinner = document.getElementById('pdfLoadingSpinner');
+
+            spinner.classList.remove('hidden');
+            downloadBtn.href = downloadUrl;
+            iframe.src = previewUrl;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function cerrarModalPreview() {
+            const modal = document.getElementById('modalPDFPreview');
+            const iframe = document.getElementById('pdfPreviewIframe');
+            
+            iframe.src = ''; // Limpiar src para parar carga
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.classList.remove('overflow-hidden');
+        }
     </script>
 </body>
 </html>

@@ -98,6 +98,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/mis-nominas', [NominaEntrenadorController::class, 'index'])->name('nominas_e');
     Route::get('/mis-nominas/{id}/descargar', [NominaEntrenadorController::class, 'descargar'])->name('nominas_e.descargar');
 
+    // --- PDF NÓMINAS (Preview & Download dinámico) ---
+    Route::get('/nominas/{id}/preview', [\App\Http\Controllers\NominaPdfController::class, 'preview'])->name('nominas.preview');
+    Route::get('/nominas/{id}/download', [\App\Http\Controllers\NominaPdfController::class, 'download'])->name('nominas.download');
+
 
     /*
     |--------------------------------------------------------------------------

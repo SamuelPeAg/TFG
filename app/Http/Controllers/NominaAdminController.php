@@ -57,17 +57,31 @@ class NominaAdminController extends Controller
                 return $p->fecha_registro->format('Y-m-d H:i') . '|' . strtolower(trim($p->nombre_clase)) . '|' . $p->centro;
             });
 
+            $sesiones_detalle = [];
             $totalMinutos = 0;
             
             foreach ($sesiones as $clave => $grupoPagos) {
-                // Tomamos el nombre de clase del primer pago del grupo
-                $nombreClase = $grupoPagos->first()->nombre_clase;
+                $primerPago = $grupoPagos->first();
+                $nombreClase = $primerPago->nombre_clase;
+                $centro = $primerPago->centro;
+                $fecha = $primerPago->fecha_registro;
                 
-                // Buscar duración en modelo Clase (aproximación por nombre)
+                // Buscar duración
                 $claseDB = \App\Models\Clase::where('nombre', $nombreClase)->first();
-                $duracion = $claseDB ? $claseDB->duracion_minutos : 60; // Default 1h si no encuentra
+                $duracion = $claseDB ? $claseDB->duracion_minutos : 60;
                 
                 $totalMinutos += $duracion;
+
+                // Añadir al detalle del PDF
+                $sesiones_detalle[] = [
+                    'fecha' => $fecha->format('d/m/Y'),
+                    'hora' => $fecha->format('H:i'),
+                    'clase' => $nombreClase,
+                    'centro' => $centro,
+                    'duracion' => $duracion,
+                    'alumnos_count' => $grupoPagos->count(),
+                    'alumnos' => $grupoPagos->pluck('nombre_cliente')->unique()->values()->all()
+                ];
             }
 
             $horasTrabajadas = $totalMinutos / 60;
@@ -83,7 +97,7 @@ class NominaAdminController extends Controller
 
             // Tramo 2: 25 - 30 horas -> 10.9 €/h
             if ($rem > 0) {
-                $h2 = min($rem, 5); // Las siguientes 5 horas
+                $h2 = min($rem, 5); 
                 $bruto += $h2 * 10.9;
                 $rem -= $h2;
             }
@@ -93,10 +107,10 @@ class NominaAdminController extends Controller
                 $bruto += $rem * 13.3;
             }
 
-            // --- DEDUCCIONES Y COSTES (IMÁGENES 1, 3 Y 4) ---
-            $irpf_porcentaje = 0.00; // Por defecto 0% según imagen
-            $ss_trabajador_porcentaje = 0.0635; // 6.35% según imagen
-            $ss_empresa_porcentaje = 0.3140; // 31.40% según imagen
+            // --- DEDUCCIONES Y COSTES ---
+            $irpf_porcentaje = 0.00; 
+            $ss_trabajador_porcentaje = 0.0635; 
+            $ss_empresa_porcentaje = 0.3140; 
 
             $ss_trabajador = $bruto * $ss_trabajador_porcentaje;
             $irpf = $bruto * $irpf_porcentaje;
@@ -109,6 +123,7 @@ class NominaAdminController extends Controller
             $detalles = [
                 'horas_trabajadas' => number_format($horasTrabajadas, 2, '.', ''),
                 'sesiones_count' => $sesiones->count(),
+                'sesiones' => $sesiones_detalle, // <--- NUEVO: Lista de sesiones
                 'salario_bruto' => round($bruto, 2),
                 'ss_trabajador' => round($ss_trabajador, 2),
                 'irpf' => round($irpf, 2),
@@ -175,12 +190,27 @@ class NominaAdminController extends Controller
             return $p->fecha_registro->format('Y-m-d H:i') . '|' . strtolower(trim($p->nombre_clase)) . '|' . $p->centro;
         });
 
+        $sesiones_detalle = [];
         $totalMinutos = 0;
         foreach ($sesiones as $clave => $grupoPagos) {
-            $nombreClase = $grupoPagos->first()->nombre_clase;
+            $primerPago = $grupoPagos->first();
+            $nombreClase = $primerPago->nombre_clase;
+            $centro = $primerPago->centro;
+            $fecha = $primerPago->fecha_registro;
+
             $claseDB = \App\Models\Clase::where('nombre', $nombreClase)->first();
             $duracion = $claseDB ? $claseDB->duracion_minutos : 60;
             $totalMinutos += $duracion;
+
+            $sesiones_detalle[] = [
+                'fecha' => $fecha->format('d/m/Y'),
+                'hora' => $fecha->format('H:i'),
+                'clase' => $nombreClase,
+                'centro' => $centro,
+                'duracion' => $duracion,
+                'alumnos_count' => $grupoPagos->count(),
+                'alumnos' => $grupoPagos->pluck('nombre_cliente')->unique()->values()->all()
+            ];
         }
 
         $horasTrabajadas = $totalMinutos / 60;
