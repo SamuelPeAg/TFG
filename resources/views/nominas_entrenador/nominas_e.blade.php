@@ -138,7 +138,8 @@
                                             'importe' => number_format($nomina->importe, 2),
                                             'estado' => $nomina->estado_nomina,
                                             'fecha_pago' => $nomina->fecha_pago ? $nomina->fecha_pago->format('d/m/Y') : 'Pendiente',
-                                            'archivo_url' => $nomina->archivo_path ? route('nominas_e.descargar', $nomina->id) : ''
+                                            'archivo_url' => $nomina->archivo_path ? route('nominas_e.descargar', $nomina->id) : '',
+                                            'detalles' => $nomina->detalles
                                         ]) }}" 
                                         onclick="abrirModalDetalle(JSON.parse(this.dataset.nomina))"
                                         class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition-all border border-slate-200">
@@ -183,12 +184,32 @@
                     <span class="text-slate-500 font-medium">Periodo</span>
                     <span class="text-slate-800 font-bold" id="modalPeriodo">--</span>
                 </div>
-                
-                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
-                    <span class="text-slate-500 font-medium">Importe</span>
-                    <span class="text-2xl font-black text-slate-800" id="modalImporte">-- €</span>
-                </div>
 
+                <div id="modalDetalleDesglose" class="bg-white border-2 border-slate-100 p-5 rounded-xl hidden">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-4 text-center">Desglose de Nómina</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500 font-medium">Salario Bruto:</span>
+                            <span id="detBruto" class="font-bold text-slate-800">--</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-red-500 pb-2">
+                            <span class="font-medium">Deducciones (SS+IRPF):</span>
+                            <span id="detDeducciones" class="font-bold">--</span>
+                        </div>
+
+                        {{-- Extras en vista entrenador --}}
+                        <div id="detExtrasContainer" class="hidden border-t border-slate-50 pt-2 space-y-1">
+                            <h5 class="text-[10px] font-bold text-slate-400 uppercase">Conceptos Adicionales:</h5>
+                            <div id="detExtrasList" class="space-y-1"></div>
+                        </div>
+
+                        <div class="flex justify-between text-teal-600 pt-2 border-t border-slate-100">
+                            <span class="font-bold uppercase text-xs">Salario Neto a Percibir:</span>
+                            <span id="detNeto" class="font-black text-xl">--</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
                     <span class="text-slate-500 font-medium">Estado</span>
                     <span id="modalEstadoBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold">
@@ -234,7 +255,37 @@
         function abrirModalDetalle(data) {
             document.getElementById('modalConcepto').textContent = data.concepto;
             document.getElementById('modalPeriodo').textContent = data.mes + '/' + data.anio;
-            document.getElementById('modalImporte').textContent = data.importe + ' €';
+            
+            // --- DESGLOSE ---
+            const container = document.getElementById('modalDetalleDesglose');
+            if (data.detalles && data.detalles.salario_bruto) {
+                const det = data.detalles;
+                document.getElementById('detBruto').textContent = parseFloat(det.salario_bruto).toFixed(2) + ' €';
+                const deducciones = (parseFloat(det.ss_trabajador) + parseFloat(det.irpf)).toFixed(2);
+                document.getElementById('detDeducciones').textContent = '-' + deducciones + ' €';
+                document.getElementById('detNeto').textContent = parseFloat(det.salario_neto).toFixed(2) + ' €';
+                
+                // Extras
+                const extrasCont = document.getElementById('detExtrasContainer');
+                const extrasList = document.getElementById('detExtrasList');
+                extrasList.innerHTML = '';
+                if (det.extras && det.extras.length > 0) {
+                    det.extras.forEach(ex => {
+                        const row = document.createElement('div');
+                        row.className = 'flex justify-between text-xs text-slate-600 italic';
+                        row.innerHTML = `<span>+ ${ex.concept || ex.concepto}</span><span class="font-bold">${parseFloat(ex.amount || ex.importe).toFixed(2)} €</span>`;
+                        extrasList.appendChild(row);
+                    });
+                    extrasCont.classList.remove('hidden');
+                } else {
+                    extrasCont.classList.add('hidden');
+                }
+
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+            // ----------------
             
             const badge = document.getElementById('modalEstadoBadge');
             if (data.estado === 'pagado') {

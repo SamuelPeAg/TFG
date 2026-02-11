@@ -241,9 +241,9 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @forelse($historial as $nomina)
-                            <tr class="hover:bg-slate-50/50 transition-colors">
+                            <tr class="hover:bg-slate-50/50 transition-colors search-item">
                                 <td class="py-4 px-6">
-                                    <div class="font-bold text-slate-700">{{ $nomina->user->name }}</div>
+                                    <div class="font-bold text-slate-700 name-cell">{{ $nomina->user->name }}</div>
                                     <div class="text-xs text-slate-400">{{ $nomina->concepto }}</div>
                                 </td>
                                 <td class="py-4 px-6 text-slate-600">{{ $nomina->mes }}/{{ $nomina->anio }}</td>
@@ -309,78 +309,131 @@
     </div>
 
     {{-- MODAL REVISION (Tailwind) --}}
-    <div id="modalRevision" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] hidden items-center justify-center fade-in">
-        <div class="bg-white w-full max-w-md rounded-2xl p-8 shadow-2xl relative">
+    <div id="modalRevision" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] hidden items-center justify-center fade-in overflow-y-auto">
+        <div class="bg-white w-full max-w-2xl rounded-2xl p-8 shadow-2xl relative my-8">
             <button type="button" onclick="cerrarModalRevision()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                 <i class="fas fa-times text-xl"></i>
             </button>
             
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                    <i class="fas fa-pencil-alt"></i>
+                    <i class="fas fa-calculator"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">Revisar Nómina</h2>
-                <p class="text-slate-500 mt-1">Ajusta el importe si es necesario</p>
+                <h2 class="text-2xl font-bold text-slate-800">Cálculo Detallado de Nómina</h2>
+                <p class="text-slate-500 mt-1">Revisa y ajusta cada componente del pago</p>
             </div>
 
             <form id="formRevision" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Entrenador Asignado</label>
-                    <div class="relative">
-                        <select name="user_id" id="modalEntrenadorSelect" class="w-full p-4 rounded-xl border-2 border-slate-200 text-lg font-bold text-slate-700 focus:outline-none focus:border-brand-teal transition-colors appearance-none bg-white">
-                            @foreach($entrenadores as $entrenador)
-                                <option value="{{ $entrenador->id }}">{{ $entrenador->name }}</option>
-                            @endforeach
-                        </select>
-                        <i class="fas fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                {{-- Campos Ocultos para enviar el desglose al servidor --}}
+                <input type="hidden" name="salario_bruto" id="input_salario_bruto">
+                <input type="hidden" name="ss_trabajador" id="input_ss_trabajador">
+                <input type="hidden" name="irpf" id="input_irpf">
+                <input type="hidden" name="ss_empresa" id="input_ss_empresa">
+                <input type="hidden" name="coste_total" id="input_coste_total">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    {{-- Bloque 1: Datos Base --}}
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-widest border-b pb-2">Datos Base</h4>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Entrenador</label>
+                            <div id="modalEntrenadorNombre" class="w-full p-3 rounded-xl border-2 border-slate-100 font-bold text-slate-700 bg-slate-50">
+                                --
+                            </div>
+                            <input type="hidden" name="user_id" id="modalEntrenadorId">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Horas Trabajadas</label>
+                            <input type="number" step="0.01" name="horas_trabajadas" id="modalHoras" 
+                                   class="w-full p-3 rounded-xl border-2 border-slate-200 font-bold text-slate-700 focus:outline-none focus:border-brand-teal transition-all">
+                        </div>
+                    </div>
+
+                    {{-- Bloque 2: Salario Bruto y Deducciones --}}
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-widest border-b pb-2">Desglose Económico</h4>
+                        
+                        <div class="flex items-center justify-between gap-4">
+                            <label class="text-xs font-bold text-slate-500">Salario Bruto (€)</label>
+                            <input type="number" step="0.01" id="editBruto" class="w-32 p-2 rounded-lg border border-slate-200 text-right font-bold text-slate-700 focus:outline-none focus:border-brand-teal">
+                        </div>
+
+                        <div class="flex items-center justify-between gap-4 text-red-500">
+                            <label class="text-xs font-bold uppercase">- SS Trab (6.35%)</label>
+                            <span id="labelSSTrab" class="font-bold">0.00 €</span>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-4 text-red-500">
+                            <label class="text-xs font-bold uppercase">- IRPF (0%)</label>
+                            <input type="number" step="0.1" id="editIRPF" value="0" class="w-16 p-2 rounded-lg border border-slate-200 text-right font-bold focus:outline-none">
+                        </div>
                     </div>
                 </div>
 
-                <div class="mb-6 grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Precio/Hora (€)</label>
-                        <input type="number" step="0.5" name="precio_hora" id="modalPrecioHora"  value="0"
-                               class="w-full p-4 rounded-xl border-2 border-slate-200 text-lg font-bold text-slate-700 focus:outline-none focus:border-brand-teal transition-colors">
+                {{-- CONCEPTOS EXTRA --}}
+                <div class="mb-8 p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Conceptos Adicionales (Extras/Bonos)</h4>
+                        <button type="button" onclick="agregarFilaExtra()" class="text-xs font-bold bg-slate-800 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700 transition-all">
+                            <i class="fas fa-plus mr-1"></i> Añadir
+                        </button>
                     </div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Horas Realizadas</label>
-                        <input type="number" step="0.5" name="horas_trabajadas" id="modalHoras" value="0"
-                               class="w-full p-4 rounded-xl border-2 border-slate-200 text-lg font-bold text-slate-700 focus:outline-none focus:border-brand-teal transition-colors">
-                    </div>
-                </div>
-
-                <div id="modalRevisionDesglose" class="bg-slate-50 p-4 rounded-xl mb-6 hidden">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-3 border-b border-slate-200 pb-2">Cálculo (Horas x Precio)</h4>
-                    <div class="flex justify-between items-center mb-1 text-sm">
-                        <span class="text-slate-600">Sesiones Impartidas:</span>
-                        <span id="revSesiones" class="font-bold text-slate-800">0</span>
-                    </div>
-                    <div class="flex justify-between items-center mb-1 text-sm">
-                        <span class="text-slate-600">Horas Totales:</span>
-                        <span id="revHoras" class="font-bold text-slate-800">0.00 h</span>
-                    </div>
-                    <div class="flex justify-between items-center text-sm text-brand-teal mt-2 pt-2 border-t border-slate-200">
-                        <span class="font-medium">Total a Pagar:</span>
-                        <span id="revTotalEntrenador" class="font-bold text-lg">0.00 €</span>
+                    <div id="contenedorExtras" class="space-y-3">
+                        {{-- Las filas de extras se insertarán aquí dinámicamente --}}
                     </div>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Importe Final (€)</label>
-                    <input type="number" step="0.01" name="importe" id="modalImporte" 
-                           class="w-full p-4 rounded-xl border-2 border-slate-200 text-xl font-bold text-slate-800 focus:outline-none focus:border-brand-teal transition-colors">
+                {{-- TOTALES FINALES --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <div class="bg-teal-50 p-6 rounded-2xl border border-teal-100">
+                        <label class="block text-xs font-bold text-teal-600 uppercase mb-1">SALARIO NETO (A Pagar)</label>
+                        <div class="flex items-baseline gap-1">
+                            <input type="number" step="0.01" name="importe" id="modalImporte" 
+                                   class="bg-transparent border-none p-0 text-3xl font-black text-teal-700 w-full focus:outline-none">
+                            <span class="text-2xl font-black text-teal-700">€</span>
+                        </div>
+                        <p class="text-[10px] text-teal-500 font-bold mt-2">Este importe es el que verá el entrenador</p>
+                    </div>
+
+                    <div class="bg-slate-800 p-6 rounded-2xl text-white">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-slate-400">SS Empresa (31.40%):</span>
+                            <span id="labelSSEmp" class="font-bold">0.00 €</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-700">
+                            <span class="text-xs font-bold text-slate-300 uppercase">COSTE TOTAL:</span>
+                            <span id="labelCosteTotal" class="text-xl font-black text-brand-teal">0.00 €</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-slate-700 mb-2">Subir PDF Nómina</label>
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Documento PDF (Opcional)</label>
                     <input type="file" name="archivo" accept="application/pdf"
                            class="w-full p-3 rounded-xl border-2 border-slate-200 text-sm font-medium text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200">
-                    
                     <div id="linkArchivoActual" class="mt-2 text-sm text-center hidden">
-                        <a href="#" target="_blank" class="text-brand-teal font-bold hover:underline">Ver PDF actual</a>
+                        <a href="#" target="_blank" class="text-brand-teal font-bold hover:underline"><i class="fas fa-file-pdf mr-1"></i> Ver PDF actual</a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button type="submit" name="accion" value="guardar" 
+                            class="py-4 px-4 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+                        <i class="fas fa-save mr-2"></i> Guardar Borrador
+                    </button>
+                    <button type="submit" name="accion" value="confirmar" 
+                            class="py-4 px-4 rounded-xl font-bold bg-slate-900 text-white shadow-xl hover:bg-slate-800 transition-all">
+                        <i class="fas fa-check-circle mr-2"></i> Confirmar y Publicar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
                     </div>
                 </div>
 
@@ -423,20 +476,44 @@
                     <span class="text-slate-800 font-bold" id="modalDetallePeriodo">--</span>
                 </div>
 
-                <div id="modalDetalleDesglose" class="bg-white border-2 border-slate-100 p-4 rounded-xl hidden">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-3 text-center">Desglose de Pago</h4>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-slate-500">Recaudado Total:</span>
-                            <span id="detRecaudado" class="font-bold text-slate-800">--</span>
+                <div id="modalDetalleDesglose" class="bg-white border-2 border-slate-100 p-5 rounded-xl hidden">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase mb-4 text-center">Desglose Económico</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-500 font-medium">Salario Bruto:</span>
+                            <span id="detBruto" class="font-bold text-slate-800">--</span>
                         </div>
-                        <div class="flex justify-between text-brand-teal">
-                            <span class="font-medium">Entrenador (<span id="detPorcentaje">--%</span>):</span>
-                            <span id="detTotalEntrenador" class="font-bold">--</span>
+                        <div class="flex justify-between text-sm text-red-500">
+                            <span class="font-medium">- SS Trabajador (<span id="detPSSTrab">--</span>%):</span>
+                            <span id="detSSTrab" class="font-bold">--</span>
                         </div>
-                        <div class="flex justify-between text-slate-400 text-xs mt-2 pt-2 border-t border-slate-50">
-                            <span>Beneficio Admin:</span>
-                            <span id="detTotalAdmin">--</span>
+                        <div class="flex justify-between text-sm text-red-500">
+                            <span class="font-medium">- IRPF (<span id="detPIRPF">--</span>%):</span>
+                            <span id="detIRPF" class="font-bold">--</span>
+                        </div>
+                        
+                        {{-- Contenedor de Extras en el detalle --}}
+                        <div id="detExtrasContainer" class="hidden border-t border-slate-50 pt-2 space-y-1">
+                            <h5 class="text-[10px] font-bold text-slate-400 uppercase">Conceptos Adicionales:</h5>
+                            <div id="detExtrasList" class="space-y-1"></div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-200">
+                            <div class="flex justify-between text-teal-600">
+                                <span class="font-bold uppercase text-xs">Salario Neto:</span>
+                                <span id="detNeto" class="font-black text-lg">--</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t-2 border-dotted border-slate-100">
+                            <div class="flex justify-between text-xs text-slate-400 mb-1">
+                                <span>+ SS Empresa (<span id="detPSSEmp">--</span>%):</span>
+                                <span id="detSSEmp" class="font-bold">--</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold text-slate-600">
+                                <span class="uppercase">Coste Total Empresa:</span>
+                                <span id="detCosteTotal">--</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -492,11 +569,38 @@
             
             // --- MOSTRAR DESGLOSE ---
             const container = document.getElementById('modalDetalleDesglose');
-            if (data.detalles && data.detalles.total_recaudado) {
-                document.getElementById('detRecaudado').textContent = parseFloat(data.detalles.total_recaudado).toFixed(2) + ' €';
-                document.getElementById('detPorcentaje').textContent = data.detalles.porcentaje_entrenador + '%';
-                document.getElementById('detTotalEntrenador').textContent = parseFloat(data.detalles.total_entrenador).toFixed(2) + ' €';
-                document.getElementById('detTotalAdmin').textContent = parseFloat(data.detalles.total_admin).toFixed(2) + ' €';
+            if (data.detalles && data.detalles.salario_bruto) {
+                const det = data.detalles;
+                document.getElementById('detBruto').textContent = parseFloat(det.salario_bruto).toFixed(2) + ' €';
+                document.getElementById('detSSTrab').textContent = '-' + parseFloat(det.ss_trabajador).toFixed(2) + ' €';
+                document.getElementById('detIRPF').textContent = '-' + parseFloat(det.irpf).toFixed(2) + ' €';
+                document.getElementById('detNeto').textContent = parseFloat(det.salario_neto).toFixed(2) + ' €';
+                document.getElementById('detSSEmp').textContent = '+' + parseFloat(det.ss_empresa).toFixed(2) + ' €';
+                document.getElementById('detCosteTotal').textContent = parseFloat(det.coste_total).toFixed(2) + ' €';
+                
+                // Porcentajes
+                if (det.porcentajes) {
+                    document.getElementById('detPSSTrab').textContent = det.porcentajes.ss_trab;
+                    document.getElementById('detPIRPF').textContent = det.porcentajes.irpf;
+                    document.getElementById('detPSSEmp').textContent = det.porcentajes.ss_emp;
+                }
+
+                // Extras
+                const extrasCont = document.getElementById('detExtrasContainer');
+                const extrasList = document.getElementById('detExtrasList');
+                extrasList.innerHTML = '';
+                if (det.extras && det.extras.length > 0) {
+                    det.extras.forEach(ex => {
+                        const row = document.createElement('div');
+                        row.className = 'flex justify-between text-xs text-slate-600 italic';
+                        row.innerHTML = `<span>+ ${ex.concepto}</span><span class="font-bold">${parseFloat(ex.importe).toFixed(2)} €</span>`;
+                        extrasList.appendChild(row);
+                    });
+                    extrasCont.classList.remove('hidden');
+                } else {
+                    extrasCont.classList.add('hidden');
+                }
+
                 container.classList.remove('hidden');
             } else {
                 container.classList.add('hidden');
@@ -530,16 +634,13 @@
             document.getElementById('modalDetalleAdmin').classList.add('flex');
         }
 
+        // --- LÓGICA REVISIÓN (EDICIÓN VIVA) ---
+
         function abrirModalRevision(btn) {
             const id = btn.dataset.id;
             const userid = btn.dataset.userid; 
-            const importe = btn.dataset.importe;
+            const name = btn.dataset.name;
             const archivo = btn.dataset.archivo;
-            
-            // Asumimos que la tabla muestra el mes actual o tenemos acceso a él. 
-            // Para simplificar, extraemos el mes/año de la columna 'Periodo' de la fila correspondiente si es posible,
-            // O mejor, pasamos mes/año en el botón "Revisar".
-            // Vamos a modificar el botón Revisar para incluir data-mes y data-anio.
             const mes = btn.dataset.mes || new Date().getMonth() + 1;
             const anio = btn.dataset.anio || new Date().getFullYear();
 
@@ -547,57 +648,126 @@
             modal.dataset.mes = mes;
             modal.dataset.anio = anio;
             
-            // Parsear detalles si existen
             let detalles = null;
-            try {
-                detalles = JSON.parse(btn.dataset.detalles || 'null');
-            } catch(e) { console.error('Error parsing detalles', e); }
+            try { detalles = JSON.parse(btn.dataset.detalles || 'null'); } catch(e) { console.error(e); }
 
-            // Pre-seleccionar entrenador
-            const select = document.getElementById('modalEntrenadorSelect');
-            if(select) {
-                select.value = userid;
-            }
-
-            document.getElementById('modalImporte').value = importe;
-
-            // Rellenar Precio y Horas si existen en detalles
-            if (detalles) {
-                document.getElementById('modalPrecioHora').value = detalles.precio_hora || 0;
-                document.getElementById('modalHoras').value = detalles.horas_trabajadas || 0;
-            } else {
-                document.getElementById('modalPrecioHora').value = 0;
-                document.getElementById('modalHoras').value = 0;
-            }
-
-            // --- MOSTRAR DESGLOSE EN REVISIÓN ---
-            const containerRev = document.getElementById('modalRevisionDesglose');
-            if (detalles && detalles.horas_trabajadas) {
-                document.getElementById('revSesiones').textContent = detalles.sesiones_count;
-                document.getElementById('revHoras').textContent = detalles.horas_trabajadas + ' h';
-                document.getElementById('revTotalEntrenador').textContent = parseFloat(importe).toFixed(2) + ' €';
-                containerRev.classList.remove('hidden');
-            } else {
-                containerRev.classList.add('hidden');
-            }
-            // -----------------------------------
+            // Rellenar Datos Entrenador (Estático)
+            document.getElementById('modalEntrenadorNombre').textContent = name;
+            document.getElementById('modalEntrenadorId').value = userid;
+            document.getElementById('contenedorExtras').innerHTML = '';
             
-            // Mostrar enlace si hay archivo
+            if (detalles) {
+                document.getElementById('modalHoras').value = detalles.horas_trabajadas || 0;
+                document.getElementById('editBruto').value = detalles.salario_bruto || 0;
+                document.getElementById('editIRPF').value = (detalles.porcentajes ? detalles.porcentajes.irpf : 0);
+                
+                // Cargar Extras
+                if (detalles.extras && detalles.extras.length > 0) {
+                    detalles.extras.forEach(extra => {
+                        agregarFilaExtra(extra.concepto, extra.importe);
+                    });
+                }
+            } else {
+                document.getElementById('modalHoras').value = 0;
+                document.getElementById('editBruto').value = 0;
+                document.getElementById('editIRPF').value = 0;
+            }
+
+            // Configurar URL Form
+            const url = "{{ route('admin.nominas.update', ':id') }}";
+            document.getElementById('formRevision').action = url.replace(':id', id);
+
+            // PDF
             const linkDiv = document.getElementById('linkArchivoActual');
-            const linkTag = linkDiv.querySelector('a');
             if (archivo) {
-                linkTag.href = archivo;
+                linkDiv.querySelector('a').href = archivo;
                 linkDiv.classList.remove('hidden');
             } else {
                 linkDiv.classList.add('hidden');
             }
-            
-            const url = "{{ route('admin.nominas.update', ':id') }}";
-            document.getElementById('formRevision').action = url.replace(':id', id);
 
-            document.getElementById('modalRevision').classList.remove('hidden');
-            document.getElementById('modalRevision').classList.add('flex');
+            recalcularTodo(); // Primera ejecución
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
+
+        function agregarFilaExtra(concepto = '', importe = 0) {
+            const container = document.getElementById('contenedorExtras');
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 extra-row';
+            div.innerHTML = `
+                <input type="text" name="extra_conceptos[]" value="${concepto}" placeholder="Concepto (Plus, Bono...)" 
+                       class="flex-1 p-2 rounded-lg border border-slate-200 text-sm font-medium focus:border-brand-teal focus:outline-none">
+                <input type="number" step="0.01" name="extra_importes[]" value="${importe}" 
+                       class="w-24 p-2 rounded-lg border border-slate-200 text-sm font-bold text-right focus:border-brand-teal focus:outline-none input-extra-importe">
+                <button type="button" onclick="this.parentElement.remove(); recalcularTodo();" class="text-red-400 hover:text-red-600 p-2">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(div);
+            
+            // Listen to new input
+            div.querySelector('.input-extra-importe').addEventListener('input', recalcularTodo);
+            div.querySelector('input[type="text"]').addEventListener('input', recalcularTodo);
+        }
+
+        function recalcularTodo(event) {
+            // Si el cambio viene de "Horas", calculamos por tramos y actualizamos Bruto
+            if (event && event.target.id === 'modalHoras') {
+                const horas = parseFloat(document.getElementById('modalHoras').value) || 0;
+                let bruto = 0;
+                let rem = horas;
+                let h1 = Math.min(rem, 25); bruto += h1 * 7.6; rem -= h1;
+                if (rem > 0) { let h2 = Math.min(rem, 5); bruto += h2 * 10.9; rem -= h2; }
+                if (rem > 0) { bruto += rem * 13.3; }
+                document.getElementById('editBruto').value = bruto.toFixed(2);
+            }
+
+            // Datos Base
+            const bruto = parseFloat(document.getElementById('editBruto').value) || 0;
+            const irpf_p = (parseFloat(document.getElementById('editIRPF').value) || 0) / 100;
+            const ss_trab_p = 0.0635;
+            const ss_emp_p = 0.3140;
+
+            // Cálculos
+            const ss_trabajador = bruto * ss_trab_p;
+            const irpf_importe = bruto * irpf_p;
+            
+            // Extras
+            let totalExtras = 0;
+            document.querySelectorAll('.input-extra-importe').forEach(inp => {
+                totalExtras += parseFloat(inp.value) || 0;
+            });
+
+            const neto = bruto - ss_trabajador - irpf_importe + totalExtras;
+            const ss_emp_importe = bruto * ss_emp_p;
+            const coste_total = bruto + ss_emp_importe + totalExtras;
+
+            // Actualizar Visual (Etiquetas)
+            document.getElementById('labelSSTrab').textContent = '-' + ss_trabajador.toFixed(2) + ' €';
+            document.getElementById('labelSSEmp').textContent = '+' + ss_emp_importe.toFixed(2) + ' €';
+            document.getElementById('labelCosteTotal').textContent = coste_total.toFixed(2) + ' €';
+
+            // Actualizar Inputs Visibles
+            document.getElementById('modalImporte').value = neto.toFixed(2);
+
+            // Actualizar Inputs Ocultos (para el Form)
+            document.getElementById('input_salario_bruto').value = bruto.toFixed(2);
+            document.getElementById('input_ss_trabajador').value = ss_trabajador.toFixed(2);
+            document.getElementById('input_irpf').value = irpf_importe.toFixed(2);
+            document.getElementById('input_ss_empresa').value = ss_emp_importe.toFixed(2);
+            document.getElementById('input_coste_total').value = coste_total.toFixed(2);
+        }
+
+        // Listeners Principales
+        document.getElementById('modalHoras').addEventListener('input', recalcularTodo);
+        document.getElementById('editBruto').addEventListener('input', recalcularTodo);
+        document.getElementById('editIRPF').addEventListener('input', recalcularTodo);
+        document.getElementById('modalImporte').addEventListener('input', function() {
+            // Si editan el neto a mano, lo permitimos, pero avisamos que rompe el desglose directo
+            // Opcional: Podrías ajustar el bruto para que cuadre, pero es complejo con extras.
+        });
 
         function cerrarModalRevision() {
             document.getElementById('modalRevision').classList.add('hidden');
@@ -605,9 +775,7 @@
         }
         
         document.getElementById('modalRevision').addEventListener('click', function(e) {
-            if (e.target === this) {
-                cerrarModalRevision();
-            }
+            if (e.target === this) cerrarModalRevision();
         });
 
         function cerrarModalDetalle() {
@@ -616,69 +784,11 @@
         }
 
         document.getElementById('modalDetalleAdmin').addEventListener('click', function(e) {
-            if (e.target === this) {
-                cerrarModalDetalle();
-            }
+            if (e.target === this) cerrarModalDetalle();
         });
 
-        // Función para calcular localmente (sin ir al servidor)
-        function calcularLocalmente() {
-             const precio = parseFloat(document.getElementById('modalPrecioHora').value) || 0;
-             const horas = parseFloat(document.getElementById('modalHoras').value) || 0;
-             const total = (precio * horas).toFixed(2);
-
-             document.getElementById('modalImporte').value = total;
-             
-             // Actualizar Desglose Visual
-             document.getElementById('revHoras').textContent = horas + ' h';
-             document.getElementById('revTotalEntrenador').textContent = total + ' €';
-             
-             const containerRev = document.getElementById('modalRevisionDesglose');
-             containerRev.classList.remove('hidden');
-        }
-
-        // Función para obtener datos reales del servidor (solo al cambiar entrenador)
-        function obtenerDatosEntrenador() {
-            const trainerId = document.getElementById('modalEntrenadorSelect').value;
-            if (!trainerId) return;
-
-            const mes = document.getElementById('modalRevision').dataset.mes || new Date().getMonth() + 1;
-            const anio = document.getElementById('modalRevision').dataset.anio || new Date().getFullYear();
-
-            // Llamamos al server SIN pasar precio manual, para que nos den los defaults de la DB
-            fetch(`/admin/nominas/calcular/${trainerId}?mes=${mes}&anio=${anio}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Actualizamos los inputs con lo que dice la BD
-                    if(data.detalles) {
-                       document.getElementById('modalHoras').value = data.detalles.horas_trabajadas;
-                       document.getElementById('modalPrecioHora').value = data.detalles.precio_hora;
-                       document.getElementById('revSesiones').textContent = data.detalles.sesiones_count;
-                    }
-                    
-                    // Calculamos localmente para actualizar totales y visuales
-                    calcularLocalmente();
-                })
-                .catch(error => console.error('Error obteniendo datos:', error));
-        }
-
-        // --- LISTENERS ---
-        const selectEntrenador = document.getElementById('modalEntrenadorSelect');
-        if (selectEntrenador) {
-            selectEntrenador.addEventListener('change', obtenerDatosEntrenador);
-        }
-
-        const inputPrecio = document.getElementById('modalPrecioHora');
-        if (inputPrecio) {
-            inputPrecio.addEventListener('change', calcularLocalmente);
-            inputPrecio.addEventListener('keyup', calcularLocalmente);
-        }
-
-        const inputHoras = document.getElementById('modalHoras');
-        if (inputHoras) {
-            inputHoras.addEventListener('change', calcularLocalmente);
-            inputHoras.addEventListener('keyup', calcularLocalmente);
-        }
+        // Al cambiar de entrenador, opcionalmente podrías recalcular sessions pero lo dejaremos manual por ahora
+        // document.getElementById('modalEntrenadorSelect').addEventListener('change', function() { ... });
     </script>
 </body>
 </html>
