@@ -16,7 +16,7 @@ class ReservaFactory extends Factory
         return [
             'id_usuario' => User::factory(),
             'id_horario_clase' => HorarioClase::factory(),
-            'estado' => fake()->randomElement(['pagada', 'pendiente', 'confirmado']),
+            'estado' => \fake()->randomElement(['pagada', 'pendiente', 'confirmado']),
         ];
     }
 }
