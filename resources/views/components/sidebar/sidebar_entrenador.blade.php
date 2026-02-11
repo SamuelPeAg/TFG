@@ -18,8 +18,16 @@
     </div>
 
     <div class="user-profile-card">
-        <div class="user-avatar">
-            {{ substr(auth()->user()->name, 0, 1) }}
+        <div class="user-avatar" style="display: flex; align-items: center; justify-content: center;">
+            @if(auth()->user()->foto_de_perfil)
+                <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" 
+                     alt="Avatar" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span style="display:none;">{{ substr(auth()->user()->name, 0, 1) }}</span>
+            @else
+                {{ substr(auth()->user()->name, 0, 1) }}
+            @endif
         </div>
         <a href="{{ route('calendario') }}" class="user-info-text hover:opacity-80 transition-opacity">
             <span class="name">{{ auth()->user()->name }}</span>

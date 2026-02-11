@@ -17,8 +17,16 @@
             <tr>
                 <td data-label="Usuario">
                     <div class="user-info">
-                        <div class="avatar-circle">
-                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                        <div class="avatar-circle" style="display: flex; align-items: center; justify-content: center;">
+                            @if($user->foto_de_perfil)
+                                <img src="{{ asset('storage/' . $user->foto_de_perfil) }}" 
+                                     alt="{{ $user->name }}" 
+                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <span style="display:none;">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                            @else
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                            @endif
                         </div>
                         <span>{{ $user->name }}</span>
                     </div>

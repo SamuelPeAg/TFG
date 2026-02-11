@@ -27,7 +27,7 @@
         body {
             background-color: #f3f4f6;
             margin: 0;
-            font-family: sans-serif;
+            margin: 0;
         }
         /* Ajuste clave para empujar el contenido a la derecha del sidebar */
         .dashboard-main {
@@ -115,13 +115,38 @@
 
                     {{-- FORMULARIO --}}
                     <section class="lg:col-span-2 space-y-8">
-                        <form method="POST" action="{{ route('configuracion.update') }}">
+                        <form method="POST" action="{{ route('configuracion.update') }}" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
 
                             {{-- SECCIÓN PERFIL --}}
                             <div id="perfil" class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
                                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Perfil</h3>
+                                
+                                {{-- Foto de Perfil --}}
+                                <div class="mb-6 flex flex-col items-center sm:flex-row gap-6">
+                                    <div class="relative group">
+                                        <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
+                                            @if($user->foto_de_perfil)
+                                                <img id="preview-image" src="{{ asset('storage/' . $user->foto_de_perfil) }}" alt="Foto de perfil" class="w-full h-full object-cover">
+                                            @else
+                                                <div id="preview-placeholder" class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                                                    <i class="fa-solid fa-user text-5xl"></i>
+                                                </div>
+                                                <img id="preview-image" src="#" alt="Previsualización" class="w-full h-full object-cover hidden">
+                                            @endif
+                                        </div>
+                                        <label for="foto_de_perfil" class="absolute bottom-0 right-0 bg-brandTeal text-white p-2 rounded-full shadow-lg cursor-pointer hover:bg-teal-600 transition-colors">
+                                            <i class="fa-solid fa-camera"></i>
+                                            <input type="file" name="foto_de_perfil" id="foto_de_perfil" class="hidden" accept="image/*" onchange="previewFile()">
+                                        </label>
+                                    </div>
+                                    <div class="text-center sm:text-left">
+                                        <h4 class="font-bold text-gray-900 dark:text-white">Foto de Perfil</h4>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sube una imagen de hasta 2MB.</p>
+                                    </div>
+                                </div>
+
                                 <div class="grid gap-5">
                                     <div>
                                         <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Nombre de Usuario</label>
@@ -137,7 +162,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             {{-- SECCIÓN SEGURIDAD --}}
                             <div id="seguridad" class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
                                 <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Seguridad</h3>
@@ -199,11 +223,11 @@
 
         function updateVisuals() {
             if (htmlElement.classList.contains('dark')) {
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
+                // themeIcon.classList.remove('fa-moon');
+                // themeIcon.classList.add('fa-sun');
             } else {
-                themeIcon.classList.remove('fa-sun');
-                themeIcon.classList.add('fa-moon');
+                // themeIcon.classList.remove('fa-sun');
+                // themeIcon.classList.add('fa-moon');
             }
         }
 
@@ -212,6 +236,7 @@
         }
         updateVisuals();
 
+        /*
         themeToggleBtn.addEventListener('click', function() {
             if (htmlElement.classList.contains('dark')) {
                 htmlElement.classList.remove('dark');
@@ -222,6 +247,25 @@
             }
             updateVisuals();
         });
+        */
+
+        // Función para previsualizar la imagen (Nueva)
+        function previewFile() {
+            const preview = document.getElementById('preview-image');
+            const file = document.querySelector('input[type=file]').files[0];
+            const reader = new FileReader();
+            const placeholder = document.getElementById('preview-placeholder');
+
+            reader.addEventListener("load", function () {
+                preview.src = reader.result;
+                preview.classList.remove('hidden');
+                if(placeholder) placeholder.classList.add('hidden');
+            }, false);
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
     </script>
 </body>
 </html>

@@ -15,7 +15,6 @@
 ================================ */
 body {
     background-color: var(--bg-page);
-    font-family: 'Inter', system-ui, sans-serif;
 }
 
 .dashboard-container {

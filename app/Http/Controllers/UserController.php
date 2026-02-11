@@ -122,7 +122,7 @@ class UserController extends Controller
 
 
 
-    // --- MÉTODOS DE CONFIGURACIÓN (PERFIL) ---
+    //Metodos de configuración
     public function configuracion(Request $request)
     {
         return view('configuracion.configuracion', [
@@ -134,15 +134,9 @@ class UserController extends Controller
     {
         $user = $request->user();
 
-        // Validaciones en español
         $validated = $request->validate([
             'name'  => ['required', 'string', 'min:3', 'max:50'],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($user->id),
-            ],
+
             'iban' => [
                 'nullable', 
                 'string', 
@@ -151,24 +145,33 @@ class UserController extends Controller
                 'max:34',
                 Rule::unique('users', 'iban')->ignore($user->id)
             ],
+            'foto_de_perfil' => ['nullable', 'image', 'max:2048'], // Validar imagen (max 2MB)
             'firma_digital' => ['nullable', 'string', 'max:255'],
 
-            // Password opcional (solo si se rellena)
             'current_password' => ['nullable', 'string'],
             'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
-        ], $this->validationMessages()); // Usamos los mensajes comunes
+        ], $this->validationMessages());
 
-        // Datos básicos
         $data = [
             'name' => $validated['name'],
-            'email' => $validated['email'],
             'iban' => $validated['iban'] ?? $user->iban,
             'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
+            'email' => $user->email,
         ];
 
-        // Cambiar contraseña SOLO si el usuario escribe una nueva
+        // Manejo de la subida de la imagen
+        if ($request->hasFile('foto_de_perfil')) {
+            // Eliminar imagen anterior si existe (opcional, buena práctica)
+            /* if ($user->foto_de_perfil && \Storage::disk('public')->exists($user->foto_de_perfil)) {
+                \Storage::disk('public')->delete($user->foto_de_perfil);
+            } */
+            
+            // Guardar nueva imagen en 'profile-photos' dentro del disco 'public'
+            $path = $request->file('foto_de_perfil')->store('profile-photos', 'public');
+            $data['foto_de_perfil'] = $path;
+        }
+
         if ($request->filled('password')) {
-            // Validación extra para la contraseña actual
             $request->validate([
                 'current_password' => ['required'],
             ], [
@@ -188,4 +191,5 @@ class UserController extends Controller
 
         return back()->with('success', 'Configuración actualizada correctamente.');
     }
+
 }

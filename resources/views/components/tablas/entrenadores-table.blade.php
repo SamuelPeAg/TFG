@@ -15,9 +15,17 @@
             <tr>
                 <td>
                     <div class="user-info">
-                        <div class="avatar-circle">
+                        <div class="avatar-circle" style="display: flex; align-items: center; justify-content: center;">
                             {{-- Usamos 'name' en lugar de 'nombre' para coincidir con tu base de datos --}}
-                            {{ strtoupper(substr($entrenador->name, 0, 1)) }}
+                            @if($entrenador->foto_de_perfil)
+                                <img src="{{ asset('storage/' . $entrenador->foto_de_perfil) }}" 
+                                     alt="{{ $entrenador->name }}" 
+                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <span style="display:none;">{{ strtoupper(substr($entrenador->name, 0, 1)) }}</span>
+                            @else
+                                {{ strtoupper(substr($entrenador->name, 0, 1)) }}
+                            @endif
                         </div>
                         <span>{{ $entrenador->name }}</span>
                     </div>
