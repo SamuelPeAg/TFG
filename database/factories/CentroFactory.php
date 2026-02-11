@@ -12,8 +12,8 @@ class CentroFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => \fake()->company() . ' Fitness',
-            'direccion' => \fake()->address(),
+            'nombre' => fake()->company() . ' Fitness',
+            'direccion' => fake()->address(),
         ];
     }
 }

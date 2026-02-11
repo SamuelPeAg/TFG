@@ -21,9 +21,9 @@ class SessionFactory extends Factory
         return [
             'id' => (string) Str::uuid(),
             'user_id' => User::factory(), // o null si quieres
-            'ip_address' => \fake()->ipv4(),
-            'user_agent' => \fake()->userAgent(),
-            'payload' => base64_encode(\fake()->text(200)),
+            'ip_address' => fake()->ipv4(),
+            'user_agent' => fake()->userAgent(),
+            'payload' => base64_encode(fake()->text(200)),
             'last_activity' => now()->timestamp,
         ];
     }
