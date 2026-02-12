@@ -10,33 +10,41 @@ class ClaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $centros = \App\Models\Centro::all();
+        
+        if ($centros->isEmpty()) {
+            return;
+        }
+
         $clases = [
             [
                 'nombre' => 'Yoga para principiantes',
-                'descripcion' => 'Clase de yoga básica.',
+                'descripcion' => 'Clase de yoga básica para todos los niveles.',
                 'duracion_minutos' => 60,
                 'nivel' => 'facil',
-                'id_centro' => 1, // Asignado al Centro 1
+                'id_centro' => $centros->random()->id,
             ],
             [
                 'nombre' => 'Pilates intermedio',
-                'descripcion' => 'Pilates para fortalecer core.',
+                'descripcion' => 'Pilates centrado en fortalecer el core y flexibilidad.',
                 'duracion_minutos' => 45,
                 'nivel' => 'medio',
-                'id_centro' => 1, // Asignado al Centro 1
+                'id_centro' => $centros->random()->id,
             ],
             [
                 'nombre' => 'Crossfit avanzado',
-                'descripcion' => 'Entrenamiento intenso.',
+                'descripcion' => 'WOD de alta intensidad para usuarios experimentados.',
                 'duracion_minutos' => 50,
                 'nivel' => 'dificil',
-                'id_centro' => 2, // Asignado al Centro 2
+                'id_centro' => $centros->random()->id,
             ],
         ];
 
-        // Asumimos que los IDs serán 1, 2, 3...
         foreach ($clases as $clase) {
             Clase::create($clase);
         }
+
+        // Generar algunas clases adicionales aleatorias usando el factory (que ya usa centros existentes)
+        Clase::factory()->count(5)->create();
     }
 }

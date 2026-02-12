@@ -18,9 +18,13 @@ class DatabaseSeeder extends Seeder
         $this->call([
             // 0. Roles y permisos (primero)
             RoleSeeder::class,
-            // 1. Cuentas y perfiles
-   // Crea las cuentas de login
+        ]);
 
+        // 1. Crear pool de usuarios (Entrenadores y Clientes) para que el resto de seeders los usen
+        User::factory()->count(5)->entrenador()->create();
+        User::factory()->count(20)->cliente()->create();
+
+        $this->call([
             // 2. Datos base
             CentroSeeder::class,
             
@@ -30,13 +34,11 @@ class DatabaseSeeder extends Seeder
             
             // 4. Datos adicionales
 
-            // 5. Reservas (al final)
+            // 5. Reservas
             ReservaSeeder::class,       // Usuarios apuntándose a clases
             
             // 6. Pagos
             PagoSeeder::class,
         ]);
-        User::factory()->count(2)->entrenador()->create();
-        User::factory()->count(20)->cliente()->create();
     }
 }

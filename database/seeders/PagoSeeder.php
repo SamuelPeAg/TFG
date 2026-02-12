@@ -11,37 +11,52 @@ class PagoSeeder extends Seeder
 {
     public function run()
     {
-        // Obtener usuarios clave
-        $admin = User::where('email', 'admin@factomove')->first();
-        $entrenador = User::where('email', 'entrenador@factomove')->first();
+        // Obtener todos los entrenadores
+        $entrenadores = User::role('entrenador')->get();
+        // Obtener el admin (que a veces actúa como entrenador)
+        $admin = User::role('admin')->first();
+        
+        // Combina para tener una lista de posibles "profesores"
+        $profesores = $entrenadores->concat($admin ? collect([$admin]) : collect([]));
 
-        // Si no existen, no hacer nada (o crearlos, pero RoleSeeder ya debería haber corrido)
-        if (!$admin) return;
+        if ($profesores->isEmpty()) {
+            return;
+        }
 
-        // Crear Pagos para el ADMIN (ya que en la captura se usaba admin como entrenador)
-        // Mes actual
-        $this->crearPagos($admin, Carbon::now());
-        // Mes pasado (para probar historial, si se quisiera)
-        $this->crearPagos($admin, Carbon::now()->subMonth());
+        // Obtener clientes, centros y clases para que los datos sean reales
+        $clientes = User::role('cliente')->get();
+        $centros = \App\Models\Centro::all();
+        $clases = \App\Models\Clase::all();
 
-        if ($entrenador) {
-            $this->crearPagos($entrenador, Carbon::now());
+        // Si no hay datos suficientes, creamos algunos básicos por si acaso
+        if ($centros->isEmpty()) return;
+        if ($clases->isEmpty()) return;
+
+        foreach ($profesores as $profe) {
+            // Mes actual
+            $this->crearPagos($profe, Carbon::now(), $clientes, $centros, $clases);
+            // Mes pasado
+            $this->crearPagos($profe, Carbon::now()->subMonth(), $clientes, $centros, $clases);
         }
     }
 
-    private function crearPagos($user, $fechaBase)
+    private function crearPagos($entrenador, $fechaBase, $clientes, $centros, $clases)
     {
-        // 5 pagos para este usuario en este mes
-        for ($i = 0; $i < 5; $i++) {
+        // 8 pagos aleatorios para este entrenador en este mes
+        for ($i = 0; $i < 8; $i++) {
+            $cliente = $clientes->isNotEmpty() ? $clientes->random() : null;
+            $centro = $centros->random();
+            $clase = $clases->random();
+
             Pago::create([
-                'user_id' => null, // Cliente opcional
-                'entrenador_id' => $user->id,
-                'centro' => 'Centro Principal',
-                'nombre_clase' => 'Entrenamiento Personal',
-                'metodo_pago' => 'Tarjeta',
-                'iban' => 'ES1234567890123456789012',
-                'importe' => rand(30, 100),
-                'fecha_registro' => $fechaBase->copy()->day(rand(1, 28)), // Fecha aleatoria del mes
+                'user_id' => $cliente ? $cliente->id : null,
+                'entrenador_id' => $entrenador->id,
+                'centro' => $centro->nombre,
+                'nombre_clase' => $clase->nombre,
+                'metodo_pago' => collect(['Tarjeta', 'Efectivo', 'Transferencia'])->random(),
+                'iban' => $entrenador->iban ?? 'ES0000000000000000000000',
+                'importe' => rand(20, 60),
+                'fecha_registro' => $fechaBase->copy()->day(rand(1, 28))->hour(rand(8, 20))->minute(0),
             ]);
         }
     }

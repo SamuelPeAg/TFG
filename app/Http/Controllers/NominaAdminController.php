@@ -66,8 +66,8 @@ class NominaAdminController extends Controller
                         ->whereBetween('fecha_registro', [$fecha_inicio, $fecha_fin])
                         ->get();
 
-            // Si no hay pagos en este periodo para este entrenador, saltamos
-            if ($pagos->isEmpty()) continue;
+            // Si no hay pagos en este periodo para este entrenador, NO saltamos, queremos que salga a 0
+            // if ($pagos->isEmpty()) continue;
 
             // AGRUPAR POR SESIONES ÚNICAS
             // Clave: fecha + hora + nombre clase + centro (para evitar contar sesiones duplicadas)
