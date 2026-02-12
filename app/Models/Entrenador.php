@@ -25,6 +25,7 @@ class Entrenador extends Authenticatable
         'firma_digital',
         'signature_path',
         'email_verified_at',
+        'activation_token_created_at',
     ];
 
     protected $hidden = [
@@ -34,6 +35,7 @@ class Entrenador extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'activation_token_created_at' => 'datetime',
     ];
 
     /**

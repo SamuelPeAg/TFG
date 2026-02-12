@@ -40,7 +40,8 @@ class EntrenadorController extends Controller
             'name'     => $request->nombre,
             'email'    => $request->email,
             'password' => Hash::make(Str::random(24)), 
-            'activation_token' => $token 
+            'activation_token' => $token,
+            'activation_token_created_at' => now(),
         ]);
 
         // Asignar rol de entrenador
@@ -88,6 +89,11 @@ class EntrenadorController extends Controller
             return redirect()->route('login')->with('error', 'Token de activación inválido.');
         }
 
+        // Verificar expiración (24 horas)
+        if ($entrenador->activation_token_created_at && $entrenador->activation_token_created_at->addDay()->isPast()) {
+            return redirect()->route('login')->with('error', 'El enlace de activación ha expirado (válido por 24h). Contacta al administrador.');
+        }
+
         return view('entrenadores.activar', compact('entrenador', 'token'));
     }
 
@@ -108,9 +114,15 @@ class EntrenadorController extends Controller
              return back()->with('error', 'Token de seguridad inválido o expirado.');
         }
 
+        // Verificar expiración nuevamente al procesar
+        if ($entrenador->activation_token_created_at && $entrenador->activation_token_created_at->addDay()->isPast()) {
+            return redirect()->route('login')->with('error', 'El enlace de activación ha expirado.');
+        }
+
         $entrenador->update([
             'password' => Hash::make($request->password),
             'activation_token' => null, 
+            'activation_token_created_at' => null,
             'email_verified_at' => now(),
         ]);
 
