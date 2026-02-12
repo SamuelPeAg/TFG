@@ -19,7 +19,7 @@ class ClaseFactory extends Factory
         return [
             'nombre' => fake()->randomElement(['Yoga para principiantes', 'Pilates intermedio', 'Crossfit avanzado', 'Zumba Fitness', 'GAP', 'Ciclo Indoor']),
             'descripcion' => fake()->sentence(),
-            'duracion_minutos' => fake()->randomElement([45, 50, 60, 90]),
+            'duracion_minutos' => 60,
             'nivel' => fake()->randomElement(['facil', 'medio', 'dificil']),
             'id_centro' => $id_centro,
         ];

@@ -84,9 +84,8 @@ class NominaAdminController extends Controller
                 $centro = $primerPago->centro;
                 $fecha = $primerPago->fecha_registro;
                 
-                // Buscar duración
-                $claseDB = \App\Models\Clase::where('nombre', $nombreClase)->first();
-                $duracion = $claseDB ? $claseDB->duracion_minutos : 60;
+                // Duración siempre es 1 hora (60 min) según requerimiento
+                $duracion = 60;
                 
                 $totalMinutos += $duracion;
 
@@ -216,8 +215,8 @@ class NominaAdminController extends Controller
             $centro = $primerPago->centro;
             $fecha = $primerPago->fecha_registro;
 
-            $claseDB = \App\Models\Clase::where('nombre', $nombreClase)->first();
-            $duracion = $claseDB ? $claseDB->duracion_minutos : 60;
+            // Duración siempre es 1 hora (60 min) según requerimiento
+            $duracion = 60;
             $totalMinutos += $duracion;
 
             $sesiones_detalle[] = [

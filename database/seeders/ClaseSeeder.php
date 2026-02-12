@@ -27,14 +27,14 @@ class ClaseSeeder extends Seeder
             [
                 'nombre' => 'Pilates intermedio',
                 'descripcion' => 'Pilates centrado en fortalecer el core y flexibilidad.',
-                'duracion_minutos' => 45,
+                'duracion_minutos' => 60,
                 'nivel' => 'medio',
                 'id_centro' => $centros->random()->id,
             ],
             [
                 'nombre' => 'Crossfit avanzado',
                 'descripcion' => 'WOD de alta intensidad para usuarios experimentados.',
-                'duracion_minutos' => 50,
+                'duracion_minutos' => 60,
                 'nivel' => 'dificil',
                 'id_centro' => $centros->random()->id,
             ],
