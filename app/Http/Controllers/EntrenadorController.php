@@ -139,10 +139,10 @@ class EntrenadorController extends Controller
             'email_verified_at' => now(), // Mark as verified
         ]);
 
-        // Auto login? Or redirect to login?
-        // Auth::login($user); 
+        // Autologin del usuario tras activar la cuenta
+        Auth::login($user); 
 
-        return redirect()->route('login')->with('success', 'Cuenta activada correctamente. Ya puedes iniciar sesión.');
+        return redirect()->route('calendario')->with('success', '¡Cuenta activada correctamente! Ya estás dentro de Factomove.');
     }
 
 }
