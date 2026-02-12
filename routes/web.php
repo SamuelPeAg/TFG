@@ -13,7 +13,9 @@ use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NominaEntrenadorController;
 use App\Http\Controllers\PagosController;
-use App\Http\Controllers\NominaAdminController;
+use App\Models\Centro;
+use App\Http\Middleware\AdminOrEntrenadorMiddleware;
+use App\Http\Middleware\AdminMiddleware;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +33,7 @@ Route::view('/aviso-legal', 'legal.notice')->name('legal.notice');
 Route::view('/politica-privacidad', 'legal.privacy')->name('privacy.policy');
 Route::view('/politica-cookies', 'legal.cookies')->name('cookies.policy');
 Route::get('/contacto', function () {
-    $centros = \App\Models\Centro::all();
+    $centros = Centro::all();
     return view('contact', compact('centros'));
 })->name('contact');
 
@@ -61,7 +63,7 @@ Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'c
 | 2. AUTENTICACIÓN (GUEST)
 |--------------------------------------------------------------------------
 */
-Route::middleware('guest')->group(function () {
+Route::middleware('guest:web,entrenador')->group(function () {
     // Login
     Route::get('/login', function () {
         return view('login.signup.login');
@@ -85,10 +87,12 @@ Route::middleware('guest')->group(function () {
 | 3. RUTAS PROTEGIDAS (AUTH)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web,entrenador')->group(function () {
 
     // Logout
     Route::post('/logout', function () {
+        Auth::guard('web')->logout();
+        Auth::guard('entrenador')->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
         return redirect('/');
@@ -108,7 +112,7 @@ Route::middleware('auth')->group(function () {
     | 3.1 COMPARTIDO (ADMIN & ENTRENADOR)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class)->group(function () {
+    Route::middleware(AdminOrEntrenadorMiddleware::class)->group(function () {
 
         // Calendario (Vista principal)
         Route::get('/calendario', [CalendarioController::class, 'index'])
@@ -144,7 +148,7 @@ Route::middleware('auth')->group(function () {
     | 3.2 SOLO ADMINISTRADOR
     |--------------------------------------------------------------------------
     */
-    Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+    Route::middleware(AdminMiddleware::class)->group(function () {
 
         // Gestión de Entrenadores
         Route::resource('entrenadores', EntrenadorController::class);

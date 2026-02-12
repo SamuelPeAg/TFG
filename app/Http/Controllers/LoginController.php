@@ -19,38 +19,41 @@ class LoginController extends Controller
     }
     public function login(Request $request)
     {
+        // Validación de las credenciales
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El correo electrónico no es válido.',
+            'password.required' => 'La contraseña es obligatoria.',
+        ]);
 
-         // Validación de las credenciales
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required', 'string'],
-    ], [
-        'email.required' => 'El correo electrónico es obligatorio.',
-        'email.email' => 'El correo electrónico no es válido.',
-        'password.required' => 'La contraseña es obligatoria.',
-    ]);
-
-    // Intentar autenticar usando el modelo User
-    if (Auth::attempt($credentials)) {
-        // Regenerar sesión para mayor seguridad
-        $request->session()->regenerate();
-
-        // Redirigir según rol o intención
-        $user = Auth::user();
-        
-        if ($user->hasRole('admin')) {
-            return redirect('/calendario');
-        } elseif ($user->hasRole('entrenador')) {
-            return redirect('/calendario');
+        // Intentar autenticar usando el guard 'entrenador' (Admin o Entrenador)
+        if (Auth::guard('entrenador')->attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            
+            // Forzar que el guard por defecto de esta sesión sea entrenador para evitar conflictos
+            return redirect()->intended('/calendario');
         }
 
-        return redirect('/calendario');
-    }
+        // Intentar autenticar usando el guard 'web' (Clientes)
+        if (Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            
+            $user = Auth::guard('web')->user();
+            // Aseguramos que el usuario tiene el rol cliente
+            if (!$user->hasRole('cliente', 'web')) {
+                $user->assignRole('cliente');
+            }
 
-    // Si falla la autenticación
-    return back()->withErrors([
-        'email' => 'Las credenciales no son correctas.',
-    ])->onlyInput('email');
+            return redirect()->intended('/calendario');
+        }
+
+        // Si falla la autenticación
+        return back()->withErrors([
+            'email' => 'Las credenciales no son correctas.',
+        ])->onlyInput('email');
     }
 
     /**

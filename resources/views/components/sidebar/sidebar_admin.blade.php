@@ -17,20 +17,15 @@
         </a>
     </div>
 
+    @php
+        $user = auth('entrenador')->user() ?: auth('web')->user();
+    @endphp
     <a href="{{ route('configuracion.edit') }}" class="user-profile-card">
-        <div class="user-avatar" style="display: flex; align-items: center; justify-content: center;">
-            @if(auth()->user()->foto_de_perfil)
-                <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" 
-                     alt="Avatar" 
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <span style="display:none;">{{ substr(auth()->user()->name, 0, 1) }}</span>
-            @else
-                {{ substr(auth()->user()->name, 0, 1) }}
-            @endif
+        <div class="user-avatar">
+            {{ $user ? substr($user->name, 0, 1) : 'U' }}
         </div>
         <div class="user-info-text">
-            <span class="name">{{ auth()->user()->name }}</span>
+            <span class="name">{{ $user ? $user->name : 'Usuario' }}</span>
             <span class="role">Panel de Gestión</span>
         </div>
     </a>
