@@ -9,6 +9,56 @@
     <link rel="stylesheet" href="{{ asset('css/facturacion.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <style>
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+        }
+        .autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+        }
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid #f3f4f6;
+            transition: all 0.2s;
+        }
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        .autocomplete-item:hover {
+            background: #f0fdfa;
+            padding-left: 20px;
+            color: #0d9488;
+        }
+        .autocomplete-item strong {
+            display: block;
+            color: #1f2937;
+        }
+        .autocomplete-item small {
+            display: block;
+            color: #6b7280;
+            font-size: 12px;
+        }
+        .autocomplete-item:hover strong {
+            color: #0d9488;
+        }
+    </style>
+
 </head>
 <body>
 
@@ -103,12 +153,13 @@
 
                         <div class="input-group">
                             <label>Cliente</label>
-                            <select name="cliente_id" class="modern-input">
-                                <option value="">Todos</option>
-                                @foreach($clientes as $c)
-                                    <option value="{{ $c->id }}" @selected(($clienteId ?? '') == $c->id)>{{ $c->name }} - {{ $c->email }}</option>
-                                @endforeach
-                            </select>
+                            <div class="autocomplete-container" id="clientSearchContainer">
+                                <input type="text" id="clientSearchInput" class="modern-input" 
+                                       placeholder="Buscar cliente..." autocomplete="off"
+                                       value="{{ $clienteId ? ($todosLosClientes->firstWhere('id', $clienteId)->name ?? '') : '' }}">
+                                <input type="hidden" name="cliente_id" id="cliente_id" value="{{ $clienteId ?? '' }}">
+                                <div class="autocomplete-results" id="clientSearchResults"></div>
+                            </div>
                         </div>
 
                         <div class="input-group" style="align-self:center;">
@@ -310,6 +361,64 @@ document.addEventListener('DOMContentLoaded', function(){
                 openModal('<p>Error cargando datos.</p>');
             }
         });
+    });
+
+    // --- AUTOCOMPLETE CLIENTES ---
+    const clients = @json($todosLosClientes->map(function($c) {
+        return ['id' => $c->id, 'name' => $c->name, 'email' => $c->email];
+    }));
+
+    const searchInput = document.getElementById('clientSearchInput');
+    const resultsContainer = document.getElementById('clientSearchResults');
+    const hiddenIdInput = document.getElementById('cliente_id');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        resultsContainer.innerHTML = '';
+        
+        if (query.length < 1) {
+            resultsContainer.style.display = 'none';
+            // Si borran todo, reseteamos el ID a vacío (equivale a "Todos")
+            hiddenIdInput.value = '';
+            return;
+        }
+
+        const filtered = clients.filter(c => 
+            c.name.toLowerCase().includes(query) || 
+            c.email.toLowerCase().includes(query)
+        );
+
+        if (filtered.length > 0) {
+            filtered.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.innerHTML = `<strong>${c.name}</strong><small>${c.email}</small>`;
+                div.addEventListener('click', () => {
+                    searchInput.value = c.name;
+                    hiddenIdInput.value = c.id;
+                    resultsContainer.style.display = 'none';
+                });
+                resultsContainer.appendChild(div);
+            });
+            resultsContainer.style.display = 'block';
+        } else {
+            resultsContainer.style.display = 'none';
+        }
+    });
+
+    // Cerrar resultados al hacer click fuera
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('clientSearchContainer').contains(e.target)) {
+            resultsContainer.style.display = 'none';
+        }
+    });
+
+    // Mostrar resultados si ya hay texto y hacen foco
+    searchInput.addEventListener('focus', function() {
+        if (this.value.trim().length > 0) {
+            // Disparar input para regenerar resultados si hay contenido
+            this.dispatchEvent(new Event('input'));
+        }
     });
 });
 </script>

@@ -231,10 +231,13 @@ class FacturacionController extends Controller
         // Filtrar clienteTotals para que coincida con los clientes filtrados
         $clienteTotals = array_filter($clienteTotals, fn($key) => in_array($key, $clientesConDatos), ARRAY_FILTER_USE_KEY);
 
+        $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email']);
+
         return view('facturacion.facturas', [
             'centros' => $centros,
             'entrenadores' => $entrenadores,
             'clientes' => $clientes,
+            'todosLosClientes' => $todosLosClientes,
             'matrix' => $matrix,
             'resumen' => $resumen,
             'clienteTotals' => $clienteTotals,
