@@ -40,6 +40,6 @@ class Pago extends Model
 
     public function entrenadores()
     {
-        return $this->belongsToMany(Entrenador::class, 'pago_entrenador', 'pago_id', 'entrenador_id');
+        return $this->belongsToMany(Entrenador::class, 'pago_entrenador', 'pago_id', 'user_id');
     }
 }

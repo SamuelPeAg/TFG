@@ -34,7 +34,10 @@ class NominaAdminController extends Controller
                         ->orderBy('created_at', 'desc')
                         ->get();
 
-        return view('nominas_admin.nominas_a', compact('borradores', 'historial', 'mes', 'anio'));
+        // Obtener todos los entrenadores para el modal de creación manual
+        $entrenadores = Entrenador::role(['admin', 'entrenador'], 'entrenador')->get();
+
+        return view('nominas_admin.nominas_a', compact('borradores', 'historial', 'mes', 'anio', 'entrenadores'));
     }
 
     // GENERAR BORRADORES (AUTO)
@@ -52,8 +55,13 @@ class NominaAdminController extends Controller
             ? Carbon::parse($request->input('fecha_fin'))->endOfDay() 
             : Carbon::create($anio, $mes, 1)->endOfMonth();
 
-        // 1. Obtener TODOS los entrenadores
-        $entrenadores = Entrenador::role('entrenador')->get();
+        // 1. Obtener los entrenadores (si se pasó un ID específico, solo ese)
+        $specific_trainer_id = $request->input('entrenador_id');
+        if ($specific_trainer_id) {
+            $entrenadores = Entrenador::where('id', $specific_trainer_id)->get();
+        } else {
+            $entrenadores = Entrenador::role(['admin', 'entrenador'], 'entrenador')->get();
+        }
 
         $generadas = 0;
         $actualizadas = 0;
