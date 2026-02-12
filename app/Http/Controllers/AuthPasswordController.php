@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ResetPasswordMail;
 use App\Models\User;
+use App\Models\Entrenador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -21,12 +22,15 @@ class AuthPasswordController extends Controller
         $request->validate(['email' => ['required', 'email']]);
 
         $user = User::where('email', $request->email)->first();
+        $broker = 'users';
 
-        // Opcional: si quieres bloquear reset a no activados:
-        // if ($user && $user->activation_token) return back()->with('error', 'Primero activa tu cuenta desde el correo de registro.');
+        if (!$user) {
+            $user = Entrenador::where('email', $request->email)->first();
+            $broker = 'entrenadores';
+        }
 
         if ($user) {
-            $token = Password::createToken($user);
+            $token = Password::broker($broker)->createToken($user);
             Mail::to($user->email)->send(new ResetPasswordMail($user, $token));
         }
 
@@ -53,13 +57,25 @@ class AuthPasswordController extends Controller
             'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
-        $status = Password::reset(
+        // Intentar con broker de usuarios
+        $status = Password::broker('users')->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
                 $user->password = Hash::make($request->password);
                 $user->save();
             }
         );
+
+        // Si falla, intentar con broker de entrenadores
+        if ($status !== Password::PASSWORD_RESET) {
+            $status = Password::broker('entrenadores')->reset(
+                $request->only('email', 'password', 'password_confirmation', 'token'),
+                function ($user) use ($request) {
+                    $user->password = Hash::make($request->password);
+                    $user->save();
+                }
+            );
+        }
 
         return $status === Password::PASSWORD_RESET
             ? redirect()->route('login')->with('success', 'Contraseña actualizada. Ya puedes iniciar sesión.')

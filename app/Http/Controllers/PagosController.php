@@ -151,13 +151,11 @@ class PagosController extends Controller
             'users'        => ['required', 'array', 'min:1'],
             'users.*'      => ['exists:users,id'],
             'trainers'     => ['nullable', 'array'],
-            'trainers.*'   => ['exists:users,id'],
+            'trainers.*'   => ['exists:entrenadores,id'],
             'centro'       => ['required', 'string'],
             'nombre_clase' => ['required', 'string', 'max:120'],
             'tipo_clase' => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
             'fecha_hora' => ['required', 'date'],
-            'trainers' => ['nullable', 'array'],
-            'trainers.*' => ['exists:users,id'],
             // New structure: participants array
             'participants' => ['required', 'array', 'min:1'],
             'participants.*.user_id' => ['required', 'exists:users,id'],
@@ -234,7 +232,7 @@ class PagosController extends Controller
 
         foreach($pagos as $pago) {
             // Attach si no existe ya
-            if (!$pago->entrenadores()->where('user_id', $request->trainer_id)->exists()) {
+            if (!$pago->entrenadores()->where('entrenadores.id', $request->trainer_id)->exists()) {
                 $pago->entrenadores()->attach($request->trainer_id);
                 
                 // Actualizar legacy column si estaba vacía
@@ -429,7 +427,7 @@ class PagosController extends Controller
         } else {
             // Entrenador: Buscar en la relación muchos a muchos
             $query->whereHas('entrenadores', function($q) use ($id) {
-                $q->where('users.id', $id);
+                $q->where('entrenadores.id', $id);
             });
             $persona = Entrenador::find($id);
         }

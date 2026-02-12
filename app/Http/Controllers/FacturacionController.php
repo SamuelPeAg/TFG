@@ -37,7 +37,7 @@ class FacturacionController extends Controller
             ->when($entrenadorId, function($qq) use ($entrenadorId) {
                 $qq->where(function($sub) use ($entrenadorId) {
                     $sub->where('entrenador_id', $entrenadorId)
-                        ->orWhereHas('entrenadores', fn($h) => $h->where('users.id', $entrenadorId));
+                        ->orWhereHas('entrenadores', fn($h) => $h->where('entrenadores.id', $entrenadorId));
                 });
             });
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Nomina_entrenador;
 use App\Models\User;
+use App\Models\Entrenador;
 use App\Models\Pago;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
@@ -52,7 +53,7 @@ class NominaAdminController extends Controller
             : Carbon::create($anio, $mes, 1)->endOfMonth();
 
         // 1. Obtener TODOS los entrenadores
-        $entrenadores = User::role('entrenador')->get();
+        $entrenadores = Entrenador::role('entrenador')->get();
 
         $generadas = 0;
         $actualizadas = 0;
@@ -61,7 +62,7 @@ class NominaAdminController extends Controller
             // 2. Buscar sus pagos para el rango de fechas seleccionado
             $pagos = Pago::where(function($q) use ($entrenador) {
                             $q->where('entrenador_id', $entrenador->id)
-                              ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenador->id));
+                              ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenador->id));
                         })
                         ->whereBetween('fecha_registro', [$fecha_inicio, $fecha_fin])
                         ->get();
@@ -192,12 +193,12 @@ class NominaAdminController extends Controller
         $mes = $request->input('mes', date('n'));
         $anio = $request->input('anio', date('Y'));
         
-        $entrenador = User::find($userId);
+        $entrenador = Entrenador::find($userId);
 
         // Buscar pagos del usuario para ese mes/año (considerando ambas formas de asociación)
         $pagos = Pago::where(function($q) use ($userId) {
                         $q->where('entrenador_id', $userId)
-                          ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $userId));
+                          ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $userId));
                     })
                     ->whereMonth('fecha_registro', $mes)
                     ->whereYear('fecha_registro', $anio)
@@ -286,7 +287,7 @@ class NominaAdminController extends Controller
             'importe' => 'required|numeric',
             'accion' => 'required|in:guardar,confirmar',
             'archivo' => 'nullable|file|mimes:pdf|max:2048',
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'required|exists:entrenadores,id',
             'salario_bruto' => 'nullable|numeric',
             'ss_trabajador' => 'nullable|numeric',
             'irpf' => 'nullable|numeric',
