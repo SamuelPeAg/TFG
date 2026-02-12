@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\Entrenador;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\PermissionRegistrar;
@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Usuario admin fijo (imprescindible para entrar)
-        $admin = User::firstOrCreate(
+        $admin = Entrenador::firstOrCreate(
             ['email' => 'test@example.com'],
             [
                 'name' => 'Admin',

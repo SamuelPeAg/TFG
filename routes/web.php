@@ -12,6 +12,7 @@ use App\Http\Controllers\EntrenadorController;
 use App\Http\Controllers\FacturacionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NominaEntrenadorController;
+use App\Http\Controllers\NominaAdminController;
 use App\Http\Controllers\PagosController;
 use App\Models\Centro;
 use App\Http\Middleware\AdminOrEntrenadorMiddleware;
