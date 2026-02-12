@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pago;
+use App\Models\Sessiones;
 use App\Models\User;
-use App\Models\Entrenador;
 use App\Models\Centro;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
@@ -21,9 +21,10 @@ class FacturacionController extends Controller
         $anio = $request->query('anio', date('Y'));
         $mes = $request->query('mes', '');
 
+        // Si se especifica mes y año, calcular desde y hasta
         if ($mes && $anio) {
             $desde = $anio . '-' . $mes . '-01';
-            $hasta = date('Y-m-t', strtotime($desde));
+            $hasta = date('Y-m-t', strtotime($desde)); // Último día del mes
         } elseif ($anio && !$mes) {
             $desde = $anio . '-01-01';
             $hasta = $anio . '-12-31';
@@ -37,12 +38,13 @@ class FacturacionController extends Controller
             ->when($entrenadorId, function($qq) use ($entrenadorId) {
                 $qq->where(function($sub) use ($entrenadorId) {
                     $sub->where('entrenador_id', $entrenadorId)
-                        ->orWhereHas('entrenadores', fn($h) => $h->where('entrenadores.id', $entrenadorId));
+                        ->orWhereHas('entrenadores', fn($h) => $h->where('users.id', $entrenadorId));
                 });
             });
 
         $Pagos = $q->get();
 
+        // Mantener compatibilidad con la vista antigua (resumen basado en Pagos)
         $resumen = [];
         foreach ($Pagos as $pago) {
             $trainerIds = [];
@@ -82,35 +84,42 @@ class FacturacionController extends Controller
             $resumen[$k]['facturacion'] = round($v['facturacion'], 2);
         }
 
-        $centros = Centro::all();
+        $centros = \App\Models\Centro::all();
 
-        // Obtener entrenadores del nuevo modelo
-        $entrenadores = Entrenador::role('entrenador')
+        $entrenadores = User::role('entrenador')
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        // Clientes del modelo User
-        $clientes = User::orderBy('name')
+        // Clientes (filas)
+        $clientes = User::role('cliente')
+            ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
+        // Si se ha seleccionado un entrenador, limitar la lista a ese entrenador
         if ($entrenadorId) {
             $entrenadores = $entrenadores->where('id', (int) $entrenadorId)->values();
         }
 
+        // Si se ha seleccionado un cliente, limitar la lista a ese cliente
         if ($clienteId) {
             $clientes = $clientes->where('id', (int) $clienteId)->values();
         }
 
+        // Construir consulta de reservas uniéndola con horarios_clases para poder agrupar por entrenador
+        // Detectar en tiempo de ejecución la columna correcta para entrenador y centro en horarios_clases
         if (Schema::hasColumn('horarios_clases', 'entrenador_id')) {
             $entCol = 'horarios_clases.entrenador_id';
         } elseif (Schema::hasColumn('horarios_clases', 'id_entrenador')) {
             $entCol = 'horarios_clases.id_entrenador';
         } else {
+            // Si no existe ninguna columna de entrenador, devolvemos matriz vacía
+            $matrix = [];
+
             return view('facturacion.facturas', [
                 'centros' => $centros,
                 'entrenadores' => $entrenadores,
                 'clientes' => $clientes,
-                'matrix' => [],
+                'matrix' => $matrix,
                 'resumen' => $resumen,
                 'desde' => $desde,
                 'hasta' => $hasta,
@@ -119,7 +128,7 @@ class FacturacionController extends Controller
                 'clienteId' => $clienteId,
             ]);
         }
-
+        // detectar columna de centro en horarios_clases: puede ser centro_id, id_centro o centro
         if (Schema::hasColumn('horarios_clases', 'centro_id')) {
             $centroCol = 'horarios_clases.centro_id';
         } elseif (Schema::hasColumn('horarios_clases', 'id_centro')) {
@@ -142,20 +151,29 @@ class FacturacionController extends Controller
 
         $reservasGrouped = $reservasQ->get();
 
+        // Matriz inicial vacía
         $matrix = [];
 
+        // 1) Preferimos contar desde la tabla `pagos` para evitar dobles: por cada pago, contamos cada entrenador una vez
         $pagosQuery = Pago::with('entrenadores')->select('id', 'user_id', 'entrenador_id', 'fecha_registro', 'centro');
-        if ($desde) $pagosQuery->whereDate('fecha_registro', '>=', $desde);
-        if ($hasta) $pagosQuery->whereDate('fecha_registro', '<=', $hasta);
-        if ($clienteId) $pagosQuery->where('user_id', $clienteId);
-        
+        if ($desde) {
+            $pagosQuery->whereDate('fecha_registro', '>=', $desde);
+        }
+        if ($hasta) {
+            $pagosQuery->whereDate('fecha_registro', '<=', $hasta);
+        }
+        if ($clienteId) {
+            $pagosQuery->where('user_id', $clienteId);
+        }
         if ($entrenadorId) {
             $pagosQuery->where(function($q) use ($entrenadorId) {
                 $q->where('entrenador_id', $entrenadorId)
-                  ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenadorId));
+                  ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenadorId));
             });
         }
-        if ($centro !== 'todos') $pagosQuery->where('centro', $centro);
+        if ($centro !== 'todos') {
+            $pagosQuery->where('centro', $centro);
+        }
 
         $pagosAll = $pagosQuery->get();
 
@@ -174,6 +192,7 @@ class FacturacionController extends Controller
             }
         }
 
+        // 2) Añadir conteos desde reservas SOLO cuando no existan ya pagos para ese par cliente/entrenador
         foreach ($reservasGrouped as $r) {
             $c = $r->cliente_id;
             $t = $r->entrenador_id;
@@ -182,12 +201,14 @@ class FacturacionController extends Controller
             }
         }
 
+        // Calcular totales por cliente
         $clienteTotals = [];
         foreach ($clientes as $c) {
             $totalClases = 0;
             if (isset($matrix[$c->id])) {
                 $totalClases = array_sum($matrix[$c->id]);
             }
+            // Total coste: sumar importes de pagos del cliente
             $totalCoste = $Pagos->where('user_id', $c->id)->sum('importe');
             $clienteTotals[$c->id] = [
                 'total_clases' => $totalClases,
@@ -195,9 +216,11 @@ class FacturacionController extends Controller
             ];
         }
 
+        // Filtrar clientes que no tienen clases en el período
         $clientesConDatos = array_keys($matrix);
         $clientes = $clientes->whereIn('id', $clientesConDatos)->values();
 
+        // Filtrar entrenadores que no tienen clases en el período
         $entrenadoresIds = [];
         foreach ($matrix as $clienteData) {
             $entrenadoresIds = array_merge($entrenadoresIds, array_keys($clienteData));
@@ -205,6 +228,7 @@ class FacturacionController extends Controller
         $entrenadoresIds = array_unique($entrenadoresIds);
         $entrenadores = $entrenadores->whereIn('id', $entrenadoresIds)->values();
 
+        // Filtrar clienteTotals para que coincida con los clientes filtrados
         $clienteTotals = array_filter($clienteTotals, fn($key) => in_array($key, $clientesConDatos), ARRAY_FILTER_USE_KEY);
 
         $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email']);
@@ -227,12 +251,14 @@ class FacturacionController extends Controller
         ]);
     }
 
+    // Devuelve las clases (reservas) que coinciden con cliente y/o entrenador
     public function clases(Request $request)
     {
         $clienteId = $request->query('cliente_id');
         $entrenadorId = $request->query('entrenador_id');
         $centro = $request->query('centro', 'todos');
 
+        // Determinar columna entrenador y centro en horarios_clases
         $horarioEntCol = Schema::hasColumn('horarios_clases', 'entrenador_id') ? 'horarios_clases.entrenador_id' : (Schema::hasColumn('horarios_clases', 'id_entrenador') ? 'horarios_clases.id_entrenador' : null);
         if (Schema::hasColumn('horarios_clases', 'centro_id')) {
             $horarioCentroCol = 'horarios_clases.centro_id';
@@ -248,53 +274,75 @@ class FacturacionController extends Controller
             ->select('reservas.id as reserva_id', 'reservas.id_usuario', 'horarios_clases.id as horario_id', 'horarios_clases.fecha_hora_inicio')
             ->join('horarios_clases', 'reservas.id_horario_clase', '=', 'horarios_clases.id');
 
-        if ($clienteId) $q->where('reservas.id_usuario', $clienteId);
-        if ($entrenadorId && $horarioEntCol) $q->whereRaw("{$horarioEntCol} = ?", [$entrenadorId]);
-        if ($centro !== 'todos' && $horarioCentroCol) $q->where($horarioCentroCol, $centro);
+        if ($clienteId) {
+            $q->where('reservas.id_usuario', $clienteId);
+        }
+        if ($entrenadorId) {
+            if ($horarioEntCol) {
+                $q->whereRaw("{$horarioEntCol} = ?", [$entrenadorId]);
+            }
+        }
+        if ($centro !== 'todos' && $horarioCentroCol) {
+            $q->where($horarioCentroCol, $centro);
+        }
 
         $items = $q->with(['usuario:id,name', 'horarioClase:id,fecha_hora_inicio,entrenador_id'])->get();
 
         $result = collect();
 
+        // Map reservas
         foreach ($items as $it) {
             $cliente = $it->usuario?->name ?? null;
             $fecha = $it->horarioClase?->fecha_hora_inicio?->toDateTimeString() ?? null;
             $entrenadorIdRow = $it->horarioClase?->entrenador_id ?? null;
-            $entrenador = $entrenadorIdRow ? (Entrenador::find($entrenadorIdRow)?->name) : null;
+            $entrenador = $entrenadorIdRow ? \App\Models\User::find($entrenadorIdRow)?->name : null;
 
-            $pago = Pago::where('user_id', $it->id_usuario)
+            // intentar buscar pago relacionado (mismo user y entrenador en la misma fecha)
+            $importe = null;
+            $metodo = null;
+            $nombreClase = null;
+            $pago = \App\Models\Pago::where('user_id', $it->id_usuario)
                 ->when($entrenadorIdRow, fn($q) => $q->where('entrenador_id', $entrenadorIdRow))
                 ->whereDate('fecha_registro', optional($it->horarioClase->fecha_hora_inicio)->toDateString())
                 ->first();
-            
+            if ($pago) {
+                $importe = $pago->importe;
+                $metodo = $pago->metodo_pago ?? null;
+                $nombreClase = $pago->nombre_clase ?? null;
+            }
+
             $result->push([
                 'source' => 'reserva',
                 'reserva_id' => $it->reserva_id,
                 'cliente' => $cliente,
                 'entrenador' => $entrenador,
                 'fecha' => $fecha,
-                'importe' => $pago?->importe,
-                'metodo' => $pago?->metodo_pago,
-                'nombre_clase' => $pago?->nombre_clase,
+                'importe' => $importe,
+                'metodo' => $metodo,
+                'nombre_clase' => $nombreClase,
                 'centro' => optional($it->horarioClase->centro)->nombre ?? null,
             ]);
         }
 
-        $pagoQuery = Pago::with(['user', 'entrenadores']);
-        if ($clienteId) $pagoQuery->where('user_id', $clienteId);
+        // Map pagos (si hay pagos que no estén representados por reservas)
+        $pagoQuery = \App\Models\Pago::with(['user', 'entrenadores']);
+        if ($clienteId) {
+            $pagoQuery->where('user_id', $clienteId);
+        }
         if ($entrenadorId) {
             $pagoQuery->where(function($q) use ($entrenadorId) {
                 $q->where('entrenador_id', $entrenadorId)
-                  ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenadorId));
+                  ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenadorId));
             });
         }
 
         $pagos = $pagoQuery->get();
 
         foreach ($pagos as $p) {
+            // Si ya existe una reserva con la misma fecha y cliente y entrenador, aún así mostramos el pago (podría duplicarse)
             $trainerName = null;
             if ($p->entrenador_id) {
-                $trainerName = Entrenador::find($p->entrenador_id)?->name;
+                $trainerName = \App\Models\User::find($p->entrenador_id)?->name;
             } elseif ($p->entrenadores && $p->entrenadores->count()) {
                 $trainerName = $p->entrenadores->first()->name;
             }

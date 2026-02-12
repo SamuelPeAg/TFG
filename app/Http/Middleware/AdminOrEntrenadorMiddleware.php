@@ -10,10 +10,12 @@ class AdminOrEntrenadorMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Verificar si el usuario está autenticado en el guard 'entrenador'
-        $user = auth('entrenador')->user();
+        $user = $request->user();
+        if (! $user || ! method_exists($user, 'hasRole')) {
+            abort(403, 'Acceso prohibido.');
+        }
 
-        if ($user && ($user->hasRole('admin') || $user->hasRole('entrenador'))) {
+        if ($user->hasRole('admin') || $user->hasRole('entrenador')) {
             return $next($request);
         }
 

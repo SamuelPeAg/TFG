@@ -30,14 +30,8 @@ class Nomina_entrenador extends Model
         'detalles' => 'array',
     ];
 
-    public function entrenador()
-    {
-        return $this->belongsTo(Entrenador::class, 'user_id');
-    }
-
-    // Alias para mantener compatibilidad con vistas que usen $nomina->user
     public function user()
     {
-        return $this->entrenador();
+        return $this->belongsTo(User::class);
     }
 }

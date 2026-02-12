@@ -902,16 +902,6 @@
             <form action="{{ route('admin.nominas.generar') }}" method="POST" class="space-y-4">
                 @csrf
                 
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Entrenador (Opcional)</label>
-                    <select name="entrenador_id" class="w-full p-3 rounded-xl border-2 border-slate-100 font-bold text-slate-700 focus:border-brand-teal focus:outline-none">
-                        <option value="">TODOS LOS ENTRENADORES</option>
-                        @foreach($entrenadores as $e)
-                            <option value="{{ $e->id }}">{{ $e->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Muestra en Mes</label>

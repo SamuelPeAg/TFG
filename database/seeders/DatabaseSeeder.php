@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Entrenador;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -37,7 +36,7 @@ class DatabaseSeeder extends Seeder
             // 6. Pagos
             PagoSeeder::class,
         ]);
-        Entrenador::factory()->count(2)->entrenador()->create();
+        User::factory()->count(2)->entrenador()->create();
         User::factory()->count(20)->cliente()->create();
     }
 }

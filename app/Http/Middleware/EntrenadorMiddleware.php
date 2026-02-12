@@ -15,10 +15,8 @@ class EntrenadorMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Verificar si el usuario está autenticado en el guard 'entrenador'
-        $user = auth('entrenador')->user();
-
-        if (! $user || ! $user->hasRole('entrenador')) {
+        $user = $request->user();
+        if (! $user || ! method_exists($user, 'hasRole') || ! $user->hasRole('entrenador')) {
             abort(403, 'Acceso prohibido: se requiere rol entrenador.');
         }
 

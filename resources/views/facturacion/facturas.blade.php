@@ -63,14 +63,13 @@
 <body>
 
 <div class="dashboard-container">
-@php
-    $user = auth('entrenador')->user() ?: auth('web')->user();
-@endphp
-@if($user && $user->hasRole('admin'))
-    @include('components.sidebar.sidebar_admin')
-@elseif($user && $user->hasRole('entrenador'))
-    @include('components.sidebar.sidebar_entrenador')
-@endif
+@auth
+        @if(auth()->user()->hasRole('admin'))
+            @include('components.sidebar.sidebar_admin')
+        @elseif(auth()->user()->hasRole('entrenador'))
+            @include('components.sidebar.sidebar_entrenador')
+        @endif
+    @endauth
 
     <main class="main-content">
 

@@ -12,8 +12,6 @@ class User extends Authenticatable
 {
     use HasFactory, SoftDeletes, Notifiable, HasRoles;
 
-    protected $guard_name = 'web';
-
     // Aquí añadimos 'activation_token' al array $fillable
     protected $fillable = [
         'name',
@@ -36,13 +34,15 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    /**
-     * El modelo User ahora se utiliza exclusivamente para CLIENTES.
-     */
     
-    // Relación con sus pagos
-    public function Pagos()
+    public function PagosCreadas()
     {
-        return $this->hasMany(Pago::class, 'user_id');
+        return $this->hasMany(Pago::class, 'entrenador_id');
+    }
+
+    // Relación de uno a muchos con HorarioClase (si el usuario es entrenador)
+    public function horariosComoEntrenador()
+    {
+        return $this->hasMany(HorarioClase::class, 'entrenador_id');
     }
 }

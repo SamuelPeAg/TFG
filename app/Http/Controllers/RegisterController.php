@@ -44,8 +44,6 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->assignRole('cliente');
-
         Auth::login($user);
 
         // REDIRIGIR DESPUÉS DE REGISTRAR

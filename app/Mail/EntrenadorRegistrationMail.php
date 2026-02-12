@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Entrenador;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -14,7 +14,7 @@ class EntrenadorRegistrationMail extends Mailable
     public $user;
     public $token;
 
-    public function __construct(Entrenador $user, $token)
+    public function __construct(User $user, $token)
     {
         $this->user = $user;
         $this->token = $token;
