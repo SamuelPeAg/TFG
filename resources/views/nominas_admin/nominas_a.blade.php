@@ -55,7 +55,25 @@
                     <p class="text-slate-400 mt-1 font-medium text-sm md:text-base">Supervisión y control de pagos a entrenadores</p>
                 </div>
                 
-                <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                <div class="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                    {{-- Filtro de Mes/Año --}}
+                    <form action="{{ route('admin.nominas') }}" method="GET" class="flex items-center gap-2 bg-white p-1.5 rounded-2xl shadow-sm border-2 border-slate-100 hover:border-brand-teal/30 transition-all">
+                        <div class="flex items-center pl-2 text-slate-400">
+                            <i class="fas fa-filter text-xs"></i>
+                        </div>
+                        <select name="mes" onchange="this.form.submit()" class="bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 cursor-pointer hover:text-brand-teal transition-colors py-1.5">
+                            @foreach(['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] as $idx => $nombreMes)
+                                <option value="{{ $idx + 1 }}" {{ $mes == ($idx + 1) ? 'selected' : '' }}>{{ $nombreMes }}</option>
+                            @endforeach
+                        </select>
+                        <div class="w-px h-4 bg-slate-200"></div>
+                        <select name="anio" onchange="this.form.submit()" class="bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 cursor-pointer hover:text-brand-teal transition-colors py-1.5 pr-8">
+                            @for($i = date('Y'); $i >= 2024; $i--)
+                                <option value="{{ $i }}" {{ $anio == $i ? 'selected' : '' }}>{{ $i }}</option>
+                            @endfor
+                        </select>
+                    </form>
+
                     {{-- Search Bar --}}
                     <div class="relative w-full md:w-64">
                         <input type="text" id="searchInput" placeholder="Buscar entrenador..." 
@@ -64,14 +82,11 @@
                         <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                     </div>
 
-                    <form action="{{ route('admin.nominas.generar') }}" method="POST" class="w-full md:w-auto">
-                        @csrf
-                        <button type="submit" onclick="return confirm('¿Calcular nóminas para el mes actual?')"
-                                class="w-full md:w-auto group flex items-center justify-center gap-2 bg-gradient-to-r from-brand-teal to-teal-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-brand-teal/40 hover:-translate-y-0.5 transition-all duration-200">
-                            <i class="fas fa-bolt group-hover:animate-pulse"></i> 
-                            <span class="whitespace-nowrap">Generar Mes Actual</span>
-                        </button>
-                    </form>
+                    <button onclick="document.getElementById('modalGenerarPersonalizado').classList.remove('hidden'); document.getElementById('modalGenerarPersonalizado').classList.add('flex')"
+                            class="w-full md:w-auto group flex items-center justify-center gap-2 bg-gradient-to-r from-brand-teal to-teal-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-brand-teal/40 hover:-translate-y-0.5 transition-all duration-200">
+                        <i class="fas fa-bolt group-hover:animate-pulse"></i> 
+                        <span class="whitespace-nowrap">Generar Nóminas</span>
+                    </button>
                 </div>
             </div>
 
@@ -187,7 +202,7 @@
                                     <div class="flex items-center justify-end gap-2">
                                         {{-- BOTÓN VISTA PREVIA --}}
                                         <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
-                                                class="w-10 h-10 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors shadow-sm" title="Vista Previa PDF">
+                                                class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
                                             <i class="fas fa-file-pdf"></i>
                                         </button>
 
@@ -273,7 +288,7 @@
                                     <div class="flex justify-end gap-2">
                                         {{-- BOTÓN VISTA PREVIA --}}
                                         <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
-                                                class="w-9 h-9 rounded-lg flex items-center justify-center bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors" title="Vista Previa PDF">
+                                                class="w-9 h-9 rounded-lg flex items-center justify-center bg-teal-50 text-brand-teal hover:bg-teal-100 transition-colors" title="Vista Previa PDF">
                                             <i class="fas fa-file-pdf"></i>
                                         </button>
 
@@ -548,7 +563,7 @@
             </div>
 
             <a id="btnDescargarPDFAdmin" href="#" target="_blank" class="flex items-center justify-center gap-3 w-full py-4 bg-slate-800 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-                <i class="fas fa-file-pdf text-red-400 text-xl"></i>
+                <i class="fas fa-file-pdf text-brand-teal text-xl"></i>
                 <span>Ver documento PDF</span>
             </a>
             
@@ -870,5 +885,69 @@
             document.body.classList.remove('overflow-hidden');
         }
     </script>
+    {{-- MODAL GENERAR NÓMINAS PERSONALIZADO --}}
+    <div id="modalGenerarPersonalizado" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[2000] hidden items-center justify-center fade-in">
+        <div class="bg-white w-full max-w-md rounded-2xl p-8 shadow-2xl relative">
+            <button onclick="document.getElementById('modalGenerarPersonalizado').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-brand-teal text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-brand-teal/20">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Cálculo de Nóminas</h2>
+                <p class="text-slate-500 mt-1">Selecciona el rango de sesiones a procesar</p>
+            </div>
+            
+            <form action="{{ route('admin.nominas.generar') }}" method="POST" class="space-y-4">
+                @csrf
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Muestra en Mes</label>
+                        <select name="mes" class="w-full p-3 rounded-xl border-2 border-slate-100 font-bold text-slate-700 focus:border-brand-teal focus:outline-none">
+                            @foreach(['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'] as $idx => $nombreMes)
+                                <option value="{{ $idx + 1 }}" {{ $mes == ($idx + 1) ? 'selected' : '' }}>{{ $nombreMes }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Año</label>
+                        <select name="anio" class="w-full p-3 rounded-xl border-2 border-slate-100 font-bold text-slate-700 focus:border-brand-teal focus:outline-none">
+                            @for($i = date('Y'); $i >= 2024; $i--)
+                                <option value="{{ $i }}" {{ $anio == $i ? 'selected' : '' }}>{{ $i }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-4">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Rango de fechas de sesiones</h4>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Desde el día:</label>
+                        <input type="date" name="fecha_inicio" 
+                               value="{{ sprintf('%04d-%02d-01', $anio, $mes) }}" 
+                               class="w-full p-3 rounded-xl border-2 border-slate-200 font-bold text-slate-700 focus:border-brand-teal">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Hasta el día:</label>
+                        <input type="date" name="fecha_fin" 
+                               value="{{ date('Y-m-t', strtotime(sprintf('%04d-%02d-01', $anio, $mes))) }}" 
+                               class="w-full p-3 rounded-xl border-2 border-slate-200 font-bold text-slate-700 focus:border-brand-teal">
+                    </div>
+                </div>
+                
+                <div class="pt-4 text-center">
+                    <button type="submit" onclick="this.innerHTML='<i class=\'fas fa-spinner fa-spin mr-2\'></i> Calculando...'; this.form.submit();"
+                            class="w-full bg-slate-900 text-white py-4 rounded-xl font-bold shadow-xl hover:bg-slate-800 transition-all transform hover:-translate-y-1">
+                        Procesar y Generar Borradores
+                    </button>
+                    <p class="text-[10px] text-slate-400 mt-4 leading-relaxed">
+                        Se analizarán todas las sesiones entre las fechas indicadas para cada entrenador y se guardarán en el periodo seleccionado arriba.
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

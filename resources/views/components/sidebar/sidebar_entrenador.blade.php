@@ -17,7 +17,7 @@
         </a>
     </div>
 
-    <div class="user-profile-card">
+    <a href="{{ route('configuracion.edit') }}" class="user-profile-card">
         <div class="user-avatar" style="display: flex; align-items: center; justify-content: center;">
             @if(auth()->user()->foto_de_perfil)
                 <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" 
@@ -29,11 +29,11 @@
                 {{ substr(auth()->user()->name, 0, 1) }}
             @endif
         </div>
-        <a href="{{ route('calendario') }}" class="user-info-text hover:opacity-80 transition-opacity">
+        <div class="user-info-text hover:opacity-80 transition-opacity">
             <span class="name">{{ auth()->user()->name }}</span>
             <span class="role">Panel de Gestión</span>
-        </a>
-    </div>
+        </div>
+    </a>
 
     <nav class="main-menu">
         
@@ -60,11 +60,7 @@
 
     <div class="sidebar-footer">
         
-        <a href="{{ route('configuracion.edit') }}" 
-           class="menu-item {{ request()->routeIs('configuracion.*') ? 'active' : '' }}">
-            <i class="fa-solid fa-gear"></i>
-            <span>CONFIGURACIÓN</span>
-        </a>
+
 
         <a href="{{ route('welcome') }}" class="menu-item">
             <i class="fa-solid fa-house"></i>

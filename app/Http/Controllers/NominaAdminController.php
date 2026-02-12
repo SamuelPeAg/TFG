@@ -12,28 +12,44 @@ use Carbon\Carbon;
 class NominaAdminController extends Controller
 {
     // MOSTRAR EL PANEL
-    public function index()
+    public function index(Request $request)
     {
-        // Nóminas Pendientes de Revisión (Borradores)
+        $mes = $request->input('mes', date('n'));
+        $anio = $request->input('anio', date('Y'));
+
+        // Nóminas Pendientes de Revisión (Borradores) para el periodo seleccionado
         $borradores = Nomina_entrenador::where('estado_nomina', 'pendiente_revision')
+                        ->where('mes', $mes)
+                        ->where('anio', $anio)
                         ->with('user')
                         ->orderBy('user_id')
                         ->get();
 
-        // Historial (Confirmadas o Pagadas)
+        // Historial (Confirmadas o Pagadas) para el periodo seleccionado
         $historial = Nomina_entrenador::where('estado_nomina', '!=', 'pendiente_revision')
+                        ->where('mes', $mes)
+                        ->where('anio', $anio)
                         ->with('user')
                         ->orderBy('created_at', 'desc')
                         ->get();
 
-        return view('nominas_admin.nominas_a', compact('borradores', 'historial'));
+        return view('nominas_admin.nominas_a', compact('borradores', 'historial', 'mes', 'anio'));
     }
 
     // GENERAR BORRADORES (AUTO)
     public function generar(Request $request)
     {
+        // Si no se pasan fechas exactas, usamos el mes/anio
         $mes = $request->input('mes', date('n'));
         $anio = $request->input('anio', date('Y'));
+
+        $fecha_inicio = $request->input('fecha_inicio') 
+            ? Carbon::parse($request->input('fecha_inicio'))->startOfDay() 
+            : Carbon::create($anio, $mes, 1)->startOfMonth();
+
+        $fecha_fin = $request->input('fecha_fin') 
+            ? Carbon::parse($request->input('fecha_fin'))->endOfDay() 
+            : Carbon::create($anio, $mes, 1)->endOfMonth();
 
         // 1. Obtener TODOS los entrenadores
         $entrenadores = User::role('entrenador')->get();
@@ -42,14 +58,16 @@ class NominaAdminController extends Controller
         $actualizadas = 0;
 
         foreach ($entrenadores as $entrenador) {
-            // 2. Buscar sus pagos para este mes (considerando tanto entrenador_id como relación muchos a muchos)
+            // 2. Buscar sus pagos para el rango de fechas seleccionado
             $pagos = Pago::where(function($q) use ($entrenador) {
                             $q->where('entrenador_id', $entrenador->id)
                               ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenador->id));
                         })
-                        ->whereMonth('fecha_registro', $mes)
-                        ->whereYear('fecha_registro', $anio)
+                        ->whereBetween('fecha_registro', [$fecha_inicio, $fecha_fin])
                         ->get();
+
+            // Si no hay pagos en este periodo para este entrenador, saltamos
+            if ($pagos->isEmpty()) continue;
 
             // AGRUPAR POR SESIONES ÚNICAS
             // Clave: fecha + hora + nombre clase + centro (para evitar contar sesiones duplicadas)

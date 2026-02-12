@@ -62,7 +62,7 @@
         </a>
 
            <a href="{{ route('admin.nominas') }}" 
-           class="menu-item {{ request()->routeIs('admin.nominas.*') ? 'active' : '' }}">
+           class="menu-item {{ request()->routeIs('admin.nominas*') ? 'active' : '' }}">
             <i class="fa-solid fa-file-invoice"></i>
             <span>NOMINAS-ADMIN</span>
         </a>

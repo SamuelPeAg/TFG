@@ -134,7 +134,7 @@
                                 <div class="flex justify-end gap-2">
                                     {{-- BOTÓN VISTA PREVIA PDF --}}
                                     <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
-                                            class="w-10 h-10 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-colors shadow-sm" title="Vista Previa PDF">
+                                            class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
                                         <i class="fas fa-file-pdf"></i>
                                     </button>
 
@@ -232,7 +232,7 @@
             </div>
 
             <a id="btnDescargarPDF" href="#" class="flex items-center justify-center gap-3 w-full py-4 bg-brand-dark text-white rounded-xl font-bold shadow-lg hover:shadow-brand-teal/20 transition-all hover:-translate-y-1">
-                <i class="fas fa-file-pdf text-red-400 text-xl"></i>
+                <i class="fas fa-file-pdf text-brand-teal text-xl"></i>
                 <span>Descargar Nómina (PDF)</span>
             </a>
             
