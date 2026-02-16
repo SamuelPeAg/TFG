@@ -149,14 +149,13 @@ Route::middleware('auth')->group(function () {
         // Gestión de Entrenadores
         Route::resource('entrenadores', EntrenadorController::class);
 
+        // Gestión de Centros
+        Route::resource('centros', \App\Http\Controllers\CentroController::class);
+
         // Acciones Avanzadas de Pagos (Solo Admin)
         Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos.index'); // Listado completo
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
         Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
-
-        // Gestión entrenadores (solo admin)
-        // Gestión entrenadores (solo admin)
-        Route::resource('entrenadores', EntrenadorController::class);
 
         // --- NÓMINAS (Admin) ---
         Route::get('/admin/nominas', [NominaAdminController::class, 'index'])->name('admin.nominas');

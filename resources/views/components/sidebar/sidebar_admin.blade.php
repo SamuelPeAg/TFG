@@ -43,6 +43,12 @@
             <span>ENTRENADORES</span>
         </a>
 
+        <a href="{{ route('centros.index') }}" 
+           class="menu-item {{ request()->routeIs('centros.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-building"></i>
+            <span>CENTROS</span>
+        </a>
+
         <a href="{{ route('users.index') }}" 
            class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
             <i class="fa-solid fa-users"></i>

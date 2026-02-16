@@ -33,8 +33,24 @@
                             $icon = ['fa-dumbbell', 'fa-sun', 'fa-heart-pulse'][$index % 3];
                             $tag = ['Maquinaria especializada', 'Aire libre y funcional', 'Salud y ejercicio'][$index % 3];
                             
-                            // Usar el link de la base de datos o uno genérico si está vacío
-                            $mapUrl = $centro->google_maps_link ?? "https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=" . urlencode($centro->nombre . " " . $centro->direccion);
+                            // Lógica mejorada para el mapa
+                            $mapUrl = '';
+                            
+                            if (!empty($centro->google_maps_link)) {
+                                // Si tiene 'embed', asumimos que es un link válido para iframe
+                                if (strpos($centro->google_maps_link, 'embed') !== false) {
+                                    $mapUrl = $centro->google_maps_link;
+                                } else {
+                                    // Si no es embed, intentamos generar uno de búsqueda con la dirección
+                                    // Usamos maps.google.com con output=embed que suele funcionar sin API Key para búsquedas simples
+                                    $addressEncoded = urlencode($centro->nombre . ' ' . $centro->direccion);
+                                    $mapUrl = "https://maps.google.com/maps?q={$addressEncoded}&t=&z=15&ie=UTF8&iwloc=&output=embed";
+                                }
+                            } else {
+                                // Si no hay link, fallback a búsqueda por dirección
+                                $addressEncoded = urlencode($centro->nombre . ' ' . $centro->direccion);
+                                $mapUrl = "https://maps.google.com/maps?q={$addressEncoded}&t=&z=15&ie=UTF8&iwloc=&output=embed";
+                            }
                         @endphp
                         <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition">
                             <div class="flex flex-col sm:flex-row">
