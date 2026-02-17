@@ -452,7 +452,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                {{-- <div class="grid grid-cols-2 gap-4">
                     <button type="submit" name="accion" value="guardar" 
                             class="py-4 px-4 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
                         <i class="fas fa-save mr-2"></i> Guardar Borrador
@@ -461,7 +461,7 @@
                             class="py-4 px-4 rounded-xl font-bold bg-slate-900 text-white shadow-xl hover:bg-slate-800 transition-all">
                         <i class="fas fa-check-circle mr-2"></i> Confirmar y Publicar
                     </button>
-                </div>
+                </div> --}}
             </form>
         </div>
     </div>
