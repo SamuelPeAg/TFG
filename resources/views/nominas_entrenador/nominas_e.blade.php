@@ -24,10 +24,7 @@
             }
         }
     </script>
-    <style>
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/nominas-entrenador-styles.css') }}">
 </head>
 
 <body class="bg-slate-50 text-slate-800">
@@ -243,98 +240,7 @@
         </div>
     </div>
 
-    <script>
-        function filterTable() {
-            const input = document.getElementById('searchInput');
-            const filter = input.value.toLowerCase();
-            const rows = document.querySelectorAll('.search-item');
-
-            rows.forEach(row => {
-                const conceptCell = row.querySelector('.concept-cell');
-                const concept = conceptCell.textContent.toLowerCase();
-                if (concept.includes(filter)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        function abrirModalDetalle(data) {
-            document.getElementById('modalConcepto').textContent = data.concepto;
-            document.getElementById('modalPeriodo').textContent = data.mes + '/' + data.anio;
-            
-            // --- DESGLOSE ---
-            const container = document.getElementById('modalDetalleDesglose');
-            if (data.detalles && data.detalles.salario_bruto) {
-                const det = data.detalles;
-                document.getElementById('detBruto').textContent = parseFloat(det.salario_bruto).toFixed(2) + ' €';
-                const deducciones = (parseFloat(det.ss_trabajador) + parseFloat(det.irpf)).toFixed(2);
-                document.getElementById('detDeducciones').textContent = '-' + deducciones + ' €';
-                document.getElementById('detNeto').textContent = parseFloat(det.salario_neto).toFixed(2) + ' €';
-                
-                // Extras
-                const extrasCont = document.getElementById('detExtrasContainer');
-                const extrasList = document.getElementById('detExtrasList');
-                extrasList.innerHTML = '';
-                if (det.extras && det.extras.length > 0) {
-                    det.extras.forEach(ex => {
-                        const row = document.createElement('div');
-                        row.className = 'flex justify-between text-xs text-slate-600 italic';
-                        row.innerHTML = `<span>+ ${ex.concept || ex.concepto}</span><span class="font-bold">${parseFloat(ex.amount || ex.importe).toFixed(2)} €</span>`;
-                        extrasList.appendChild(row);
-                    });
-                    extrasCont.classList.remove('hidden');
-                } else {
-                    extrasCont.classList.add('hidden');
-                }
-
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
-            // ----------------
-            
-            const badge = document.getElementById('modalEstadoBadge');
-            if (data.estado === 'pagado') {
-                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100';
-                badge.innerHTML = '<i class="fas fa-check"></i> Pagado';
-            } else {
-                badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100';
-                badge.innerHTML = '<i class="fas fa-hourglass-half"></i> Pendiente';
-            }
-
-            document.getElementById('modalFechaPago').textContent = data.fecha_pago;
-
-            const btnPDF = document.getElementById('btnDescargarPDF');
-            const msgPDF = document.getElementById('noPDFMessage');
-
-            if (data.archivo_url) {
-                btnPDF.href = data.archivo_url;
-                btnPDF.classList.remove('hidden');
-                btnPDF.classList.add('flex');
-                msgPDF.classList.add('hidden');
-            } else {
-                btnPDF.classList.add('hidden');
-                btnPDF.classList.remove('flex');
-                msgPDF.classList.remove('hidden');
-            }
-
-            document.getElementById('modalDetalle').classList.remove('hidden');
-            document.getElementById('modalDetalle').classList.add('flex');
-        }
-
-        function cerrarModalDetalle() {
-            document.getElementById('modalDetalle').classList.add('hidden');
-            document.getElementById('modalDetalle').classList.remove('flex');
-        }
-        
-        document.getElementById('modalDetalle').addEventListener('click', function(e) {
-            if (e.target === this) {
-                cerrarModalDetalle();
-            }
-        });
-    </script>
+    <script src="{{ asset('js/nominas-entrenador-filter.js') }}"></script>
 
     {{-- MODAL VISTA PREVIA PDF --}}
     <div id="modalPDFPreview" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[3000] hidden items-center justify-center fade-in">
@@ -373,31 +279,6 @@
         </div>
     </div>
 
-    <script>
-        function abrirModalPreview(previewUrl, downloadUrl) {
-            const modal = document.getElementById('modalPDFPreview');
-            const iframe = document.getElementById('pdfPreviewIframe');
-            const downloadBtn = document.getElementById('btnDownloadPDFModal');
-            const spinner = document.getElementById('pdfLoadingSpinner');
-
-            spinner.classList.remove('hidden');
-            downloadBtn.href = downloadUrl;
-            iframe.src = previewUrl;
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            document.body.classList.add('overflow-hidden');
-        }
-
-        function cerrarModalPreview() {
-            const modal = document.getElementById('modalPDFPreview');
-            const iframe = document.getElementById('pdfPreviewIframe');
-            
-            iframe.src = ''; // Limpiar src para parar carga
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            document.body.classList.remove('overflow-hidden');
-        }
-    </script>
+    <script src="{{ asset('js/nominas-entrenador-preview.js') }}"></script>
 </body>
 </html>

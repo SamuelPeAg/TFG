@@ -134,6 +134,8 @@
             </div>
         </div>
     </div>
+
+    <script src="{{ asset('js/login-tab-navigation.js') }}"></script>
     <x-footers.footer_welcome />
 
 @endsection

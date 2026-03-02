@@ -778,3 +778,93 @@
   align-items: center;
   gap: 12px;
 }
+
+/* =========================
+   PANEL DE REPORTES - INLINE STYLES MOVED HERE
+   ========================= */
+body { background-color: #f3f4f6; }
+
+.dashboard-container { display: flex; min-height: 100vh; }
+.main-content { flex: 1; padding: 30px; overflow-y: auto; }
+
+.header-section { margin-bottom: 30px; }
+.page-title { font-size: 28px; font-weight: 800; color: #111827; margin: 0; }
+.page-subtitle { color: #6b7280; font-size: 15px; margin-top: 5px; }
+
+/* Cards Selección Tipo */
+.selection-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+
+.card-type {
+    background: white; border-radius: 16px; padding: 25px;
+    cursor: pointer; transition: all 0.2s ease;
+    border: 2px solid transparent; text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.card-type:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+.card-type.active { border-color: #0e7490; background: #ecfeff; }
+
+.card-icon { 
+    width: 60px; height: 60px; border-radius: 50%; 
+    background: #f3f4f6; display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: #4b5563; margin: 0 auto 15px; transition: all 0.2s;
+}
+.card-type.active .card-icon { background: #0e7490; color: white; }
+
+.card-title { font-weight: 800; font-size: 16px; color: #1f2937; text-transform: uppercase; }
+
+/* Panel de Control */
+.control-panel {
+    background: white; border-radius: 16px; padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+.form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 20px; align-items: end; }
+
+.input-group label { display: block; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; margin-bottom: 6px; }
+.modern-input { 
+    width: 100%; padding: 12px 15px; border-radius: 10px; 
+    border: 1px solid #e5e7eb; background: #f9fafb; outline: none; transition: all 0.2s; 
+}
+.modern-input:focus { border-color: #0e7490; background: white; box-shadow: 0 0 0 3px rgba(14, 116, 144, 0.1); }
+
+.search-wrapper { position: relative; }
+.search-icon { position: absolute; left: 15px; top: 14px; color: #9ca3af; }
+.search-input { padding-left: 40px; }
+
+.btn-generate {
+    background: #0e7490; color: white; border: none; padding: 12px 25px;
+    border-radius: 10px; font-weight: 700; cursor: pointer; height: 45px;
+    display: flex; align-items: center; gap: 8px; transition: opacity 0.2s;
+}
+.btn-generate:hover { opacity: 0.9; }
+
+/* Resultados */
+.results-section { display: none; animation: slideUp 0.3s ease-out; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+.metric-card { background: white; border-radius: 12px; padding: 25px; border-left: 5px solid #0e7490; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.metric-label { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; display: block; }
+.metric-value { font-size: 32px; font-weight: 800; color: #111827; margin-top: 5px; display: block; }
+
+.data-table-container { background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; }
+.table-header { padding: 20px; border-bottom: 1px solid #f3f4f6; background: #f9fafb; }
+.table-title { font-weight: 700; color: #374151; font-size: 16px; margin: 0; }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 15px 20px; font-size: 11px; text-transform: uppercase; color: #6b7280; background: #f9fafb; font-weight: 700; }
+td { padding: 15px 20px; border-bottom: 1px solid #f3f4f6; color: #1f2937; font-size: 14px; }
+
+.suggestions {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: white; border: 1px solid #e5e7eb; border-radius: 10px;
+    z-index: 50; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-top: 5px;
+}
+.suggestion-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f3f4f6; }
+.suggestion-item:hover { background: #f3f4f6; }
+
+@media (max-width: 768px) {
+    .form-grid { grid-template-columns: 1fr; }
+}

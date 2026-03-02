@@ -437,3 +437,61 @@ body {
         border-bottom: 1px solid #f3f4f6 !important;
     }
 }
+
+/* ================================
+   AUTOCOMPLETE STYLES
+================================ */
+.autocomplete-container {
+    position: relative;
+    width: 100%;
+}
+
+.autocomplete-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-top: none;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+}
+
+.autocomplete-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.2s;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item:hover {
+    background: #f0fdfa;
+    padding-left: 20px;
+    color: #0d9488;
+}
+
+.autocomplete-item strong {
+    display: block;
+    color: #1f2937;
+}
+
+.autocomplete-item small {
+    display: block;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.autocomplete-item:hover strong {
+    color: #0d9488;
+}
