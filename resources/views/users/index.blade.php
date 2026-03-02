@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Usuarios - Factomove</title>
+  <title>Gestión de Clientes - Factomove</title>
 
   <link rel="stylesheet" href="{{ asset('css/global.css') }}">
   <link rel="stylesheet" href="{{ asset('css/tablaCRUD.css') }}">
@@ -138,14 +138,14 @@
       
       <div class="header-controls">
         <div class="title-section">
-          <h1>Gestión de Usuarios</h1>
+          <h1>Gestión de Clientes</h1>
         </div>
 
         <div class="controls-bar">
 
 
           <button id="toggleCrearUsuario" class="btn-design btn-solid-custom" type="button">
-            <i class="fas fa-plus"></i> <span>Añadir usuario</span>
+            <i class="fas fa-plus"></i> <span>Añadir cliente</span>
           </button>
         </div>
       </div>
@@ -190,7 +190,7 @@
             </button>
         </div>
 
-        <h2>Editar Usuario</h2>
+        <h2>Editar Cliente</h2>
       </div>
       <form id="formEditarUsuario" method="POST">
         @csrf @method('PUT')
@@ -221,7 +221,7 @@
         <div class="logo-simulado" style="color: #EF5D7A;">
           <i class="fas fa-exclamation-triangle"></i>
         </div>
-        <h2 style="color: #EF5D7A;">¿Eliminar Usuario?</h2>
+        <h2 style="color: #EF5D7A;">¿Eliminar Cliente?</h2>
         <p>Esta acción no se puede deshacer</p>
       </div>
 
