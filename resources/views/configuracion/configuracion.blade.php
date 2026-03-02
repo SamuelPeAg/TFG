@@ -92,27 +92,6 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                    {{-- SUB-MENÚ INTERNO (Sticky) --}}
-                    <aside class="lg:col-span-1">
-                        <div class="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-2xl p-4 sticky top-5">
-                            <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3 ml-1">Acceso Rápido</p>
-                            <div class="space-y-2">
-                                <a href="#perfil" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition">
-                                    <i class="fa-solid fa-user text-brandCoral"></i>
-                                    <span class="font-semibold text-gray-800 dark:text-gray-200">Perfil</span>
-                                </a>
-                                <a href="#seguridad" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition">
-                                    <i class="fa-solid fa-lock text-brandCoral"></i>
-                                    <span class="font-semibold text-gray-800 dark:text-gray-200">Seguridad</span>
-                                </a>
-                                <a href="#preferencias" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600 transition">
-                                    <i class="fa-solid fa-sliders text-brandCoral"></i>
-                                    <span class="font-semibold text-gray-800 dark:text-gray-200">Preferencias</span>
-                                </a>
-                            </div>
-                        </div>
-                    </aside>
-
                     {{-- FORMULARIO --}}
                     <section class="lg:col-span-2 space-y-8">
                         <form method="POST" action="{{ route('configuracion.update') }}" enctype="multipart/form-data">
@@ -235,19 +214,6 @@
             htmlElement.classList.add('dark');
         }
         updateVisuals();
-
-        /*
-        themeToggleBtn.addEventListener('click', function() {
-            if (htmlElement.classList.contains('dark')) {
-                htmlElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                htmlElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-            updateVisuals();
-        });
-        */
 
         // Función para previsualizar la imagen (Nueva)
         function previewFile() {
