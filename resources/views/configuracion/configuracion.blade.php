@@ -65,7 +65,7 @@
         
         {{-- TÍTULO: Fuera de la tarjeta, alineado arriba a la izquierda --}}
         <div class="mb-8">
-            <h1 class="text-4xl font-extrabold text-gray-800 dark:text-white tracking-tight">Configuración</h1>
+            <h1 class="text-4xl font-extrabold text-gray-800 dark:text-white tracking-tight">Mi Perfil</h1>
             <p class="mt-2 text-gray-500 dark:text-gray-400">Administra tu perfil y preferencias de la cuenta.</p>
         </div>
 
@@ -90,10 +90,9 @@
                     </div>
                 @endif
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
+                <div class="max-w-4xl mx-auto">
                     {{-- FORMULARIO --}}
-                    <section class="lg:col-span-2 space-y-8">
+                    <section class="space-y-8">
                         <form method="POST" action="{{ route('configuracion.update') }}" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
