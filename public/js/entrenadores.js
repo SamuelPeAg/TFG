@@ -90,4 +90,25 @@ document.addEventListener('DOMContentLoaded', () => {
       cerrarModalEliminar();
     }
   });
+
+  // FILTRO BUSCADOR
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('keyup', function () {
+      const value = this.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('.facto-table tbody tr');
+
+      rows.forEach(row => {
+        // En la tabla de entrenadores, nombre es col 1 y email es col 2
+        const nameText = row.querySelector('td:nth-child(1) .user-info span')?.textContent.toLowerCase() || '';
+        const emailText = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+
+        if (nameText.includes(value) || emailText.includes(value)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+  }
 });

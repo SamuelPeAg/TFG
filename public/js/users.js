@@ -134,6 +134,29 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // =========================
+  // FILTRO BUSCADOR
+  // =========================
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('keyup', function () {
+      const value = this.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('.facto-table tbody tr');
+
+      rows.forEach(row => {
+        // Obtenemos el texto del nombre y el email (columnas 1 y 2)
+        const nameText = row.querySelector('td:nth-child(1) .user-info span')?.textContent.toLowerCase() || '';
+        const emailText = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+
+        if (nameText.includes(value) || emailText.includes(value)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // =========================
   // INICIAL: asegurar estado
   // =========================
   // (por si venían visibles)

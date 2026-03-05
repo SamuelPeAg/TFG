@@ -32,6 +32,37 @@
   gap: 12px;
 }
 
+.search-container {
+  position: relative;
+  width: 280px;
+}
+
+.search-container i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--facto-teal);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background-color: white;
+  font-size: 14px;
+  color: var(--facto-text);
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--facto-teal);
+  box-shadow: 0 0 0 3px rgba(57, 197, 167, 0.1);
+}
+
 /* ---------- Botones ---------- */
 .btn-success {
   background: var(--facto-teal);
@@ -248,6 +279,7 @@
   margin-bottom: 10px;
   background: linear-gradient(180deg, var(--facto-pink) 0%, var(--facto-teal) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -601,115 +633,115 @@
 /* =========================
    CUSTOM USERS STYLES
    ========================= */
-.check-column { 
-    width: 40px; 
-    text-align: center; 
-    vertical-align: middle; 
+.check-column {
+  width: 40px;
+  text-align: center;
+  vertical-align: middle;
 }
 
 .custom-checkbox {
-    appearance: none;
-    background-color: #fff;
-    margin: 0;
-    font: inherit;
-    color: currentColor;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #CBD5E0;
-    border-radius: 6px; 
-    display: grid;
-    place-content: center;
-    transition: all 0.2s ease-in-out;
-    cursor: pointer;
+  appearance: none;
+  background-color: #fff;
+  margin: 0;
+  font: inherit;
+  color: currentColor;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #CBD5E0;
+  border-radius: 6px;
+  display: grid;
+  place-content: center;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
 }
 
 .custom-checkbox::before {
-    content: "";
-    width: 10px;
-    height: 10px;
-    transform: scale(0);
-    transition: 120ms transform ease-in-out;
-    box-shadow: inset 1em 1em white;
-    transform-origin: center;
-    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  content: "";
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em white;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
 }
 
 .custom-checkbox:checked {
-    background-color: #4BB7AE; 
-    border-color: #4BB7AE;
+  background-color: #4BB7AE;
+  border-color: #4BB7AE;
 }
 
 .custom-checkbox:checked::before {
-    transform: scale(1);
+  transform: scale(1);
 }
 
 .custom-checkbox:hover {
-    border-color: #38a199;
+  border-color: #38a199;
 }
 
 .header-controls {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 10px 0;
 }
 
 .title-section h1 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: #333;
-    font-weight: 800; 
+  margin: 0;
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: 800;
 }
 
 .controls-bar {
-    display: flex;
-    align-items: center; 
-    gap: 20px; 
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .btn-design {
-    width: 180px;            
-    height: 45px;            
-    border: none;
-    border-radius: 12px;     
-    color: white;
-    font-size: 13px;
-    font-weight: 800;        
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    text-decoration: none;
-    letter-spacing: 0.5px;
+  width: 180px;
+  height: 45px;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  letter-spacing: 0.5px;
 }
 
 .btn-design:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
 }
 
 .btn-design i {
-    font-size: 1.1em;
+  font-size: 1.1em;
 }
 
 .btn-gradient-custom {
-    background: linear-gradient(90deg, #38C1A3 0%, #E65C9C 100%);
-    text-transform: uppercase; 
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  background: linear-gradient(90deg, #38C1A3 0%, #E65C9C 100%);
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .btn-gradient-custom:hover {
-    filter: brightness(1.1);
+  filter: brightness(1.1);
 }
 
 .btn-solid-custom {
-    background-color: #38C1A3; 
+  background-color: #38C1A3;
 }
 
 .btn-solid-custom:hover {
-    background-color: #32ac91;
+  background-color: #32ac91;
 }

@@ -34,6 +34,10 @@
                 </div>
 
                 <div class="controls-bar">
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Buscar entrenador por nombre o email...">
+                    </div>
                     <button id="btnAbrirModal" class="btn-design btn-solid-custom">
                         <i class="fas fa-plus"></i> <span>Añadir Entrenador</span>
                     </button>
