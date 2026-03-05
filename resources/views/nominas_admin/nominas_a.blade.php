@@ -6,7 +6,7 @@
     <title>Gestión de Nóminas - Factomove</title>
 
     {{-- Tailwind CSS via CDN for valid utility classes in this view if build step is not running/configured fully --}}
-    <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="stylesheet" href="{{ asset('css/global.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -674,5 +674,38 @@
             </form>
         </div>
     </div>
+
+    <script type="module" src="{{ asset('js/app.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof $ !== 'undefined' && $.fn.select2) {
+                // Initialize Select2 for month and year selects
+                $('select[name="mes"]').select2({
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    placeholder: "Selecciona un mes...",
+                    allowClear: true,
+                    matcher: function(params, data) {
+                        // Búsqueda insensible a mayúsculas y acentos
+                        if ($.trim(params.term) === '') {
+                            return data;
+                        }
+                        let search = params.term.toLowerCase();
+                        let text = data.text.toLowerCase();
+                        if (text.indexOf(search) > -1) {
+                            return data;
+                        }
+                        return null;
+                    }
+                });
+                $('select[name="anio"]').select2({
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    placeholder: "Selecciona un año...",
+                    allowClear: true
+                });
+            }
+        });
+    </script>
 </body>
 </html>
