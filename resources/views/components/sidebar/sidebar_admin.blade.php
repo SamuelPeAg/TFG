@@ -46,7 +46,7 @@
         <a href="{{ route('users.index') }}" 
            class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
             <i class="fa-solid fa-users"></i>
-            <span>USUARIOS</span>
+            <span>CLIENTES</span>
         </a>
         
         <a href="{{ route('calendario') }}" 

@@ -4,7 +4,7 @@
     <table class="facto-table">
         <thead>
             <tr>
-                <th>Usuario</th>
+                <th>Cliente</th>
                 <th>Email</th> 
                 <th>iban</th>
                 <th>Firma</th>
