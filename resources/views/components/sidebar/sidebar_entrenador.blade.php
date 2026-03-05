@@ -17,7 +17,7 @@
         </a>
     </div>
 
-    <a href="{{ route('configuracion.edit') }}" class="user-profile-card">
+    <div class="user-profile-card">
         <div class="user-avatar" style="display: flex; align-items: center; justify-content: center;">
             @if(auth()->user()->foto_de_perfil)
                 <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" 
@@ -31,9 +31,9 @@
         </div>
         <div class="user-info-text hover:opacity-80 transition-opacity">
             <span class="name">{{ auth()->user()->name }}</span>
-            <span class="role">Panel de Gestión</span>
+            <span class="role">Entrenador</span>
         </div>
-    </a>
+    </div>
 
     <nav class="main-menu">
         
@@ -65,6 +65,11 @@
         <a href="{{ route('welcome') }}" class="menu-item">
             <i class="fa-solid fa-house"></i>
             <span>VOLVER</span>
+        </a>
+
+        <a href="{{ route('configuracion.edit') }}" class="menu-item {{ request()->routeIs('configuracion.edit') ? 'active' : '' }}">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>MI PERFIL</span>
         </a>
 
         <form method="POST" action="{{ route('logout') }}" id="logout-form" style="display: none;">
