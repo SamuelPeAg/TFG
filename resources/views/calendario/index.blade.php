@@ -89,19 +89,7 @@
     window.IS_TRAINER = {{ Auth::check() && Auth::user()->hasRole('entrenador') ? 'true' : 'false' }};
   </script>
 
-  <script type="module" src="{{ asset('js/app.js') }}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof $ !== 'undefined' && $.fn.select2) {
-        // Initialize Select2 for all select elements
-        $('select#centro, select#filter-center, select#tipo_clase').select2({
-          width: '100%',
-          minimumResultsForSearch: 5,
-          searchInputPlaceholder: "Buscar..."
-        });
-      }
-    });
-  </script>
+  @vite('resources/js/app.js')
 
   <script src="{{ asset('js/calendario.js') }}"></script>
   <script src="{{ asset('js/calendario-modal-logout.js') }}"></script>

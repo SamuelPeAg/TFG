@@ -675,7 +675,7 @@
         </div>
     </div>
 
-    <script type="module" src="{{ asset('js/app.js') }}"></script>
+    @vite('resources/js/app.js')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof $ !== 'undefined' && $.fn.select2) {
