@@ -404,6 +404,24 @@ body {
     color: var(--text-muted);
 }
 
+.cell-stats {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.count-value {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.amount-value {
+    font-size: 11px;
+    color: var(--teal);
+    font-weight: 600;
+}
+
 /* MOBILE OVERRIDES REFINED */
 @media (max-width: 767px) {
     .matrix-table {

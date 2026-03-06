@@ -32,13 +32,17 @@ document.addEventListener('DOMContentLoaded', function(){
         td.addEventListener('click', async function(){
             const clientId = this.dataset.clientId;
             const trainerId = this.dataset.trainerId;
-            const count = parseInt(this.textContent.trim()) || 0;
+            
+            // Comprobar si hay clases buscando el texto "0" o si no hay el texto "clases"
+            const countText = this.querySelector('.count-value')?.textContent || this.textContent;
+            const count = parseInt(countText) || 0;
+            
             if (!count) {
                 openModal('<p>No hay información disponible para esta selección.</p>');
                 return;
             }
 
-            openModal('<p>Cargando...</p>');
+            openModal('<p>Cargando detalles de clases...</p>');
 
             const params = new URLSearchParams();
             if (clientId) params.append('cliente_id', clientId);
@@ -47,6 +51,13 @@ document.addEventListener('DOMContentLoaded', function(){
             try {
                 const centroSel = document.querySelector('select[name="centro"]');
                 if (centroSel && centroSel.value) params.append('centro', centroSel.value);
+                
+                const anioSel = document.querySelector('select[name="anio"]');
+                if (anioSel && anioSel.value) params.append('anio', anioSel.value);
+                
+                const mesSel = document.querySelector('select[name="mes"]');
+                if (mesSel && mesSel.value) params.append('mes', mesSel.value);
+
                 const res = await fetch("/facturas/clases?" + params.toString(), { headers: { 'Accept': 'application/json' }});
                 const data = await res.json();
 
@@ -56,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function(){
                 }
 
                 let html = '<table style="width:100%; border-collapse:collapse;">';
-                html += '<thead><tr><th style="text-align:left; padding:8px;">Cliente</th><th style="text-align:left; padding:8px;">Entrenador</th><th style="padding:8px;">Fecha</th><th style="padding:8px;">Centro</th><th style="padding:8px;">Método</th><th style="padding:8px; text-align:right;">Coste</th><th style="padding:8px;">Clase</th></tr></thead>';
+                html += '<thead><tr><th style="text-align:left; padding:8px;">Cliente</th><th style="text-align:left; padding:8px;">Entrenador</th><th style="padding:8px;">Fecha</th><th style="padding:8px;">Centro</th><th style="padding:8px; text-align:right;">Coste</th><th style="padding:8px;">Clase</th></tr></thead>';
                 html += '<tbody>';
                 data.forEach(d => {
                     html += `<tr>
@@ -64,7 +75,6 @@ document.addEventListener('DOMContentLoaded', function(){
                         <td data-label="Entrenador" style="padding:8px;">${d.entrenador ?? '-'}</td>
                         <td data-label="Fecha" style="padding:8px;">${d.fecha ?? '-'}</td>
                         <td data-label="Centro" style="padding:8px;">${d.centro ?? '-'}</td>
-                        <td data-label="Método" style="padding:8px;">${d.metodo ?? '-'}</td>
                         <td data-label="Coste" style="padding:8px; text-align:right;">${d.importe ? d.importe + ' €' : '-'}</td>
                         <td data-label="Clase" style="padding:8px;">${d.nombre_clase ?? '-'}</td>
                     </tr>`;
@@ -73,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 openModal(html);
             } catch (e) {
+                console.error(e);
                 openModal('<p>Error cargando datos.</p>');
             }
         });
@@ -87,20 +98,26 @@ document.addEventListener('DOMContentLoaded', function(){
 
             const centroSel = document.querySelector('select[name="centro"]');
             if (centroSel && centroSel.value !== 'todos') params.append('centro', centroSel.value);
+            
+            const anioSel = document.querySelector('select[name="anio"]');
+            if (anioSel && anioSel.value) params.append('anio', anioSel.value);
+            
+            const mesSel = document.querySelector('select[name="mes"]');
+            if (mesSel && mesSel.value) params.append('mes', mesSel.value);
 
-            openModal('<p>Cargando...</p>');
+            openModal('<p>Cargando todas las clases del cliente...</p>');
 
             try {
                 const res = await fetch("/facturas/clases?" + params.toString(), { headers: { 'Accept': 'application/json' }});
                 const data = await res.json();
 
                 if (!data || data.length === 0) {
-                    openModal('<p>No hay clases para este cliente.</p>');
+                    openModal('<p>No hay clases para este cliente en el periodo seleccionado.</p>');
                     return;
                 }
 
                 let html = '<table style="width:100%; border-collapse:collapse;">';
-                html += '<thead><tr><th style="text-align:left; padding:8px;">Cliente</th><th style="text-align:left; padding:8px;">Entrenador</th><th style="padding:8px;">Fecha</th><th style="padding:8px;">Centro</th><th style="padding:8px;">Método</th><th style="padding:8px; text-align:right;">Coste</th><th style="padding:8px;">Clase</th></tr></thead>';
+                html += '<thead><tr><th style="text-align:left; padding:8px;">Cliente</th><th style="text-align:left; padding:8px;">Entrenador</th><th style="padding:8px;">Fecha</th><th style="padding:8px;">Centro</th><th style="padding:8px; text-align:right;">Coste</th><th style="padding:8px;">Clase</th></tr></thead>';
                 html += '<tbody>';
                 data.forEach(d => {
                     html += `<tr>
@@ -108,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function(){
                         <td data-label="Entrenador" style="padding:8px;">${d.entrenador ?? '-'}</td>
                         <td data-label="Fecha" style="padding:8px;">${d.fecha ?? '-'}</td>
                         <td data-label="Centro" style="padding:8px;">${d.centro ?? '-'}</td>
-                        <td data-label="Método" style="padding:8px;">${d.metodo ?? '-'}</td>
                         <td data-label="Coste" style="padding:8px; text-align:right;">${d.importe ? d.importe + ' €' : '-'}</td>
                         <td data-label="Clase" style="padding:8px;">${d.nombre_clase ?? '-'}</td>
                     </tr>`;
@@ -117,10 +133,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
                 openModal(html);
             } catch (e) {
+                console.error(e);
                 openModal('<p>Error cargando datos.</p>');
             }
         });
     });
+
 
     // --- AUTOCOMPLETE CLIENTES ---
     function initAutocomplete(clientsData) {
