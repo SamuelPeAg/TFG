@@ -513,3 +513,56 @@ body {
 .autocomplete-item:hover strong {
     color: #0d9488;
 }
+
+/* ================================
+   MODAL TABLE FIXES
+   ================================ */
+#modal-body table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+#modal-body th,
+#modal-body td {
+    padding: 10px 8px;
+    font-size: 13px;
+    border-bottom: 1px solid #f3f4f6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#modal-body td[data-label="Cliente"],
+#modal-body td[data-label="Entrenador"],
+#modal-body td[data-label="Clase"] {
+    max-width: 150px;
+}
+
+#modal-body td[data-label="Centro"] {
+    max-width: 100px;
+}
+
+#modal-body td[data-label="Fecha"] {
+    width: 140px;
+    font-family: monospace;
+}
+
+#modal-body td[data-label="Coste"] {
+    width: 70px;
+    text-align: right;
+    font-weight: 600;
+}
+
+/* Hover to see full text if truncated */
+#modal-body td:hover {
+    white-space: normal;
+    overflow: visible;
+    word-break: break-all;
+    background: #fdfdfd;
+    position: relative;
+    z-index: 10;
+}
+
+.text-right {
+    text-align: right !important;
+}

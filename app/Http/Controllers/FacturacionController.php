@@ -388,11 +388,18 @@ class FacturacionController extends Controller
             foreach ($p->entrenadores as $t)
                 $trainerNames[] = $t->name;
             $trainerNames = array_unique($trainerNames);
+            $totalTrainers = count($trainerNames);
+            if ($totalTrainers > 2) {
+                $displayTrainers = array_slice($trainerNames, 0, 2);
+                $trainerString = implode(', ', $displayTrainers) . ' + ' . ($totalTrainers - 2) . ' más';
+            } else {
+                $trainerString = implode(', ', $trainerNames);
+            }
 
             $result->push([
                 'source' => 'pago',
                 'cliente' => $p->user?->name ?? null,
-                'entrenador' => implode(', ', $trainerNames),
+                'entrenador' => $trainerString,
                 'fecha' => $pFecha,
                 'importe' => $p->importe,
                 'metodo' => $p->metodo_pago ?? null,
