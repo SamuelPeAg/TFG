@@ -219,5 +219,20 @@
     const clientesData = @json($todosLosClientes->map(function ($c) {
         return ['id' => $c->id, 'name' => $c->name, 'email' => $c->email];
     }));
-    window.initFacturacionAutocomplete(clientesData);
+    
+    // Esperar a que el DOM esté listo y el script se haya cargado
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof window.initFacturacionAutocomplete === 'function') {
+            window.initFacturacionAutocomplete(clientesData);
+        } else {
+            // Si no está disponible, intentar con un pequeño delay
+            setTimeout(function() {
+                if (typeof window.initFacturacionAutocomplete === 'function') {
+                    window.initFacturacionAutocomplete(clientesData);
+                } else {
+                    console.warn('initFacturacionAutocomplete still not available');
+                }
+            }, 500);
+        }
+    });
 </script>

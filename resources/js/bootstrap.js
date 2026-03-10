@@ -1,15 +1,11 @@
 import axios from 'axios';
 import $ from 'jquery';
-import select2 from 'select2';
 
+// Asignar jQuery a window
 window.$ = $;
 window.jQuery = $;
 window.axios = axios;
-window.select2 = select2;
 
-// Initialize Select2
-$.fn.select2.defaults.set("theme", "bootstrap-5");
-$.fn.select2.defaults.set("minimumResultsForSearch", 5);
-$.fn.select2.defaults.set("searchInputPlaceholder", "Buscar...");
+// Select2 se carga dinámicamente en select2-init.js después de que jQuery esté disponible
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';

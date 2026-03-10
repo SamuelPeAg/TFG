@@ -1,0 +1,21 @@
+/* Select2 Custom Styling - Minimal overrides */
+
+/* Ensure Select2 containers are responsive */
+.select2-container {
+  width: 100% !important;
+}
+
+/* Better spacing for search input */
+.select2-container--classic .select2-search--dropdown .select2-search__field {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+/* Dropdown styling with proper spacing */
+.select2-container--classic .select2-results__options {
+  max-height: 300px;
+}
+
+.select2-container--classic .select2-results__option {
+  padding: 0.5rem 1rem;
+}
