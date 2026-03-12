@@ -23,17 +23,13 @@ use App\Http\Controllers\NominaAdminController;
 
 // Home
 Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+    return view('app');
+})->name('home');
 
 // Legales
 Route::view('/aviso-legal', 'legal.notice')->name('legal.notice');
 Route::view('/politica-privacidad', 'legal.privacy')->name('privacy.policy');
 Route::view('/politica-cookies', 'legal.cookies')->name('cookies.policy');
-Route::get('/contacto', function () {
-    $centros = \App\Models\Centro::all();
-    return view('contact', compact('centros'));
-})->name('contact');
 
 // Contacto (POST)
 Route::post('/contacto/enviar', function (Request $request) {
@@ -43,6 +39,13 @@ Route::post('/contacto/enviar', function (Request $request) {
         'phone'   => 'nullable|string|max:20',
         'message' => 'required|string|max:1000',
     ]);
+
+    if ($request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'message' => '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.'
+        ]);
+    }
 
     return redirect()->route('contact')
         ->with('success', '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.');
@@ -64,18 +67,24 @@ Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'c
 Route::middleware('guest')->group(function () {
     // Login
     Route::get('/login', function () {
-        return view('login.signup.login');
+        return view('app');
     })->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 
     // Registro
-    Route::get('/register', [RegisterController::class, 'show'])->name('register');
+    Route::get('/register', function () {
+        return view('app');
+    })->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
 
     // Recuperación de Contraseña
-    Route::get('/forgot-password', [AuthPasswordController::class, 'forgotForm'])->name('password.request');
+    Route::get('/forgot-password', function () {
+        return view('app');
+    })->name('password.request');
     Route::post('/forgot-password', [AuthPasswordController::class, 'sendReset'])->name('password.email');
-    Route::get('/reset-password/{token}', [AuthPasswordController::class, 'resetForm'])->name('password.reset');
+    Route::get('/reset-password/{token}', function () {
+        return view('app');
+    })->name('password.reset');
     Route::post('/reset-password', [AuthPasswordController::class, 'updatePassword'])->name('password.update');
 });
 
@@ -168,3 +177,9 @@ Route::middleware('auth')->group(function () {
     });
 
 });
+
+// --- REACT ROUTER FALLBACK ---
+// Cualquier ruta no atrapada arriba caerá aquí y se pasará a React Router.
+Route::get('/{any?}', function () {
+    return view('app');
+})->where('any', '.*')->name('react.app');

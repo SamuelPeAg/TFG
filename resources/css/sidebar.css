@@ -1,0 +1,562 @@
+:root {
+    --primary-color: #4BB7AE;
+    /* Turquesa */
+    --primary-dark: #EF5D7A;
+    /* Rojo/Rosa para logout */
+    --sidebar-bg-top: #4BB7AE;
+    --sidebar-bg-bottom: #34495e;
+}
+
+/* CONTENEDOR PRINCIPAL */
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 260px;
+    background: linear-gradient(180deg, var(--sidebar-bg-top) 0%, var(--sidebar-bg-bottom) 100%);
+    padding: 30px 20px;
+    /* Ajuste de padding lateral */
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 0;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 99999;
+    /* Ensure it is above FullCalendar (which often uses 10-100) */
+    font-family: 'Nunito', sans-serif;
+}
+
+/* LOGO - CENTRADO PERFECTO */
+.sidebar-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Centra horizontalmente */
+    justify-content: center;
+    margin-bottom: 35px;
+    /* Espacio antes del perfil */
+    text-align: center;
+}
+
+.sidebar-logo a {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar-logo img {
+    width: 65px;
+    /* Tamaño ajustado a la imagen */
+    margin-bottom: 10px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.sidebar-logo h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+/* PERFIL USUARIO */
+.user-profile-card {
+    backdrop-filter: blur(5px);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background-color: white;
+    color: var(--primary-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.user-info-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.user-info-text .name {
+    font-weight: 800;
+    font-size: 1rem;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-info-text .role {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* MENÚ */
+.main-menu {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: visible;
+    /* Eliminar scroll */
+    justify-content: flex-start;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.menu-item i {
+    width: 25px;
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.menu-item.active {
+    background-color: white;
+    color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-weight: 800;
+    justify-content: center;
+}
+
+.menu-item.active i {
+    color: var(--primary-color);
+}
+
+/* FOOTER */
+.sidebar-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.logout-btn {
+    color: #ff8fa3 !important;
+    /* Tono rojizo suave */
+}
+
+.logout-btn:hover {
+    background: rgba(239, 93, 122, 0.15) !important;
+    color: #EF5D7A !important;
+}
+
+/* MODAL */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+
+    /* CAMBIO AQUÍ: Aumentamos el número y agregamos !important */
+    z-index: 9999 !important;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-box {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.modal-text {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-modal {
+    padding: 12px 25px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: #f0f0f0;
+    color: #555;
+}
+
+.btn-confirm {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ================================
+   RESPONSIVE DESIGN
+================================ */
+
+/* Botón Hamburguesa (oculto en desktop) */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10000;
+    /* Aumentado para estar por encima de todo */
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    pointer-events: auto;
+    /* Asegurar que sea clicable */
+}
+
+.menu-toggle:hover {
+    background: #3da091;
+    transform: scale(1.05);
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
+}
+
+.menu-toggle i {
+    font-size: 1.5rem;
+    pointer-events: none;
+    /* El icono no debe interceptar clicks */
+}
+
+/* Overlay oscuro (oculto por defecto) */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ================================
+   TABLET Y MÓVIL (< 1024px)
+================================ */
+@media (max-width: 1023px) {
+
+    /* Mostrar botón hamburguesa */
+    .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Sidebar oculto por defecto */
+    .sidebar-container {
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 9999;
+        /* Por debajo del botón hamburguesa pero por encima del overlay */
+    }
+
+    /* Sidebar visible cuando está activo */
+    .sidebar-container.active {
+        transform: translateX(0);
+    }
+
+    /* Ajustar padding del sidebar */
+    .sidebar-container {
+        padding: 20px 15px;
+    }
+
+    /* Logo más pequeño */
+    .sidebar-logo img {
+        width: 50px;
+    }
+
+    .sidebar-logo h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Perfil de usuario más compacto */
+    .user-profile-card {
+        padding: 12px;
+        margin-bottom: 30px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .user-info-text .name {
+        font-size: 0.9rem;
+    }
+
+    /* Menú items más pequeños */
+    .menu-item {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+
+    .menu-item i {
+        font-size: 1.1rem;
+    }
+}
+
+/* ================================
+   MÓVIL (< 768px)
+================================ */
+@media (max-width: 767px) {
+
+    /* Sidebar ancho completo en móvil */
+    .sidebar-container {
+        width: 280px;
+    }
+
+    /* Botón hamburguesa más pequeño */
+    .menu-toggle {
+        width: 45px;
+        height: 45px;
+        top: 15px;
+        left: 15px;
+    }
+
+    .menu-toggle i {
+        font-size: 1.3rem;
+    }
+
+    /* Logo aún más pequeño */
+    .sidebar-logo {
+        margin-bottom: 25px;
+    }
+
+    .sidebar-logo img {
+        width: 45px;
+    }
+
+    .sidebar-logo h2 {
+        font-size: 1.3rem;
+    }
+
+    /* Perfil usuario compacto */
+    .user-profile-card {
+        padding: 10px;
+        margin-bottom: 25px;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+
+    .user-info-text .name {
+        font-size: 0.85rem;
+    }
+
+    .user-info-text .role {
+        font-size: 0.65rem;
+    }
+
+    /* Menú más compacto */
+    .main-menu {
+        gap: 10px;
+    }
+
+    .menu-item {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+
+    .menu-item i {
+        width: 20px;
+        font-size: 1rem;
+    }
+
+    /* Footer más compacto */
+    .sidebar-footer {
+        padding-top: 15px;
+    }
+}
+
+/* ================================
+   ADAPTABILIDAD VERTICAL (ZOOM / PANTALLAS BAJAS)
+================================ */
+
+/* Altura mediana (ej. Laptop Zoom 110-125%) */
+@media (max-height: 850px) {
+    .sidebar-container {
+        padding: 20px;
+    }
+
+    .sidebar-logo {
+        margin-bottom: 20px;
+    }
+
+    .sidebar-logo img {
+        width: 55px;
+    }
+
+    .user-profile-card {
+        padding: 10px;
+        margin-bottom: 20px;
+    }
+
+    .menu-item {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Altura pequeña (ej. Laptop Zoom 150% o Netbooks) */
+@media (max-height: 700px) {
+    .sidebar-container {
+        padding: 15px 15px 5px 15px;
+        width: 240px;
+    }
+
+    .sidebar-logo {
+        margin-bottom: 10px;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .sidebar-logo img {
+        width: 40px;
+        margin-bottom: 0;
+    }
+
+    .sidebar-logo h2 {
+        font-size: 1.2rem;
+    }
+
+    .user-profile-card {
+        padding: 6px;
+        gap: 8px;
+        margin-bottom: 10px;
+        min-height: auto;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+
+    .user-info-text .name {
+        font-size: 0.85rem;
+    }
+
+    .user-info-text .role {
+        font-size: 0.6rem;
+    }
+
+    .main-menu {
+        gap: 4px;
+    }
+
+    .menu-item {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        min-height: 35px;
+    }
+
+    .menu-item i {
+        font-size: 1rem;
+        width: 20px;
+    }
+
+    .sidebar-footer {
+        padding-top: 10px;
+        gap: 2px;
+    }
+}
+
+/* Altura muy pequeña (ej. apaisado móvil o zoom extremo) */
+@media (max-height: 550px) {
+    .sidebar-container {
+        padding: 10px;
+    }
+
+    /* Nunca ocultar el logo, solo hacerlo más pequeño */
+    .sidebar-logo {
+        margin-bottom: 5px;
+    }
+
+    .sidebar-logo img {
+        width: 30px;
+    }
+
+    .sidebar-logo h2 {
+        font-size: 1rem;
+    }
+
+    .user-profile-card {
+        padding: 5px;
+        margin-bottom: 5px;
+    }
+
+    .main-menu {
+        gap: 2px;
+    }
+
+    .menu-item {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+}

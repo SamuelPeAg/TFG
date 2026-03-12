@@ -12,7 +12,7 @@ class RegisterController extends Controller
 {
      public function show()
     {
-        return view('login.signup.register');
+        return view('app');
     }
 
     /**
@@ -46,7 +46,16 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        // REDIRIGIR DESPUÉS DE REGISTRAR
+        // Si la petición viene de React (API/JSON)
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Cuenta creada con éxito',
+                'user' => $user,
+                'redirect' => '/' // O la ruta a la que quieras redirigir después de registrar
+            ]);
+        }
+
+        // REDIRIGIR DESPUÉS DE REGISTRAR (Formulario tradicional)
         return redirect('/');  // Cambia esto si quieres otra ruta
     }
 

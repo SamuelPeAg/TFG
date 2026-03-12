@@ -11,9 +11,12 @@ use Illuminate\Support\Facades\Password;
 
 class AuthPasswordController extends Controller
 {
-    public function forgotForm()
+    public function forgotForm(Request $request)
     {
-        return view('auth.forgot-password');
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Endpoint para formulario forgot-password']);
+        }
+        return view('app');
     }
 
     public function sendReset(Request $request)
@@ -22,12 +25,13 @@ class AuthPasswordController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        // Opcional: si quieres bloquear reset a no activados:
-        // if ($user && $user->activation_token) return back()->with('error', 'Primero activa tu cuenta desde el correo de registro.');
-
         if ($user) {
             $token = Password::createToken($user);
             Mail::to($user->email)->send(new ResetPasswordMail($user, $token));
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Si el correo existe, te hemos enviado un enlace para restablecer la contraseña.']);
         }
 
         return back()->with('status', 'Si el correo existe, te hemos enviado un enlace para restablecer la contraseña.');
@@ -35,10 +39,13 @@ class AuthPasswordController extends Controller
 
     public function resetForm(string $token, Request $request)
     {
-        return view('auth.reset-password', [
-            'token' => $token,
-            'email' => $request->query('email'),
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'token' => $token,
+                'email' => $request->query('email'),
+            ]);
+        }
+        return view('app');
     }
 
     public function updatePassword(Request $request)
@@ -60,6 +67,12 @@ class AuthPasswordController extends Controller
                 $user->save();
             }
         );
+
+        if ($request->wantsJson()) {
+            return $status === Password::PASSWORD_RESET
+                ? response()->json(['success' => true, 'message' => 'Contraseña actualizada. Ya puedes iniciar sesión.'])
+                : response()->json(['success' => false, 'message' => 'Token inválido o expirado.'], 400);
+        }
 
         return $status === Password::PASSWORD_RESET
             ? redirect()->route('login')->with('success', 'Contraseña actualizada. Ya puedes iniciar sesión.')

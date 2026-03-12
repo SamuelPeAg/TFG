@@ -20,37 +20,48 @@ class LoginController extends Controller
     public function login(Request $request)
     {
 
-         // Validación de las credenciales
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required', 'string'],
-    ], [
-        'email.required' => 'El correo electrónico es obligatorio.',
-        'email.email' => 'El correo electrónico no es válido.',
-        'password.required' => 'La contraseña es obligatoria.',
-    ]);
+        // Validación de las credenciales
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El correo electrónico no es válido.',
+            'password.required' => 'La contraseña es obligatoria.',
+        ]);
 
-    // Intentar autenticar usando el modelo User
-    if (Auth::attempt($credentials)) {
-        // Regenerar sesión para mayor seguridad
-        $request->session()->regenerate();
+        // Intentar autenticar usando el modelo User
+        if (Auth::attempt($credentials)) {
+            // Regenerar sesión para mayor seguridad
+            $request->session()->regenerate();
 
-        // Redirigir según rol o intención
-        $user = Auth::user();
-        
-        if ($user->hasRole('admin')) {
-            return redirect('/calendario');
-        } elseif ($user->hasRole('entrenador')) {
+            $user = Auth::user();
+            
+            // Si la petición viene de React (API/JSON)
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Login correcto',
+                    'user' => $user,
+                    'redirect' => '/calendario'
+                ]);
+            }
+
+            // Redirigir según rol (Formulario tradicional)
             return redirect('/calendario');
         }
 
-        return redirect('/calendario');
-    }
+        // Si falla la autenticación (React API)
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Las credenciales no son correctas.',
+                'errors' => ['email' => ['Las credenciales no son correctas.']]
+            ], 422);
+        }
 
-    // Si falla la autenticación
-    return back()->withErrors([
-        'email' => 'Las credenciales no son correctas.',
-    ])->onlyInput('email');
+        // Si falla la autenticación (Formulario tradicional)
+        return back()->withErrors([
+            'email' => 'Las credenciales no son correctas.',
+        ])->onlyInput('email');
     }
 
     /**

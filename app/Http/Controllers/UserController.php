@@ -134,9 +134,10 @@ class UserController extends Controller
     //Metodos de configuración
     public function configuracion(Request $request)
     {
-        return view('configuracion.configuracion', [
-            'user' => $request->user(),
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json(['user' => $request->user()]);
+        }
+        return view('app');
     }
 
     public function updateConfiguracion(Request $request)

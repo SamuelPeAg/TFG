@@ -8,11 +8,19 @@ use Illuminate\Http\Request;
 
 class CalendarioController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::role('cliente')->orderBy('name')->get();
-        $entrenadores = User::role('entrenador')->orderBy('name')->get();
-        $centros = \App\Models\Centro::all();
-        return view("calendario.index", compact('users', 'entrenadores', 'centros'));
+        if ($request->wantsJson()) {
+            $users = User::role('cliente')->orderBy('name')->get();
+            $entrenadores = User::role('entrenador')->orderBy('name')->get();
+            $centros = \App\Models\Centro::all();
+            return response()->json([
+                'users' => $users,
+                'entrenadores' => $entrenadores,
+                'centros' => $centros
+            ]);
+        }
+
+        return view('app');
     }
 }
