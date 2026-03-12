@@ -5,7 +5,7 @@ import { Outlet } from 'react-router-dom';
 
 export default function PublicLayout() {
     return (
-        <div className="w-full min-h-screen flex flex-col pt-20"> {/* pt-20 space for fixed Header */}
+        <div className="w-full min-h-screen flex flex-col pt-32 bg-white welcome-page"> {/* pt-32 space for fixed Header */}
             <Header />
             <main className="flex-grow flex flex-col">
                 <Outlet />

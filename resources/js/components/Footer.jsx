@@ -9,7 +9,7 @@ export default function Footer() {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-brandTeal/5 blur-[120px] rounded-full -z-10"></div>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-24">
-                    
+
                     {/* COL 1: BRAND */}
                     <div className="md:col-span-5">
                         <div className="flex items-center gap-3 mb-8">
@@ -23,12 +23,12 @@ export default function Footer() {
                         <p className="text-gray-400 text-lg leading-relaxed max-w-md">
                             La plataforma definitiva para centros de alto rendimiento que buscan automatizar su gestión y potenciar el rendimiento de sus usuarios.
                         </p>
-                        
+
                         <div className="flex gap-4 mt-8">
                             {['instagram', 'facebook', 'linkedin'].map(social => (
-                                <a 
-                                    key={social} 
-                                    href="#" 
+                                <a
+                                    key={social}
+                                    href="#"
                                     className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl hover:bg-brandTeal hover:text-white transition-all duration-300"
                                 >
                                     <i className={`fa-brands fa-${social}`}></i>
@@ -70,7 +70,7 @@ export default function Footer() {
                 </div>
 
                 {/* BOTTOM BAR */}
-                <div className="pt-16 border-t border-white/5 flex flex-col md:row items-center justify-between gap-8">
+                <div className="pt-16 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-8">
                     <p className="text-gray-500 text-sm font-medium">
                         &copy; {new Date().getFullYear()} Factomove System. Diseñado para la excelencia.
                     </p>

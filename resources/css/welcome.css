@@ -1,5 +1,5 @@
 /* =========================================
-   WELCOME PAGE PREMIUM STYLES
+   FACTOMOVE GLOBAL STYLES (Previously Welcome Page)
    ========================================= */
 
 @keyframes float {
@@ -8,6 +8,7 @@
     100% { transform: translateY(0px) rotate(0deg); }
 }
 
+/* GLOBAL RESET/BASE */
 .welcome-page {
     font-family: 'Inter', sans-serif !important;
     background: white !important;
@@ -16,22 +17,35 @@
     overflow-x: hidden;
 }
 
+/* GLOBAL CONTAINER */
+.container-custom {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 0 2rem !important;
+    width: 100% !important;
+}
+
+/* GLOBAL FOOTER STYLES */
+footer {
+    background: #0b1120 !important;
+    color: white !important;
+    padding: 8rem 0 4rem 0 !important;
+    width: 100% !important;
+}
+
 /* --- SECTION SPACING --- */
+section {
+    width: 100% !important;
+}
+
 .welcome-page section {
     padding-top: 12rem !important;
     padding-bottom: 12rem !important;
     display: block !important;
-    width: 100% !important;
-}
-
-.welcome-page .container-custom {
-    max-width: 1200px !important;
-    margin: 0 auto !important;
-    padding: 0 2rem !important;
 }
 
 /* --- HERO SECTION --- */
-.welcome-page .hero-title {
+.hero-title {
     font-size: clamp(3rem, 7vw, 5.5rem) !important;
     font-weight: 950 !important;
     line-height: 1 !important;
@@ -40,7 +54,7 @@
     color: #111;
 }
 
-.welcome-page .hero-subtitle {
+.hero-subtitle {
     font-size: 1.4rem !important;
     color: #4b5563 !important;
     line-height: 1.6 !important;
@@ -48,52 +62,45 @@
     max-width: 650px;
 }
 
-.welcome-page .hero-buttons {
+.hero-buttons {
     display: flex !important;
     gap: 1.5rem !important;
 }
 
 /* --- CARDS & GLASS --- */
-.welcome-page .glass-card {
+.glass-card {
     background: white !important;
     border: 1px solid #f3f4f6 !important;
     border-radius: 2.5rem !important;
     padding: 2.5rem !important;
-    box-shadow: 0 40px 80px -15px rgba(0,0,0,0.06) !important;
+    box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.06) !important;
 }
 
-.welcome-page .stat-card {
+.stat-card {
     background: #f9fafb !important;
     border-left: 10px solid #EF5D7A !important;
     padding: 2.5rem !important;
     border-radius: 2rem !important;
 }
 
-.welcome-page .advantage-box {
+.advantage-box {
     background: white !important;
     padding: 3rem 2rem !important;
     border-radius: 2.5rem !important;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.03) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.03) !important;
     border: 1px solid #f3f4f6 !important;
     text-align: center;
 }
 
-/* --- FOOTER --- */
-.welcome-page footer {
-    background: #0b1120 !important;
-    color: white !important;
-    padding: 8rem 0 4rem 0 !important;
-}
-
 /* --- GRADIENTS & MISC --- */
-.welcome-page .text-gradient {
+.text-gradient {
     background: linear-gradient(135deg, #4BB7AE 0%, #EF5D7A 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.welcome-page .small-caps-header {
+.small-caps-header {
     color: #4BB7AE !important;
     font-weight: 900 !important;
     text-transform: uppercase !important;
@@ -103,7 +110,7 @@
     font-size: 0.85rem !important;
 }
 
-.welcome-page .section-title {
+.section-title {
     font-size: clamp(2.5rem, 5vw, 4rem) !important;
     font-weight: 950 !important;
     letter-spacing: -0.15rem !important;
@@ -113,9 +120,9 @@
 }
 
 /* Excel Grid Background */
-.welcome-page.excel-grid {
+.excel-grid {
     background-size: 100px 100px;
-    background-image: 
+    background-image:
         linear-gradient(to right, #f8fafc 1px, transparent 1px),
         linear-gradient(to bottom, #f8fafc 1px, transparent 1px);
 }
