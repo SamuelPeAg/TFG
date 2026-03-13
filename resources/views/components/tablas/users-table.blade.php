@@ -8,6 +8,7 @@
                 <th>Email</th> 
                 <th>iban</th>
                 <th>Firma</th>
+                <th>Saldo</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -36,6 +37,18 @@
 
                 <td data-label="IBAN" style="font-family: monospace;">{{ $user->iban ?? '---' }}</td>
                 <td data-label="Firma" style="font-family: monospace;">{{ $user->firma_digital ?? 'No' }}</td>
+                <td data-label="Saldo">
+                    @if($user->suscripciones && $user->suscripciones->count() > 0)
+                        @foreach($user->suscripciones as $su)
+                            <div style="font-size: 11px; margin-bottom: 2px;">
+                                <span style="background: #4BB7AE; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">{{ $su->saldo_actual }}</span> 
+                                <span style="color: #64748b;">{{ $su->suscripcion->tipo_credito }}</span>
+                            </div>
+                        @endforeach
+                    @else
+                        <span style="color: #94a3b8; font-size: 12px; font-style: italic;">Sin saldo</span>
+                    @endif
+                </td>
 
                 <td data-label="Acciones">
                     <div class="action-buttons">
@@ -53,6 +66,18 @@
                             <i class="fas fa-pencil-alt"></i>
                         </button>
 
+                        {{-- SUSCRIPCIONES --}}
+                        <button
+                            type="button"
+                            class="btn-icon js-view-subscriptions"
+                            style="background-color: #4BB7AE; color: white;"
+                            data-id="{{ $user->id }}"
+                            data-name="{{ $user->name }}"
+                            title="Gestionar Suscripciones"
+                        >
+                            <i class="fas fa-ticket-alt"></i>
+                        </button>
+
                         {{-- ELIMINAR --}}
                         <button type="button" class="btn-icon btn-delete" 
                             onclick="abrirModalEliminarUsuario('{{ $user->id }}', '{{ $user->name }}')">
@@ -63,7 +88,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">
+                <td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">
                     No hay usuarios registrados aún.
                 </td>
             </tr>

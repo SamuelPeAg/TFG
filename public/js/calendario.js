@@ -836,14 +836,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getMaxClients(tipo) {
-        switch (tipo) {
-            case 'EP': return 1;
-            case 'DUO': return 2;
-            case 'TRIO': return 3;
-            case 'GRUPO_PRIVADO':
-            case 'GRUPO': return 6;
-            default: return 100;
-        }
+        if (!tipo) return 100;
+        const t = tipo.toLowerCase();
+        if (t === 'ep') return 1;
+        if (t === 'duo') return 2;
+        if (t === 'trio') return 3;
+        if (t.includes('grupo')) return 10;
+        return 100;
     }
 
     function renderListaClientes(query, selectedIds = [], maxLimit = 100) {

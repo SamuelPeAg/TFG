@@ -14,6 +14,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NominaEntrenadorController;
 use App\Http\Controllers\PagosController;
 use App\Http\Controllers\NominaAdminController;
+use App\Http\Controllers\SuscripcionController;
+use App\Http\Controllers\SuscripcionUsuarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -165,6 +167,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/nominas/{id}/pagar', [NominaAdminController::class, 'marcarPagado'])->name('admin.nominas.pagar');
         Route::delete('/admin/nominas/{id}', [NominaAdminController::class, 'destroy'])->name('admin.nominas.destroy');
         Route::get('/admin/nominas/calcular/{user_id}', [NominaAdminController::class, 'calcularNomina'])->name('admin.nominas.calcular');
+
+        // --- SISTEMA DE CRÉDITOS Y SUSCRIPCIONES ---
+        Route::resource('suscripciones', SuscripcionController::class);
+        Route::post('/suscripciones-usuarios', [SuscripcionUsuarioController::class, 'store'])->name('suscripciones-usuarios.store');
+        Route::put('/suscripciones-usuarios/{id}', [SuscripcionUsuarioController::class, 'update'])->name('suscripciones-usuarios.update');
+        Route::delete('/suscripciones-usuarios/{id}', [SuscripcionUsuarioController::class, 'destroy'])->name('suscripciones-usuarios.destroy');
+        Route::post('/suscripciones-usuarios/{id}/ajustar', [SuscripcionUsuarioController::class, 'ajustarSaldo'])->name('suscripciones-usuarios.ajustar');
     });
 
 });

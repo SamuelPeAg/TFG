@@ -31,4 +31,9 @@ class Clase extends Model
     {
         return $this->hasMany(HorarioClase::class, 'id_clase', 'id'); // FK 'id_clase'
     }
+
+    public function creditos()
+    {
+        return $this->hasMany(ClaseCredito::class, 'id_clase');
+    }
 }

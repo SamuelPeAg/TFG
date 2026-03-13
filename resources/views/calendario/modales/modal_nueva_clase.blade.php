@@ -96,11 +96,11 @@
                                      Let's use a nice styled SELECT first to avoid breaking changes, as requested professional structure. -->
                                 <div class="custom-select-wrapper">
                                     <select id="tipo_clase" name="tipo_clase" class="input-clean" required onchange="window.handleTipoChange()">
-                                        <option value="EP" selected>EP (Individual)</option>
-                                        <option value="DUO">DUO</option>
-                                        <option value="TRIO">TRIO</option>
-                                        <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
-                                        <option value="GRUPO">GRUPO</option>
+                                        <option value="ep" selected>EP (Personal)</option>
+                                        <option value="duo">Dúo</option>
+                                        <option value="trio">Trío</option>
+                                        <option value="Grupo especial">Grupo especial</option>
+                                        <option value="Grupo">Grupo</option>
                                     </select>
                                     <div class="select-icon"><i class="fa-solid fa-chevron-down"></i></div>
                                 </div>
