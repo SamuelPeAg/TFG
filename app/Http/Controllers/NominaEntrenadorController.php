@@ -29,18 +29,25 @@ class NominaEntrenadorController extends Controller
 
         $nominas = $query->orderBy('created_at', 'desc')->get();
 
-        return view('nominas_entrenador.nominas_e', compact('nominas', 'filtro'));
+        if ($request->wantsJson()) {
+            return response()->json([
+                'nominas' => $nominas,
+                'filtro' => $filtro
+            ]);
+        }
+
+        return view('app');
     }
 
     public function descargar($id)
     {
         $nomina = Nomina_entrenador::where('id', $id)
-                    ->where('user_id', Auth::id())
-                    ->firstOrFail();
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
 
         // Lógica de descarga (si existe archivo)
         // Si es auto-generada sin archivo, quizás generar PDF al vuelo o mostrar error
-        
+
         $ruta = $nomina->archivo_path ? public_path('storage/' . $nomina->archivo_path) : null;
 
         if ($ruta && file_exists($ruta)) {

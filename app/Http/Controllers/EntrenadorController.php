@@ -13,10 +13,15 @@ use Str;
 
 class EntrenadorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $entrenadores = User::role('entrenador')->get();
-        return view('entrenadores.index', compact('entrenadores'));
+
+        if ($request->wantsJson()) {
+            return response()->json(['entrenadores' => $entrenadores]);
+        }
+
+        return view('app');
     }
 
     public function store(Request $request)
@@ -46,6 +51,10 @@ class EntrenadorController extends Controller
 
         // Enviar el email con el enlace de activación
         Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.', 'entrenador' => $user]);
+        }
 
         return redirect()->route('entrenadores.index')->with('success', 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.');
     }
@@ -85,15 +94,23 @@ class EntrenadorController extends Controller
 
         $user->update($data);
 
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Datos del entrenador actualizados correctamente.', 'entrenador' => $user]);
+        }
+
         return redirect()->route('entrenadores.index')->with('success', 'Datos del entrenador actualizados correctamente.');
     }
 
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $user = User::role('entrenador')->whereKey($id)->firstOrFail();
 
         $user->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Entrenador eliminado correctamente.']);
+        }
 
         return redirect()->route('entrenadores.index');
     }
@@ -140,7 +157,7 @@ class EntrenadorController extends Controller
         ]);
 
         // Autologin del usuario tras activar la cuenta
-        Auth::login($user); 
+        Auth::login($user);
 
         return redirect()->route('calendario')->with('success', '¡Cuenta activada correctamente! Ya estás dentro de Factomove.');
     }

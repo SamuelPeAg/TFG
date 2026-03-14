@@ -239,7 +239,7 @@ class FacturacionController extends Controller
 
         $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email']);
 
-        return view('facturacion.facturas', [
+        $data = [
             'centros' => $centros,
             'entrenadores' => $entrenadores,
             'clientes' => $clientes,
@@ -254,7 +254,13 @@ class FacturacionController extends Controller
             'clienteId' => $clienteId,
             'anio' => $anio,
             'mes' => $mes,
-        ]);
+        ];
+
+        if ($request->wantsJson()) {
+            return response()->json($data);
+        }
+
+        return view('app');
     }
 
     // Devuelve las clases (reservas) que coinciden con cliente y/o entrenador

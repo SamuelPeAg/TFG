@@ -101,7 +101,7 @@ export default function Sidebar() {
                             <span>NÓMINAS ADMIN</span>
                         </NavLink>
                     ) : (
-                        <NavLink to="/nominas-e" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                        <NavLink to="/entrenador/nominas" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
                             <i className="fa-solid fa-money-bill"></i>
                             <span>NÓMINAS</span>
                         </NavLink>

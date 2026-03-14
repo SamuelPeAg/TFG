@@ -13,6 +13,8 @@ import Configuracion from './pages/Configuracion.jsx';
 import Pagos from './pages/Pagos.jsx';
 import Entrenadores from './pages/Entrenadores.jsx';
 import Clientes from './pages/Clientes.jsx';
+import NominasAdmin from './pages/NominasAdmin.jsx';
+import NominasEntrenador from './pages/NominasEntrenador.jsx';
 
 function App() {
     return (
@@ -36,6 +38,8 @@ function App() {
                 <Route path="/facturas" element={<Pagos />} />
                 <Route path="/entrenadores" element={<Entrenadores />} />
                 <Route path="/users" element={<Clientes />} />
+                <Route path="/admin/nominas" element={<NominasAdmin />} />
+                <Route path="/entrenador/nominas" element={<NominasEntrenador />} />
             </Route>
         </Routes>
     );
