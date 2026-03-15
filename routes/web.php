@@ -17,25 +17,32 @@ use App\Http\Controllers\NominaAdminController;
 
 /*
 |--------------------------------------------------------------------------
-| 1. RUTAS PÚBLICAS
+| 1. RUTAS PÚBLICAS (React)
 |--------------------------------------------------------------------------
 */
 
-// Home
+// Todas las rutas públicas van a la app de React
 Route::get('/', function () {
-    return view('welcome');
+    return view('app');
 })->name('welcome');
 
-// Legales
-Route::view('/aviso-legal', 'legal.notice')->name('legal.notice');
-Route::view('/politica-privacidad', 'legal.privacy')->name('privacy.policy');
-Route::view('/politica-cookies', 'legal.cookies')->name('cookies.policy');
+Route::get('/aviso-legal', function () {
+    return view('app');
+})->name('legal.notice');
+
+Route::get('/politica-privacidad', function () {
+    return view('app');
+})->name('privacy.policy');
+
+Route::get('/politica-cookies', function () {
+    return view('app');
+})->name('cookies.policy');
+
 Route::get('/contacto', function () {
-    $centros = \App\Models\Centro::all();
-    return view('contact', compact('centros'));
+    return view('app');
 })->name('contact');
 
-// Contacto (POST)
+// Contacto (POST) - Devuelve JSON para axios
 Route::post('/contacto/enviar', function (Request $request) {
     $validated = $request->validate([
         'name'    => 'required|string|max:255',
@@ -44,8 +51,11 @@ Route::post('/contacto/enviar', function (Request $request) {
         'message' => 'required|string|max:1000',
     ]);
 
-    return redirect()->route('contact')
-        ->with('success', '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.');
+    // Aquí iría la lógica de envío de email o guardar en BD
+    return response()->json([
+        'success' => true,
+        'message' => '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo pronto.'
+    ]);
 })->name('contact.send');
 
 // Activación entrenador
@@ -58,24 +68,32 @@ Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'c
 
 /*
 |--------------------------------------------------------------------------
-| 2. AUTENTICACIÓN (GUEST)
+| 2. AUTENTICACIÓN (GUEST) - REACT ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
-    // Login
+    // Login - GET devuelve React app, POST autentica
     Route::get('/login', function () {
-        return view('login.signup.login');
+        return view('app');
     })->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 
-    // Registro
-    Route::get('/register', [RegisterController::class, 'show'])->name('register');
+    // Registro - GET devuelve React app, POST registra
+    Route::get('/register', function () {
+        return view('app');
+    })->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
 
-    // Recuperación de Contraseña
-    Route::get('/forgot-password', [AuthPasswordController::class, 'forgotForm'])->name('password.request');
+    // Forgot Password - GET devuelve React app, POST envía email
+    Route::get('/forgot-password', function () {
+        return view('app');
+    })->name('password.request');
     Route::post('/forgot-password', [AuthPasswordController::class, 'sendReset'])->name('password.email');
-    Route::get('/reset-password/{token}', [AuthPasswordController::class, 'resetForm'])->name('password.reset');
+    
+    // Reset Password - GET devuelve React app (con email y token en URL), POST actualiza
+    Route::get('/reset-password', function () {
+        return view('app');
+    })->name('password.reset');
     Route::post('/reset-password', [AuthPasswordController::class, 'updatePassword'])->name('password.update');
 });
 

@@ -5,7 +5,44 @@ export default {
     "./resources/**/*.js",
     "./resources/**/*.vue",
   ],
-  darkMode: 'class', // <--- ESTO ES LO IMPORTANTE
+  darkMode: 'class',
+  safelist: [
+    // Brand colors
+    'bg-brandTeal',
+    'bg-brandCoral',
+    'bg-brandAqua',
+    'text-brandTeal',
+    'text-brandCoral',
+    'text-brandAqua',
+    'border-brandTeal',
+    'border-brandCoral',
+    'border-brandAqua',
+    // Gradient colors
+    'from-brandTeal',
+    'to-brandCoral',
+    'via-brandAqua',
+    // Text colors for badges
+    'text-white',
+    'text-gray-900',
+    // Hover states
+    'hover:text-brandTeal',
+    'hover:border-brandTeal',
+    'group-hover:text-brandTeal',
+    'hover:bg-brandTeal/10',
+    // Additional utilities
+    'bg-brandTeal/20',
+    'bg-brandCoral/20',
+    'bg-brandAqua/20',
+    'bg-brandTeal/10',
+    'bg-brandCoral/10',
+    // Sticky positioning
+    'self-start',
+    'sticky',
+    'top-24',
+    // Shadows
+    'shadow-brandTeal/30',
+    'shadow-brandCoral/30',
+  ],
   theme: {
     extend: {
       colors: {
@@ -19,5 +56,7 @@ export default {
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 }

@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --brand-teal: #4BB7AE;
+  --brand-coral: #EF5D7A;
+  --brand-aqua: #A5EFE2;
+  --dark-text: #2D3748;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: white;
+  color: #1f2937;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+html.dark body {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.4s ease;
+}
+
+.glass-card:hover {
+  background: white;
+  border-color: var(--brand-teal);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -10px rgba(0,0,0,0.05);
+}
+
+.stat-card {
+  background: white;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 30px -5px rgba(0,0,0,0.03);
+}
+
+.excel-grid {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(75, 183, 174, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(75, 183, 174, 0.03) 1px, transparent 1px);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #4BB7AE 0%, #EF5D7A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.floating-shape {
+  position: absolute;
+  z-index: 0;
+  filter: blur(100px);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.advantage-box {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.advantage-box:hover {
+  border-color: #f1f5f9;
+  background: #fcfdfe;
+}
+
+.btn-gradient {
+  background: linear-gradient(to right, #4BB7AE, #EF5D7A);
+}
