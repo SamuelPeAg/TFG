@@ -69,126 +69,16 @@
             <p class="mt-2 text-gray-500 dark:text-gray-400">Administra tu perfil y preferencias de la cuenta.</p>
         </div>
 
-        {{-- TARJETA PRINCIPAL DEL FORMULARIO --}}
-        <div class="w-full bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-            <div class="p-8">
-
-                {{-- Mensajes de alerta --}}
-                @if(session('success'))
-                    <div class="mb-6 p-4 rounded-2xl border border-green-200 bg-green-50 text-green-700 font-semibold">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="mb-6 p-4 rounded-2xl border border-red-200 bg-red-50 text-red-700">
-                        <ul class="list-disc ml-5 text-sm space-y-1">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                {{-- FORMULARIO --}}
-                <section class="max-w-4xl mx-auto space-y-8">
-                    <form method="POST" action="{{ route('configuracion.update') }}" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-
-                        {{-- SECCIÓN PERFIL --}}
-                        <div id="perfil" class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Perfil</h3>
-                            
-                            {{-- Foto de Perfil --}}
-                            <div class="mb-6 flex flex-col items-center sm:flex-row gap-6">
-                                <div class="relative group">
-                                    <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-                                        @if($user->foto_de_perfil)
-                                            <img id="preview-image" src="{{ asset('storage/' . $user->foto_de_perfil) }}" alt="Foto de perfil" class="w-full h-full object-cover">
-                                        @else
-                                            <div id="preview-placeholder" class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500">
-                                                <i class="fa-solid fa-user text-5xl"></i>
-                                            </div>
-                                            <img id="preview-image" src="#" alt="Previsualización" class="w-full h-full object-cover hidden">
-                                        @endif
-                                    </div>
-                                    <label for="foto_de_perfil" class="absolute bottom-0 right-0 bg-brandTeal text-white p-2 rounded-full shadow-lg cursor-pointer hover:bg-teal-600 transition-colors">
-                                        <i class="fa-solid fa-camera"></i>
-                                        <input type="file" name="foto_de_perfil" id="foto_de_perfil" class="hidden" accept="image/*" onchange="previewFile()">
-                                    </label>
-                                </div>
-                                <div class="text-center sm:text-left">
-                                    <h4 class="font-bold text-gray-900 dark:text-white">Foto de Perfil</h4>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sube una imagen de hasta 2MB.</p>
-                                </div>
-                            </div>
-
-                            <div class="grid gap-5">
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Nombre de Usuario</label>
-                                    <input type="text" name="name" value="{{ old('name', $user->name) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Email</label>
-                                    <input type="email" name="email" value="{{ old('email', $user->email) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none" readonly>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">IBAN</label>
-                                    <input type="text" name="iban" value="{{ old('iban', $user->iban) }}" placeholder="ES00 0000 0000 0000 0000 0000" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
-                                </div>
-                            </div>
-                        </div>
-                        {{-- SECCIÓN SEGURIDAD --}}
-                        <div id="seguridad" class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Seguridad</h3>
-                            <div class="grid gap-5">
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Contraseña Actual</label>
-                                    <input type="password" name="current_password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Nueva Contraseña</label>
-                                        <input type="password" name="password" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Confirmar Contraseña</label>
-                                        <input type="password" name="password_confirmation" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- SECCIÓN PREFERENCIAS --}}
-                        {{-- <div id="preferencias" class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 mb-8">
-                            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">Preferencias</h3> --}}
-                            
-                            {{-- Switch Modo Oscuro --}}
-                            {{-- <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600">
-                                <div class="flex items-center gap-3">
-                                    <div class="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-brandCoral dark:text-brandAqua">
-                                        <i id="theme-icon" class="fa-solid fa-moon"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-gray-800 dark:text-gray-200">Modo Oscuro</p>
-                                    </div>
-                                </div>
-                                <button type="button" id="theme-toggle" class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-300 dark:bg-brandTeal transition-colors">
-                                    <span id="theme-toggle-circle" class="translate-x-1 inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 dark:translate-x-6"></span>
-                                </button>
-                            </div>
-                        </div> --}}
-
-                        {{-- BOTONES DE ACCIÓN --}}
-                        <div class="flex justify-end gap-4 pt-4">
-                            <a href="{{ url()->previous() }}" class="px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition">Cancelar</a>
-                            <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-brandTeal to-brandCoral text-white font-bold shadow-lg hover:shadow-xl hover:brightness-110 transition">Guardar Cambios</button>
-                        </div>
-                    </form>
-                </section>
-            </div>
-        </div>
+        @viteReactRefresh
+        @vite(['resources/js/configuracion-react.jsx'])
+        <div 
+            id="react-configuracion-root"
+            data-user="{{ json_encode($user) }}"
+            data-update-route="{{ route('configuracion.update') }}"
+            data-csrf="{{ csrf_token() }}"
+            data-success="{{ session('success', '') }}"
+            data-errors="{{ json_encode($errors->all()) }}"
+        ></div>
     </main>
 
     {{-- Script Lógica Modo Oscuro --}}
