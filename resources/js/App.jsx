@@ -9,6 +9,8 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import Calendario from './pages/Calendario'
+import Clientes from './pages/Clientes'
 
 function App() {
   return (
@@ -27,6 +29,11 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      
+      {/* Ruta Calendario (Asegurada por auth middleware en backend) */}
+      <Route path="/calendario" element={<Calendario />} />
+      <Route path="/clientes" element={<Clientes />} />
+      <Route path="/users" element={<Clientes />} />
     </Routes>
   )
 }

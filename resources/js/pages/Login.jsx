@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 import axios from 'axios'
 
 export default function Login() {
@@ -32,9 +34,9 @@ export default function Login() {
 
     try {
       const response = await axios.post('/login', formData)
-      // Si el login es exitoso, redirigir al dashboard
-      if (response.status === 200) {
-        window.location.href = '/dashboard'
+      // Si el login es exitoso, redirigir al calendario (como indica Laravel)
+      if (response.status === 200 || response.status === 204) {
+        window.location.href = '/calendario'
       }
     } catch (err) {
       if (err.response?.data?.errors) {
@@ -50,7 +52,10 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-brandTeal/10 to-brandCoral/10 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="grow bg-gradient-to-br from-gray-50 via-brandTeal/10 to-brandCoral/10 flex flex-col justify-center py-20 mt-10 sm:px-6 lg:px-8">
 
       {/* Contenedor interior centrado */}
       <div className="sm:mx-auto w-full max-w-7xl">
@@ -63,7 +68,7 @@ export default function Login() {
             <div className="text-left space-y-6">
               <h1 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight">
                 Bienvenido a <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brandTeal to-brandCoral">
+                <span className="text-gray-900">
                   Factomove
                 </span>
               </h1>
@@ -222,6 +227,9 @@ export default function Login() {
 
         </div>
       </div>
+      </div>
+      
+      <Footer />
     </div>
   )
 }

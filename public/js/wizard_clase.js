@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+window.initWizardClase = () => {
     // State
     let currentStep = 1;
     let selectedClients = [];
@@ -322,4 +322,4 @@ document.addEventListener('DOMContentLoaded', () => {
             btnSubmit.disabled = false;
         }
     }
-});
+};

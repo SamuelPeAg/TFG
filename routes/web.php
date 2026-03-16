@@ -26,6 +26,23 @@ Route::get('/', function () {
     return view('app');
 })->name('welcome');
 
+// React handles its own auth routing natively via react-router
+Route::get('/login', function () {
+    return view('app');
+})->name('login');
+
+Route::get('/register', function () {
+    return view('app');
+})->name('register');
+
+Route::get('/forgot-password', function () {
+    return view('app');
+})->name('password.request');
+
+Route::get('/reset-password', function () {
+    return view('app');
+})->name('password.reset');
+
 Route::get('/aviso-legal', function () {
     return view('app');
 })->name('legal.notice');
@@ -72,28 +89,10 @@ Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'c
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
-    // Login - GET devuelve React app, POST autentica
-    Route::get('/login', function () {
-        return view('app');
-    })->name('login');
+    // API endpoints para autenticación (solo POST)
     Route::post('/login', [LoginController::class, 'login']);
-
-    // Registro - GET devuelve React app, POST registra
-    Route::get('/register', function () {
-        return view('app');
-    })->name('register');
     Route::post('/register', [RegisterController::class, 'store']);
-
-    // Forgot Password - GET devuelve React app, POST envía email
-    Route::get('/forgot-password', function () {
-        return view('app');
-    })->name('password.request');
     Route::post('/forgot-password', [AuthPasswordController::class, 'sendReset'])->name('password.email');
-    
-    // Reset Password - GET devuelve React app (con email y token en URL), POST actualiza
-    Route::get('/reset-password', function () {
-        return view('app');
-    })->name('password.reset');
     Route::post('/reset-password', [AuthPasswordController::class, 'updatePassword'])->name('password.update');
 });
 
@@ -111,6 +110,14 @@ Route::middleware('auth')->group(function () {
         request()->session()->regenerateToken();
         return redirect('/');
     })->name('logout');
+
+    // Logout via GET para forzar cierre de sesión manualmente en pruebas
+    Route::get('/logout-get', function () {
+        \Illuminate\Support\Facades\Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        return redirect('/');
+    });
 
     // --- NÓMINAS ENTRENADOR (Ruta Mixta/Entrenador) ---
     Route::get('/mis-nominas', [NominaEntrenadorController::class, 'index'])->name('nominas_e');
@@ -144,7 +151,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/facturas', [FacturacionController::class, 'index'])->name('facturas');
         Route::get('/facturas/clases', [FacturacionController::class, 'clases'])->name('facturas.clases');
 
-        // Usuarios (Resource)
+        // Usuarios (Resource & React view)
+        Route::get('/clientes', [UserController::class, 'index'])->name('clientes.index');
         Route::resource('users', UserController::class);
 
         // Configuración de Perfil

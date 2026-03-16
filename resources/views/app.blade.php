@@ -40,6 +40,17 @@
 
     <!-- Vite entry point -->
     @vite(['resources/css/app.css', 'resources/js/main.jsx'])
+
+    <script>
+      window.AppConfig = {
+        user: {!! json_encode(Auth::check() ? [
+          'id' => Auth::id(),
+          'name' => Auth::user()->name,
+          'role' => Auth::user()->hasRole('admin') ? 'admin' : (Auth::user()->hasRole('entrenador') ? 'entrenador' : 'cliente'),
+          'photo' => Auth::user()->foto_de_perfil ? asset('storage/' . Auth::user()->foto_de_perfil) : null
+        ] : null) !!}
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>

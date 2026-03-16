@@ -89,7 +89,7 @@
     window.IS_TRAINER = {{ Auth::check() && Auth::user()->hasRole('entrenador') ? 'true' : 'false' }};
   </script>
 
-  @vite('resources/js/app.js')
+  @vite(['resources/css/app.css', 'resources/js/main.jsx'])
 
   <script src="{{ asset('js/calendario.js') }}"></script>
   <script src="{{ asset('js/calendario-modal-logout.js') }}"></script>

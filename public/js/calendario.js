@@ -3,7 +3,7 @@
    (Refactorizado desde Pagos.js)
    ========================= */
 
-document.addEventListener('DOMContentLoaded', () => {
+window.initCalendarioVanilla = () => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     const calendarEl = document.getElementById('fullCalendarEl');
     const summaryEl = document.getElementById('calendar-summary');
@@ -890,4 +890,4 @@ document.addEventListener('DOMContentLoaded', () => {
             listContainer.appendChild(label);
         });
     }
-});
+};
