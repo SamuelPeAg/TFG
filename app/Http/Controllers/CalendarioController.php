@@ -11,7 +11,7 @@ class CalendarioController extends Controller
     public function index()
     {
         $users = User::role('cliente')->orderBy('name')->get();
-        $entrenadores = User::role('entrenador')->orderBy('name')->get();
+        $entrenadores = \App\Models\Entrenador::orderBy('nombre')->get();
         $centros = \App\Models\Centro::all();
         return view("calendario.index", compact('users', 'entrenadores', 'centros'));
     }

@@ -16,9 +16,10 @@ class Clase extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'duracion_minutos', 
+        'duracion_minutos',
         'nivel',
-        'id_centro', 
+        'id_centro',
+        'precio_hora',
     ];
 
     public function centro()

@@ -16,6 +16,7 @@ use App\Http\Controllers\PagosController;
 use App\Http\Controllers\NominaAdminController;
 use App\Http\Controllers\SuscripcionController;
 use App\Http\Controllers\SuscripcionUsuarioController;
+use App\Http\Controllers\ClienteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,9 +41,9 @@ Route::get('/contacto', function () {
 // Contacto (POST)
 Route::post('/contacto/enviar', function (Request $request) {
     $validated = $request->validate([
-        'name'    => 'required|string|max:255',
-        'email'   => 'required|email|max:255',
-        'phone'   => 'nullable|string|max:20',
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'phone' => 'nullable|string|max:20',
         'message' => 'required|string|max:1000',
     ]);
 
@@ -87,7 +88,7 @@ Route::middleware('guest')->group(function () {
 | 3. RUTAS PROTEGIDAS (AUTH)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web,entrenador')->group(function () {
 
     // Logout
     Route::post('/logout', function () {
@@ -95,6 +96,10 @@ Route::middleware('auth')->group(function () {
         request()->session()->regenerateToken();
         return redirect('/');
     })->name('logout');
+
+    // Configuración de Perfil (Acceso General)
+    Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
+    Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
 
     // --- NÓMINAS ENTRENADOR (Ruta Mixta/Entrenador) ---
     Route::get('/mis-nominas', [NominaEntrenadorController::class, 'index'])->name('nominas_e');
@@ -114,7 +119,7 @@ Route::middleware('auth')->group(function () {
 
         // Calendario (Vista principal)
         Route::get('/calendario', [CalendarioController::class, 'index'])
-            ->name('calendario'); // Revertido para evitar error RouteNotFoundException
+            ->name('calendario');
 
         // Gestión de Pagos / Clases (Acciones del Calendario)
         Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
@@ -130,15 +135,6 @@ Route::middleware('auth')->group(function () {
 
         // Usuarios (Resource)
         Route::resource('users', UserController::class);
-
-        // Configuración de Perfil
-        Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
-        Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
-
-        /* RUTAS DE GRUPOS (DESHABILITADAS TEMPORALMENTE)
-        Route::post('/users/crear-grupo', [UserController::class, 'storeGroup'])->name('users.group.store');
-        Route::delete('/users/grupos/{id}', [UserController::class, 'destroyGroup'])->name('users.group.destroy');
-        */
     });
 
     /*
@@ -152,13 +148,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('entrenadores', EntrenadorController::class);
 
         // Acciones Avanzadas de Pagos (Solo Admin)
-        Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos.index'); // Listado completo
+        Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos.index');
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
         Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
-
-        // Gestión entrenadores (solo admin)
-        // Gestión entrenadores (solo admin)
-        Route::resource('entrenadores', EntrenadorController::class);
 
         // --- NÓMINAS (Admin) ---
         Route::get('/admin/nominas', [NominaAdminController::class, 'index'])->name('admin.nominas');
@@ -174,6 +166,13 @@ Route::middleware('auth')->group(function () {
         Route::put('/suscripciones-usuarios/{id}', [SuscripcionUsuarioController::class, 'update'])->name('suscripciones-usuarios.update');
         Route::delete('/suscripciones-usuarios/{id}', [SuscripcionUsuarioController::class, 'destroy'])->name('suscripciones-usuarios.destroy');
         Route::post('/suscripciones-usuarios/{id}/ajustar', [SuscripcionUsuarioController::class, 'ajustarSaldo'])->name('suscripciones-usuarios.ajustar');
+    });
+
+    // --- RUTAS DE CLIENTE ---
+    Route::middleware([\App\Http\Middleware\CheckRole::class . ':cliente'])->group(function () {
+        Route::get('/mis-clases', [ClienteController::class, 'index'])->name('cliente.dashboard');
+        Route::post('/reservar-clase', [ClienteController::class, 'reservar'])->name('cliente.reservar');
+        Route::get('/api/clases', [ClienteController::class, 'apiClases'])->name('cliente.api.clases');
     });
 
 });

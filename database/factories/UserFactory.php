@@ -17,28 +17,12 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
-            'iban' => fake()->iban(),
-            'firma_digital' => 'firma_' . fake()->uuid(),
         ];
     }
 
     /**
      * Estados con roles Spatie
      */
-    public function admin(): static
-    {
-        return $this->afterCreating(function (User $user) {
-            $user->assignRole('admin');
-        });
-    }
-
-    public function entrenador(): static
-    {
-        return $this->afterCreating(function (User $user) {
-            $user->assignRole('entrenador');
-        });
-    }
-
     public function cliente(): static
     {
         return $this->afterCreating(function (User $user) {

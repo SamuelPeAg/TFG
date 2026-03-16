@@ -15,30 +15,34 @@ class RoleSeeder extends Seeder
         // Limpiar caché de permisos
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Crear roles básicos
-        Role::firstOrCreate(['name' => 'admin']);
-        Role::firstOrCreate(['name' => 'cliente']);
-        Role::firstOrCreate(['name' => 'entrenador']);
-        
-         $admin = User::firstOrCreate(
+        // Crear roles básicos para guard web
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'cliente', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'entrenador', 'guard_name' => 'web']);
+
+        // Crear roles para guard entrenador
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'entrenador']);
+        Role::firstOrCreate(['name' => 'entrenador', 'guard_name' => 'entrenador']);
+
+        $admin = \App\Models\Entrenador::firstOrCreate(
             ['email' => 'admin@factomove'],
             [
-                'name' => 'admin',
+                'nombre' => 'admin',
                 'password' => Hash::make('admin12345'),
             ]
         );
-        $adminjavi = User::firstOrCreate(
+        $adminjavi = \App\Models\Entrenador::firstOrCreate(
             ['email' => 'javier.ruiz@doc.medac.es'],
             [
-                'name' => 'javi',
+                'nombre' => 'javi',
                 'password' => Hash::make('password'),
             ]
         );
-        
-        $entrenador = User::firstOrCreate(
+
+        $entrenador = \App\Models\Entrenador::firstOrCreate(
             ['email' => 'entrenador@factomove'],
             [
-                'name' => 'entrenador',
+                'nombre' => 'entrenador',
                 'password' => Hash::make('entrenador'),
             ]
         );

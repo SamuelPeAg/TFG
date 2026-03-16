@@ -86,9 +86,7 @@ class FacturacionController extends Controller
 
         $centros = \App\Models\Centro::all();
 
-        $entrenadores = User::role('entrenador')
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $entrenadores = \App\Models\Entrenador::orderBy('nombre')->get(['id', 'nombre as name']);
 
         // Clientes (filas)
         $clientes = User::role('cliente')
@@ -235,7 +233,7 @@ class FacturacionController extends Controller
             }
         }
         $entrenadoresIdsConDatos = array_unique($entrenadoresIdsConDatos);
-        $entrenadores = User::whereIn('id', $entrenadoresIdsConDatos)->orderBy('name')->get(['id', 'name']);
+        $entrenadores = \App\Models\Entrenador::whereIn('id', $entrenadoresIdsConDatos)->orderBy('nombre')->get(['id', 'nombre as name']);
 
         $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email']);
 

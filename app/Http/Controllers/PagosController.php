@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pago;
 use App\Models\User;
+use App\Models\Entrenador;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,7 @@ class PagosController extends Controller
     public function index()
     {
         $users = User::role('cliente')->orderBy('name')->get();
-        $entrenadores = User::role('entrenador')->orderBy('name')->get();
+        $entrenadores = Entrenador::orderBy('nombre')->get();
         $centros = \App\Models\Centro::all();
         return view('Pagos.index', compact('users', 'entrenadores', 'centros'));
     }
@@ -143,7 +144,7 @@ class PagosController extends Controller
             'tipo_clase' => ['required', 'string', 'in:ep,duo,trio,Grupo,Grupo especial'],
             'fecha_hora' => ['required', 'date'],
             'trainers' => ['nullable', 'array'],
-            'trainers.*' => ['exists:users,id'],
+            'trainers.*' => ['exists:entrenadores,id'],
             'participants' => ['required', 'array', 'min:1'],
             'participants.*.user_id' => ['required', 'exists:users,id'],
             'participants.*.precio' => ['required', 'numeric', 'min:0'],
@@ -158,7 +159,7 @@ class PagosController extends Controller
         $firstTrainerId = !empty($trainers) ? $trainers[0] : null;
 
         foreach ($request->input('participants') as $pData) {
-            $user = User::findOrFail($pData['user_id']);
+            $user = Entrenador::findOrFail($pData['user_id']);
 
             if ($pData['metodo_pago'] === 'CREDITO') {
                 if (!$user->tieneCreditosPara($request->tipo_clase, $id_centro)) {
@@ -211,12 +212,16 @@ class PagosController extends Controller
             ->where('centro', $request->centro)
             ->get();
 
-        if ($pagos->isEmpty()) return response()->json(['error' => 'No encontrada'], 404);
+        if ($pagos->isEmpty())
+            return response()->json(['error' => 'No encontrada'], 404);
 
         foreach ($pagos as $pago) {
             if (!$pago->entrenadores()->where('user_id', $request->trainer_id)->exists()) {
                 $pago->entrenadores()->attach($request->trainer_id);
-                if (!$pago->entrenador_id) { $pago->entrenador_id = $request->trainer_id; $pago->save(); }
+                if (!$pago->entrenador_id) {
+                    $pago->entrenador_id = $request->trainer_id;
+                    $pago->save();
+                }
             }
         }
         return response()->json(['success' => true, 'trainers' => $this->_getTrainersForSession($pagos)]);
@@ -225,10 +230,12 @@ class PagosController extends Controller
     public function removeTrainerFromSession(Request $request)
     {
         $request->validate(['trainer_id' => 'required|exists:users,id', 'fecha_hora' => 'required|date', 'nombre_clase' => 'required|string', 'centro' => 'required|string']);
-        if (!$request->user()->hasRole('admin') && $request->user()->id != $request->trainer_id) return response()->json(['error' => 'No permiso'], 403);
+        if (!$request->user()->hasRole('admin') && $request->user()->id != $request->trainer_id)
+            return response()->json(['error' => 'No permiso'], 403);
         $fecha = Carbon::parse($request->fecha_hora);
         $pagos = Pago::where('fecha_registro', $fecha)->where('nombre_clase', $request->nombre_clase)->where('centro', $request->centro)->get();
-        if ($pagos->isEmpty()) return response()->json(['error' => 'No encontrada'], 404);
+        if ($pagos->isEmpty())
+            return response()->json(['error' => 'No encontrada'], 404);
 
         foreach ($pagos as $pago) {
             $pago->entrenadores()->detach($request->trainer_id);
@@ -244,24 +251,34 @@ class PagosController extends Controller
     public function addClientToSession(Request $request)
     {
         $request->validate(['user_id' => 'required|exists:users,id', 'fecha_hora' => 'required|date', 'nombre_clase' => 'required|string', 'centro' => 'required|string', 'metodo_pago' => 'nullable|in:TPV,EF,DD,CC,CREDITO']);
-        if (!$request->user()->hasRole('admin')) return response()->json(['error' => 'No permiso'], 403);
+        if (!$request->user()->hasRole('admin'))
+            return response()->json(['error' => 'No permiso'], 403);
         $fecha = Carbon::parse($request->fecha_hora);
         $existingPago = Pago::where('fecha_registro', $fecha)->where('nombre_clase', $request->nombre_clase)->where('centro', $request->centro)->first();
-        if (!$existingPago) return response()->json(['error' => 'No encontrada'], 404);
+        if (!$existingPago)
+            return response()->json(['error' => 'No encontrada'], 404);
 
         $metodo = $request->metodo_pago ?? $existingPago->metodo_pago;
-        $user = User::findOrFail($request->user_id);
+        $user = Entrenador::findOrFail($request->user_id);
         $centroObj = \App\Models\Centro::where('nombre', $request->centro)->first();
         $id_centro = $centroObj ? $centroObj->id : null;
 
         if ($metodo === 'CREDITO') {
-            if (!$user->tieneCreditosPara($existingPago->tipo_clase, $id_centro)) return response()->json(['error' => 'Sin créditos'], 422);
+            if (!$user->tieneCreditosPara($existingPago->tipo_clase, $id_centro))
+                return response()->json(['error' => 'Sin créditos'], 422);
             $user->descontarCredito($existingPago->tipo_clase, $id_centro);
         }
 
         $newPago = Pago::create([
-            'user_id' => $user->id, 'entrenador_id' => $existingPago->entrenador_id, 'iban' => $user->iban, 'importe' => $existingPago->importe,
-            'fecha_registro' => $fecha, 'centro' => $existingPago->centro, 'nombre_clase' => $existingPago->nombre_clase, 'tipo_clase' => $existingPago->tipo_clase, 'metodo_pago' => $metodo,
+            'user_id' => $user->id,
+            'entrenador_id' => $existingPago->entrenador_id,
+            'iban' => $user->iban,
+            'importe' => $existingPago->importe,
+            'fecha_registro' => $fecha,
+            'centro' => $existingPago->centro,
+            'nombre_clase' => $existingPago->nombre_clase,
+            'tipo_clase' => $existingPago->tipo_clase,
+            'metodo_pago' => $metodo,
         ]);
         $newPago->entrenadores()->sync($existingPago->entrenadores->pluck('id')->toArray());
         return response()->json(['success' => true, 'message' => 'Cliente añadido']);
@@ -270,7 +287,8 @@ class PagosController extends Controller
     public function removeClientFromSession(Request $request)
     {
         $request->validate(['user_id' => 'required|exists:users,id', 'fecha_hora' => 'required|date', 'nombre_clase' => 'required|string', 'centro' => 'required|string']);
-        if (!$request->user()->hasRole('admin')) return response()->json(['error' => 'No permiso'], 403);
+        if (!$request->user()->hasRole('admin'))
+            return response()->json(['error' => 'No permiso'], 403);
         $fecha = Carbon::parse($request->fecha_hora);
         Pago::where('fecha_registro', $fecha)->where('nombre_clase', $request->nombre_clase)->where('centro', $request->centro)->where('user_id', $request->user_id)->delete();
         return response()->json(['success' => true]);
@@ -282,7 +300,9 @@ class PagosController extends Controller
         $pagos->each->load('entrenadores');
         $pagos->each(function ($p) use ($entrenadores) {
             foreach ($p->entrenadores as $t) {
-                if (!$entrenadores->contains('id', $t->id)) { $entrenadores->push(['id' => $t->id, 'name' => $t->name, 'initial' => strtoupper(substr($t->name, 0, 1))]); }
+                if (!$entrenadores->contains('id', $t->id)) {
+                    $entrenadores->push(['id' => $t->id, 'name' => $t->name, 'initial' => strtoupper(substr($t->name, 0, 1))]);
+                }
             }
         });
         return $entrenadores->values();
@@ -293,7 +313,7 @@ class PagosController extends Controller
         $request->validate(['type' => 'required|in:user,trainer', 'id' => 'required|integer|exists:users,id', 'start' => 'required|date', 'end' => 'required|date|after_or_equal:start']);
         $pagos = Pago::with(['user', 'entrenadores'])->whereBetween('fecha_registro', [Carbon::parse($request->start)->startOfDay(), Carbon::parse($request->end)->endOfDay()])
             ->when($request->type === 'user', fn($q) => $q->where('user_id', $request->id))
-            ->when($request->type === 'trainer', fn($q) => $q->whereHas('entrenadores', fn($sq) => $sq->where('users.id', $request->id)))
+            ->when($request->type === 'trainer', fn($q) => $q->whereHas('entrenadores', fn($sq) => $sq->where('entrenadores.id', $request->id)))
             ->orderBy('fecha_registro', 'asc')->get();
 
         return response()->json([
@@ -306,7 +326,8 @@ class PagosController extends Controller
     public function deleteSession(Request $request)
     {
         $request->validate(['fecha_hora' => 'required|date', 'nombre_clase' => 'required|string', 'centro' => 'required|string']);
-        if (!$request->user()->hasRole('admin')) return response()->json(['error' => 'No permiso'], 403);
+        if (!$request->user()->hasRole('admin'))
+            return response()->json(['error' => 'No permiso'], 403);
         Pago::where('fecha_registro', Carbon::parse($request->fecha_hora))->where('nombre_clase', $request->nombre_clase)->where('centro', $request->centro)->delete();
         return response()->json(['success' => true]);
     }

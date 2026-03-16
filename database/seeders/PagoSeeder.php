@@ -5,19 +5,15 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Pago;
 use App\Models\User;
+use App\Models\Entrenador;
 use Carbon\Carbon;
 
 class PagoSeeder extends Seeder
 {
     public function run()
     {
-        // Obtener todos los entrenadores
-        $entrenadores = User::role('entrenador')->get();
-        // Obtener el admin (que a veces actúa como entrenador)
-        $admin = User::role('admin')->first();
-        
-        // Combina para tener una lista de posibles "profesores"
-        $profesores = $entrenadores->concat($admin ? collect([$admin]) : collect([]));
+        // Obtener todos los usuarios que son entrenadores o admins (usando el nuevo modelo)
+        $profesores = Entrenador::all();
 
         if ($profesores->isEmpty()) {
             return;
@@ -29,8 +25,10 @@ class PagoSeeder extends Seeder
         $clases = \App\Models\Clase::all();
 
         // Si no hay datos suficientes, creamos algunos básicos por si acaso
-        if ($centros->isEmpty()) return;
-        if ($clases->isEmpty()) return;
+        if ($centros->isEmpty())
+            return;
+        if ($clases->isEmpty())
+            return;
 
         foreach ($profesores as $profe) {
             // Mes actual
