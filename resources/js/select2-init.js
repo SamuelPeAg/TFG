@@ -76,6 +76,12 @@ function initializeSelect2() {
     const $select = $(this);
     const selectId = $select.attr('id') || $select.attr('name') || 'unnamed';
 
+    // Skip if has explicit opt-out or manual init class
+    if ($select.hasClass('select2-basic') || $select.hasClass('no-select2')) {
+      console.log(`Skipping manual/opt-out select: ${selectId}`);
+      return;
+    }
+
     // Skip if already initialized
     if ($select.hasClass('select2-hidden-accessible')) {
       console.log(`Select2 already initialized on: ${selectId}`);

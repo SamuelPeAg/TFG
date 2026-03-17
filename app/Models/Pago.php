@@ -21,6 +21,7 @@ class Pago extends Model
         'iban',
         'importe',
         'fecha_registro',
+        'recurrence_group',
     ];
 
     protected $casts = [

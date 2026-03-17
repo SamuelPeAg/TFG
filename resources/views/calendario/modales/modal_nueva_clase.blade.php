@@ -59,7 +59,7 @@
         </div>
 
         <!-- Form Content -->
-        <form id="formNuevaClaseWizard" onsubmit="return false;" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <form id="formNuevaClaseWizard" data-url="{{ route('Pagos.store') }}" onsubmit="return false;" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
             @csrf
             
             <!-- Scrollable Step Area -->
@@ -73,7 +73,7 @@
                          <!-- Centro -->
                          <div class="input-group-clean">
                             <label>Centro Deportivo</label>
-                            <select id="centro" name="centro" class="input-clean" required>
+                            <select id="centro" name="centro" class="input-clean select2-basic" style="width: 100%;" required>
                                 <option value="" disabled selected>Selecciona centro...</option>
                                 @foreach($centros as $centro)
                                     <option value="{{ $centro->nombre }}">{{ $centro->nombre }}</option>
@@ -90,21 +90,14 @@
                     <div style="margin-top: 24px;">
                         <div class="input-group-clean">
                             <label>Tipo de Sesión</label>
-                            <div class="select-cards-container">
-                                <!-- Custom Radio Cards structure controlled by JS or simple select. Stick to select for simplicity but styled better, or use cards if possible. 
-                                     To ensure compatibility with existing JS logic "window.handleTipoChange()", we keep the SELECT but hide it visually or style it? 
-                                     Let's use a nice styled SELECT first to avoid breaking changes, as requested professional structure. -->
-                                <div class="custom-select-wrapper">
-                                    <select id="tipo_clase" name="tipo_clase" class="input-clean" required onchange="window.handleTipoChange()">
-                                        <option value="ep" selected>EP (Personal)</option>
-                                        <option value="duo">Dúo</option>
-                                        <option value="trio">Trío</option>
-                                        <option value="Grupo especial">Grupo especial</option>
-                                        <option value="Grupo">Grupo</option>
-                                    </select>
-                                    <div class="select-icon"><i class="fa-solid fa-chevron-down"></i></div>
-                                </div>
-                            </div>
+                            <select id="tipo_clase" name="tipo_clase" class="input-clean select2-basic" style="width:100%" required onchange="window.handleTipoChange()">
+                                <option value="ep" selected>EP (Personal)</option>
+                                <option value="duo">Dúo</option>
+                                <option value="trio">Trío</option>
+                                <option value="privado">Privado</option>
+                                <option value="Grupo especial">Grupo especial</option>
+                                <option value="Grupo">Grupo</option>
+                            </select>
                         </div>
                     </div>
 
@@ -150,6 +143,21 @@
                         <div class="input-group-clean">
                              <label>Precio Base por Persona (€)</label>
                              <input id="precio_base" type="number" step="0.01" class="input-clean" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <!-- NUEVA SECCION: REPETICION -->
+                    <div style="margin-top: 24px; padding: 16px; background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 12px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 0;">
+                            <input type="checkbox" name="is_recurring" id="is_recurring" value="1" style="width: 18px; height: 18px; accent-color: #39c5a7;">
+                            <span style="font-weight: 700; color: #0f172a; font-size: 14px;">Repetir esta clase semanalmente</span>
+                        </label>
+                        <div id="recurrence_options" style="display: none; margin-top: 15px; border-top: 1px solid #ccfbf1; padding-top: 15px;">
+                            <div class="input-group-clean">
+                                <label style="font-size: 12px; color: #134e4a;">Repetir hasta el día:</label>
+                                <input type="date" name="recurrence_end" id="recurrence_end" class="input-clean" style="background: white;">
+                                <p style="font-size: 11px; color: #0d9488; margin-top: 5px;">Se crearán sesiones automáticas cada semana hasta esta fecha.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -383,5 +391,18 @@
             border-radius: 8px;
         }
     }
+
+    /* Select2 Modal Fix */
+    .select2-container--default .select2-selection--single {
+        height: 40px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        background-color: #f8fafc !important;
+        display: flex !important;
+        align-items: center !important;
+        outline: none !important;
+    }
+    .select2-container { z-index: 100000 !important; }
+    .select2-dropdown { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 100001 !important; }
   </style>
 </div>

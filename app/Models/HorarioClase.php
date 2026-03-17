@@ -39,4 +39,9 @@ class HorarioClase extends Model
     {
         return $this->belongsTo(Centro::class, 'centro_id');
     }
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class, 'id_horario_clase');
+    }
 }

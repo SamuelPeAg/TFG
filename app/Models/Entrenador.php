@@ -23,6 +23,19 @@ class Entrenador extends Authenticatable
         'iban',
     ];
 
+    /**
+     * Alias para 'nombre' para compatibilidad con vistas genéricas.
+     */
+    public function getNameAttribute()
+    {
+        return $this->nombre;
+    }
+
+    public function setNameAttribute($value)
+    {
+        $this->attributes['nombre'] = $value;
+    }
+
     protected $hidden = [
         'password',
         'remember_token',

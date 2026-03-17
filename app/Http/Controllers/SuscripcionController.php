@@ -12,7 +12,7 @@ class SuscripcionController extends Controller
     {
         $suscripciones = Suscripcion::with('centro')->get();
         $centros = Centro::all();
-        $tipos_permitidos = ['ep', 'duo', 'trio', 'Grupo', 'Grupo especial'];
+        $tipos_permitidos = ['ep', 'privado', 'duo', 'trio', 'especial', 'grupo'];
         return view('suscripciones.index', compact('suscripciones', 'centros', 'tipos_permitidos'));
     }
 
@@ -20,12 +20,12 @@ class SuscripcionController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
-            'tipo_credito' => 'required|in:ep,duo,trio,Grupo,Grupo especial',
+            'tipo_credito' => 'required|in:ep,privado,duo,trio,especial,grupo',
             'id_centro' => 'nullable|exists:centros,id',
             'creditos_por_periodo' => 'required|integer|min:1',
             'periodo' => 'required|in:semanal,mensual',
             'limite_acumulacion' => 'nullable|integer|min:0',
-            'meses_reset' => 'nullable|integer|min:1|max:12',
+            'meses_reset' => 'nullable|integer|min:0|max:12',
         ]);
 
         Suscripcion::create($validated);
@@ -37,12 +37,12 @@ class SuscripcionController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
-            'tipo_credito' => 'required|in:ep,duo,trio,Grupo,Grupo especial',
+            'tipo_credito' => 'required|in:ep,privado,duo,trio,especial,grupo',
             'id_centro' => 'nullable|exists:centros,id',
             'creditos_por_periodo' => 'required|integer|min:1',
             'periodo' => 'required|in:semanal,mensual',
             'limite_acumulacion' => 'nullable|integer|min:0',
-            'meses_reset' => 'nullable|integer|min:1|max:12',
+            'meses_reset' => 'nullable|integer|min:0|max:12',
         ]);
 
         $suscripcion->update($validated);

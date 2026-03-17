@@ -115,37 +115,72 @@ class ClienteController extends Controller
     /**
      * API para que FullCalendar obtenga las clases.
      */
-    public function apiClases()
+    public function apiClases(Request $request)
     {
         $startOfWeek = Carbon::now()->startOfWeek();
-        $endOfWeek = Carbon::now()->addWeeks(4)->endOfWeek(); // Próximas 4 semanas
+        $endOfWeek = Carbon::now()->addWeeks(4)->endOfWeek();
 
-        $clases = HorarioClase::with(['clase', 'entrenador'])
-            ->whereBetween('fecha_hora_inicio', [$startOfWeek, $endOfWeek])
-            ->get();
+        /** @var User $user */
+        $user = Auth::guard('web')->user() ?? Auth::guard('entrenador')->user();
+
+        $query = HorarioClase::with(['clase', 'entrenador', 'reservas.usuario'])
+            ->whereBetween('fecha_hora_inicio', [$startOfWeek, $endOfWeek]);
+
+        // Filtrado por tipo de clase (si se especifica en el frontend)
+        if ($request->has('tipo') && $request->tipo != 'all') {
+            $query->whereHas('clase', function($q) use ($request) {
+                $q->where('nombre', 'LIKE', '%' . $request->tipo . '%');
+            });
+        }
+
+        $clases = $query->get();
+
+        // Si el usuario quiere ver solo las compatibles con sus créditos
+        if ($request->boolean('compatible_only') && $user && method_exists($user, 'tieneCreditosPara')) {
+            $clases = $clases->filter(function ($h) use ($user) {
+                return $user->tieneCreditosPara($h->clase->nombre);
+            });
+        }
 
         $events = $clases->map(function ($h) {
-            $color = '#4BB7AE'; // Teal por defecto
-            if (str_contains($h->clase->nombre, 'EP'))
-                $color = '#EF5D7A'; // Coral para EP
-            if (str_contains($h->clase->nombre, 'Dúo'))
-                $color = '#A5EFE2';
+            $color = '#4BB7AE'; // Teal (General)
+            $nombreLower = strtolower($h->clase->nombre);
+            if (str_contains($nombreLower, 'ep') || str_contains($nombreLower, 'personal'))
+                $color = '#EF5D7A'; // Coral
+            elseif (str_contains($nombreLower, 'duo') || str_contains($nombreLower, 'dúo'))
+                $color = '#F6AD55'; // Orange
+            elseif (str_contains($nombreLower, 'trio') || str_contains($nombreLower, 'trío'))
+                $color = '#4FD1C5'; // Aqua
+            elseif (str_contains($nombreLower, 'privado'))
+                $color = '#9F7AEA'; // Purple
+
+            // Datos de los clientes inscritos
+            $clientesInscritos = $h->reservas->where('estado', 'confirmada')->map(function ($res) {
+                return [
+                    'nombre' => $res->usuario->name ?? $res->usuario->nombre,
+                    'foto' => $res->usuario->foto_de_perfil ? asset('storage/' . $res->usuario->foto_de_perfil) : null,
+                ];
+            })->values();
 
             return [
                 'id' => $h->id,
-                'title' => $h->clase->nombre . ' (' . $h->entrenador->nombre . ')',
+                'title' => $h->clase->nombre,
                 'start' => $h->fecha_hora_inicio->toIso8601String(),
                 'end' => $h->fecha_hora_inicio->addMinutes($h->clase->duracion_minutos)->toIso8601String(),
                 'backgroundColor' => $color,
                 'borderColor' => $color,
                 'extendedProps' => [
                     'entrenador' => $h->entrenador->nombre,
+                    'entrenador_foto' => $h->entrenador->foto_de_perfil ? asset('storage/' . $h->entrenador->foto_de_perfil) : null,
                     'clase' => $h->clase->nombre,
-                    'isFull' => (Reserva::where('id_horario_clase', $h->id)->where('estado', 'confirmada')->count() >= $h->capacidad)
+                    'ocupacion' => $clientesInscritos->count(),
+                    'capacidad' => $h->capacidad,
+                    'isFull' => $clientesInscritos->count() >= $h->capacidad,
+                    'clientes' => $clientesInscritos,
                 ]
             ];
         });
 
-        return response()->json($events);
+        return response()->json($events->values());
     }
 }

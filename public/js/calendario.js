@@ -108,6 +108,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const localISOTime = (new Date(dateObj.getTime() - offsetMs)).toISOString().slice(0, 16);
 
         if (inputFechaHora) inputFechaHora.value = localISOTime;
+        
+        // Re-init select2 for modal
+        if (typeof window.initWizardSelects === 'function') {
+            window.initWizardSelects();
+        }
     }
 
     // ====== 3. MOSTRAR DETALLES EVENTO (REDISEÑADO) ======

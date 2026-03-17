@@ -12,7 +12,38 @@
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 20px;
+        }
+        .modal-section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9CA3AF;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-section-title i {
+            color: #4BB7AE;
+        }
+        .info-box {
+            background: #F9FAFB;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            border: 1px solid #F3F4F6;
+            margin-bottom: 1.5rem;
+        }
+        .badge-tipo {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
         }
     </style>
 </head>
@@ -71,7 +102,11 @@
                             @forelse($suscripciones as $s)
                             <tr>
                                 <td>{{ $s->nombre }}</td>
-                                <td><span class="badge" style="background: #4BB7AE; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ $s->tipo_credito }}</span></td>
+                                <td>
+                                    <span class="badge-tipo" style="background: {{ str_contains(strtolower($s->tipo_credito), 'ep') ? '#EF5D7A' : '#4BB7AE' }}; color: white;">
+                                        {{ ucfirst($s->tipo_credito) }}
+                                    </span>
+                                </td>
                                 <td>{{ $s->centro ? $s->centro->nombre : 'Global' }}</td>
                                 <td>{{ $s->creditos_por_periodo }} / {{ $s->periodo }}</td>
                                 <td>{{ $s->limite_acumulacion ?: 'Sin límite' }}</td>
@@ -104,13 +139,20 @@
     <div id="modalSuscripcion" class="modal-overlay" style="display:none">
         <div class="modal-card">
             <button class="close-btn" onclick="cerrarModal()">&times;</button>
-            <div class="modal-header-custom">
-                <div class="logo-simulado"><i class="fas fa-ticket-alt"></i></div>
-                <h2 id="modalTitle">Nueva Suscripción</h2>
+            <div class="modal-header-custom p-8 text-center bg-gray-50/50">
+                <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                    <i class="fas fa-crown text-2xl text-brandTeal"></i>
+                </div>
+                <h2 id="modalTitle" class="text-2xl font-black text-gray-900">Nueva Suscripción</h2>
+                <p class="text-gray-500 text-sm mt-1">Configura las reglas de créditos para tus alumnos.</p>
             </div>
-            <form id="formSuscripcion" method="POST">
+            <form id="formSuscripcion" method="POST" class="p-8">
                 @csrf
                 <div id="methodField"></div>
+                
+                <div class="modal-section-title">
+                    <i class="fas fa-info-circle"></i> Información General
+                </div>
                 <div class="form-group">
                     <label class="form-label-custom">Nombre de la Suscripción</label>
                     <input type="text" name="nombre" id="s_nombre" class="form-control-custom" placeholder="Ej: Bono Mensual EP" required>
@@ -124,44 +166,59 @@
                                 <option value="{{ $tipo }}">{{ ucfirst($tipo) }}</option>
                             @endforeach
                         </select>
-                        <small>Jerarquía: EP > Dúo > Trío > G. Especial > Grupo</small>
+                        <small class="text-xs text-gray-400 block mt-1">Jerarquía: EP > Privado > Dúo > Trío > Especial > Grupo</small>
                     </div>
                     <div class="form-group">
-                        <label class="form-label-custom">Centro</label>
+                        <label class="form-label-custom">Centro asignado</label>
                         <select name="id_centro" id="s_id_centro" class="form-control-custom">
-                            <option value="">Global (Todos)</option>
+                            <option value="">Global (Válido para todos)</option>
                             @foreach($centros as $c)
                                 <option value="{{ $c->id }}">{{ $c->nombre }}</option>
                             @endforeach
                         </select>
                     </div>
                 </div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label-custom">Créditos a dar</label>
-                        <input type="number" name="creditos_por_periodo" id="s_creditos" class="form-control-custom" required min="1">
+                
+                <div class="bg-gray-50 p-4 rounded-2xl mb-4 border border-gray-100">
+                    <h4 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Ciclo de Créditos</h4>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label-custom">¿Cuántos créditos dar?</label>
+                            <input type="number" name="creditos_por_periodo" id="s_creditos" class="form-control-custom" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label-custom">¿Cuándo se entregan?</label>
+                            <select name="periodo" id="s_periodo" class="form-control-custom">
+                                <option value="semanal">Semanal (Cada Domingo noche)</option>
+                                <option value="mensual">Mensual (Día 1 de cada mes)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label-custom">Periodo de Recarga</label>
-                        <select name="periodo" id="s_periodo" class="form-control-custom">
-                            <option value="semanal">Semanal</option>
-                            <option value="mensual">Mensual</option>
-                        </select>
-                    </div>
+                </div>
+
+                <div class="modal-section-title mt-6">
+                    <i class="fas fa-clock-rotate-left"></i> Ahorro y Caducidad
                 </div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label-custom">Límite Acumulación</label>
+                        <label class="form-label-custom">Límite de Ahorro (Acumulación)</label>
                         <input type="number" name="limite_acumulacion" id="s_limite" class="form-control-custom" value="0">
-                        <small>0 = sin límite de ahorros</small>
+                        <small class="text-xs text-gray-400">Máximo de créditos que el usuario puede guardar (0 = sin límite).</small>
                     </div>
                     <div class="form-group">
-                        <label class="form-label-custom">Reset (Meses)</label>
-                        <input type="number" name="meses_reset" id="s_reset" class="form-control-custom" min="1" max="12">
-                        <small>Caducidad (Máx. 12 meses)</small>
+                        <label class="form-label-custom">Periodo de Caducidad</label>
+                        <select name="meses_reset" id="s_reset" class="form-control-custom">
+                            <option value="1">1 Mes (Solo el mes actual)</option>
+                            <option value="2">2 Meses</option>
+                            <option value="3">3 Meses</option>
+                            <option value="6">6 Meses</option>
+                            <option value="12">1 Año</option>
+                            <option value="0">Nunca caducan (Siempre se acumulan)</option>
+                        </select>
+                        <small class="text-xs text-gray-400">Tiempo máximo de validez de los créditos.</small>
                     </div>
                 </div>
-                <button type="submit" class="btn-facto">Guardar Configuración</button>
+                <button type="submit" class="btn-facto w-full">Guardar Configuración</button>
             </form>
         </div>
     </div>

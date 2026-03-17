@@ -17,6 +17,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceBaseInput = document.getElementById('precio_base');
     const tipoSelect = document.getElementById('tipo_clase');
 
+    // === Select2 Init ===
+    window.initWizardSelects = () => {
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+            $('.select2-basic').select2({
+                placeholder: "Selecciona una opción",
+                allowClear: true,
+                dropdownParent: $('#modalNuevaClase')
+            });
+        }
+    };
+
+    // Init on load
+    initWizardSelects();
+
+    // === Recurrence Toggle ===
+    const chkRecurring = document.getElementById('is_recurring');
+    const divRecurrence = document.getElementById('recurrence_options');
+    if (chkRecurring && divRecurrence) {
+        chkRecurring.addEventListener('change', () => {
+            divRecurrence.style.display = chkRecurring.checked ? 'block' : 'none';
+        });
+    }
+
     // Exposed Listeners
     window.handleTipoChange = () => {
         const tipo = tipoSelect.value;
@@ -93,17 +116,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (selectedClients.length >= max) {
             if (max === 1) {
-                selectedClients = [{ id, name }]; 
+                selectedClients = [{ id, name, is_standing: false }]; 
             } else {
                 alert(`El límite para ${tipo} es de ${max} alumnos.`);
                 return;
             }
         } else {
-            selectedClients.push({ id, name });
+            selectedClients.push({ id, name, is_standing: false });
         }
 
         renderSelectedClients();
     }
+
+    window.toggleStanding = (id) => {
+        const client = selectedClients.find(u => u.id === id);
+        if (client) {
+            client.is_standing = !client.is_standing;
+            renderSelectedClients();
+        }
+    };
 
     window.removeClient = (id) => {
         selectedClients = selectedClients.filter(u => u.id !== id);
@@ -113,7 +144,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUI();
 
     function changeStep(dir) {
-        if (dir === 1 && !validateStep(currentStep)) return;
+        console.log("Changing step from", currentStep, "direction", dir);
+        if (dir === 1 && !validateStep(currentStep)) {
+            console.warn("Validation failed for step", currentStep);
+            return;
+        }
         currentStep += dir;
         if (currentStep > 3) currentStep = 3;
         if (currentStep < 1) currentStep = 1;
@@ -144,8 +179,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!valid) return false;
 
         if (step === 2) {
-            if (selectedClients.length === 0) { alert("Por favor selecciona al menos un alumno."); return false; }
-            if (!priceBaseInput.value || parseFloat(priceBaseInput.value) < 0) { alert("Por favor ingresa un precio base válido."); return false; }
+            const tipo = tipoSelect.value;
+            // Solo es obligatorio para EP (Personal)
+            if (tipo === 'ep' && selectedClients.length === 0) { 
+                alert("Para sesiones EP es obligatorio seleccionar un alumno."); 
+                return false; 
+            }
+            if (!priceBaseInput.value || parseFloat(priceBaseInput.value) < 0) { 
+                alert("Por favor ingresa un precio base válido."); 
+                return false; 
+            }
         }
         return true;
     }
@@ -157,10 +200,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         clientListEl.innerHTML = selectedClients.map(u => `
-            <div class="client-chip" style="background:#f8fafc; border:1px solid #e2e8f0; padding:6px 10px; display:flex; align-items:center; gap:8px; border-radius:30px;">
+            <div class="client-chip ${u.is_standing ? 'standing-active' : ''}" style="background:#f8fafc; border:1px solid #e2e8f0; padding:6px 12px; display:flex; align-items:center; gap:8px; border-radius:30px; transition: all 0.2s;">
                 <div class="avatar-circle-sm" style="width:28px; height:28px; font-size:12px; background:linear-gradient(135deg, #39c5a7, #eb567a); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700;">${u.name.charAt(0)}</div>
-                <span style="font-size:13px; font-weight:600; color:#334155;">${u.name}</span>
-                <button type="button" onclick="window.removeClient(${u.id})" style="border:none; background:none; cursor:pointer; color:#94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-size:13px; font-weight:600; color:#334155;">${u.name}</span>
+                    ${u.is_standing ? '<span style="font-size:9px; color:#0d9488; font-weight:700;">RESERVA FIJA</span>' : ''}
+                </div>
+                <div style="margin-left:5px; display:flex; gap:10px;">
+                    <button type="button" onclick="window.toggleStanding(${u.id})" title="Convertir en alumno fijo" style="border:none; background:none; cursor:pointer; color:${u.is_standing ? '#39c5a7' : '#94a3b8'};"><i class="fa-solid fa-anchor"></i></button>
+                    <button type="button" onclick="window.removeClient(${u.id})" style="border:none; background:none; cursor:pointer; color:#94a3b8;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
             </div>
         `).join('');
     }
@@ -196,7 +245,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function submitWizard() {
-        if (!validateStep(3)) return;
+        console.log("Submitting wizard...");
+        if (!validateStep(3)) {
+            console.warn("Validation failed for step 3");
+            return;
+        }
         const formData = new FormData(form);
         const payload = {
             centro: formData.get('centro'),
@@ -204,31 +257,55 @@ document.addEventListener('DOMContentLoaded', () => {
             tipo_clase: formData.get('tipo_clase'),
             fecha_hora: formData.get('fecha_hora'),
             trainers: formData.getAll('trainers[]'),
+            is_recurring: !!formData.get('is_recurring'),
+            recurrence_end: formData.get('recurrence_end'),
             participants: []
         };
+        console.log("Payload draft:", payload);
         selectedClients.forEach((u, idx) => {
             const precio = document.querySelector(`input[name="participants[${idx}][precio]"]`)?.value;
             const metodo = document.querySelector(`select[name="participants[${idx}][metodo_pago]"]`)?.value;
-            payload.participants.push({ user_id: u.id, precio: parseFloat(precio || 0), metodo_pago: metodo });
+            payload.participants.push({ 
+                user_id: u.id, 
+                precio: parseFloat(precio || 0), 
+                metodo_pago: metodo,
+                is_standing: u.is_standing
+            });
         });
 
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const url = form.dataset.url || '/Pagos';
             btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
             btnSubmit.disabled = true;
 
-            const res = await fetch('/Pagos', {
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 body: JSON.stringify(payload)
             });
-            const data = await res.json();
+
+            const text = await res.text();
+            let data = {};
+            try { data = JSON.parse(text); } catch(e) { console.error("Invalid JSON:", text); }
+
             if (res.ok && data.success) {
                 document.getElementById('modalNuevaClase').classList.remove('active');
                 if (window.calendar) window.calendar.refetchEvents(); else window.location.reload();
                 form.reset(); currentStep = 1; selectedClients = []; updateUI();
-            } else { alert(data.message || "Error al guardar"); }
-        } catch (e) { alert("Error de conexión"); }
+            } else { 
+                console.error("Server Response:", res.status, data);
+                if (data.errors) {
+                    const firstErr = Object.values(data.errors)[0][0];
+                    alert("Error de validación: " + firstErr);
+                } else {
+                    alert(data.message || data.error || "Error al guardar (Status: " + res.status + ")"); 
+                }
+            }
+        } catch (e) { 
+            console.error("Submission error:", e);
+            alert("Error de conexión o error interno del servidor."); 
+        }
         btnSubmit.innerHTML = 'CONFIRMAR Y GUARDAR';
         btnSubmit.disabled = false;
     }

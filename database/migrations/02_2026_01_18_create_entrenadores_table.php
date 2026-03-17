@@ -4,10 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    /**
-     * Run the migrations.
-     */
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('entrenadores', function (Blueprint $table) {
@@ -15,18 +13,16 @@ return new class extends Migration {
             $table->string('nombre');
             $table->string('email')->unique();
             $table->string('password');
-            $table->rememberToken();
             $table->string('activation_token', 60)->nullable()->unique();
             $table->string('foto_de_perfil')->nullable();
-            $table->string('iban')->nullable()->unique();
+            $table->string('iban')->nullable();
+            $table->decimal('precio_hora', 8, 2)->default(0)->nullable();
+            $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('entrenadores');

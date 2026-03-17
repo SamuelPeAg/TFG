@@ -9,7 +9,10 @@
   <link rel="stylesheet" href="{{ asset('css/global.css') }}">
   <link rel="stylesheet" href="{{ asset('css/calendario.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 </head>
 
@@ -36,7 +39,7 @@
             <div class="search-box" style="flex: 1;">
               <i class="fa-solid fa-house-medical"></i>
               <div class="search-anchor">
-                <select id="filter-center" class="modern-select-no-border" style="width: 100%; border: none; outline: none; background: transparent; cursor: pointer; color: #374151; font-size: 14px;">
+                <select id="filter-center" class="modern-select-no-border no-select2" style="width: 100%; border: none; outline: none; background: transparent; cursor: pointer; color: #374151; font-size: 14px;">
                   <option value="">Todos los centros</option>
                   @foreach($centros as $centro)
                     <option value="{{ $centro->nombre }}">{{ $centro->nombre }}</option>
@@ -92,6 +95,7 @@
   @vite('resources/js/app.js')
 
   <script src="{{ asset('js/calendario.js') }}"></script>
+  <script src="{{ asset('js/wizard_clase.js') }}"></script>
   <script src="{{ asset('js/calendario-modal-logout.js') }}"></script>
 </body>
 </html>

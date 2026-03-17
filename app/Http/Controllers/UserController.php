@@ -134,48 +134,50 @@ class UserController extends Controller
     //Metodos de configuración
     public function configuracion(Request $request)
     {
+        $user = $request->user();
         return view('configuracion.configuracion', [
-            'user' => $request->user(),
+            'user' => $user,
         ]);
     }
 
     public function updateConfiguracion(Request $request)
     {
         $user = $request->user();
+        
+        // Detectar tabla para la validación de campos únicos (iban)
+        $isEntrenador = ($user instanceof \App\Models\Entrenador);
+        $tableName = $isEntrenador ? 'entrenadores' : 'users';
 
         $validated = $request->validate([
             'name'  => ['required', 'string', 'min:3', 'max:50'],
-
             'iban' => [
                 'nullable', 
                 'string', 
-                'string', 
                 'min:8', 
                 'max:34',
-                Rule::unique('users', 'iban')->ignore($user->id)
+                Rule::unique($tableName, 'iban')->ignore($user->id)
             ],
-            'foto_de_perfil' => ['nullable', 'image', 'max:2048'], // Validar imagen (max 2MB)
-            'firma_digital' => ['nullable', 'string', 'max:255'],
-
+            'foto_de_perfil' => ['nullable', 'image', 'max:2048'],
             'current_password' => ['nullable', 'string'],
             'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
         ], $this->validationMessages());
 
         $data = [
             'name' => $validated['name'],
-            'iban' => $validated['iban'] ?? $user->iban,
-            'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
             'email' => $user->email,
         ];
 
+        // Solo añadir iban y firma_digital si existen en el modelo (evitar error en User si no los tiene)
+        if ($isEntrenador || \Schema::hasColumn('users', 'iban')) {
+             $data['iban'] = $validated['iban'] ?? $user->iban;
+        }
+        
+        if (!$isEntrenador && \Schema::hasColumn('users', 'firma_digital')) {
+             $data['firma_digital'] = $request->input('firma_digital') ?? $user->firma_digital;
+        }
+
         // Manejo de la subida de la imagen
         if ($request->hasFile('foto_de_perfil')) {
-            // Eliminar imagen anterior si existe (opcional, buena práctica)
-            /* if ($user->foto_de_perfil && \Storage::disk('public')->exists($user->foto_de_perfil)) {
-                \Storage::disk('public')->delete($user->foto_de_perfil);
-            } */
-            
-            // Guardar nueva imagen en 'profile-photos' dentro del disco 'public'
             $path = $request->file('foto_de_perfil')->store('profile-photos', 'public');
             $data['foto_de_perfil'] = $path;
         }
