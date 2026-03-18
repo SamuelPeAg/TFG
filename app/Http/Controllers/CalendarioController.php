@@ -12,7 +12,7 @@ class CalendarioController extends Controller
     {
         $users = User::role('cliente')->orderBy('name')->get();
         $entrenadores = \App\Models\Entrenador::orderBy('nombre')->get();
-        $centros = \App\Models\Centro::all();
+        $centros = \App\Models\Centro::all()->unique('nombre');
         return view("calendario.index", compact('users', 'entrenadores', 'centros'));
     }
 }

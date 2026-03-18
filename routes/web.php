@@ -24,6 +24,11 @@ use App\Http\Controllers\ClienteController;
 |--------------------------------------------------------------------------
 */
 
+// Ruta para renovar token CSRF desde el login
+Route::get('/csrf-token', function () {
+    return response()->json(['token' => csrf_token()]);
+})->name('csrf-token');
+
 // Home
 Route::get('/', function () {
     return view('welcome');
@@ -172,6 +177,7 @@ Route::middleware('auth:web,entrenador')->group(function () {
     Route::middleware([\App\Http\Middleware\CheckRole::class . ':cliente'])->group(function () {
         Route::get('/mis-clases', [ClienteController::class, 'index'])->name('cliente.dashboard');
         Route::post('/reservar-clase', [ClienteController::class, 'reservar'])->name('cliente.reservar');
+        Route::post('/abandonar-clase', [ClienteController::class, 'abandonar'])->name('cliente.abandonar');
         Route::get('/api/clases', [ClienteController::class, 'apiClases'])->name('cliente.api.clases');
     });
 

@@ -9,6 +9,8 @@ use App\Models\StandingReservation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PagosController extends Controller
 {
@@ -22,6 +24,7 @@ class PagosController extends Controller
 
     public function buscarPorUsuario(Request $request)
     {
+        \Log::info('PagosController@buscarPorUsuario reached', $request->all());
         $nombre = trim((string) $request->input('q', ''));
         $centro = $request->input('centro');
         $start = $request->input('start');
@@ -145,8 +148,10 @@ class PagosController extends Controller
     {
         \Log::info('PagosController@store reached', $request->all());
         try {
-            $request->validate([
-            'centro' => ['required', 'string'],
+        $request->validate([
+            'centros' => ['nullable', 'array'],
+            'centros.*' => ['string'],
+            'centro' => ['nullable', 'string'],
             'nombre_clase' => ['required', 'string', 'max:120'],
             'tipo_clase' => ['required', 'string', 'in:ep,duo,trio,Grupo,Grupo especial,privado'],
             'fecha_hora' => ['required', 'date'],
@@ -157,109 +162,110 @@ class PagosController extends Controller
             'participants.*.precio' => ['required', 'numeric', 'min:0'],
             'participants.*.metodo_pago' => ['required', 'in:TPV,EF,DD,CC,CREDITO'],
             'is_recurring' => ['nullable', 'boolean'],
-            'recurrence_end' => ['nullable', 'date', 'after:fecha_hora'],
+            'recurrence_end' => ['nullable', 'required_if:is_recurring,true', 'date', 'after_or_equal:fecha_hora'],
         ]);
 
-        $centroObj = \App\Models\Centro::where('nombre', $request->centro)->first();
-        $id_centro = $centroObj ? $centroObj->id : null;
+        $centros = $request->input('centros', []);
+        if (empty($centros) && $request->input('centro')) {
+            $centros = [$request->input('centro')];
+        }
+
+        if (empty($centros)) {
+            return response()->json(['success' => false, 'message' => 'Debes seleccionar al menos un centro.'], 422);
+        }
 
         $fechaInicio = Carbon::parse($request->input('fecha_hora'));
         $trainers = $request->input('trainers', []);
         $firstTrainerId = !empty($trainers) ? $trainers[0] : null;
 
         $isRecurring = $request->boolean('is_recurring');
-        $recurrenceEnd = $isRecurring && $request->recurrence_end ? Carbon::parse($request->recurrence_end) : $fechaInicio;
+        $recurrenceEnd = $isRecurring && $request->input('recurrence_end') ? Carbon::parse($request->input('recurrence_end'))->endOfDay() : $fechaInicio;
         $recurrenceGroup = $isRecurring ? (string) Str::uuid() : null;
 
-        $currentDate = $fechaInicio->copy();
-        $sessionsCreated = 0;
+        $totalSessionsCreated = 0;
 
-        while ($currentDate <= $recurrenceEnd) {
-            $participants = $request->input('participants', []);
-            
-            // Si no hay participantes, creamos un registro "placeholder" (null user) 
-            // para que aparezca en el calendario.
-            if (empty($participants)) {
-                $placeholder = Pago::create([
-                    'user_id' => null,
-                    'entrenador_id' => $firstTrainerId,
-                    'centro' => $request->input('centro'),
-                    'nombre_clase' => $request->input('nombre_clase'),
-                    'tipo_clase' => $request->input('tipo_clase'),
-                    'metodo_pago' => 'EF',
-                    'importe' => 0,
-                    'fecha_registro' => $currentDate,
-                    'recurrence_group' => $recurrenceGroup,
-                ]);
-                if (!empty($trainers)) $placeholder->entrenadores()->sync($trainers);
-            } else {
-                foreach ($participants as $pData) {
-                    $user = User::findOrFail($pData['user_id']); // FIX: Use User not Entrenador
+        foreach ($centros as $centroNombre) {
+            $centroObj = \App\Models\Centro::where('nombre', $centroNombre)->first();
+            $id_centro = $centroObj ? $centroObj->id : null;
 
-                    // Solo descontar crédito en la PRIMERA sesión si es recurrente (o en todas?)
-                    // El usuario dijo "cada domingo le de credits", así que para las futuras 
-                    // lo mejor es que se gestionen luego o se cree la reserva sin pago aún?
-                    // Por ahora, para simplificar y cumplir con lo que hay, deducimos crédito si es la primera sesión.
-                    // Para las futuras, si no tiene créditos, fallaría. 
-                    // MEJOR: Las futuras sesiones recurrentes se crean como "PENDIENTE" o se crean solo si hay crédito.
-                    // Pero para Standing Reservas, el comando automático se encargará.
-                    
-                    if ($pData['metodo_pago'] === 'CREDITO') {
-                        if (!$user->tieneCreditosPara($request->tipo_clase, $id_centro)) {
-                            // Si es la primera sesión, devolvemos error. Si es una futura recurrente, 
-                            // tal vez simplemente no creamos ese pago individual pero dejamos el resto.
-                            if ($currentDate->equalTo($fechaInicio)) {
-                                return response()->json([
-                                    'success' => false,
-                                    'message' => "El usuario {$user->name} no tiene créditos suficientes para: {$request->tipo_clase}"
-                                ], 422);
-                            }
-                        } else {
-                            $user->descontarCredito($request->tipo_clase, $id_centro);
-                        }
-                    }
+            $currentDate = $fechaInicio->copy();
+            $sessionsCreatedForCenter = 0;
 
-                    $pago = Pago::create([
-                        'user_id' => $user->id,
+            while ($currentDate <= $recurrenceEnd) {
+                $participants = $request->input('participants', []);
+                
+                if (empty($participants)) {
+                    $placeholder = Pago::create([
+                        'user_id' => null,
                         'entrenador_id' => $firstTrainerId,
-                        'iban' => $user->iban ?? '',
-                        'importe' => $pData['precio'],
-                        'fecha_registro' => $currentDate,
-                        'centro' => $request->input('centro'),
+                        'centro' => $centroNombre,
                         'nombre_clase' => $request->input('nombre_clase'),
                         'tipo_clase' => $request->input('tipo_clase'),
-                        'metodo_pago' => $pData['metodo_pago'],
+                        'metodo_pago' => 'EF',
+                        'importe' => 0,
+                        'fecha_registro' => $currentDate,
                         'recurrence_group' => $recurrenceGroup,
                     ]);
+                    if (!empty($trainers)) $placeholder->entrenadores()->sync($trainers);
+                } else {
+                    foreach ($participants as $pData) {
+                        $user = User::findOrFail($pData['user_id']);
 
-                    if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
+                        if ($pData['metodo_pago'] === 'CREDITO') {
+                            if (!$user->tieneCreditosPara($request->tipo_clase, $id_centro)) {
+                                if ($currentDate->equalTo($fechaInicio)) {
+                                    return response()->json([
+                                        'success' => false,
+                                        'message' => "El usuario {$user->name} no tiene créditos suficientes para: {$request->tipo_clase} en {$centroNombre}"
+                                    ], 422);
+                                }
+                            } else {
+                                $user->descontarCredito($request->tipo_clase, $id_centro);
+                            }
+                        }
 
-                    // Guardar Standing Reservation si se marcó (en la primera iteración)
-                    if ($currentDate->equalTo($fechaInicio) && ($pData['is_standing'] ?? false)) {
-                        StandingReservation::updateOrCreate(
-                            [
-                                'user_id' => $user->id,
-                                'dia_semana' => $currentDate->dayOfWeek,
-                                'hora_inicio' => $currentDate->format('H:i:s'),
-                                'centro' => $request->input('centro')
-                            ],
-                            [
-                                'nombre_clase' => $request->input('nombre_clase'),
-                                'tipo_clase' => $request->input('tipo_clase'),
-                                'precio' => $pData['precio'],
-                                'metodo_pago' => $pData['metodo_pago'],
-                            ]
-                        );
+                        $pago = Pago::create([
+                            'user_id' => $user->id,
+                            'entrenador_id' => $firstTrainerId,
+                            'iban' => $user->iban ?? '',
+                            'importe' => $pData['precio'],
+                            'fecha_registro' => $currentDate,
+                            'centro' => $centroNombre,
+                            'nombre_clase' => $request->input('nombre_clase'),
+                            'tipo_clase' => $request->input('tipo_clase'),
+                            'metodo_pago' => $pData['metodo_pago'],
+                            'recurrence_group' => $recurrenceGroup,
+                        ]);
+
+                        if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
+
+                        if ($currentDate->equalTo($fechaInicio) && ($pData['is_standing'] ?? false)) {
+                            StandingReservation::updateOrCreate(
+                                [
+                                    'user_id' => $user->id,
+                                    'dia_semana' => $currentDate->dayOfWeek,
+                                    'hora_inicio' => $currentDate->format('H:i:s'),
+                                    'centro' => $centroNombre
+                                ],
+                                [
+                                    'nombre_clase' => $request->input('nombre_clase'),
+                                    'tipo_clase' => $request->input('tipo_clase'),
+                                    'precio' => $pData['precio'],
+                                    'metodo_pago' => $pData['metodo_pago'],
+                                ]
+                            );
+                        }
                     }
                 }
-            }
 
-            $currentDate->addWeek();
-            $sessionsCreated++;
-            if (!$isRecurring || $sessionsCreated > 52) break; // Límite seguridad 1 año
+                $currentDate->addWeek();
+                $sessionsCreatedForCenter++;
+                $totalSessionsCreated++;
+                if (!$isRecurring || $sessionsCreatedForCenter > 52) break;
+            }
         }
 
-        return response()->json(['success' => true, 'message' => 'Clase creada exitosamente' . ($isRecurring ? " ($sessionsCreated sesiones)" : "")]);
+        return response()->json(['success' => true, 'message' => 'Clase creada exitosamente' . ($isRecurring ? " ($totalSessionsCreated sesiones en total)" : "")]);
 
     } catch (\Exception $e) {
         \Log::error('Error in PagosController@store: ' . $e->getMessage(), [
@@ -369,9 +375,7 @@ public function addTrainerToSession(Request $request)
     public function removeClientFromSession(Request $request)
     {
         $request->validate(['user_id' => 'required|exists:users,id', 'fecha_hora' => 'required|date', 'nombre_clase' => 'required|string', 'centro' => 'required|string']);
-        if (!$request->user()->hasRole('admin'))
-            return response()->json(['error' => 'No permiso'], 403);
-            
+        
         $fecha = Carbon::parse($request->fecha_hora);
         $pago = Pago::where('fecha_registro', $fecha)
             ->where('nombre_clase', $request->nombre_clase)
@@ -380,17 +384,12 @@ public function addTrainerToSession(Request $request)
             ->first();
 
         if ($pago) {
-            // Lógica de reembolso: 20 horas de margen
+            // Si el admin borra al cliente, siempre reembolsamos si es crédito
             if ($pago->metodo_pago === 'CREDITO') {
-                $ahora = Carbon::now();
-                $diffHoras = $ahora->diffInHours($fecha, false);
-                
-                if ($diffHoras >= 20) {
-                    $user = User::find($pago->user_id);
-                    if ($user) {
-                        $centroObj = \App\Models\Centro::where('nombre', $pago->centro)->first();
-                        $user->reembolsarCredito($pago->tipo_clase, $centroObj ? $centroObj->id : null);
-                    }
+                $user = User::find($pago->user_id);
+                if ($user) {
+                    $centroObj = \App\Models\Centro::where('nombre', $pago->centro)->first();
+                    $user->reembolsarCredito($pago->tipo_clase, $centroObj ? $centroObj->id : null);
                 }
             }
             $pago->delete();
@@ -403,13 +402,13 @@ public function addTrainerToSession(Request $request)
     {
         $entrenadores = collect();
         $pagos->each->load('entrenadores');
-        $pagos->each(function ($p) use ($entrenadores) {
+        foreach ($pagos as $p) {
             foreach ($p->entrenadores as $t) {
                 if (!$entrenadores->contains('id', $t->id)) {
                     $entrenadores->push(['id' => $t->id, 'name' => $t->name, 'initial' => strtoupper(substr($t->name, 0, 1))]);
                 }
             }
-        });
+        }
         return $entrenadores->values();
     }
 
@@ -431,9 +430,7 @@ public function addTrainerToSession(Request $request)
     public function deleteSession(Request $request)
     {
         $request->validate(['fecha_hora' => 'required|date', 'nombre_clase' => 'required|string', 'centro' => 'required|string']);
-        if (!$request->user()->hasRole('admin'))
-            return response()->json(['error' => 'No permiso'], 403);
-
+        
         $fecha = Carbon::parse($request->fecha_hora);
         $pagos = Pago::where('fecha_registro', $fecha)
             ->where('nombre_clase', $request->nombre_clase)
@@ -444,9 +441,7 @@ public function addTrainerToSession(Request $request)
         $diffHoras = $ahora->diffInHours($fecha, false);
 
         foreach ($pagos as $p) {
-            // Reembolsar si es crédito y estamos en el margen o si cancela el centro?
-            // Si el admin borra la sesión, solemos reembolsar siempre a menos que sea pasado.
-            if ($p->metodo_pago === 'CREDITO' && $diffHoras >= 0) {
+            if ($p->metodo_pago === 'CREDITO' && $diffHoras >= 0 && $p->user_id) {
                 $user = User::find($p->user_id);
                 if ($user) {
                     $centroObj = \App\Models\Centro::where('nombre', $p->centro)->first();
@@ -458,5 +453,4 @@ public function addTrainerToSession(Request $request)
 
         return response()->json(['success' => true]);
     }
-}   }
 }

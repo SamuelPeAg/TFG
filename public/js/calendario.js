@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         events: function (info, successCallback, failureCallback) {
             const centro = document.getElementById('filter-center')?.value || '';
             const userQ = document.getElementById('search-user')?.value || '';
-            const url = `/usuarios/Pagos?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}`;
+            const url = `${window.BASE_URL || ''}/usuarios/Pagos?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}`;
 
             fetch(url)
                 .then(res => {
@@ -386,7 +386,8 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/add-trainer', {
+            const url = `${window.BASE_URL || ''}/Pagos/add-trainer`;
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -431,7 +432,8 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/remove-trainer', {
+            const url = `${window.BASE_URL || ''}/Pagos/remove-trainer`;
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -481,7 +483,8 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/add-client', {
+            const url = `${window.BASE_URL || ''}/Pagos/add-client`;
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -523,7 +526,8 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/remove-client', {
+            const url = `${window.BASE_URL || ''}/Pagos/remove-client`;
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -556,7 +560,8 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/delete-session', {
+            const url = `${window.BASE_URL || ''}/Pagos/delete-session`;
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -638,8 +643,8 @@ document.addEventListener('DOMContentLoaded', () => {
         container.appendChild(errorDiv);
     }
 
-    const openModal = (m) => { if (m) { m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); } };
-    const closeModal = (m) => { if (m) { m.classList.remove('active'); m.setAttribute('aria-hidden', 'true'); } };
+    window.openModal = (m) => { if (m) { m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); } };
+    window.closeModal = (m) => { if (m) { m.classList.remove('active'); m.setAttribute('aria-hidden', 'true'); } };
 
     document.querySelectorAll('.close-icon, .btn-close, .btn-cancel').forEach(b => {
         b.addEventListener('click', (e) => closeModal(e.target.closest('.modal-overlay')));

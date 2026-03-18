@@ -174,7 +174,7 @@
             <select name="id_suscripcion" class="form-control-custom" required>
               <option value="">-- Elige una suscripción --</option>
               @foreach($suscripciones as $s)
-                <option value="{{ $s->id }}">{{ $s->nombre }} ({{ $s->tipo_credito }})</option>
+                <option value="{{ $s->id }}">{{ $s->nombre }} ({{ $s->tipo_credito }}) - {{ $s->centro->nombre ?? 'Sin centro' }}</option>
               @endforeach
             </select>
           </div>
@@ -254,7 +254,10 @@
             item.innerHTML = `
               <div style="flex: 1;">
                 <strong style="display:block; color: #1e293b; font-size: 15px;">${su.suscripcion.nombre}</strong>
-                <span style="font-size: 12px; color: #64748b;">Tipo: <b style="color:#0e7490; font-weight:700;">${su.suscripcion.tipo_credito}</b></span>
+                <div style="display:flex; flex-direction:column; gap:2px; margin-top:2px;">
+                    <span style="font-size: 11px; color: #64748b;">Tipo: <b style="color:#0e7490; font-weight:700;">${su.suscripcion.tipo_credito}</b></span>
+                    <span style="font-size: 11px; color: #64748b;"><i class="fas fa-map-marker-alt" style="margin-right:4px; font-size:10px;"></i>Centro: <b style="color:#4B5563;">${su.suscripcion.centro ? su.suscripcion.centro.nombre : 'General'}</b></span>
+                </div>
               </div>
               
               <div style="display:flex; align-items:center; gap: 20px;">

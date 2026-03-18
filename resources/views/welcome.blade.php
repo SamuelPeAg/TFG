@@ -494,11 +494,12 @@
                 slotMaxTime: '22:00:00',
                 allDaySlot: false,
                 events: function(info, successCallback, failureCallback) {
-                    let url = new URL('/api/clases', window.location.origin);
+                    const baseUrl = "{{ url('/') }}";
+                    let url = new URL(`${baseUrl}/api/clases`);
                     url.searchParams.append('compatible_only', compatiblesOnly);
                     url.searchParams.append('tipo', currentType);
                     
-                    fetch(url)
+                    fetch(url.toString())
                         .then(response => response.json())
                         .then(data => successCallback(data))
                         .catch(err => failureCallback(err));
@@ -519,45 +520,68 @@
                     
                     // Contenedor principal
                     let container = document.createElement('div');
-                    container.className = 'p-1 h-full flex flex-col justify-between overflow-hidden text-white';
+                    container.className = 'p-2 h-full flex flex-col gap-2 overflow-hidden text-white shadow-inner';
+                    container.style.borderRadius = '8px';
                     
-                    // Cabecera: Nombre Clase
+                    // Cabecera: Nombre Clase y tipo
+                    let header = document.createElement('div');
+                    header.className = 'flex flex-col';
+                    
                     let title = document.createElement('div');
-                    title.className = 'font-black text-[10px] uppercase leading-tight mb-1 truncate';
+                    title.className = 'font-black text-[11px] uppercase leading-tight truncate';
                     title.innerText = arg.event.title;
                     
-                    // Cuerpo: Entrenador + Fotos
+                    let type = document.createElement('div');
+                    type.className = 'text-[9px] font-bold opacity-70 uppercase tracking-tighter';
+                    type.innerText = props.tipo_clase || '';
+                    
+                    header.appendChild(title);
+                    header.appendChild(type);
+                    
+                    // Cuerpo: Entrenador (Destacado)
                     let body = document.createElement('div');
-                    body.className = 'flex items-center gap-1 mb-1';
+                    body.className = 'flex items-center gap-2 my-1';
                     
                     if (props.entrenador_foto) {
                         let img = document.createElement('img');
                         img.src = props.entrenador_foto;
-                        img.className = 'w-5 h-5 rounded-full object-cover border border-white/30';
+                        img.className = 'w-7 h-7 rounded-full object-cover border-2 border-white/50 shadow-sm';
                         body.appendChild(img);
+                    } else {
+                        let placeholder = document.createElement('div');
+                        placeholder.className = 'w-7 h-7 rounded-full bg-white/20 flex items-center justify-center border border-white/30';
+                        placeholder.innerHTML = '<i class="fa-solid fa-user-tie text-[10px]"></i>';
+                        body.appendChild(placeholder);
                     }
                     
+                    let coachInfo = document.createElement('div');
+                    coachInfo.className = 'flex flex-col leading-none';
+                    let coachLabel = document.createElement('span');
+                    coachLabel.className = 'text-[8px] font-black uppercase opacity-60';
+                    coachLabel.innerText = 'Coach';
                     let coachName = document.createElement('span');
-                    coachName.className = 'text-[9px] font-bold opacity-90 truncate';
+                    coachName.className = 'text-[10px] font-bold truncate';
                     coachName.innerText = props.entrenador;
-                    body.appendChild(coachName);
+                    coachInfo.appendChild(coachLabel);
+                    coachInfo.appendChild(coachName);
+                    body.appendChild(coachInfo);
 
-                    // Lista de clientes (bolitas)
+                    // Lista de clientes (bolitas apiladas)
                     let clientsList = document.createElement('div');
-                    clientsList.className = 'flex -space-x-1.5 overflow-hidden mt-1';
+                    clientsList.className = 'flex -space-x-2 overflow-hidden items-center';
                     
                     if (props.clientes && props.clientes.length > 0) {
                         props.clientes.forEach((c, idx) => {
-                            if (idx < 3) { // Mostrar solo los 3 primeros para no saturar
+                            if (idx < 4) { 
                                 if (c.foto) {
                                     let cImg = document.createElement('img');
                                     cImg.src = c.foto;
-                                    cImg.className = 'inline-block h-4 w-4 rounded-full ring-1 ring-white object-cover';
+                                    cImg.className = 'inline-block h-6 w-6 rounded-full ring-2 ring-white/30 object-cover shadow-sm';
                                     cImg.title = c.nombre;
                                     clientsList.appendChild(cImg);
                                 } else {
                                     let cLetter = document.createElement('div');
-                                    cLetter.className = 'inline-block h-4 w-4 rounded-full bg-gray-400 ring-1 ring-white flex items-center justify-center text-[7px] font-bold';
+                                    cLetter.className = 'inline-block h-6 w-6 rounded-full bg-white/20 ring-2 ring-white/30 flex items-center justify-center text-[9px] font-bold';
                                     cLetter.innerText = c.nombre.charAt(0);
                                     cLetter.title = c.nombre;
                                     clientsList.appendChild(cLetter);
@@ -565,26 +589,31 @@
                             }
                         });
                         
-                        if (props.clientes.length > 3) {
+                        if (props.clientes.length > 4) {
                             let more = document.createElement('div');
-                            more.className = 'inline-block h-4 w-4 rounded-full bg-white/20 ring-1 ring-white flex items-center justify-center text-[7px] font-bold';
-                            more.innerText = '+' + (props.clientes.length - 3);
+                            more.className = 'inline-block h-5 w-5 rounded-full bg-black/30 ring-1 ring-white/50 flex items-center justify-center text-[8px] font-bold';
+                            more.innerText = '+' + (props.clientes.length - 4);
                             clientsList.appendChild(more);
                         }
+                    } else {
+                        let empty = document.createElement('span');
+                        empty.className = 'text-[9px] font-medium opacity-50 italic';
+                        empty.innerText = 'Sin reservas';
+                        clientsList.appendChild(empty);
                     }
 
-                    // Badge de capacidad
+                    // Footer: Capacidad y Centro
                     let footer = document.createElement('div');
-                    footer.className = 'flex justify-between items-center mt-auto';
+                    footer.className = 'flex justify-between items-end mt-auto';
                     
                     let capacity = document.createElement('div');
-                    capacity.className = 'text-[8px] font-black bg-black/20 px-1.5 py-0.5 rounded-md';
-                    capacity.innerText = `${props.ocupacion}/${props.capacidad}`;
+                    capacity.className = 'text-[9px] font-black bg-black/30 px-2 py-0.5 rounded-full flex items-center gap-1';
+                    capacity.innerHTML = `<i class="fa-solid fa-users text-[8px]"></i> ${props.ocupacion}/${props.capacidad}`;
                     
                     footer.appendChild(clientsList);
                     footer.appendChild(capacity);
 
-                    container.appendChild(title);
+                    container.appendChild(header);
                     container.appendChild(body);
                     container.appendChild(footer);
                     

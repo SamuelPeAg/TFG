@@ -41,9 +41,9 @@ class UserController extends Controller
 
     public function index()
     {
-        // Mostrar solo clientes en la interfaz de usuarios
-        $users = User::role('cliente')->with('suscripciones.suscripcion')->get();
-        $suscripciones = \App\Models\Suscripcion::all();
+        // Mostrar solo clientes en la interfaz de usuarios con sus centros cargados
+        $users = User::role('cliente')->with('suscripciones.suscripcion.centro')->get();
+        $suscripciones = \App\Models\Suscripcion::with('centro')->get();
         
         return view('users.index', compact('users', 'suscripciones'));
     }

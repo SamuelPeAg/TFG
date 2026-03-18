@@ -56,5 +56,3 @@ class RoleSeeder extends Seeder
         // $role->givePermissionTo('manage users');
     }
 }
-    }
-}

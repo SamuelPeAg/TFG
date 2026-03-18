@@ -72,9 +72,8 @@
                     <div class="form-grid-2">
                          <!-- Centro -->
                          <div class="input-group-clean">
-                            <label>Centro Deportivo</label>
-                            <select id="centro" name="centro" class="input-clean select2-basic" style="width: 100%;" required>
-                                <option value="" disabled selected>Selecciona centro...</option>
+                            <label>Centros Deportivos (Selecciona uno o más)</label>
+                            <select id="centros" name="centros[]" class="input-clean select2-basic" multiple style="width: 100%;" required>
                                 @foreach($centros as $centro)
                                     <option value="{{ $centro->nombre }}">{{ $centro->nombre }}</option>
                                 @endforeach
@@ -210,7 +209,7 @@
                      <button type="button" id="btn-next-step" class="btn-clean-primary">
                         Siguiente <i class="fa-solid fa-arrow-right"></i>
                      </button>
-                     <button type="submit" id="btn-submit-wizard" class="btn-clean-success" style="display: none;">
+                     <button type="button" id="btn-submit-wizard" class="btn-clean-success" style="display: none;">
                         <i class="fa-solid fa-check"></i> CONFIRMAR Y GUARDAR
                      </button>
                 </div>
@@ -220,7 +219,6 @@
   </div>
 
   <!-- Include Scripts -->
-  <script src="{{ asset('js/wizard_clase.js') }}"></script>
   <script type="application/json" id="users_json">
       @json($users->map(fn($u)=>['id'=>$u->id,'name'=>$u->name])->values())
   </script>
@@ -393,16 +391,56 @@
     }
 
     /* Select2 Modal Fix */
-    .select2-container--default .select2-selection--single {
-        height: 40px !important;
+    /* Select2 Modal Fix */
+    .select2-container { z-index: 100000 !important; width: 100% !important; }
+    .select2-container--default .select2-selection--multiple {
+        min-height: 44px !important;
         border: 1px solid #e2e8f0 !important;
-        border-radius: 8px !important;
+        border-radius: 12px !important;
         background-color: #f8fafc !important;
+        padding: 4px 8px !important;
+        transition: all 0.2s !important;
         display: flex !important;
         align-items: center !important;
-        outline: none !important;
+        flex-wrap: wrap !important;
     }
-    .select2-container { z-index: 100000 !important; }
-    .select2-dropdown { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 100001 !important; }
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        background: white !important;
+        border-color: #39c5a7 !important;
+        box-shadow: 0 0 0 3px rgba(57, 197, 167, 0.1) !important;
+    }
+    
+    /* Prettier Pills (Selected Items) */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background: linear-gradient(135deg, #39c5a7, #eb567a) !important;
+        border: none !important;
+        color: white !important;
+        border-radius: 30px !important;
+        padding: 2px 12px 2px 28px !important; /* Extra padding-left for the 'x' */
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        margin: 4px !important;
+        position: relative !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white !important;
+        border-right: none !important;
+        margin-right: 0 !important;
+        font-weight: bold !important;
+        position: absolute !important;
+        left: 10px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        opacity: 0.8 !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        background: transparent !important;
+        opacity: 1 !important;
+    }
+
+    .select2-dropdown { border: 1px solid #e2e8f0 !important; border-radius: 12px !important; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); overflow: hidden; }
+    .select2-results__option { padding: 10px 16px !important; font-size: 14px !important; transition: 0.2s; }
+    .select2-results__option--highlighted[aria-selected] { background-color: #f0fdfa !important; color: #0d9488 !important; }
   </style>
 </div>

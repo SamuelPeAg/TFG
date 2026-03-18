@@ -177,6 +177,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!input.reportValidity()) valid = false;
         });
         if (!valid) return false;
+        
+        if (step === 1) {
+            // Validación manual para centros con Select2
+            const centersValues = $('#centros').val();
+            if (!centersValues || centersValues.length === 0) {
+                alert("Por favor selecciona al menos un centro deportivo.");
+                return false;
+            }
+        }
 
         if (step === 2) {
             const tipo = tipoSelect.value;
@@ -252,13 +261,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const formData = new FormData(form);
         const payload = {
-            centro: formData.get('centro'),
+            centros: $('#centros').val() || [],
             nombre_clase: formData.get('nombre_clase'),
             tipo_clase: formData.get('tipo_clase'),
             fecha_hora: formData.get('fecha_hora'),
             trainers: formData.getAll('trainers[]'),
             is_recurring: !!formData.get('is_recurring'),
-            recurrence_end: formData.get('recurrence_end'),
+            recurrence_end: formData.get('is_recurring') ? formData.get('recurrence_end') : null,
             participants: []
         };
         console.log("Payload draft:", payload);
@@ -275,26 +284,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const url = form.dataset.url || '/Pagos';
             btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
             btnSubmit.disabled = true;
 
+            const url = `${window.BASE_URL || ''}/Pagos`;
             const res = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 body: JSON.stringify(payload)
             });
 
-            const text = await res.text();
-            let data = {};
-            try { data = JSON.parse(text); } catch(e) { console.error("Invalid JSON:", text); }
+            console.log("Server response status:", res.status);
+            const data = await res.json();
+            console.log("Server data:", data);
 
-            if (res.ok && data.success) {
-                document.getElementById('modalNuevaClase').classList.remove('active');
-                if (window.calendar) window.calendar.refetchEvents(); else window.location.reload();
-                form.reset(); currentStep = 1; selectedClients = []; updateUI();
+            if (res.ok) {
+                if (data.success) {
+                    if (window.calendar) window.calendar.refetchEvents();
+                    const modalNuevaClase = document.getElementById('modalNuevaClase');
+                    if (window.closeModal && modalNuevaClase) {
+                        window.closeModal(modalNuevaClase);
+                    } else {
+                        // Fallback if closeModal is not defined or modal element not found
+                        if (modalNuevaClase) modalNuevaClase.classList.remove('active');
+                        else window.location.reload();
+                    }
+                    form.reset(); currentStep = 1; selectedClients = []; updateUI();
+                } else { 
+                    console.error("Server Response (success: false):", res.status, data);
+                    if (data.errors) {
+                        const firstErr = Object.values(data.errors)[0][0];
+                        alert("Error de validación: " + firstErr);
+                    } else {
+                        alert(data.message || data.error || "Error al guardar (Status: " + res.status + ")"); 
+                    }
+                }
             } else { 
-                console.error("Server Response:", res.status, data);
+                console.error("Server Response (not ok):", res.status, data);
                 if (data.errors) {
                     const firstErr = Object.values(data.errors)[0][0];
                     alert("Error de validación: " + firstErr);

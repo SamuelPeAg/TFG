@@ -86,6 +86,7 @@
   @include('calendario.modales.modal_seleccion_clientes')
 
   <script>
+    window.BASE_URL = "{{ url('/') }}";
     window.CURRENT_USER_ROLE = "{{ Auth::check() ? (Auth::user()->roles->pluck('name')->first() ?? '') : '' }}";
     window.CURRENT_USER_ID = {{ Auth::id() ?? 'null' }};
     window.IS_ADMIN = {{ Auth::check() && Auth::user()->hasRole('admin') ? 'true' : 'false' }};
@@ -94,8 +95,8 @@
 
   @vite('resources/js/app.js')
 
-  <script src="{{ asset('js/calendario.js') }}"></script>
-  <script src="{{ asset('js/wizard_clase.js') }}"></script>
+  <script src="{{ asset('js/calendario.js') }}?v=1.2"></script>
+  <script src="{{ asset('js/wizard_clase.js') }}?v=1.1"></script>
   <script src="{{ asset('js/calendario-modal-logout.js') }}"></script>
 </body>
 </html>
