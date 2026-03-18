@@ -103,8 +103,8 @@
                     <div style="margin-top: 40px;">
                         <div class="form-section-title">ASIGNACIÓN DE ENTRENADORES</div>
                         <div class="trainers-grid-clean">
-                            @if(isset($coaches) && count($coaches) > 0)
-                                @foreach($coaches as $coach)
+                            @if(isset($entrenadores) && count($entrenadores) > 0)
+                                @foreach($entrenadores as $coach)
                                     <label class="trainer-card-clean">
                                         <input type="checkbox" name="trainers[]" value="{{ $coach->id }}">
                                         <div class="t-card-content">

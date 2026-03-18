@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         eventClick: function (info) {
+            if (info.jsEvent) info.jsEvent.preventDefault();
             mostrarDetallesEvento(info.event);
         },
 
@@ -95,15 +96,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cargar desde localStorage
         const savedCenter = localStorage.getItem('factomove_preferred_center');
         if (savedCenter) {
+            console.log("Cargando centro preferido:", savedCenter);
             filterCenter.value = savedCenter;
-            calendar.refetchEvents();
+            setTimeout(() => {
+                if (window.calendar) window.calendar.refetchEvents();
+            }, 500);
         }
 
-        // Guardar al cambiar
-        filterCenter.addEventListener('change', () => {
+        // Guardar al cambiar (usamos change e input para máxima compatibilidad)
+        const onCenterChange = () => {
+            console.log("Cambio de centro detectado:", filterCenter.value);
             localStorage.setItem('factomove_preferred_center', filterCenter.value);
-            calendar.refetchEvents();
-        });
+            if (window.calendar) window.calendar.refetchEvents();
+            else console.warn("Calendario no disponible para refetch");
+        };
+
+        // Eventos nativos
+        ['change', 'input'].forEach(evt => filterCenter.addEventListener(evt, onCenterChange));
+
+        // Evento especial de Select2 (si se está usando)
+        if (typeof $ !== 'undefined') {
+            $(filterCenter).on('change', onCenterChange);
+        }
     }
 
     // ====== 2. LÓGICA DE CLICK EN FECHA ======
@@ -302,18 +316,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generarOpcionesEntrenadores() {
-        const checkboxes = document.querySelectorAll('input[name="trainers[]"]');
-        let opts = '';
-        checkboxes.forEach(chk => {
-            const card = chk.closest('.trainer-card-clean') || chk.closest('.trainer-option');
-            if (card) {
-                const nameEl = card.querySelector('.t-name') || card.querySelector('.trainer-name');
-                if (nameEl) {
-                    opts += `<option value="${chk.value}">${nameEl.textContent.trim()}</option>`;
-                }
-            }
-        });
-        return opts;
+        const coaches = window.TRAINERS || [];
+        if (coaches.length === 0) return '<option disabled>Sin personal disponible</option>';
+        return coaches.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     }
 
     function renderEntrenadoresSesion(entrenadores, sessionKey) {
@@ -602,8 +607,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openModal = (m) => { if (m) { m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); m.style.display = 'flex'; } };
     window.closeModal = (m) => { if (m) { m.classList.remove('active'); m.setAttribute('aria-hidden', 'true'); m.style.display = 'none'; } };
 
-    document.querySelectorAll('.close-icon, .btn-close, .btn-cancel').forEach(b => {
-        b.addEventListener('click', (e) => closeModal(e.target.closest('.modal-overlay')));
+    document.querySelectorAll('.close-icon, .btn-close, .btn-cancel, #btnCerrarPopup, #btnCerrarPopup2').forEach(b => {
+        b.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal(e.target.closest('.modal-overlay'));
+        });
     });
 
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -639,6 +648,13 @@ document.addEventListener('DOMContentLoaded', () => {
         inputEl.addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase().trim();
             if (hiddenIdEl) hiddenIdEl.value = '';
+            
+            const clearBtn = document.getElementById('btn-clear-filters');
+            if (clearBtn) clearBtn.classList.toggle('hidden', q.length === 0);
+
+            // Refetch calendar on every stroke to show filter in real-time
+            if (window.calendar) window.calendar.refetchEvents();
+
             if (q.length < 1) { show([]); return; }
             show(USERS.filter(u => u.name.toLowerCase().includes(q)).slice(0, 8));
         });
@@ -648,9 +664,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputEl.value = item.dataset.name;
                 if (hiddenIdEl) hiddenIdEl.value = item.dataset.id;
                 boxEl.hidden = true;
-                calendar.refetchEvents();
+                if (window.calendar) window.calendar.refetchEvents();
             }
         });
+
+        // Clear filter button logic
+        const clearBtn = document.getElementById('btn-clear-filters');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                inputEl.value = '';
+                if (hiddenIdEl) hiddenIdEl.value = '';
+                
+                // Reset center dropdown as well
+                const fc = document.getElementById('filter-center');
+                if (fc) {
+                    fc.value = '';
+                    localStorage.removeItem('factomove_preferred_center');
+                }
+
+                if (window.calendar) window.calendar.refetchEvents();
+                show([]);
+            });
+        }
     };
 
     initAutocomplete({ inputEl: document.getElementById('search-user'), boxEl: document.getElementById('search_user_suggestions') });

@@ -134,10 +134,13 @@
                             </div>
 
                             <!-- Search Box -->
-                            <div class="bg-brandTeal/10 backdrop-blur-xl border border-brandTeal/20 rounded-2xl px-4 py-2 flex items-center gap-3 w-full lg:w-80 relative">
+                            <div class="bg-brandTeal/10 backdrop-blur-xl border border-brandTeal/20 rounded-2xl px-4 py-2 flex items-center gap-3 w-full lg:w-80 relative group">
                                 <i class="fa-solid fa-magnifying-glass text-slate-500"></i>
                                 <input type="text" id="search-user" placeholder="Buscar usuario..." autocomplete="off" 
                                        class="bg-transparent border-none outline-none text-white text-sm font-bold w-full placeholder:text-slate-500 focus:ring-0">
+                                <button id="btn-clear-filters" class="hidden group-focus-within:block hover:text-brandCoral text-slate-500 transition-colors" title="Limpiar Filtros">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                </button>
                                 <div id="search_user_suggestions" class="suggestions" hidden></div>
                             </div>
 
@@ -174,6 +177,9 @@
         window.CURRENT_USER_ID = {{ Auth::id() ?? 'null' }};
         window.IS_ADMIN = {{ Auth::check() && Auth::user()->hasRole('admin') ? 'true' : 'false' }};
         window.IS_TRAINER = {{ Auth::check() && Auth::user()->hasRole('entrenador') ? 'true' : 'false' }};
+        
+        // Entrenadores para asignación rápida
+        window.TRAINERS = @json($entrenadores->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->values());
     </script>
 
     @vite('resources/js/app.js')
