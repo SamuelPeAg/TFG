@@ -132,86 +132,62 @@ document.addEventListener('DOMContentLoaded', () => {
             const diaNum = fechaObj.getDate();
             const mes = fechaObj.toLocaleDateString('es-ES', { month: 'long' });
 
-            tituloFechaEl.innerHTML = `<span style="display:block; font-size:1.2rem; font-weight:400; opacity:0.9; text-transform:capitalize;">${diaSemana}</span><span style="display:block; font-size:2rem; font-weight:800; letter-spacing:-1px;">${diaNum} de ${mes}</span>`;
-            tituloFechaEl.style.background = "linear-gradient(135deg, #00897b 0%, #0e7490 100%)";
-            tituloFechaEl.style.color = "white";
-            tituloFechaEl.style.padding = "30px 20px";
-            tituloFechaEl.style.margin = "0";
-            tituloFechaEl.style.textAlign = "center";
-            tituloFechaEl.style.textTransform = "capitalize";
-            tituloFechaEl.style.position = "relative";
-
-            const btnCerrar = document.getElementById('btnCerrarPopup');
-            if (btnCerrar) {
-                btnCerrar.style.color = "white";
-                btnCerrar.style.opacity = "0.8";
-                btnCerrar.style.zIndex = "10";
-            }
-
-            const btnCerrar2 = document.getElementById('btnCerrarPopup2');
-            if (btnCerrar2) {
-                btnCerrar2.style.background = "#eb567a";
-                btnCerrar2.style.color = "white";
-                btnCerrar2.style.border = "none";
-                btnCerrar2.style.fontSize = "14px";
-                btnCerrar2.style.fontWeight = "800";
-                btnCerrar2.style.textTransform = "uppercase";
-                btnCerrar2.style.padding = "14px";
-                btnCerrar2.style.borderRadius = "10px";
-                btnCerrar2.style.width = "calc(100% - 64px)";
-                btnCerrar2.style.margin = "0 32px 32px 32px";
-                btnCerrar2.style.boxShadow = "0 4px 12px rgba(235, 86, 122, 0.3)";
-            }
+            tituloFechaEl.innerHTML = `
+                <div class="relative z-10 flex flex-col items-center">
+                    <span class="text-[11px] font-black uppercase tracking-[0.3em] text-white/60 mb-1">${diaSemana}</span>
+                    <span class="text-4xl font-black text-white">${diaNum} <span class="text-xl font-medium text-white/70">de ${mes}</span></span>
+                </div>
+            `;
+            tituloFechaEl.className = "relative py-12 px-8 text-center text-white bg-slate-900 overflow-hidden";
 
             let html = `
-      <style>
-        .modal-grid { display: grid; grid-template-columns: 2fr 1fr; min-height: 400px; border-top: 1px solid #f3f4f6; width: 100%; }
-        .modal-main { padding: 32px; background: white; }
-        .modal-sidebar { background-color: #f9fafb; padding: 32px; border-left: 1px solid #f3f4f6; display: flex; flex-direction: column; background: #f8fafc; }
-        .class-title { font-size: 28px; font-weight: 800; color: #111827; margin: 0 0 12px 0; letter-spacing: -0.5px; line-height: 1.2; }
-        .meta-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: #f3f4f6; border-radius: 99px; font-size: 13px; color: #4b5563; font-weight: 600; }
-        .meta-pill i { color: #0e7490; }
-        .section-header { font-size: 12px; font-weight: 800; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; margin-top: 32px; }
-        .participant-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 12px; transition: all 0.2s; margin-bottom: 10px; }
-        .participant-card:hover { border-color: #d1d5db; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .modal-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, #39c5a7, #eb567a); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; box-shadow: 0 2px 6px rgba(57, 197, 167, 0.3); }
-        .trainer-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: white; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 8px; }
-        .trainer-item .t-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #39c5a7, #eb567a); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; }
-        @media (max-width: 768px) { 
-            .modal-grid { grid-template-columns: 1fr; display: flex; flex-direction: column; } 
-            .modal-sidebar { border-left: none; border-top: 1px solid #f3f4f6; } 
-        }
-      </style>
-      <div class="modal-grid">
-        <div class="modal-main">
-            <div>
-                <h3 class="class-title">${p.clase_nombre}</h3>
-                <div style="display:flex; flex-wrap:wrap; gap:10px;">
-                    <span class="meta-pill"><i class="fa-solid fa-clock"></i> ${p.hora}</span>
-                    <span class="meta-pill"><i class="fa-solid fa-building"></i> ${p.centro}</span>
-                    ${p.tipo_clase ? `<span class="meta-pill"><i class="fa-solid fa-layer-group"></i> ${p.tipo_clase}</span>` : ''}
-                </div>
-            </div>
-            <h4 class="section-header">Asistentes confirmados (${p.alumnos ? p.alumnos.length : 0})</h4>
-            <div>
-    `;
+                <div class="flex flex-col lg:flex-row min-h-[450px] divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+                    <div class="flex-1 p-8 md:p-12">
+                        <div class="mb-10">
+                            <h3 class="text-3xl font-black text-slate-900 mb-4 tracking-tighter">${p.clase_nombre}</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <span class="px-4 py-1.5 bg-slate-100 rounded-full text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                                    <i class="fa-solid fa-clock text-brandTeal"></i> ${p.hora}
+                                </span>
+                                <span class="px-4 py-1.5 bg-slate-100 rounded-full text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                                    <i class="fa-solid fa-building text-brandTeal"></i> ${p.centro}
+                                </span>
+                                ${p.tipo_clase ? `
+                                <span class="px-4 py-1.5 bg-slate-100 rounded-full text-[11px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                                    <i class="fa-solid fa-layer-group text-brandTeal"></i> ${p.tipo_clase}
+                                </span>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-6">
+                            <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Asistentes Confirmados (${p.alumnos ? p.alumnos.length : 0})</h4>
+                        </div>
+
+                        <div class="space-y-3">
+            `;
+
             if (p.alumnos && p.alumnos.length > 0) {
                 p.alumnos.forEach(alum => {
                     html += `
-          <div class="participant-card">
-              <div style="display:flex; align-items:center; gap:12px;">
-                  <div class="modal-avatar">${alum.nombre.charAt(0).toUpperCase()}</div>
-                  <div>
-                      <div style="font-weight:700; color:#1f2937; font-size:15px;">${alum.nombre}</div>
-                      <div style="font-size:12px; color:#6b7280;">Método: ${alum.pago}</div>
-                  </div>
-              </div>
-              <div style="display:flex; align-items:center; gap:10px;">
-                  <div style="font-weight:700; color:#000000; font-size:15px;">€${Number(alum.coste).toFixed(2)}</div>
-                  ${(window.IS_ADMIN) ? `<button type="button" class="btn-icon btn-delete-client" data-id="${alum.id}" style="border:none; background:none; cursor:pointer; color:#ef4444;" title="Eliminar Alumno"><i class="fa-solid fa-trash-can"></i></button>` : ''}
-              </div>
-          </div>
-        `;
+                        <div class="group flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:border-brandTeal/30 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brandTeal/20 to-teal-100 flex items-center justify-center text-brandTeal font-black text-lg">
+                                    ${alum.nombre.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="font-black text-slate-900 text-sm tracking-tight">${alum.nombre}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">${alum.pago}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-sm font-black text-slate-900">€${Number(alum.coste).toFixed(2)}</div>
+                                ${(window.IS_ADMIN) ? `
+                                <button type="button" class="btn-delete-client w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:text-brandCoral hover:bg-brandCoral/10 transition-all font-bold" data-id="${alum.id}" title="Eliminar Alumno">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>` : ''}
+                            </div>
+                        </div>
+                    `;
                 });
                 // Add Delete Listeners after render
                 setTimeout(() => {
@@ -224,50 +200,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 100);
             } else {
                 html += `
-        <div style="text-align:center; padding:40px 20px; background:#f9fafb; border-radius:12px; border:1px dashed #e5e7eb;">
-            <i class="fa-solid fa-users-slash" style="color:#d1d5db; font-size:24px; margin-bottom:10px;"></i>
-            <p style="color:#6b7280; font-size:14px; margin:0;">No hay alumnos inscritos aún.</p>
-        </div>`;
+                    <div class="py-12 border-2 border-dashed border-slate-100 rounded-[32px] flex flex-col items-center justify-center text-slate-300">
+                        <i class="fa-solid fa-users-slash text-4xl mb-4 opacity-20"></i>
+                        <p class="text-sm font-bold uppercase tracking-widest opacity-50">No hay alumnos inscritos</p>
+                    </div>`;
             }
+
             html += `
-            </div>
-            ${(window.IS_ADMIN) ? `
-             <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #e5e7eb;">
-                <label style="display:block; font-size:12px; font-weight:700; color:#6b7280; margin-bottom:10px;">AÑADIR ALUMNO</label>
-                <button type="button" id="btn-open-add-client-modal" style="width:100%; padding:10px; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; border-radius:8px; font-weight:600; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
-                    <i class="fa-solid fa-user-plus"></i> Seleccionar Cliente
-                </button>
-             </div>
-            ` : ''}
-        </div>
-        <div class="modal-sidebar">
-            <h4 class="section-header" style="margin-top:0;">Equipo Técnico</h4>
-            <div id="lista-entrenadores-sesion" style="flex: 1;"></div>
-            <div style="margin-top:20px;" id="trainer-actions-wrapper">
-                 ${(window.IS_ADMIN) ?
-                    `<label class="section-header" style="display:block; margin-bottom:10px;">Gestionar Personal</label>
-                 <div style="display:flex; gap:8px;">
-                    <select id="select-add-trainer" class="modern-input" style="padding:10px; font-size:13px;">
-                        <option value="" selected disabled>Añadir entrenador...</option>
-                        ${generarOpcionesEntrenadores()}
-                    </select>
-                    <button type="button" id="btn-add-trainer-action" style="background:#0e7490; color:white; border:none; width:40px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-plus"></i></button>
-                 </div>`
-                    : (window.IS_TRAINER && window.CURRENT_USER_ID) ?
-                        (!p.entrenadores || !p.entrenadores.find(t => t.id === window.CURRENT_USER_ID)) ?
-                            `<button type="button" id="btn-join-session" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 6px -1px rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-user-plus"></i> Inscribirme</button>`
-                            : `<div style="padding:12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; color:#166534; font-size:13px; display:flex; gap:8px; align-items:center;"><i class="fa-solid fa-circle-check"></i> <span>Estás asignado a esta clase</span></div>`
-                        : ''
-                }
-            </div>
-            ${(window.IS_ADMIN) ?
-                    `<div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #f3f4f6;">
-                <button type="button" id="btn-delete-full-session" style="width:100%; padding:12px; background:#fee2e2; color:#ef4444; border:1px solid #fecaca; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition: all 0.2s;"><i class="fa-solid fa-trash"></i> ELIMINAR SESIÓN</button>
-                <p style="font-size:10px; color:#9ca3af; margin-top:8px; text-align:center;">Esta acción eliminará todos los pagos asociados.</p>
-             </div>` : ''
-                }
-        </div>
-      </div>`;
+                        </div>
+                        ${(window.IS_ADMIN) ? `
+                        <div class="mt-8 pt-8 border-t border-slate-100">
+                            <button type="button" id="btn-open-add-client-modal" class="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-black text-[11px] uppercase tracking-widest hover:border-brandTeal hover:text-brandTeal hover:bg-brandTeal/5 transition-all flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-user-plus"></i> Seleccionar Cliente
+                            </button>
+                        </div>` : ''}
+                    </div>
+
+                    <div class="w-full lg:w-[320px] bg-slate-50/50 p-8 md:p-12 flex flex-col">
+                        <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-6">Equipo Técnico</h4>
+                        <div id="lista-entrenadores-sesion" class="flex-1 space-y-3"></div>
+
+                        <div class="mt-10" id="trainer-actions-wrapper">
+                            ${(window.IS_ADMIN) ? `
+                            <div class="space-y-4">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Asignar Personal</label>
+                                <div class="flex gap-2">
+                                    <select id="select-add-trainer" class="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold focus:ring-2 focus:ring-brandTeal/20 outline-none">
+                                        <option value="" selected disabled>Elegir...</option>
+                                        ${generarOpcionesEntrenadores()}
+                                    </select>
+                                    <button type="button" id="btn-add-trainer-action" class="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-brandTeal transition-all duration-300">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>`
+                            : (window.IS_TRAINER && window.CURRENT_USER_ID) ?
+                                (!p.entrenadores || !p.entrenadores.find(t => t.id === window.CURRENT_USER_ID)) ?
+                                    `<button type="button" id="btn-join-session" class="w-full py-4 bg-brandTeal text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-brandTeal/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-user-plus"></i> Inscribirme
+                                    </button>`
+                                    : `<div class="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-700 text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-circle-check"></i> <span>Asignado</span>
+                                    </div>`
+                                : ''
+                            }
+                        </div>
+
+                        ${(window.IS_ADMIN) ? `
+                        <div class="mt-12 pt-8 border-t border-slate-200">
+                            <button type="button" id="btn-delete-full-session" class="w-full py-4 text-brandCoral font-black text-[10px] uppercase tracking-[0.25em] hover:bg-brandCoral/5 rounded-2xl transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-trash-can"></i> Eliminar Sesión
+                            </button>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
             listaPagosEl.innerHTML = html;
             renderEntrenadoresSesion(p.entrenadores || [], p.session_key);
 
@@ -283,13 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (window.CURRENT_USER_ID) agregarEntrenadorSesion(window.CURRENT_USER_ID, p.session_key);
             });
 
-            // Add Client Logic
             const btnOpenAddClient = document.getElementById('btn-open-add-client-modal');
             if (btnOpenAddClient) {
                 btnOpenAddClient.addEventListener('click', () => {
                     const currentIds = (p.alumnos || []).map(a => String(a.id));
                     const max = getMaxClients(p.tipo_clase);
-
                     openClientModal({
                         title: `Añadir a alumnos a <b>${p.clase_nombre}</b>`,
                         currentIds: currentIds,
@@ -297,17 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         onConfirm: async (selectedUsers) => {
                             const newUsers = selectedUsers.filter(u => !currentIds.includes(String(u.id)));
                             if (newUsers.length === 0) {
-                                closeModal(modalClientes); // Close the selector logic only
+                                closeModal(modalClientes);
                                 return;
                             }
-
-                            // Add each user
                             for (const user of newUsers) {
-                                // Pass full user object. The last one triggers refresh.
                                 const refresh = (user === newUsers[newUsers.length - 1]);
                                 await agregarClienteSesion(user, p.session_key, refresh);
                             }
-                            // NO alert here as requested
                         }
                     });
                 });
@@ -324,7 +305,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const checkboxes = document.querySelectorAll('input[name="trainers[]"]');
         let opts = '';
         checkboxes.forEach(chk => {
-            // Support new and old classes just in case
             const card = chk.closest('.trainer-card-clean') || chk.closest('.trainer-option');
             if (card) {
                 const nameEl = card.querySelector('.t-name') || card.querySelector('.trainer-name');
@@ -341,18 +321,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
         container.innerHTML = '';
         if (!entrenadores || entrenadores.length === 0) {
-            container.innerHTML = `<div style="padding:10px; border:1px dashed #e5e7eb; border-radius:8px; color:#9ca3af; font-size:13px; text-align:center;">Sin asignación</div>`;
+            container.innerHTML = `<div class="p-4 border border-dashed border-slate-200 rounded-2xl text-slate-400 text-[10px] uppercase font-black tracking-widest text-center">Sin asignación</div>`;
             return;
         }
         entrenadores.forEach(t => {
             const div = document.createElement('div');
-            div.className = 'trainer-item';
+            div.className = "flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl";
             div.innerHTML = `
-             <div class="t-avatar">${t.initial || t.name.charAt(0)}</div>
-             <span class="trainer-name" style="flex:1; font-size:14px; color:#374151; font-weight:500;">${t.name}</span>
-             ${(window.IS_ADMIN || (window.IS_TRAINER && t.id === window.CURRENT_USER_ID)) ?
-                    `<button type="button" class="btn-icon btn-delete-trainer" style="border:none; background:none; cursor:pointer; color:#ef4444;" title="Eliminar"><i class="fa-solid fa-trash-can"></i></button>` : ''}
-          `;
+                <div class="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs uppercase">${t.initial || t.name.charAt(0)}</div>
+                <span class="flex-1 font-bold text-slate-700 text-xs">${t.name}</span>
+                ${(window.IS_ADMIN || (window.IS_TRAINER && t.id === window.CURRENT_USER_ID)) ?
+                    `<button type="button" class="btn-delete-trainer w-6 h-6 flex items-center justify-center text-slate-300 hover:text-brandCoral transition-colors"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : ''}
+            `;
             const btnDelete = div.querySelector('.btn-delete-trainer');
             if (btnDelete) btnDelete.addEventListener('click', () => eliminarEntrenadorSesion(t.id, sessionKey));
             container.appendChild(div);
@@ -373,34 +353,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function agregarEntrenadorSesion(trainerId, sessionKey) {
-        // Optimistic Update
         const event = findEventBySessionKey(sessionKey);
         const originalTrainers = event ? [...(event.extendedProps.entrenadores || [])] : [];
-
         if (event) {
-            // Find name from select if possible, provisional
             const select = document.getElementById('select-add-trainer');
             const trainerName = select ? select.options[select.selectedIndex].text : 'Cargando...';
             const newTrainers = [...originalTrainers, { id: parseInt(trainerId), name: trainerName, initial: trainerName.charAt(0) }];
             event.setExtendedProp('entrenadores', newTrainers);
             mostrarDetallesEvento(event);
         }
-
         try {
             const formData = new FormData();
             formData.append('trainer_id', trainerId);
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const url = `${window.BASE_URL || ''}/Pagos/add-trainer`;
-            const res = await fetch(url, {
+            const res = await fetch(`${window.BASE_URL || ''}/Pagos/add-trainer`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                // Update with real data from server (cleaner)
                 if (event) {
                     event.setExtendedProp('entrenadores', data.trainers);
                     mostrarDetallesEvento(event);
@@ -413,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (e) {
-            console.error(e);
             if (event) {
                 event.setExtendedProp('entrenadores', originalTrainers);
                 mostrarDetallesEvento(event);
@@ -422,24 +395,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function eliminarEntrenadorSesion(trainerId, sessionKey) {
-        // Optimistic
         const event = findEventBySessionKey(sessionKey);
         const originalTrainers = event ? [...(event.extendedProps.entrenadores || [])] : [];
-
         if (event) {
             const newTrainers = originalTrainers.filter(t => t.id != trainerId);
             event.setExtendedProp('entrenadores', newTrainers);
             mostrarDetallesEvento(event);
         }
-
         try {
             const formData = new FormData();
             formData.append('trainer_id', trainerId);
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const url = `${window.BASE_URL || ''}/Pagos/remove-trainer`;
-            const res = await fetch(url, {
+            const res = await fetch(`${window.BASE_URL || ''}/Pagos/remove-trainer`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -458,7 +427,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (e) {
-            console.error(e);
             if (event) {
                 event.setExtendedProp('entrenadores', originalTrainers);
                 mostrarDetallesEvento(event);
@@ -467,37 +435,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function agregarClienteSesion(user, sessionKey, shouldRefresh = true) {
-        // Optimistic
         const event = findEventBySessionKey(sessionKey);
         const originalAlumnos = event ? [...(event.extendedProps.alumnos || [])] : [];
-
         if (event) {
-            // Fake entry
-            const newAlumnos = [...originalAlumnos, {
-                id: user.id,
-                nombre: user.name,
-                pago: '...',
-                coste: '...'
-            }];
+            const newAlumnos = [...originalAlumnos, { id: user.id, nombre: user.name, pago: '...', coste: '...' }];
             event.setExtendedProp('alumnos', newAlumnos);
             mostrarDetallesEvento(event);
         }
-
         try {
             const formData = new FormData();
             formData.append('user_id', user.id);
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const url = `${window.BASE_URL || ''}/Pagos/add-client`;
-            const res = await fetch(url, {
+            const res = await fetch(`${window.BASE_URL || ''}/Pagos/add-client`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                // Background refresh to get real price/method
                 if (shouldRefresh) refreshModal(sessionKey);
             } else {
                 alert(data.error || 'Error al añadir cliente');
@@ -507,7 +464,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (e) {
-            console.error(e);
             if (event) {
                 event.setExtendedProp('alumnos', originalAlumnos);
                 mostrarDetallesEvento(event);
@@ -515,47 +471,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    async function refreshModal(sessionKey) {
+        const center = sessionKey.centro;
+        const url = `${window.BASE_URL || ''}/usuarios/Pagos?start=${sessionKey.fecha_hora}&end=${sessionKey.fecha_hora}&centro=${encodeURIComponent(center)}`;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.events && data.events.length > 0) {
+                const event = findEventBySessionKey(sessionKey);
+                if (event) {
+                    const match = data.events.find(ev => ev.extendedProps?.session_key?.fecha_hora === sessionKey.fecha_hora);
+                    if (match) {
+                        event.setExtendedProp('alumnos', match.extendedProps.alumnos);
+                        event.setExtendedProp('entrenadores', match.extendedProps.entrenadores);
+                        mostrarDetallesEvento(event);
+                    }
+                }
+            }
+        } catch (e) { }
+    }
+
     async function eliminarClienteSesion(userId, sessionKey) {
-        // Optimistic
         const event = findEventBySessionKey(sessionKey);
         const originalAlumnos = event ? [...(event.extendedProps.alumnos || [])] : [];
-
         if (event) {
             const newAlumnos = originalAlumnos.filter(a => a.id != userId);
             event.setExtendedProp('alumnos', newAlumnos);
             mostrarDetallesEvento(event);
         }
-
         try {
             const formData = new FormData();
             formData.append('user_id', userId);
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const url = `${window.BASE_URL || ''}/Pagos/remove-client`;
-            const res = await fetch(url, {
+            const res = await fetch(`${window.BASE_URL || ''}/Pagos/remove-client`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
             });
             const data = await res.json();
-            if (res.ok && data.success) {
-                // Success - state is already good. Maybe passive refresh.
-                // refreshModal(sessionKey); // Not strictly needed if we trust the delete.
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.error || 'Error al eliminar cliente',
-                    confirmButtonColor: '#4BB7AE'
-                });
+            if (!res.ok || !data.success) {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.error || 'Error al eliminar cliente', confirmButtonColor: '#4BB7AE' });
                 if (event) {
                     event.setExtendedProp('alumnos', originalAlumnos);
                     mostrarDetallesEvento(event);
                 }
             }
         } catch (e) {
-            console.error(e);
             if (event) {
                 event.setExtendedProp('alumnos', originalAlumnos);
                 mostrarDetallesEvento(event);
@@ -573,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cancelButtonColor: '#4BB7AE',
             confirmButtonText: 'Sí, eliminar sesión',
             cancelButtonText: 'Cancelar',
-            customClass: { popup: 'rounded-3xl' }
+            customClass: { popup: 'rounded-[32px]' }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
@@ -581,21 +544,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     formData.append('fecha_hora', sessionKey.fecha_hora);
                     formData.append('nombre_clase', sessionKey.nombre_clase);
                     formData.append('centro', sessionKey.centro);
-                    const url = `${window.BASE_URL || ''}/Pagos/delete-session`;
-                    const res = await fetch(url, {
+                    const res = await fetch(`${window.BASE_URL || ''}/Pagos/delete-session`, {
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                         body: formData
                     });
                     const data = await res.json();
                     if (res.ok && data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Sesión eliminada',
-                            timer: 1500,
-                            showConfirmButton: false,
-                            customClass: { popup: 'rounded-3xl' }
-                        });
+                        Swal.fire({ icon: 'success', title: 'Sesión eliminada', timer: 1500, showConfirmButton: false, customClass: { popup: 'rounded-[32px]' } });
                         const event = findEventBySessionKey(sessionKey);
                         if (event) event.remove();
                         closeModal(modalInfo);
@@ -603,28 +559,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         Swal.fire('Error', data.error || 'No se pudo eliminar la sesión', 'error');
                     }
                 } catch (e) { 
-                    console.error(e);
                     Swal.fire('Error', 'Error de conexión al intentar eliminar', 'error');
                 }
             }
         });
     }
 
-    // fetchAndRenderCalendar is now handled by calendar.refetchEvents() via the events source
-
     if (formNuevaClase) {
         formNuevaClase.addEventListener('submit', async (e) => {
             e.preventDefault();
             document.querySelectorAll('.error-message').forEach(el => el.remove());
-            document.querySelectorAll('.modern-input').forEach(el => el.style.borderColor = '');
             const formData = new FormData(formNuevaClase);
             const payload = Object.fromEntries(formData);
             payload.users = formData.getAll('users[]').filter(v => v && v.trim() !== '');
             payload.trainers = formData.getAll('trainers[]').filter(v => v && v.trim() !== '');
-
-            // Validacion Minimo 4 personas para Grupos (ELIMINADA por solicitud)
-            // const tipo = document.getElementById('tipo_clase').value;
-            // if ((tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') && payload.users.length < 4) { ... }
 
             try {
                 const res = await fetch(formNuevaClase.action, {
@@ -637,47 +585,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify(payload)
                 });
-                const text = await res.text();
-                if (res.status === 401) { alert('Sesión caducada.'); return; }
-                if (res.status === 403) { alert('No tienes permisos.'); return; }
-                if (res.status === 419) { alert('Error CSRF.'); return; }
-                let json = null;
-                if (text.trim().startsWith('{')) json = JSON.parse(text);
-                if (res.status === 422 && json?.errors) {
-                    Object.keys(json.errors).forEach(key => {
-                        if (key.startsWith('users.')) {
-                            const index = key.split('.')[1];
-                            const group = document.getElementById(`user-group-${index}`);
-                            if (group) mostrarError(group, json.errors[key][0]);
-                        } else { alert(json.errors[key][0]); }
-                    });
+                const data = await res.json();
+                if (res.status === 422 && data.errors) {
+                    Object.keys(data.errors).forEach(key => alert(data.errors[key][0]));
                     return;
                 }
-                if (!res.ok) { alert('Error inesperado.'); return; }
-                if (json?.success) {
+                if (data.success) {
                     calendar.refetchEvents();
                     closeModal(modalNueva);
                     formNuevaClase.reset();
-                    summaryEl.innerHTML = `<p style="color:#00897b"><strong>¡Guardado!</strong> Clase añadida correctamente.</p>`;
                 }
-            } catch (error) { console.error('CATCH ERROR:', error); alert('Error inesperado.'); }
+            } catch (error) { alert('Error inesperado.'); }
         });
     }
 
-    function mostrarError(container, msg) {
-        const input = container.querySelector('.modern-input');
-        if (input) input.style.borderColor = 'red';
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.style.color = 'red';
-        errorDiv.style.fontSize = '12px';
-        errorDiv.style.marginTop = '4px';
-        errorDiv.textContent = msg;
-        container.appendChild(errorDiv);
-    }
-
-    window.openModal = (m) => { if (m) { m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); } };
-    window.closeModal = (m) => { if (m) { m.classList.remove('active'); m.setAttribute('aria-hidden', 'true'); } };
+    window.openModal = (m) => { if (m) { m.classList.add('active'); m.setAttribute('aria-hidden', 'false'); m.style.display = 'flex'; } };
+    window.closeModal = (m) => { if (m) { m.classList.remove('active'); m.setAttribute('aria-hidden', 'true'); m.style.display = 'none'; } };
 
     document.querySelectorAll('.close-icon, .btn-close, .btn-cancel').forEach(b => {
         b.addEventListener('click', (e) => closeModal(e.target.closest('.modal-overlay')));
@@ -685,8 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', (e) => {
-            if (overlay.id === 'modalNuevaClase') return;
-            if (overlay.id === 'infoPopup') return; // Do not close Details on background click
+            if (overlay.id === 'modalNuevaClase' || overlay.id === 'infoPopup') return;
             if (e.target === overlay) closeModal(overlay);
         });
     });
@@ -699,13 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
             inputFechaHora.value = (new Date(now.getTime() - offsetMs)).toISOString().slice(0, 16);
         });
 
-    if (btnConfirmarSalir) {
-        btnConfirmarSalir.addEventListener('click', () => {
-            if (logoutForm) logoutForm.submit();
-        });
-    }
-
-    // Moved below initAutocomplete to avoid losing listener after clone
+    if (btnConfirmarSalir) btnConfirmarSalir.addEventListener('click', () => { if (logoutForm) logoutForm.submit(); });
 
     const usersJsonEl = document.getElementById('users_json');
     let USERS = [];
@@ -732,38 +648,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 inputEl.value = item.dataset.name;
                 if (hiddenIdEl) hiddenIdEl.value = item.dataset.id;
                 boxEl.hidden = true;
-                // Trigger calendar search after selection
                 calendar.refetchEvents();
             }
         });
-        document.addEventListener('click', (e) => {
-            if (e.target !== inputEl && !boxEl.contains(e.target)) boxEl.hidden = true;
-        });
     };
 
-    initAutocomplete({
-        inputEl: document.getElementById('search-user'),
-        hiddenIdEl: null,
-        boxEl: document.getElementById('search_user_suggestions')
-    });
-
-    // Re-attach search listener to the cloned/final input
-    const searchInput = document.getElementById('search-user');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(window.t);
-            window.t = setTimeout(() => calendar.refetchEvents(), 400);
-        });
-    }
-
-    const firstUserInput = document.querySelector('.user-search[data-index="0"]');
-    if (firstUserInput) {
-        firstUserInput.readOnly = true;
-        firstUserInput.style.cursor = 'pointer';
-        firstUserInput.style.backgroundColor = 'white';
-        firstUserInput.placeholder = "Clic para seleccionar...";
-        firstUserInput.addEventListener('click', () => openClientModalForNewClass());
-    }
+    initAutocomplete({ inputEl: document.getElementById('search-user'), boxEl: document.getElementById('search_user_suggestions') });
 
     window.cambiarTipoClase = function () {
         const tipo = document.getElementById('tipo_clase').value;
@@ -772,7 +662,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let cantidad = 1;
         if (tipo === 'DUO') cantidad = 2;
         else if (tipo === 'TRIO') cantidad = 3;
-        else if (tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') cantidad = 1;
         if (btnAdd) btnAdd.style.display = (tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') ? 'block' : 'none';
         container.innerHTML = '';
         for (let i = 0; i < cantidad; i++) agregarInputUsuario(i);
@@ -784,55 +673,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
         div.className = 'modern-form-group user-input-group';
         div.id = `user-group-${index}`;
-        div.style.position = 'relative';
         div.innerHTML = `
-          <label class="modern-label">Cliente ${index + 1}</label>
           <div class="input-wrapper input-with-action">
-            <i class="fa-solid fa-user input-icon"></i>
-            <input type="text" class="modern-input user-search" placeholder="Clic para seleccionar..." autocomplete="off" data-index="${index}" readonly style="cursor:pointer; background-color:white;" value="${userData ? userData.name : ''}">
+            <input type="text" class="modern-input user-search" placeholder="Clic para seleccionar..." data-index="${index}" readonly style="cursor:pointer; background-color:white;" value="${userData ? userData.name : ''}">
             <input type="hidden" name="users[]" class="user-id-input" id="user_id_${index}" value="${userData ? userData.id : ''}">
             ${index > 0 ? `<button type="button" onclick="eliminarInput(${index})" class="btn-delete-input"><i class="fa-solid fa-trash"></i></button>` : ''}
           </div>
-      `;
+        `;
         container.appendChild(div);
-        const inputEl = div.querySelector('.user-search');
-        inputEl.addEventListener('click', () => openClientModalForNewClass());
+        div.querySelector('.user-search').addEventListener('click', () => openClientModalForNewClass());
     };
 
-    window.eliminarInput = function (index) {
-        const el = document.getElementById(`user-group-${index}`);
-        if (el) el.remove();
-    };
-
-    if (document.getElementById('btnAddUser')) {
-        document.getElementById('btnAddUser').addEventListener('click', () => agregarInputUsuario());
-    }
+    window.eliminarInput = (index) => { const el = document.getElementById(`user-group-${index}`); if (el) el.remove(); };
+    if (document.getElementById('btnAddUser')) document.getElementById('btnAddUser').addEventListener('click', () => agregarInputUsuario());
 
     const modalClientes = document.getElementById('modalSeleccionClientes');
-    const btnCloseClients = document.querySelector('.btn-close-clients');
     const btnConfirmClients = document.getElementById('btnConfirmarClientes');
     const listContainer = document.getElementById('listaClientesModal');
     const searchModalInput = document.getElementById('inputBuscarClientesModal');
     let clientModalConfirmCallback = null;
 
-    // Helper wrapper for New Class context
     window.openClientModalForNewClass = function () {
         const tipo = document.getElementById('tipo_clase').value;
         const max = getMaxClients(tipo);
         const currentIds = Array.from(document.querySelectorAll('.user-id-input')).map(el => el.value).filter(v => v);
-
         openClientModal({
-            title: `Selecciona hasta <b>${max}</b> participantes para <b>${tipo}</b>`,
+            title: `Selecciona participantes para <b>${tipo}</b>`,
             currentIds: currentIds,
             maxLimit: max,
             onConfirm: (selectedUsers) => {
                 const container = document.getElementById('usuarios-container');
                 container.innerHTML = '';
-                if (selectedUsers.length === 0) {
-                    agregarInputUsuario(0);
-                } else {
-                    selectedUsers.forEach((user, idx) => agregarInputUsuario(idx, { id: user.id, name: user.name }));
-                }
+                if (selectedUsers.length === 0) agregarInputUsuario(0);
+                else selectedUsers.forEach((user, idx) => agregarInputUsuario(idx, { id: user.id, name: user.name }));
             }
         });
     }
@@ -840,23 +713,12 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openClientModal = function ({ title, currentIds, maxLimit, onConfirm }) {
         if (!modalClientes) return;
         openModal(modalClientes);
-
         clientModalConfirmCallback = onConfirm;
-
         const titleSubtitle = modalClientes.querySelector('.modern-subtitle');
-        if (titleSubtitle) {
-            titleSubtitle.innerHTML = title || 'Seleccionar Clientes';
-            titleSubtitle.dataset.max = maxLimit || 100;
-        }
-
-        renderListaClientes('', currentIds || [], maxLimit || 100);
-        if (searchModalInput) {
-            searchModalInput.value = '';
-            setTimeout(() => searchModalInput.focus(), 100);
-        }
+        if (titleSubtitle) { titleSubtitle.innerHTML = title; titleSubtitle.dataset.max = maxLimit; }
+        renderListaClientes('', currentIds || [], maxLimit);
+        if (searchModalInput) { searchModalInput.value = ''; setTimeout(() => searchModalInput.focus(), 100); }
     };
-
-    if (btnCloseClients) btnCloseClients.addEventListener('click', () => closeModal(modalClientes));
 
     if (searchModalInput) {
         searchModalInput.addEventListener('input', (e) => {
@@ -871,8 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnConfirmClients.addEventListener('click', () => {
             if (clientModalConfirmCallback) {
                 const checked = document.querySelectorAll('input[name="modal_client[]"]:checked');
-                const selectedUsers = Array.from(checked).map(chk => ({ id: chk.value, name: chk.dataset.name }));
-                clientModalConfirmCallback(selectedUsers);
+                clientModalConfirmCallback(Array.from(checked).map(chk => ({ id: chk.value, name: chk.dataset.name })));
             }
             closeModal(modalClientes);
         });
@@ -884,8 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (t === 'ep') return 1;
         if (t === 'duo') return 2;
         if (t === 'trio') return 3;
-        if (t.includes('grupo')) return 10;
-        return 100;
+        return (t.includes('grupo')) ? 10 : 100;
     }
 
     function renderListaClientes(query, selectedIds = [], maxLimit = 100) {
@@ -893,41 +753,30 @@ document.addEventListener('DOMContentLoaded', () => {
         listContainer.innerHTML = '';
         const q = query.toLowerCase().trim();
         const filtered = USERS.filter(u => u.name.toLowerCase().includes(q));
-        if (filtered.length === 0) {
-            listContainer.innerHTML = `<div style="text-align:center; color:#9ca3af; padding:20px;">No se encontraron clientes</div>`;
-            return;
-        }
-        const currentCount = selectedIds.length;
-        const limitReached = currentCount >= maxLimit;
-        const toRender = filtered.slice(0, 100);
-        toRender.forEach(u => {
+        if (filtered.length === 0) { listContainer.innerHTML = `<div class="p-8 text-center text-slate-400 font-bold">No se encontraron clientes</div>`; return; }
+        const limitReached = selectedIds.length >= maxLimit;
+        filtered.slice(0, 100).forEach(u => {
             const isChecked = selectedIds.includes(String(u.id));
             const isDisabled = !isChecked && limitReached;
             const label = document.createElement('label');
-            label.className = 'client-option';
-            if (isDisabled) label.style.opacity = '0.5';
+            label.className = 'client-option flex items-center p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-all';
+            if (isDisabled) label.style.opacity = '0.4';
             label.innerHTML = `
-            <input type="checkbox" name="modal_client[]" value="${u.id}" data-name="${u.name}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
-            <div class="client-card" style="${isDisabled ? 'cursor:not-allowed;' : ''}">
-                <div class="client-info">
-                    <div class="avatar-circle-sm" style="background:${isChecked ? '#4BB7AE' : '#ccc'};">${u.name.charAt(0).toUpperCase()}</div>
-                    <span style="font-size:14px; font-weight:600; color:#374151;">${u.name}</span>
+                <input type="checkbox" class="hidden" name="modal_client[]" value="${u.id}" data-name="${u.name}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
+                <div class="flex items-center gap-3 w-full">
+                    <div class="w-10 h-10 rounded-lg ${isChecked ? 'bg-brandTeal' : 'bg-slate-200'} text-white flex items-center justify-center font-black transition-all">
+                        ${u.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span class="flex-1 font-bold text-slate-700">${u.name}</span>
+                    <div class="w-6 h-6 border-2 ${isChecked ? 'bg-brandTeal border-brandTeal' : 'border-slate-200'} rounded-full flex items-center justify-center transition-all">
+                        ${isChecked ? '<i class="fa-solid fa-check text-white text-[10px]"></i>' : ''}
+                    </div>
                 </div>
-                <i class="fa-solid fa-check check-icon" style="color:#4BB7AE;"></i>
-            </div>
-      `;
+            `;
             const chk = label.querySelector('input');
-            const avatar = label.querySelector('.avatar-circle-sm');
             chk.addEventListener('change', () => {
-                avatar.style.background = chk.checked ? '#4BB7AE' : '#ccc';
-                const checkedCount = listContainer.querySelectorAll('input[type="checkbox"]:checked').length;
-                const nowFull = checkedCount >= maxLimit;
-                const allChecks = listContainer.querySelectorAll('input[type="checkbox"]:not(:checked)');
-                allChecks.forEach(c => {
-                    c.disabled = nowFull;
-                    c.closest('.client-option').style.opacity = nowFull ? '0.5' : '1';
-                    c.nextElementSibling.style.cursor = nowFull ? 'not-allowed' : 'pointer';
-                });
+                const currentIdsFromDom = Array.from(document.querySelectorAll('input[name="modal_client[]"]:checked')).map(c => c.value);
+                renderListaClientes(query, currentIdsFromDom, maxLimit);
             });
             listContainer.appendChild(label);
         });

@@ -65,6 +65,10 @@
                 </div>
 
                 <div class="controls-bar">
+                    <div class="search-container" style="position: relative; flex: 1; max-width: 400px;">
+                        <i class="fas fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #9CA3AF;"></i>
+                        <input type="text" id="searchSuscripciones" class="search-input" placeholder="Buscar por nombre o tipo..." style="padding-left: 45px; width: 100%; height: 45px; border-radius: 12px; border: 1px solid #E5E7EB; outline: none; transition: border-color 0.2s;">
+                    </div>
                     <button onclick="abrirModalCrearSuscripcion()" class="btn-design btn-solid-custom">
                         <i class="fas fa-plus"></i> <span>Añadir Suscripción</span>
                     </button>
@@ -251,6 +255,24 @@
         function cerrarModal() {
             document.getElementById('modalSuscripcion').style.display = 'none';
         }
+
+        // Buscador reactivo
+        document.getElementById('searchSuscripciones').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.facto-table tbody tr');
+
+            rows.forEach(row => {
+                if (row.cells.length < 2) return; // Saltarse "no hay suscripciones"
+                const name = row.cells[0].innerText.toLowerCase();
+                const type = row.cells[1].innerText.toLowerCase();
+                
+                if (name.includes(query) || type.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
     </script>
 </body>
 </html>
