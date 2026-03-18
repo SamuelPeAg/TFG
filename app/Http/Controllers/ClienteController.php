@@ -50,7 +50,7 @@ class ClienteController extends Controller
             $miRegistro = $alumnosReales->firstWhere('user_id', $user->id);
             
             $claseObj = new \stdClass();
-            $claseObj->id_pago = $miRegistro?->id; // ID del registro específico del usuario (para borrarlo)
+            $claseObj->id_pago = $miRegistro?->id; 
             $claseObj->session_key = [
                 'fecha_hora' => $first->fecha_registro->format('Y-m-d H:i:s'),
                 'nombre_clase' => $first->nombre_clase,
@@ -66,7 +66,18 @@ class ClienteController extends Controller
             $claseObj->tiene_credito = $user->tieneCreditosPara($first->tipo_clase);
             
             $principal = $first->entrenador ?? $first->entrenadores->first();
-            $claseObj->entrenador_nombre = $principal->nombre ?? 'Sin asignar';
+            $claseObj->entrenador_nombre = $principal->nombre ?? $principal->name ?? 'Sin asignar';
+            $claseObj->entrenador_foto = $principal && isset($principal->foto_de_perfil) ? asset('storage/' . $principal->foto_de_perfil) : null;
+            $claseObj->entrenador_inicial = strtoupper(substr($claseObj->entrenador_nombre, 0, 1));
+
+            $claseObj->alumnos = $alumnosReales->map(function($p) {
+                return (object)[
+                    'id' => $p->user->id,
+                    'nombre' => $p->user->name,
+                    'inicial' => strtoupper(substr($p->user->name, 0, 1)),
+                    'foto' => $p->user->foto_de_perfil ? asset('storage/' . $p->user->foto_de_perfil) : null
+                ];
+            })->values();
 
             $clasesProcesadas[] = $claseObj;
         }
@@ -275,6 +286,7 @@ class ClienteController extends Controller
                     'ocupacion' => $count,
                     'capacidad' => $capacidad,
                     'isFull' => $isFull,
+                    'ya_reservada' => $alumnosReales->contains('user_id', $user->id),
                     'clientes' => $clientesData,
                     'centro' => $first->centro,
                 ]

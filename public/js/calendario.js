@@ -61,6 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .catch(e => {
                     console.error('Error cargando eventos:', e);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error de conexión',
+                        text: 'No se pudieron cargar las clases. Revisa tu conexión o sesión.',
+                        confirmButtonColor: '#4BB7AE'
+                    });
                     failureCallback(e);
                 });
         },
@@ -537,7 +543,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Success - state is already good. Maybe passive refresh.
                 // refreshModal(sessionKey); // Not strictly needed if we trust the delete.
             } else {
-                alert(data.error || 'Error al eliminar cliente');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.error || 'Error al eliminar cliente',
+                    confirmButtonColor: '#4BB7AE'
+                });
                 if (event) {
                     event.setExtendedProp('alumnos', originalAlumnos);
                     mostrarDetallesEvento(event);
@@ -553,28 +564,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function eliminarSesionCompleta(sessionKey) {
-        if (!confirm('¿Estás seguro de eliminar esta sesión y todos sus pagos?')) return;
-
-        try {
-            const formData = new FormData();
-            formData.append('fecha_hora', sessionKey.fecha_hora);
-            formData.append('nombre_clase', sessionKey.nombre_clase);
-            formData.append('centro', sessionKey.centro);
-            const url = `${window.BASE_URL || ''}/Pagos/delete-session`;
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                body: formData
-            });
-            const data = await res.json();
-            if (res.ok && data.success) {
-                // Remove from calendar
-                const event = findEventBySessionKey(sessionKey);
-                if (event) event.remove();
-
-                closeModal(modalInfo);
-            } else { alert(data.error || 'Error al eliminar la sesión'); }
-        } catch (e) { console.error(e); }
+        Swal.fire({
+            title: '¿Eliminar sesión completa?',
+            text: `Se borrarán todos los pagos y reservas de "${sessionKey.nombre_clase}". Esta acción es irreversible.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF5D7A',
+            cancelButtonColor: '#4BB7AE',
+            confirmButtonText: 'Sí, eliminar sesión',
+            cancelButtonText: 'Cancelar',
+            customClass: { popup: 'rounded-3xl' }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const formData = new FormData();
+                    formData.append('fecha_hora', sessionKey.fecha_hora);
+                    formData.append('nombre_clase', sessionKey.nombre_clase);
+                    formData.append('centro', sessionKey.centro);
+                    const url = `${window.BASE_URL || ''}/Pagos/delete-session`;
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sesión eliminada',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            customClass: { popup: 'rounded-3xl' }
+                        });
+                        const event = findEventBySessionKey(sessionKey);
+                        if (event) event.remove();
+                        closeModal(modalInfo);
+                    } else { 
+                        Swal.fire('Error', data.error || 'No se pudo eliminar la sesión', 'error');
+                    }
+                } catch (e) { 
+                    console.error(e);
+                    Swal.fire('Error', 'Error de conexión al intentar eliminar', 'error');
+                }
+            }
+        });
     }
 
     // fetchAndRenderCalendar is now handled by calendar.refetchEvents() via the events source
