@@ -9,7 +9,7 @@
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <aside class="sidebar-container" id="sidebarContainer">
-    
+
     <div class="sidebar-logo">
         <a href="{{ route('welcome') }}">
             <img src="{{ asset('img/logopng.png') }}" alt="Logo Factomove">
@@ -20,10 +20,9 @@
     <div class="user-profile-card">
         <div class="user-avatar" style="display: flex; align-items: center; justify-content: center;">
             @if(auth()->user()->foto_de_perfil)
-                <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" 
-                     alt="Avatar" 
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" alt="Avatar"
+                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span style="display:none;">{{ substr(auth()->user()->name, 0, 1) }}</span>
             @else
                 {{ substr(auth()->user()->name, 0, 1) }}
@@ -36,33 +35,37 @@
     </div>
 
     <nav class="main-menu">
-        
-        <a href="{{ route('entrenadores.index') }}" 
-           class="menu-item {{ request()->routeIs('entrenadores.*') ? 'active' : '' }}">
+
+        <a href="{{ route('admin.estadisticas') }}"
+            class="menu-item {{ request()->routeIs('admin.estadisticas') ? 'active' : '' }}">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>ESTADÍSTICAS</span>
+        </a>
+
+        <a href="{{ route('entrenadores.index') }}"
+            class="menu-item {{ request()->routeIs('entrenadores.*') ? 'active' : '' }}">
             <i class="fa-solid fa-dumbbell"></i>
             <span>ENTRENADORES</span>
         </a>
 
-        <a href="{{ route('users.index') }}" 
-           class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
+        <a href="{{ route('users.index') }}" class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
             <i class="fa-solid fa-users"></i>
             <span>CLIENTES</span>
         </a>
-        
-        <a href="{{ route('calendario') }}" 
-           class="menu-item {{ request()->routeIs('calendario') || request()->routeIs('calendario.*') ? 'active' : '' }}">
+
+        <a href="{{ route('calendario') }}"
+            class="menu-item {{ request()->routeIs('calendario') || request()->routeIs('calendario.*') ? 'active' : '' }}">
             <i class="fa-solid fa-calendar-check"></i>
             <span>CALENDARIO</span>
         </a>
 
-        <a href="{{ route('facturas') }}" 
-           class="menu-item {{ request()->routeIs('facturas') ? 'active' : '' }}">
+        <a href="{{ route('facturas') }}" class="menu-item {{ request()->routeIs('facturas') ? 'active' : '' }}">
             <i class="fa-solid fa-file-invoice"></i>
             <span>FACTURACIÓN</span>
         </a>
 
-           <a href="{{ route('admin.nominas') }}" 
-           class="menu-item {{ request()->routeIs('admin.nominas*') ? 'active' : '' }}">
+        <a href="{{ route('admin.nominas') }}"
+            class="menu-item {{ request()->routeIs('admin.nominas*') ? 'active' : '' }}">
             <i class="fa-solid fa-file-invoice"></i>
             <span>NOMINAS-ADMIN</span>
         </a>
@@ -70,7 +73,7 @@
     </nav>
 
     <div class="sidebar-footer">
-        
+
         <!-- Configuración movida al perfil de usuario -->
 
         <a href="{{ route('welcome') }}" class="menu-item">
@@ -78,7 +81,8 @@
             <span>VOLVER</span>
         </a>
 
-        <a href="{{ route('configuracion.edit') }}" class="menu-item {{ request()->routeIs('configuracion.edit') ? 'active' : '' }}">
+        <a href="{{ route('configuracion.edit') }}"
+            class="menu-item {{ request()->routeIs('configuracion.edit') ? 'active' : '' }}">
             <i class="fa-solid fa-user-gear"></i>
             <span>MI PERFIL</span>
         </a>
@@ -87,7 +91,8 @@
             @csrf
         </form>
 
-        <a href="#" class="menu-item logout-btn" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <a href="#" class="menu-item logout-btn"
+            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>SALIR</span>
         </a>
@@ -97,78 +102,78 @@
 
 {{-- Script para toggle del menú --}}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebarContainer');
-    const overlay = document.getElementById('sidebarOverlay');
-    
-    console.log('Sidebar script loaded');
-    console.log('menuToggle:', menuToggle);
-    console.log('sidebar:', sidebar);
-    console.log('overlay:', overlay);
-    
-    // Abrir/cerrar sidebar
-    if (menuToggle) {
-        menuToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            console.log('Menu toggle clicked!');
-            
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-            
-            // Cambiar icono
-            const icon = this.querySelector('i');
-            if (sidebar.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-                console.log('Sidebar opened');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-                console.log('Sidebar closed');
-            }
-        });
-        
-        // También añadir evento táctil para móviles
-        menuToggle.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            this.click();
-        }, { passive: false });
-    }
-    
-    // Cerrar al hacer click en overlay
-    if (overlay) {
-        overlay.addEventListener('click', function() {
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-            
-            // Restaurar icono
-            const icon = menuToggle.querySelector('i');
-            icon.classList.remove('fa-times');
-            icon.classList.add('fa-bars');
-            
-            console.log('Sidebar closed via overlay');
-        });
-    }
-    
-    // Cerrar al hacer click en un enlace del menú (solo en móvil)
-    const menuItems = sidebar.querySelectorAll('.menu-item');
-    menuItems.forEach(item => {
-        item.addEventListener('click', function() {
-            if (window.innerWidth < 1024) {
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebarContainer');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        console.log('Sidebar script loaded');
+        console.log('menuToggle:', menuToggle);
+        console.log('sidebar:', sidebar);
+        console.log('overlay:', overlay);
+
+        // Abrir/cerrar sidebar
+        if (menuToggle) {
+            menuToggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                console.log('Menu toggle clicked!');
+
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+
+                // Cambiar icono
+                const icon = this.querySelector('i');
+                if (sidebar.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                    console.log('Sidebar opened');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                    console.log('Sidebar closed');
+                }
+            });
+
+            // También añadir evento táctil para móviles
+            menuToggle.addEventListener('touchstart', function (e) {
+                e.preventDefault();
+                this.click();
+            }, { passive: false });
+        }
+
+        // Cerrar al hacer click en overlay
+        if (overlay) {
+            overlay.addEventListener('click', function () {
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
-                
+
                 // Restaurar icono
                 const icon = menuToggle.querySelector('i');
                 icon.classList.remove('fa-times');
                 icon.classList.add('fa-bars');
-                
-                console.log('Sidebar closed via menu item');
-            }
+
+                console.log('Sidebar closed via overlay');
+            });
+        }
+
+        // Cerrar al hacer click en un enlace del menú (solo en móvil)
+        const menuItems = sidebar.querySelectorAll('.menu-item');
+        menuItems.forEach(item => {
+            item.addEventListener('click', function () {
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+
+                    // Restaurar icono
+                    const icon = menuToggle.querySelector('i');
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+
+                    console.log('Sidebar closed via menu item');
+                }
+            });
         });
     });
-});
 </script>

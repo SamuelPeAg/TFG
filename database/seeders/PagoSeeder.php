@@ -33,10 +33,10 @@ class PagoSeeder extends Seeder
         if ($clases->isEmpty()) return;
 
         foreach ($profesores as $profe) {
-            // Mes actual
-            $this->crearPagos($profe, Carbon::now(), $clientes, $centros, $clases);
-            // Mes pasado
-            $this->crearPagos($profe, Carbon::now()->subMonth(), $clientes, $centros, $clases);
+            // Generar datos para los últimos 6 meses
+            for ($i = 0; $i < 6; $i++) {
+                $this->crearPagos($profe, Carbon::now()->subMonths($i), $clientes, $centros, $clases);
+            }
         }
     }
 
@@ -53,6 +53,7 @@ class PagoSeeder extends Seeder
                 'entrenador_id' => $entrenador->id,
                 'centro' => $centro->nombre,
                 'nombre_clase' => $clase->nombre,
+                'tipo_clase' => collect(['EP', 'DUO', 'TRIO', 'GRUPO'])->random(),
                 'metodo_pago' => collect(['Tarjeta', 'Efectivo', 'Transferencia'])->random(),
                 'iban' => $entrenador->iban ?? 'ES0000000000000000000000',
                 'importe' => rand(20, 60),

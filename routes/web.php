@@ -38,9 +38,9 @@ Route::get('/contacto', function () {
 // Contacto (POST)
 Route::post('/contacto/enviar', function (Request $request) {
     $validated = $request->validate([
-        'name'    => 'required|string|max:255',
-        'email'   => 'required|email|max:255',
-        'phone'   => 'nullable|string|max:20',
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255',
+        'phone' => 'nullable|string|max:20',
         'message' => 'required|string|max:1000',
     ]);
 
@@ -165,6 +165,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/nominas/{id}/pagar', [NominaAdminController::class, 'marcarPagado'])->name('admin.nominas.pagar');
         Route::delete('/admin/nominas/{id}', [NominaAdminController::class, 'destroy'])->name('admin.nominas.destroy');
         Route::get('/admin/nominas/calcular/{user_id}', [NominaAdminController::class, 'calcularNomina'])->name('admin.nominas.calcular');
+
+        // --- ESTADÍSTICAS (Admin) ---
+        Route::get('/admin/estadisticas', [\App\Http\Controllers\AdminEstadisticasController::class, 'index'])->name('admin.estadisticas');
     });
 
 });
