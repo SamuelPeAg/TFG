@@ -267,6 +267,67 @@ class FacturacionController extends Controller
         ]);
     }
 
+    /**
+     * Exporta la facturación filtrada a XML.
+     */
+    public function exportXML(Request $request)
+    {
+        $centro = $request->query('centro', 'todos');
+        $anio = $request->query('anio', date('Y'));
+        $mes = $request->query('mes', '');
+
+        $desde = null;
+        $hasta = null;
+        if ($mes && $anio) {
+            $desde = $anio . '-' . $mes . '-01';
+            $hasta = date('Y-m-t', strtotime($desde));
+        } elseif ($anio) {
+            $desde = $anio . '-01-01';
+            $hasta = $anio . '-12-31';
+        }
+
+        $query = Pago::query()
+            ->with(['user', 'entrenador', 'entrenadores'])
+            ->when($desde, fn($q) => $q->whereDate('fecha_registro', '>=', $desde))
+            ->when($hasta, fn($q) => $q->whereDate('fecha_registro', '<=', $hasta))
+            ->when($centro !== 'todos', fn($q) => $q->where('centro', $centro));
+
+        $pagos = $query->get();
+
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><facturacion></facturacion>');
+        
+        $filtros = $xml->addChild('filtros');
+        $filtros->addChild('centro', htmlspecialchars($centro));
+        $filtros->addChild('anio', $anio);
+        $filtros->addChild('mes', $mes ?: 'Todos');
+        $filtros->addChild('total_registros', $pagos->count());
+        $filtros->addChild('importe_total', number_format($pagos->sum('importe'), 2, '.', ''));
+
+        $items = $xml->addChild('pagos');
+        foreach ($pagos as $pago) {
+            $item = $items->addChild('pago');
+            $item->addChild('id', $pago->id);
+            $item->addChild('fecha', $pago->fecha_registro?->toDateTimeString() ?? 'N/A');
+            $item->addChild('cliente', htmlspecialchars($pago->user->name ?? 'N/A'));
+            $item->addChild('centro', htmlspecialchars($pago->centro ?? 'N/A'));
+            $item->addChild('importe', number_format($pago->importe, 2, '.', ''));
+            $item->addChild('metodo_pago', htmlspecialchars($pago->metodo_pago ?? 'N/A'));
+            $item->addChild('clase', htmlspecialchars($pago->nombre_clase ?? $pago->tipo_clase ?? 'N/A'));
+            
+            $entrenadorStr = $pago->entrenador?->nombre ?? 'N/A';
+            if ($pago->entrenadores->count() > 0) {
+                $entrenadorStr = $pago->entrenadores->pluck('nombre')->implode(', ');
+            }
+            $item->addChild('entrenador', htmlspecialchars($entrenadorStr));
+        }
+
+        $fileName = 'facturacion_' . ($centro !== 'todos' ? str_replace(' ', '_', $centro) : 'todos') . '_' . $anio . ($mes ? '_' . $mes : '') . '.xml';
+
+        return response($xml->asXML(), 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    }
+
     // Devuelve las clases (reservas) que coinciden con cliente y/o entrenador
     public function clases(Request $request)
     {

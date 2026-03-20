@@ -141,10 +141,16 @@
                                 </div>
                             </div>
 
-                            <div class="input-group" style="align-self:center; display: flex; gap: 10px;">
-                                <button class="btn-generate" type="submit"><i class="fa-solid fa-filter"></i> Aplicar
-                                    filtros</button>
-                                <button class="btn-generate" type="button" id="open-pos-btn" style="background: #10b981;"><i class="fa-solid fa-receipt"></i> Tickar</button>
+                            <div class="form-actions" style="margin-top: 20px; grid-column: 1 / -1; display: flex; gap: 12px; flex-wrap: wrap; border-top: 1px solid #f3f4f6; padding-top: 20px;">
+                                <button class="btn-generate" type="submit">
+                                    <i class="fa-solid fa-filter"></i> Aplicar filtros
+                                </button>
+                                <button class="btn-generate" type="button" id="open-pos-btn" style="background: #10b981;">
+                                    <i class="fa-solid fa-receipt"></i> Tickar
+                                </button>
+                                <button class="btn-generate" type="button" id="export-xml-btn" style="background: #3b82f6;">
+                                    <i class="fa-solid fa-file-code"></i> Exportar XML
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -306,7 +312,8 @@
             <!-- Pre-rendered data to avoid IDE JS/Blade errors -->
             <div id="php-data" style="display:none;" 
                  data-clients-url="{{ route('facturas.clases') }}"
-                 data-clients-json="{{ json_encode($todosLosClientes->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'email' => $c->email])) }}">
+                 data-clients-json="{{ json_encode($todosLosClientes->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'email' => $c->email])) }}"
+                 data-centros-json="{{ json_encode($centros->pluck('nombre', 'nombre')) }}">
             </div>
 
         </main>
@@ -336,6 +343,49 @@
                 }, 100);
             } catch (e) {
                 console.error('Error parsing client data');
+            }
+
+            // Lógica para exportar XML
+            const exportBtn = document.getElementById('export-xml-btn');
+            if (exportBtn) {
+                const centrosOptions = JSON.parse(dataNode.getAttribute('data-centros-json') || '{}');
+                
+                exportBtn.addEventListener('click', function() {
+                    const form = this.closest('form');
+                    const formData = new FormData(form);
+                    
+                    Swal.fire({
+                        title: 'Seleccionar Centro',
+                        text: 'Elige el centro del cual deseas exportar la facturación:',
+                        input: 'select',
+                        inputOptions: {
+                            'todos': 'Todos los centros',
+                            ...centrosOptions
+                        },
+                        inputPlaceholder: 'Selecciona un centro',
+                        showCancelButton: true,
+                        confirmButtonText: 'Exportar XML',
+                        cancelButtonText: 'Cancelar',
+                        confirmButtonColor: '#3b82f6',
+                        inputValidator: (value) => {
+                            if (!value) {
+                                return 'Debes seleccionar una opción'
+                            }
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const selectedCentro = result.value;
+                            const params = new URLSearchParams();
+                            
+                            // Mantener año y mes de los filtros actuales
+                            params.append('anio', formData.get('anio'));
+                            params.append('mes', formData.get('mes'));
+                            params.append('centro', selectedCentro);
+                            
+                            window.location.href = "{{ route('facturas.export_xml') }}?" + params.toString();
+                        }
+                    });
+                });
             }
         });
     })();

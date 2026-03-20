@@ -137,6 +137,7 @@ Route::middleware('auth:web,entrenador')->group(function () {
         // Facturación
         Route::get('/facturas', [FacturacionController::class, 'index'])->name('facturas');
         Route::get('/facturas/clases', [FacturacionController::class, 'clases'])->name('facturas.clases');
+        Route::get('/facturas/export-xml', [FacturacionController::class, 'exportXML'])->name('facturas.export_xml');
         Route::post('/facturas/tickar', [FacturacionController::class, 'tickar'])->name('facturas.tickar');
 
         // Usuarios (Resource)
@@ -152,6 +153,7 @@ Route::middleware('auth:web,entrenador')->group(function () {
 
         // Gestión de Entrenadores
         Route::resource('entrenadores', EntrenadorController::class);
+        Route::post('/admin/centros', [\App\Http\Controllers\Admin\CentroManagementController::class, 'store'])->name('admin.centros.store');
 
         // Acciones Avanzadas de Pagos (Solo Admin)
         Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos.index');

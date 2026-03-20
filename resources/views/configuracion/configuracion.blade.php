@@ -7,6 +7,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
         tailwind.config = {
@@ -69,6 +70,12 @@
         <div class="mb-8">
             <h1 class="text-4xl font-extrabold text-gray-800 dark:text-white tracking-tight">Mi Perfil</h1>
             <p class="mt-2 text-gray-500 dark:text-gray-400">Administra tu perfil y preferencias de la cuenta.</p>
+            
+            @if(auth()->user()->hasRole('admin'))
+            <button type="button" id="add-centro-btn" class="mt-6 px-5 py-2.5 bg-brandAqua/20 text-brandTeal border-2 border-brandAqua/50 font-bold rounded-2xl hover:bg-brandAqua/30 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-plus-circle"></i> Añadir Nuevo Centro
+            </button>
+            @endif
         </div>
 
         {{-- TARJETA PRINCIPAL DEL FORMULARIO --}}
@@ -241,6 +248,82 @@
                 reader.readAsDataURL(file);
             }
         }
+
+        @if(auth()->user()->hasRole('admin'))
+        document.getElementById('add-centro-btn')?.addEventListener('click', function() {
+            Swal.fire({
+                title: 'Añadir Nuevo Centro',
+                html: `
+                    <div class="text-left space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Nombre del Centro</label>
+                            <input id="swal-nombre" class="w-full px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-brandTeal" placeholder="Ej: Training City 1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Descripción / Dirección</label>
+                            <textarea id="swal-descripcion" class="w-full px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-brandTeal min-h-[100px]" placeholder="Ej: Calle Principal 123..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Google Maps Link</label>
+                            <input id="swal-maps" class="w-full px-4 py-2 border rounded-xl outline-none focus:ring-2 focus:ring-brandTeal" placeholder="https://goo.gl/maps/...">
+                        </div>
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Guardar Centro',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#4BB7AE',
+                preConfirm: () => {
+                    const nombre = document.getElementById('swal-nombre').value;
+                    const descripcion = document.getElementById('swal-descripcion').value;
+                    const maps = document.getElementById('swal-maps').value;
+
+                    if (!nombre) {
+                        Swal.showValidationMessage('El nombre es obligatorio');
+                        return false;
+                    }
+                    return { nombre, descripcion, maps };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const { nombre, descripcion, maps } = result.value;
+                    
+                    fetch("{{ route('admin.centros.store') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            nombre: nombre,
+                            descripcion: descripcion,
+                            direccion: descripcion,
+                            google_maps_link: maps
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Hubo un problema al procesar la solicitud.', 'error');
+                    });
+                }
+            });
+        });
+        @endif
     </script>
 </body>
 </html>
