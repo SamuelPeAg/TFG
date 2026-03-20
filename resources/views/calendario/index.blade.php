@@ -82,6 +82,12 @@
         
         /* Modal tweaks */
         .modal-overlay { z-index: 1000 !important; }
+        
+        /* Shifting the alert to leave the center modal visible */
+        .shift-left-alert {
+            margin-left: -320px !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+        }
     </style>
     
     <link rel="stylesheet" href="{{ asset('css/global.css') }}">
@@ -183,8 +189,8 @@
     </script>
 
     @vite('resources/js/app.js')
-    <script src="{{ asset('js/calendario.js') }}?v=1.2"></script>
-    <script src="{{ asset('js/wizard_clase.js') }}?v=1.1"></script>
+    <script src="{{ asset('js/wizard_clase.js') }}?v=1.2"></script>
+    <script src="{{ asset('js/calendario.js') }}?v=1.3"></script>
     <script src="{{ asset('js/calendario-modal-logout.js') }}"></script>
 </body>
 </html>

@@ -22,6 +22,8 @@ class Pago extends Model
         'importe',
         'fecha_registro',
         'recurrence_group',
+        'capacidad',
+        'suscripciones_permitidas',
     ];
 
     protected $casts = [

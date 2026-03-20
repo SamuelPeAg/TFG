@@ -1,4 +1,4 @@
-<div id="infoPopup" class="modal-overlay" aria-hidden="true" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(8px); z-index:9999; justify-content:center; align-items:center;">
+<div id="infoPopup" class="modal-overlay" aria-hidden="true" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(8px); z-index:1050; justify-content:center; align-items:center;">
     <div class="modal-box modal-expanded reveal shadow-2xl overflow-hidden" style="max-width:900px; width:95%; background:white; position:relative; border-radius:40px; border:none; padding:0;">
         
         <!-- Header Image/Color with Overlay Close -->

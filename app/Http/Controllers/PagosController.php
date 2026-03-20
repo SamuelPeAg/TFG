@@ -174,6 +174,9 @@ class PagosController extends Controller
             return response()->json(['success' => false, 'message' => 'Debes seleccionar al menos un centro.'], 422);
         }
 
+        $capacidad = $request->input('capacidad');
+        $suscripciones_permitidas = $request->input('suscripciones_permitidas', []);
+        
         $fechaInicio = Carbon::parse($request->input('fecha_hora'));
         $trainers = $request->input('trainers', []);
         $firstTrainerId = !empty($trainers) ? $trainers[0] : null;
@@ -194,6 +197,14 @@ class PagosController extends Controller
             while ($currentDate <= $recurrenceEnd) {
                 $participants = $request->input('participants', []);
                 
+                // Comprobar capacidad si se ha definido
+                if ($capacidad && count($participants) > $capacidad) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "La capacidad máxima es de {$capacidad} personas. Has seleccionado " . count($participants)
+                    ], 422);
+                }
+
                 if (empty($participants)) {
                     $placeholder = Pago::create([
                         'user_id' => null,
@@ -201,6 +212,8 @@ class PagosController extends Controller
                         'centro' => $centroNombre,
                         'nombre_clase' => $request->input('nombre_clase'),
                         'tipo_clase' => $request->input('tipo_clase'),
+                        'capacidad' => $capacidad,
+                        'suscripciones_permitidas' => !empty($suscripciones_permitidas) ? json_encode($suscripciones_permitidas) : null,
                         'metodo_pago' => 'EF',
                         'importe' => 0,
                         'fecha_registro' => $currentDate,
@@ -212,15 +225,40 @@ class PagosController extends Controller
                         $user = User::findOrFail($pData['user_id']);
 
                         if ($pData['metodo_pago'] === 'CREDITO') {
-                            if (!$user->tieneCreditosPara($request->tipo_clase, $id_centro)) {
-                                if ($currentDate->equalTo($fechaInicio)) {
+                            // Si hay suscripciones permitidas específicas, comprobar que el usuario tenga UNA de ellas activa y con saldo
+                            if (!empty($suscripciones_permitidas)) {
+                                $tieneSuscripcionValida = $user->suscripciones()
+                                    ->where('estado', 'activo')
+                                    ->where('saldo_actual', '>', 0)
+                                    ->whereIn('id_suscripcion', $suscripciones_permitidas)
+                                    ->exists();
+
+                                if (!$tieneSuscripcionValida) {
                                     return response()->json([
                                         'success' => false,
-                                        'message' => "El usuario {$user->name} no tiene créditos suficientes para: {$request->tipo_clase} en {$centroNombre}"
+                                        'message' => "El usuario {$user->name} no tiene ninguna de las suscripciones permitidas para esta clase."
                                     ], 422);
                                 }
+                                
+                                // Descontar crédito de una de las permitidas
+                                $su = $user->suscripciones()
+                                    ->where('estado', 'activo')
+                                    ->where('saldo_actual', '>', 0)
+                                    ->whereIn('id_suscripcion', $suscripciones_permitidas)
+                                    ->first();
+                                $su->decrement('saldo_actual');
                             } else {
-                                $user->descontarCredito($request->tipo_clase, $id_centro);
+                                // Lógica por defecto (jerarquía)
+                                if (!$user->tieneCreditosPara($request->tipo_clase, $id_centro)) {
+                                    if ($currentDate->equalTo($fechaInicio)) {
+                                        return response()->json([
+                                            'success' => false,
+                                            'message' => "El usuario {$user->name} no tiene créditos suficientes para: {$request->tipo_clase} en {$centroNombre}"
+                                        ], 422);
+                                    }
+                                } else {
+                                    $user->descontarCredito($request->tipo_clase, $id_centro);
+                                }
                             }
                         }
 
@@ -233,6 +271,8 @@ class PagosController extends Controller
                             'centro' => $centroNombre,
                             'nombre_clase' => $request->input('nombre_clase'),
                             'tipo_clase' => $request->input('tipo_clase'),
+                            'capacidad' => $capacidad,
+                            'suscripciones_permitidas' => !empty($suscripciones_permitidas) ? json_encode($suscripciones_permitidas) : null,
                             'metodo_pago' => $pData['metodo_pago'],
                             'recurrence_group' => $recurrenceGroup,
                         ]);
@@ -240,6 +280,7 @@ class PagosController extends Controller
                         if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
 
                         if ($currentDate->equalTo($fechaInicio) && ($pData['is_standing'] ?? false)) {
+                            // ... (standing reservation logic remains same)
                             StandingReservation::updateOrCreate(
                                 [
                                     'user_id' => $user->id,
@@ -342,9 +383,22 @@ public function addTrainerToSession(Request $request)
         if (!$request->user()->hasRole('admin'))
             return response()->json(['error' => 'No permiso'], 403);
         $fecha = Carbon::parse($request->fecha_hora);
-        $existingPago = Pago::where('fecha_registro', $fecha)->where('nombre_clase', $request->nombre_clase)->where('centro', $request->centro)->first();
+        $pagosExistentes = Pago::where('fecha_registro', $fecha)
+            ->where('nombre_clase', $request->nombre_clase)
+            ->where('centro', $request->centro)
+            ->get();
+            
+        $existingPago = $pagosExistentes->first();
         if (!$existingPago)
             return response()->json(['error' => 'No encontrada'], 404);
+
+        // Comprobar capacidad
+        if ($existingPago->capacidad) {
+            $alumnosActuales = $pagosExistentes->filter(fn($p) => $p->user_id !== null)->count();
+            if ($alumnosActuales >= $existingPago->capacidad) {
+                return response()->json(['error' => "La clase está llena (Máx: {$existingPago->capacidad})"], 422);
+            }
+        }
 
         $metodo = $request->metodo_pago ?? $existingPago->metodo_pago;
         $user = User::findOrFail($request->user_id);
@@ -352,9 +406,31 @@ public function addTrainerToSession(Request $request)
         $id_centro = $centroObj ? $centroObj->id : null;
 
         if ($metodo === 'CREDITO') {
-            if (!$user->tieneCreditosPara($existingPago->tipo_clase, $id_centro))
-                return response()->json(['error' => 'Sin créditos'], 422);
-            $user->descontarCredito($existingPago->tipo_clase, $id_centro);
+            $permitidas = $existingPago->suscripciones_permitidas ? json_decode($existingPago->suscripciones_permitidas, true) : [];
+            
+            if (!empty($permitidas)) {
+                $tieneSuscripcionValida = $user->suscripciones()
+                    ->where('estado', 'activo')
+                    ->where('saldo_actual', '>', 0)
+                    ->whereIn('id_suscripcion', $permitidas)
+                    ->exists();
+
+                if (!$tieneSuscripcionValida) {
+                    return response()->json(['error' => "Este usuario no tiene una suscripción permitida para esta clase."], 422);
+                }
+                
+                // Descontar
+                $su = $user->suscripciones()
+                    ->where('estado', 'activo')
+                    ->where('saldo_actual', '>', 0)
+                    ->whereIn('id_suscripcion', $permitidas)
+                    ->first();
+                $su->decrement('saldo_actual');
+            } else {
+                if (!$user->tieneCreditosPara($existingPago->tipo_clase, $id_centro))
+                    return response()->json(['error' => 'Sin créditos'], 422);
+                $user->descontarCredito($existingPago->tipo_clase, $id_centro);
+            }
         }
 
         $newPago = Pago::create([
@@ -366,6 +442,8 @@ public function addTrainerToSession(Request $request)
             'centro' => $existingPago->centro,
             'nombre_clase' => $existingPago->nombre_clase,
             'tipo_clase' => $existingPago->tipo_clase,
+            'capacidad' => $existingPago->capacidad,
+            'suscripciones_permitidas' => $existingPago->suscripciones_permitidas,
             'metodo_pago' => $metodo,
         ]);
         $newPago->entrenadores()->sync($existingPago->entrenadores->pluck('id')->toArray());

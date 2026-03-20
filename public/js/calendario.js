@@ -541,7 +541,12 @@ document.addEventListener('DOMContentLoaded', () => {
             cancelButtonColor: '#4BB7AE',
             confirmButtonText: 'Sí, eliminar sesión',
             cancelButtonText: 'Cancelar',
-            customClass: { popup: 'rounded-[32px]' }
+            customClass: { 
+                popup: 'rounded-[32px] shift-left-alert' 
+            },
+            didOpen: (popup) => {
+                popup.style.zIndex = '10000'; // Fuerza que esté por delante
+            }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {

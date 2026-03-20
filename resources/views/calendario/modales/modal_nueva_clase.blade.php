@@ -34,10 +34,11 @@
             <div class="nav-step" data-step="3">
                 <div class="nav-step-icon">3</div>
                 <div class="nav-step-info">
-                    <span class="step-label">Facturación</span>
-                    <span class="step-desc">Detalles de pagos</span>
+                    <span class="step-label">Accesibilidad</span>
+                    <span class="step-desc">Filtro de suscripciones</span>
                 </div>
             </div>
+
         </div>
 
         <!-- Sidebar Footer -->
@@ -97,6 +98,11 @@
                                 <option value="Grupo especial">Grupo especial</option>
                                 <option value="Grupo">Grupo</option>
                             </select>
+                        </div>
+                        <!-- Capacidad -->
+                        <div id="capacidad-container" class="input-group-clean" style="display: none; margin-top: 15px;">
+                            <label>Límite de Personas (Solo para Grupos)</label>
+                            <input id="capacidad" type="number" name="capacidad" class="input-clean" min="1" placeholder="Ej. 10">
                         </div>
                     </div>
 
@@ -175,23 +181,36 @@
                     </div>
                 </div>
 
-                <!-- STEP 3 -->
+                <!-- STEP 3 (NEW): ACCESIBILIDAD -->
                 <div id="step-3" class="wizard-step" style="display:none;">
-                    <div class="form-section-title">DETALLES DE PAGO INDIVIDUAL</div>
-                    <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Revisa los importes y métodos de pago para cada asistente.</p>
+                    <div class="form-section-title">CONTROL DE ACCESO POR SUSCRIPCIÓN</div>
+                    <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Selecciona qué paquetes de suscripción tienen permitido el acceso a esta sesión específica.</p>
                     
-                    <div class="payments-table-container">
-                        <div class="table-header">
-                            <span>Alumno</span>
-                            <span>Precio (€)</span>
-                            <span>Método</span>
-                        </div>
-                        <div id="payment-rows-container" class="table-body">
-                            <!-- JS Fills -->
-                        </div>
+                    <div class="subscriptions-grid-clean" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+                        @foreach($suscripciones as $sus)
+                            <label class="subscription-access-card" style="display: block; cursor: pointer;">
+                                <input type="checkbox" name="suscripciones_permitidas[]" value="{{ $sus->id }}" style="opacity:0; position:absolute; pointer-events:none;" class="sus-checkbox">
+                                <div class="sus-card-content" style="border: 2px solid #f1f5f9; border-radius: 16px; padding: 16px; transition: all 0.2s; position: relative; background: #fafafa;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                        <span style="font-weight: 800; font-size: 15px; color: #0f172a;">{{ $sus->nombre }}</span>
+                                        <div class="check-dot" style="width: 20px; height: 20px; border-radius: 50%; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; background: white;">
+                                            <i class="fa-solid fa-check" style="font-size: 10px; color: white; display: none;"></i>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
+                                            Tipo: {{ $sus->tipo_credito }}
+                                        </span>
+                                        <span style="font-size: 11px; font-weight: 600; color: #94a3b8;">
+                                            Centro: {{ $sus->centro->nombre ?? 'Global' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </label>
+                        @endforeach
                     </div>
+                    <div style="margin-top: 25px; padding: 12px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px; color: #0369a1; font-size: 13px;">
                 </div>
-
             </div>
 
             <!-- Footer Actions -->
@@ -217,167 +236,6 @@
       @json($users->map(fn($u)=>['id'=>$u->id,'name'=>$u->name])->values())
   </script>
 
-  <script>
-    (function() {
-        let currentStep = 1;
-        const totalSteps = 3;
-
-        const modal = document.getElementById('modalNuevaClase');
-        const form = document.getElementById('formNuevaClaseWizard');
-        const btnNext = document.getElementById('btn-next-step');
-        const btnPrev = document.getElementById('btn-prev-step');
-        const btnSubmit = document.getElementById('btn-submit-wizard');
-        const navSteps = document.querySelectorAll('.nav-step');
-        const wizardTitle = document.getElementById('wizard-title');
-        const wizardSubtitle = document.getElementById('wizard-subtitle');
-
-        const stepTitles = {
-            1: { title: "Configuración Inicial", sub: "Define centros, nombre y tipo de sesión." },
-            2: { title: "Planificación Horaria", sub: "Establece la fecha, precio y participantes." },
-            3: { title: "Revisión de Pagos", sub: "Confirma los detalles económicos por asistente." }
-        };
-
-        function updateUI() {
-            document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
-            document.getElementById(`step-${currentStep}`).style.display = 'block';
-
-            navSteps.forEach(ns => {
-                const s = parseInt(ns.dataset.step);
-                ns.classList.toggle('active', s === currentStep);
-                ns.classList.toggle('completed', s < currentStep);
-            });
-
-            btnPrev.style.display = currentStep > 1 ? 'flex' : 'none';
-            btnNext.style.display = currentStep < totalSteps ? 'flex' : 'none';
-            btnSubmit.style.display = currentStep === totalSteps ? 'flex' : 'none';
-
-            if (stepTitles[currentStep]) {
-                wizardTitle.textContent = stepTitles[currentStep].title;
-                wizardSubtitle.textContent = stepTitles[currentStep].sub;
-            }
-
-            if (currentStep === 3) prepareStep3();
-        }
-
-        btnNext.addEventListener('click', () => {
-             if (validateStep(currentStep)) { currentStep++; updateUI(); }
-        });
-        btnPrev.addEventListener('click', () => { currentStep--; updateUI(); });
-
-        function validateStep(step) {
-            const container = document.getElementById(`step-${step}`);
-            const required = container.querySelectorAll('[required]');
-            let ok = true;
-            required.forEach(i => { if(!i.value) { i.style.borderColor = 'red'; ok = false; } else i.style.borderColor = ''; });
-            return ok;
-        }
-
-        const clientInput = document.getElementById('client-search-input');
-        const suggestionsBox = document.getElementById('client-suggestions');
-        const selectedList = document.getElementById('selected-clients-list');
-        const clientsCountEl = document.getElementById('clients-count');
-        let usersData = JSON.parse(document.getElementById('users_json').textContent || '[]');
-
-        clientInput.addEventListener('input', (e) => {
-            const q = e.target.value.toLowerCase().trim();
-            if (q.length < 1) { suggestionsBox.style.display = 'none'; return; }
-            const matches = usersData.filter(u => u.name.toLowerCase().includes(q)).slice(0, 10);
-            suggestionsBox.innerHTML = matches.map(u => `<div class="suggestion-item" data-id="${u.id}" data-name="${u.name}" style="padding:10px 15px; cursor:pointer; border-bottom:1px solid #f1f5f9;">${u.name}</div>`).join('');
-            suggestionsBox.style.display = 'block';
-
-            suggestionsBox.querySelectorAll('.suggestion-item').forEach(it => {
-                it.addEventListener('click', () => {
-                    addParticipant(it.dataset.id, it.dataset.name);
-                    clientInput.value = '';
-                    suggestionsBox.style.display = 'none';
-                });
-            });
-        });
-
-        function addParticipant(id, name) {
-            if (document.querySelector(`.participant-item-row[data-id="${id}"]`)) return;
-            const empty = selectedList.querySelector('.empty-state-clean');
-            if (empty) empty.remove();
-
-            const div = document.createElement('div');
-            div.className = 'participant-item-row';
-            div.dataset.id = id;
-            div.style.cssText = "display:flex; align-items:center; gap:12px; padding:10px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:5px;";
-            div.innerHTML = `
-                <div class="t-avatar" style="width:28px; height:28px; font-size:10px; background: #4BB7AE; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center;">${name.charAt(0)}</div>
-                <span style="flex:1; font-weight:600; font-size:13px;">${name}</span>
-                <input type="hidden" name="users[]" value="${id}">
-                <button type="button" class="remove-p" style="border:none; background:none; color:#94a3b8; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-            `;
-            div.querySelector('.remove-p').addEventListener('click', () => {
-                div.remove();
-                if (selectedList.children.length === 0) selectedList.innerHTML = '<div class="empty-state-clean"><p>Busca alumnos</p></div>';
-                updatePCount();
-            });
-            selectedList.appendChild(div);
-            updatePCount();
-        }
-
-        function updatePCount() { clientsCountEl.textContent = `(${document.querySelectorAll('.participant-item-row').length})`; }
-
-        function prepareStep3() {
-            const container = document.getElementById('payment-rows-container');
-            const participants = document.querySelectorAll('.participant-item-row');
-            const basePrice = document.getElementById('precio_base').value || 0;
-            container.innerHTML = '';
-            participants.forEach(p => {
-                const id = p.dataset.id;
-                const name = p.querySelector('span').textContent;
-                const row = document.createElement('div');
-                row.className = 'payment-row';
-                row.style.cssText = "display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; padding:10px; border-bottom:1px solid #f1f5f9;";
-                row.innerHTML = `
-                    <span style="font-weight:600; font-size:13px;">${name}</span>
-                    <input type="number" step="0.01" name="costs[${id}]" value="${basePrice}" class="input-clean" style="padding:4px 8px; font-size:12px;">
-                    <select name="methods[${id}]" class="input-clean" style="padding:4px 8px; font-size:12px;">
-                        <option value="BONO">BONO</option><option value="EFECTIVO">EFECTIVO</option><option value="TARJETA">TARJETA</option>
-                    </select>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        btnSubmit.addEventListener('click', async () => {
-            const payload = {
-                centros: Array.from(document.getElementById('centros').selectedOptions).map(o=>o.value),
-                nombre_clase: document.getElementById('nombre_clase').value,
-                tipo_clase: document.getElementById('tipo_clase').value,
-                trainers: Array.from(document.querySelectorAll('input[name="trainers[]"]:checked')).map(i=>i.value),
-                fecha_hora: document.getElementById('fecha_hora').value,
-                is_recurring: document.getElementById('is_recurring').checked ? 1 : 0,
-                recurrence_end: document.getElementById('recurrence_end').value,
-                users: Array.from(document.querySelectorAll('input[name="users[]"]')).map(i=>i.value),
-                costs: {}, methods: {}
-            };
-            document.querySelectorAll('input[name^="costs["]').forEach(i => { payload.costs[i.name.match(/\[(\d+)\]/)[1]] = i.value; });
-            document.querySelectorAll('select[name^="methods["]').forEach(s => { payload.methods[s.name.match(/\[(\d+)\]/)[1]] = s.value; });
-
-            try {
-                Swal.fire({title:'Guardando...', didOpen:()=>Swal.showLoading()});
-                const res = await fetch(form.getAttribute('data-url'), {
-                    method:'POST', headers:{'Content-Type':'application/json','X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content},
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (data.success) { 
-                    Swal.fire({icon:'success', title:'Guardado', timer:1500});
-                    location.reload(); 
-                } else { Swal.fire('Error', data.error || 'Error al guardar', 'error'); }
-            } catch(e){ Swal.fire('Error','Error de red','error'); }
-        });
-
-        document.getElementById('is_recurring').addEventListener('change', e => {
-            document.getElementById('recurrence_options').style.display = e.target.checked ? 'block' : 'none';
-        });
-
-        updateUI();
-    })();
-  </script>
 
   <style>
     .modal-box { font-family: 'Inter', sans-serif; }
@@ -405,5 +263,64 @@
     .btn-clean-primary:hover { background: #3da49c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(75, 183, 174, 0.3); }
     .btn-clean-success { background: linear-gradient(90deg, #39c5a7, #eb567a); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; }
     .btn-clean-text { background: none; border: none; color: #64748b; cursor: pointer; font-weight: 600; }
+    /* --- Select2 Overrides for Modern UI --- */
+    .select2-container--default .select2-selection--multiple {
+        background-color: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        min-height: 48px !important;
+        padding: 4px 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: wrap !important;
+        transition: all 0.2s ease !important;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #4BB7AE !important;
+        background-color: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(75, 183, 174, 0.1) !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #4BB7AE !important;
+        border: none !important;
+        border-radius: 8px !important;
+        color: white !important;
+        padding: 4px 10px 4px 28px !important; /* Spacing for the X on the left */
+        margin: 4px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: rgba(255,255,255,0.8) !important;
+        border: none !important;
+        background: rgba(0,0,0,0.1) !important;
+        height: 100% !important;
+        width: 24px !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        border-radius: 8px 0 0 8px !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        background: rgba(0,0,0,0.2) !important;
+        color: white !important;
+    }
+    .select2-container--default .select2-search--inline .select2-search__field {
+        margin: 4px !important;
+        height: 32px !important;
+        font-family: inherit !important;
+    }
+    /* Hide the default small X in corners to match our cleaner badge style if necessary */
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__display {
+        padding-left: 0 !important;
+    }
   </style>
 </div>
