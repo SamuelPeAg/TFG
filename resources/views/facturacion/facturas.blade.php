@@ -12,17 +12,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .pos-btn-icon { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; color: #64748b; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .pos-btn-icon:hover { background: #e2e8f0; color: #1e293b; }
-        .pos-btn-icon.active { background: #10b981; color: white; }
-        .pos-item-btn.wiggling i:first-child { animation: wiggle 0.3s infinite; }
-        @keyframes wiggle { 0% { transform: rotate(0deg); } 25% { transform: rotate(3deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-3deg); } 100% { transform: rotate(0deg); } }
-        .pos-item-edit-overlay { position: absolute; inset: 0; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #10b981; opacity: 0; transition: opacity 0.2s; border: 2px solid #10b981; border-radius: 12px; pointer-events: none; }
-        .pos-item-btn:hover .pos-item-edit-overlay { opacity: 1; }
-        .remove-custom { position: absolute; top: -8px; right: -8px; background: white; border-radius: 50%; color: #ef4444; font-size: 18px; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .swal2-html-container { overflow-x: hidden !important; }
-        .gym-input { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; font-size: 14px !important; transition: all 0.2s !important; box-shadow: none !important; }
-        .gym-input:focus { border-color: #10b981 !important; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important; }
+        /* Base specific classes to avoid !important */
+        .dashboard-container .pos-btn-icon { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; color: #64748b; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .dashboard-container .pos-btn-icon:hover { background: #e2e8f0; color: #1e293b; }
+        .dashboard-container .pos-btn-icon.active { background: #10b981; color: white; }
+        
+        /* Animations */
+        .pos-item-btn.wiggling i:first-child { animation: wiggle-session 0.3s infinite; }
+        @keyframes wiggle-session { 0% { transform: rotate(0deg); } 25% { transform: rotate(3deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-3deg); } 100% { transform: rotate(0deg); } }
+        
+        /* Layout overlays */
+        .dashboard-container .pos-item-edit-overlay { position: absolute; inset: 0; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #10b981; opacity: 0; transition: opacity 0.2s; border: 2px solid #10b981; border-radius: 12px; pointer-events: none; }
+        .dashboard-container .pos-item-btn:hover .pos-item-edit-overlay { opacity: 1; }
+        
+        /* UI Elements */
+        .dashboard-container .remove-custom { position: absolute; top: -8px; right: -8px; background: white; border-radius: 50%; color: #ef4444; font-size: 18px; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .dashboard-container .swal2-html-container { overflow-x: hidden; }
+        
+        .dashboard-container .gym-input { border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.2s; box-shadow: none; width: 100%; padding: 8px 12px; }
+        .dashboard-container .gym-input:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
     </style>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -283,9 +291,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Success Modal -->
+                <!-- Success Modal -->
             <div id="success-modal" class="pos-modal">
                 <div class="pos-container" style="max-width: 400px; height: auto; text-align: center; padding: 40px 24px;">
                     <div style="font-size: 4rem; color: #10b981; margin-bottom: 24px;">
@@ -297,36 +303,40 @@
                 </div>
             </div>
 
+            <!-- Pre-rendered data to avoid IDE JS/Blade errors -->
+            <div id="php-data" style="display:none;" 
+                 data-clients-url="{{ route('facturas.clases') }}"
+                 data-clients-json="{{ json_encode($todosLosClientes->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'email' => $c->email])) }}">
+            </div>
+
         </main>
     </div>
 
 </body>
 
 </html>
-<script>
-    window.clasesRelUrl = "{{ route('facturas.clases') }}";
-</script>
 <script src="{{ asset('js/facturacion-modal.js') }}"></script>
 <script src="{{ asset('js/pos-tickar.js') }}"></script>
 <script>
-    // Inicializar autocomplete con los datos de clientes
-    const clientesData = @json($todosLosClientes->map(function ($c) {
-        return ['id' => $c->id, 'name' => $c->name, 'email' => $c->email];
-    }));
-    
-    // Esperar a que el DOM esté listo y el script se haya cargado
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof window.initFacturacionAutocomplete === 'function') {
-            window.initFacturacionAutocomplete(clientesData);
-        } else {
-            // Si no está disponible, intentar con un pequeño delay
-            setTimeout(function() {
-                if (typeof window.initFacturacionAutocomplete === 'function') {
-                    window.initFacturacionAutocomplete(clientesData);
-                } else {
-                    console.warn('initFacturacionAutocomplete still not available');
-                }
-            }, 500);
-        }
-    });
+    (function() {
+        const dataNode = document.getElementById('php-data');
+        if (!dataNode) return;
+
+        window.clasesRelUrl = dataNode.getAttribute('data-clients-url');
+        const clientsRaw = dataNode.getAttribute('data-clients-json');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const clientesData = JSON.parse(clientsRaw);
+                const initWait = setInterval(() => {
+                    if (typeof window.initFacturacionAutocomplete === 'function') {
+                        window.initFacturacionAutocomplete(clientesData);
+                        clearInterval(initWait);
+                    }
+                }, 100);
+            } catch (e) {
+                console.error('Error parsing client data');
+            }
+        });
+    })();
 </script>

@@ -105,6 +105,14 @@
         @endauth
 
         <main class="main-content">
+            <div id="calendar-config" style="display: none;"
+                 data-base-url="{{ url('/') }}"
+                 data-user-role="{{ Auth::check() ? (Auth::user()->roles->pluck('name')->first() ?? '') : '' }}"
+                 data-user-id="{{ Auth::id() }}"
+                 data-is-admin="{{ Auth::check() && Auth::user()->hasRole('admin') ? 'true' : 'false' }}"
+                 data-is-trainer="{{ Auth::check() && Auth::user()->hasRole('entrenador') ? 'true' : 'false' }}"
+                 data-trainers='@json($entrenadores->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->values())'>
+            </div>
             <div class="p-6 md:p-10 reveal">
                 
                 <!-- Premium Header for Admin/Trainer -->
@@ -178,14 +186,15 @@
     @include('calendario.modales.modal_seleccion_clientes')
 
     <script>
-        window.BASE_URL = "{{ url('/') }}";
-        window.CURRENT_USER_ROLE = "{{ Auth::check() ? (Auth::user()->roles->pluck('name')->first() ?? '') : '' }}";
-        window.CURRENT_USER_ID = {{ Auth::id() ?? 'null' }};
-        window.IS_ADMIN = {{ Auth::check() && Auth::user()->hasRole('admin') ? 'true' : 'false' }};
-        window.IS_TRAINER = {{ Auth::check() && Auth::user()->hasRole('entrenador') ? 'true' : 'false' }};
-        
-        // Entrenadores para asignación rápida
-        window.TRAINERS = @json($entrenadores->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->values());
+        (function() {
+            const config = document.getElementById('calendar-config');
+            window.BASE_URL = config.getAttribute('data-base-url');
+            window.CURRENT_USER_ROLE = config.getAttribute('data-user-role');
+            window.CURRENT_USER_ID = config.getAttribute('data-user-id');
+            window.IS_ADMIN = config.getAttribute('data-is-admin') === 'true';
+            window.IS_TRAINER = config.getAttribute('data-is-trainer') === 'true';
+            window.TRAINERS = JSON.parse(config.getAttribute('data-trainers'));
+        })();
     </script>
 
     @vite('resources/js/app.js')

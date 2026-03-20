@@ -45,6 +45,10 @@
             text-transform: uppercase;
             letter-spacing: 0.025em;
         }
+
+        /* Increase specificity to remove !important */
+        .dashboard-container .btn-design.btn-solid-custom { background: #4BB7AE; color: white; border: none; }
+        .dashboard-container .btn-design.btn-solid-custom:hover { background: #3f9c94; }
     </style>
 </head>
 
@@ -90,6 +94,7 @@
                     </div>
                 @endif
 
+                <div id="suscripciones-data-store" style="display: none;" data-suscripciones='@json($suscripciones->keyBy("id"))'></div>
                 <div class="table-container">
                     <table class="facto-table">
                         <thead>
@@ -102,7 +107,7 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="suscripciones-container">
                             @forelse($suscripciones as $s)
                             <tr>
                                 <td>{{ $s->nombre }}</td>
@@ -117,7 +122,7 @@
                                 <td>
                                     <div class="action-buttons">
                                         <button class="btn-icon btn-edit" 
-                                                onclick='abrirModalEditarSuscripcion({!! json_encode($s) !!})'>
+                                                onclick='abrirModalEditarSuscripcionById({{ $s->id }})'>
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
                                         <form action="{{ route('suscripciones.destroy', $s->id) }}" method="POST" onsubmit="return confirm('¿Eliminar esta suscripción?')">
@@ -228,15 +233,12 @@
     </div>
 
     <script>
-        function abrirModalCrearSuscripcion() {
-            document.getElementById('modalTitle').innerText = 'Nueva Suscripción';
-            document.getElementById('formSuscripcion').action = "{{ route('suscripciones.store') }}";
-            document.getElementById('methodField').innerHTML = '';
-            document.getElementById('formSuscripcion').reset();
-            document.getElementById('modalSuscripcion').style.display = 'flex';
-        }
+        const suscripcionesData = JSON.parse(document.getElementById('suscripciones-data-store')?.getAttribute('data-suscripciones') || '{}');
 
-        function abrirModalEditarSuscripcion(s) {
+        function abrirModalEditarSuscripcionById(id) {
+            const s = suscripcionesData[id];
+            if (!s) return;
+            
             document.getElementById('modalTitle').innerText = 'Editar Suscripción';
             document.getElementById('formSuscripcion').action = "/suscripciones/" + s.id;
             document.getElementById('methodField').innerHTML = '<input type="hidden" name="_method" value="PUT">';
@@ -249,6 +251,14 @@
             document.getElementById('s_limite').value = s.limite_acumulacion;
             document.getElementById('s_reset').value = s.meses_reset || '';
             
+            document.getElementById('modalSuscripcion').style.display = 'flex';
+        }
+
+        function abrirModalCrearSuscripcion() {
+            document.getElementById('modalTitle').innerText = 'Nueva Suscripción';
+            document.getElementById('formSuscripcion').action = "{{ route('suscripciones.store') }}";
+            document.getElementById('methodField').innerHTML = '';
+            document.getElementById('formSuscripcion').reset();
             document.getElementById('modalSuscripcion').style.display = 'flex';
         }
 

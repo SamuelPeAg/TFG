@@ -25,6 +25,13 @@
         }
     </script>
 
+    <style>
+        /* Increase specificity to avoid !important */
+        .flex .main-content .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .flex main .bg-white.rounded-2xl { border-width: 1px; border-style: solid; border-color: #f1f5f9; }
+    </style>
     <link rel="stylesheet" href="{{ asset('css/nominas-admin-styles.css') }}">
 </head>
 
@@ -161,6 +168,8 @@
                     <h3 class="text-xl font-bold text-slate-800">Pendientes de Revisión</h3>
                 </div>
 
+                <div id="borradores-data-store" style="display: none;" data-borradores='@json($borradores->keyBy("id"))'></div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
                     <table class="w-full text-left min-w-[800px]">
                         <thead class="bg-slate-50 border-b border-slate-200">
@@ -173,59 +182,53 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            @foreach($borradores as $nomina)
-                            <tr class="hover:bg-slate-50/80 transition-colors search-item">
-                                <td class="py-4 px-6">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden">
-                                            @if($nomina->user->foto_de_perfil)
-                                                <img src="{{ asset('storage/' . $nomina->user->foto_de_perfil) }}" alt="{{ $nomina->user->name }}" class="h-full w-full object-cover">
-                                            @else
-                                                {{ substr($nomina->user->name, 0, 1) }}
-                                            @endif
+                            @if(count($borradores))
+                                @foreach($borradores as $nomina)
+                                <tr class="hover:bg-slate-50/80 transition-colors search-item">
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden">
+                                                @if($nomina->user->foto_de_perfil)
+                                                    <img src="{{ asset('storage/' . $nomina->user->foto_de_perfil) }}" alt="{{ $nomina->user->name }}" class="h-full w-full object-cover">
+                                                @else
+                                                    {{ substr($nomina->user->name, 0, 1) }}
+                                                @endif
+                                            </div>
+                                            <span class="font-semibold text-slate-700 name-cell">{{ $nomina->user->name }}</span>
                                         </div>
-                                        <span class="font-semibold text-slate-700 name-cell">{{ $nomina->user->name }}</span>
-                                    </div>
-                                </td>
-                                <td class="py-4 px-6 text-slate-600 font-medium">{{ $nomina->mes }}/{{ $nomina->anio }}</td>
-                                <td class="py-4 px-6 text-slate-800 font-bold text-lg">{{ number_format($nomina->importe, 2) }} €</td>
-                                <td class="py-4 px-6">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-600 border border-orange-100">
-                                        <i class="fas fa-pencil-alt text-[10px]"></i> Borrador
-                                    </span>
-                                </td>
-                                <td class="py-4 px-6 text-right">
-                                    <div class="flex items-center justify-end gap-2">
-                                        {{-- BOTÓN VISTA PREVIA --}}
-                                        <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
-                                                class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </button>
-
-                                        <button onclick="abrirModalRevision(this)"
-                                                data-id="{{ $nomina->id }}" 
-                                                data-userid="{{ $nomina->user_id }}"
-                                                data-name="{{ $nomina->user->name }}" 
-                                                data-importe="{{ $nomina->importe }}"
-                                                data-mes="{{ $nomina->mes }}"
-                                                data-anio="{{ $nomina->anio }}"
-                                                data-detalles="{{ json_encode($nomina->detalles) }}"
-                                                data-archivo="{{ $nomina->archivo_path ? asset('storage/'.$nomina->archivo_path) : '' }}"
-                                                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg shadow hover:bg-slate-700 transition-all">
-                                            Revisar
-                                        </button>
-
-                                        <form action="{{ route('admin.nominas.destroy', $nomina->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este borrador?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors shadow-sm" title="Eliminar Borrador">
-                                                <i class="fas fa-trash-alt"></i>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-600 font-medium">{{ $nomina->mes }}/{{ $nomina->anio }}</td>
+                                    <td class="py-4 px-6 text-slate-800 font-bold text-lg">{{ number_format($nomina->importe, 2) }} €</td>
+                                    <td class="py-4 px-6">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-600 border border-orange-100">
+                                            <i class="fas fa-pencil-alt text-[10px]"></i> Borrador
+                                        </span>
+                                    </td>
+                                    <td class="py-4 px-6 text-right">
+                                        <div class="flex items-center justify-end gap-2">
+                                            {{-- BOTÓN VISTA PREVIA --}}
+                                            <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
+                                                    class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
+                                                <i class="fas fa-file-pdf"></i>
                                             </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
+    
+                                            <button onclick="abrirModalRevisionById({{ $nomina->id }})"
+                                                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg shadow hover:bg-slate-700 transition-all">
+                                                Revisar
+                                            </button>
+    
+                                            <form action="{{ route('admin.nominas.destroy', $nomina->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este borrador?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors shadow-sm" title="Eliminar Borrador">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -249,6 +252,8 @@
                     <h3 class="text-xl font-bold text-slate-800">Historial de Pagos</h3>
                 </div>
 
+                <div id="historial-data-store" style="display: none;" data-historial='@json($historial->keyBy("id"))'></div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
                     <table class="w-full text-left min-w-[800px]">
                         <thead class="bg-slate-50 border-b border-slate-200">
@@ -261,72 +266,63 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            @forelse($historial as $nomina)
-                            <tr class="hover:bg-slate-50/50 transition-colors search-item">
-                                <td class="py-4 px-6">
-                                    <div class="font-bold text-slate-700 name-cell">{{ $nomina->user->name }}</div>
-                                    <div class="text-xs text-slate-400">{{ $nomina->concepto }}</div>
-                                </td>
-                                <td class="py-4 px-6 text-slate-600">{{ $nomina->mes }}/{{ $nomina->anio }}</td>
-                                <td class="py-4 px-6 font-bold text-slate-700">{{ number_format($nomina->importe, 2) }} €</td>
-                                <td class="py-4 px-6">
-                                    @if($nomina->estado_nomina == 'pagado')
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
-                                            <i class="fas fa-check text-[10px]"></i> Pagado
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100">
-                                            <i class="fas fa-hourglass-half text-[10px]"></i> Pend. Pago
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="py-4 px-6 text-right">
-                                    <div class="flex justify-end gap-2">
-                                        {{-- BOTÓN VISTA PREVIA --}}
-                                        <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
-                                                class="w-9 h-9 rounded-lg flex items-center justify-center bg-teal-50 text-brand-teal hover:bg-teal-100 transition-colors" title="Vista Previa PDF">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </button>
-
-                                        <button data-nomina="{{ json_encode([
-                                                    'concepto' => $nomina->concepto,
-                                                    'mes' => $nomina->mes,
-                                                    'anio' => $nomina->anio,
-                                                    'importe' => number_format($nomina->importe, 2),
-                                                    'estado' => $nomina->estado_nomina,
-                                                    'entrenador' => $nomina->user->name,
-                                                    'fecha_pago' => $nomina->fecha_pago ? $nomina->fecha_pago->format('d/m/Y') : 'Pendiente',
-                                                    'archivo_url' => $nomina->archivo_path ? asset('storage/'.$nomina->archivo_path) : '',
-                                                    'detalles' => $nomina->detalles
-                                                ]) }}"
-                                                onclick="abrirModalDetalle(JSON.parse(this.dataset.nomina))"
-                                                class="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Ver Detalles">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-
-                                        @if($nomina->estado_nomina == 'pendiente_pago')
-                                            <form action="{{ route('admin.nominas.pagar', $nomina->id) }}" method="POST">
-                                                @csrf
-                                                <button type="submit" class="w-9 h-9 rounded-lg flex items-center justify-center bg-green-50 text-green-600 hover:bg-green-100 transition-colors" title="Marcar como Pagado">
-                                                    <i class="fas fa-check"></i>
+                            @if(count($historial))
+                                @foreach($historial as $nomina)
+                                <tr class="hover:bg-slate-50/50 transition-colors search-item">
+                                    <td class="py-4 px-6">
+                                        <div class="font-bold text-slate-700 name-cell">{{ $nomina->user->name }}</div>
+                                        <div class="text-xs text-slate-400">{{ $nomina->concepto }}</div>
+                                    </td>
+                                    <td class="py-4 px-6 text-slate-600">{{ $nomina->mes }}/{{ $nomina->anio }}</td>
+                                    <td class="py-4 px-6 font-bold text-slate-700">{{ number_format($nomina->importe, 2) }} €</td>
+                                    <td class="py-4 px-6">
+                                        @if($nomina->estado_nomina == 'pagado')
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
+                                                <i class="fas fa-check text-[10px]"></i> Pagado
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100">
+                                                <i class="fas fa-hourglass-half text-[10px]"></i> Pend. Pago
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="py-4 px-6 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            {{-- BOTÓN VISTA PREVIA --}}
+                                            <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
+                                                    class="w-9 h-9 rounded-lg flex items-center justify-center bg-teal-50 text-brand-teal hover:bg-teal-100 transition-colors" title="Vista Previa PDF">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </button>
+    
+                                            <button onclick="abrirModalDetalleById({{ $nomina->id }}, 'historial')"
+                                                    class="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Ver Detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+    
+                                            @if($nomina->estado_nomina == 'pendiente_pago')
+                                                <form action="{{ route('admin.nominas.pagar', $nomina->id) }}" method="POST">
+                                                    @csrf
+                                                    <button type="submit" class="w-9 h-9 rounded-lg flex items-center justify-center bg-green-50 text-green-600 hover:bg-green-100 transition-colors" title="Marcar como Pagado">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            
+                                            <form action="{{ route('admin.nominas.destroy', $nomina->id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta nómina?');">
+                                                @csrf @method('DELETE')
+                                                <button class="w-9 h-9 rounded-lg flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 transition-colors" title="Eliminar">
+                                                    <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
-                                        @endif
-                                        
-                                        <form action="{{ route('admin.nominas.destroy', $nomina->id) }}" method="POST" onsubmit="return confirm('¿Seguro que deseas eliminar esta nómina?');">
-                                            @csrf @method('DELETE')
-                                            <button class="w-9 h-9 rounded-lg flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 transition-colors" title="Eliminar">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="py-8 text-center text-slate-400 italic">No hay historial disponible.</td>
-                            </tr>
-                            @endforelse
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="5" class="py-8 text-center text-slate-400 italic">No hay historial disponible.</td>
+                                </tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -570,6 +566,48 @@
         </div>
     </div>
 
+    <script>
+        const borradoresData = JSON.parse(document.getElementById('borradores-data-store')?.getAttribute('data-borradores') || '{}');
+        const historialData = JSON.parse(document.getElementById('historial-data-store')?.getAttribute('data-historial') || '{}');
+
+        function abrirModalDetalleById(id, type) {
+            const data = type === 'borradores' ? borradoresData[id] : historialData[id];
+            if (!data) return;
+            
+            const formatted = {
+                concepto: data.concepto,
+                mes: data.mes,
+                anio: data.anio,
+                importe: parseFloat(data.importe).toFixed(2),
+                estado: data.estado_nomina,
+                entrenador: data.user ? data.user.name : '--',
+                fecha_pago: data.fecha_pago ? new Date(data.fecha_pago).toLocaleDateString() : 'Pendiente',
+                archivo_url: data.archivo_path ? `{{ asset('storage') }}/${data.archivo_path}` : '',
+                detalles: data.detalles
+            };
+            abrirModalDetalle(formatted);
+        }
+
+        function abrirModalRevisionById(id) {
+            const data = borradoresData[id];
+            if (!data) return;
+            
+            // Build a fake element because the original function likely expects one
+            const btn = document.createElement('button');
+            btn.dataset.id = data.id;
+            btn.dataset.userid = data.user_id;
+            btn.dataset.name = data.user.name;
+            btn.dataset.importe = data.importe;
+            btn.dataset.mes = data.mes;
+            btn.dataset.anio = data.anio;
+            btn.dataset.detalles = JSON.stringify(data.detalles);
+            btn.dataset.archivo = data.archivo_path ? `{{ asset('storage') }}/${data.archivo_path}` : '';
+            
+            if (typeof abrirModalRevision === 'function') {
+                abrirModalRevision(btn);
+            }
+        }
+    </script>
     <script src="{{ asset('js/nominas-admin-filter.js') }}"></script>
 
     {{-- MODAL VISTA PREVIA PDF --}}

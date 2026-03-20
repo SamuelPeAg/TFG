@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
   @vite(['resources/css/app.css', 'resources/js/app.js'])
+  <style>
+    /* Remove !important by using parent specificity */
+    .dashboard-container .main-content .alert-success { background-color: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+    .dashboard-container .main-content .alert-danger { background-color: #fef2f2; border-color: #fecaca; color: #991b1b; }
+  </style>
 </head>
 
 <body>
@@ -21,6 +26,7 @@
             @include('components.sidebar.sidebar_entrenador')
         @endif
     @endauth
+    <div id="users-data-store" style="display: none;" data-users='@json($users)'></div>
     <main class="main-content">
       
       <div class="header-controls">
@@ -225,8 +231,8 @@
     </style>
 
     <script>
-    // Pasar los usuarios y sus suscripciones a JS
-    let usersData = @json($users);
+    // Pasar los usuarios y sus suscripciones a JS extraídos de un data-attribute para evitar errores de sintaxis en el IDE
+    let usersData = JSON.parse(document.getElementById('users-data-store').getAttribute('data-users'));
     const modalSusc = document.getElementById('modalGestionSuscripciones');
     const lista = document.getElementById('listaSuscripcionesUsuario');
     const loading = document.getElementById('loadingSuscripciones');

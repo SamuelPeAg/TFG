@@ -24,6 +24,14 @@
             }
         }
     </script>
+    <style>
+        /* Increase specificity to avoid !important */
+        .flex .main-content .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Summary cards border without !important */
+        .flex main .bg-white.rounded-2xl { border-width: 1px; border-style: solid; border-color: #f1f5f9; }
+    </style>
     <link rel="stylesheet" href="{{ asset('css/nominas-entrenador-styles.css') }}">
 </head>
 
@@ -108,60 +116,51 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        @forelse($nominas as $nomina)
-                        <tr class="hover:bg-slate-50/50 transition-colors search-item">
-                            <td class="py-4 px-6 text-slate-600 font-medium">{{ $nomina->mes }}/{{ $nomina->anio }}</td>
-                            <td class="py-4 px-6 text-slate-800 font-semibold concept-cell">{{ $nomina->concepto }}</td>
-                            <td class="py-4 px-6 text-slate-800 font-bold text-lg">{{ number_format($nomina->importe, 2) }} €</td>
-                            <td class="py-4 px-6 text-slate-500 text-sm">
-                                {{ $nomina->fecha_pago ? $nomina->fecha_pago->format('d/m/Y') : '-' }}
-                            </td>
-                            <td class="py-4 px-6">
-                                @if($nomina->estado_nomina == 'pagado')
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
-                                        <i class="fas fa-check text-[10px]"></i> Pagado
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100">
-                                        <i class="fas fa-hourglass-half text-[10px]"></i> Pendiente
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="py-4 px-6 text-right">
-                                <div class="flex justify-end gap-2">
-                                    {{-- BOTÓN VISTA PREVIA PDF --}}
-                                    <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
-                                            class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
-                                        <i class="fas fa-file-pdf"></i>
-                                    </button>
-
-                                    <button data-nomina="{{ json_encode([
-                                                'concepto' => $nomina->concepto,
-                                                'mes' => $nomina->mes,
-                                                'anio' => $nomina->anio,
-                                                'importe' => number_format($nomina->importe, 2),
-                                                'estado' => $nomina->estado_nomina,
-                                                'fecha_pago' => $nomina->fecha_pago ? $nomina->fecha_pago->format('d/m/Y') : 'Pendiente',
-                                                'archivo_url' => $nomina->archivo_path ? asset('storage/'.$nomina->archivo_path) : '',
-                                                'detalles' => $nomina->detalles
-                                            ]) }}" 
-                                            onclick="abrirModalDetalle(JSON.parse(this.dataset.nomina))"
+                        @if(count($nominas))
+                            @foreach($nominas as $nomina)
+                            <tr class="hover:bg-slate-50/50 transition-colors search-item">
+                                <td class="py-4 px-6 text-slate-600 font-medium">{{ $nomina->mes }}/{{ $nomina->anio }}</td>
+                                <td class="py-4 px-6 text-slate-800 font-semibold concept-cell">{{ $nomina->concepto }}</td>
+                                <td class="py-4 px-6 text-slate-800 font-bold text-lg">{{ number_format($nomina->importe, 2) }} €</td>
+                                <td class="py-4 px-6 text-slate-500 text-sm">
+                                    {{ $nomina->fecha_pago ? $nomina->fecha_pago->format('d/m/Y') : '-' }}
+                                </td>
+                                <td class="py-4 px-6">
+                                    @if($nomina->estado_nomina == 'pagado')
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-100">
+                                            <i class="fas fa-check text-[10px]"></i> Pagado
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100">
+                                            <i class="fas fa-hourglass-half text-[10px]"></i> Pendiente
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="py-4 px-6 text-right">
+                                    <div class="flex justify-end gap-2">
+                                        {{-- BOTÓN VISTA PREVIA PDF --}}
+                                        <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
+                                                class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </button>
+                                        <button onclick="abrirModalDetalleById({{ $nomina->id }})"
                                             class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition-all border border-slate-200">
                                         <i class="fas fa-eye text-brand-teal"></i> Ver Detalle
                                     </button>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="py-12 text-center">
-                                <div class="flex flex-col items-center justify-center text-slate-300">
-                                    <i class="fas fa-folder-open text-4xl mb-3"></i>
-                                    <p class="text-sm font-medium">No se encontraron nóminas en esta sección.</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="6" class="py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center text-slate-300">
+                                        <i class="fas fa-folder-open text-4xl mb-3"></i>
+                                        <p class="text-sm font-medium">No se encontraron nóminas en esta sección.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endif
                     </tbody>
                 </table>
             </div>
@@ -240,6 +239,26 @@
         </div>
     </div>
 
+    <script>
+        const nominasData = JSON.parse(document.getElementById('nominas-data-store')?.getAttribute('data-nominas') || '{}');
+
+        function abrirModalDetalleById(id) {
+            const data = nominasData[id];
+            if (!data) return;
+
+            const formatted = {
+                concepto: data.concepto,
+                mes: data.mes,
+                anio: data.anio,
+                importe: parseFloat(data.importe).toFixed(2),
+                estado: data.estado_nomina,
+                fecha_pago: data.fecha_pago ? new Date(data.fecha_pago).toLocaleDateString() : 'Pendiente',
+                archivo_url: data.archivo_path ? `{{ asset('storage') }}/${data.archivo_path}` : '',
+                detalles: data.detalles
+            };
+            abrirModalDetalle(formatted);
+        }
+    </script>
     <script src="{{ asset('js/nominas-entrenador-filter.js') }}"></script>
 
     {{-- MODAL VISTA PREVIA PDF --}}
