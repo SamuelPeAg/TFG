@@ -104,6 +104,7 @@
 
             {{-- TABLA --}}
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <div id="nominas-data-store" style="display: none;" data-nominas='@json($nominas->keyBy("id"))'></div>
                 <table class="w-full text-left">
                     <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
@@ -139,14 +140,15 @@
                                 <td class="py-4 px-6 text-right">
                                     <div class="flex justify-end gap-2">
                                         {{-- BOTÓN VISTA PREVIA PDF --}}
-                                        <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
+                                        <button data-preview-url="{{ route('nominas.preview', $nomina->id) }}" data-download-url="{{ route('nominas.download', $nomina->id) }}" onclick="abrirModalPreview(this.dataset.previewUrl, this.dataset.downloadUrl)"
                                                 class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
                                             <i class="fas fa-file-pdf"></i>
                                         </button>
-                                        <button onclick="abrirModalDetalleById({{ $nomina->id }})"
-                                            class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition-all border border-slate-200">
-                                        <i class="fas fa-eye text-brand-teal"></i> Ver Detalle
-                                    </button>
+                                        <button data-id="{{ $nomina->id }}"
+                                                onclick="abrirModalDetalleById(this.getAttribute('data-id'))"
+                                                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition-all border border-slate-200">
+                                            <i class="fas fa-eye text-brand-teal"></i> Ver Detalle
+                                        </button>
                                     </div>
                                 </td>
                             </tr>

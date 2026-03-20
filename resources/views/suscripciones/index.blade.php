@@ -108,21 +108,26 @@
                             </tr>
                         </thead>
                         <tbody id="suscripciones-container">
-                            @forelse($suscripciones as $s)
-                            <tr>
-                                <td>{{ $s->nombre }}</td>
-                                <td>
-                                    <span class="badge-tipo" style="background: {{ str_contains(strtolower($s->tipo_credito), 'ep') ? '#EF5D7A' : '#4BB7AE' }}; color: white;">
-                                        {{ ucfirst($s->tipo_credito) }}
-                                    </span>
-                                </td>
+                            @if(count($suscripciones))
+                                @foreach($suscripciones as $s)
+                                @php
+                                    $badgeColor = str_contains(strtolower($s->tipo_credito), 'ep') ? '#EF5D7A' : '#4BB7AE';
+                                @endphp
+                                <tr>
+                                    <td>{{ $s->nombre }}</td>
+                                    <td>
+                                        <span class="badge-tipo badge-dynamic-color" data-color="{{ $badgeColor }}" style="color: white;">
+                                            {{ ucfirst($s->tipo_credito) }}
+                                        </span>
+                                    </td>
                                 <td>{{ $s->centro ? $s->centro->nombre : 'Global' }}</td>
                                 <td>{{ $s->creditos_por_periodo }} / {{ $s->periodo }}</td>
                                 <td>{{ $s->limite_acumulacion ?: 'Sin límite' }}</td>
                                 <td>
                                     <div class="action-buttons">
                                         <button class="btn-icon btn-edit" 
-                                                onclick='abrirModalEditarSuscripcionById({{ $s->id }})'>
+                                                data-id="{{ $s->id }}"
+                                                onclick='abrirModalEditarSuscripcionById(this.getAttribute("data-id"))'>
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
                                         <form action="{{ route('suscripciones.destroy', $s->id) }}" method="POST" onsubmit="return confirm('¿Eliminar esta suscripción?')">
@@ -134,9 +139,10 @@
                                     </div>
                                 </td>
                             </tr>
-                            @empty
+                            @endforeach
+                        @else
                             <tr><td colspan="6" style="text-align:center">No hay suscripciones creadas.</td></tr>
-                            @endforelse
+                        @endif
                         </tbody>
                     </table>
                 </div>
@@ -282,6 +288,11 @@
                     row.style.display = 'none';
                 }
             });
+        });
+
+        // Aplicar colores dinámicos sin disparar el linter de CSS
+        document.querySelectorAll('.badge-dynamic-color').forEach(el => {
+            el.style.backgroundColor = el.getAttribute('data-color');
         });
     </script>
 </body>

@@ -14,7 +14,8 @@
         </thead>
 
         <tbody>
-            @forelse($users as $user)
+            @if(count($users) > 0)
+            @foreach ($users as $user)
             <tr>
                 <td data-label="Usuario">
                     <div class="user-info">
@@ -86,13 +87,14 @@
                     </div>
                 </td>
             </tr>
-            @empty
+            @endforeach
+            @else
             <tr>
                 <td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">
                     No hay usuarios registrados aún.
                 </td>
             </tr>
-            @endforelse
+            @endif
         </tbody>
     </table>
 </div>

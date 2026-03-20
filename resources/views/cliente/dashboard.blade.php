@@ -93,7 +93,8 @@
 
     <!-- MAIN CONTENT AREA -->
     <div id="grid-container" class="space-y-16 reveal">
-        @forelse($clasesAgrupadas as $fecha => $clases)
+        @if(count($clasesAgrupadas) > 0)
+        @foreach ($clasesAgrupadas as $fecha => $clases)
             @php
                 $carbonFecha = \Carbon\Carbon::parse($fecha);
                 $esHoy = $carbonFecha->isToday();
@@ -217,7 +218,8 @@
                     @endforeach
                 </div>
             </section>
-        @empty
+        @endforeach
+        @else
             <div class="bg-white rounded-[40px] p-20 text-center border border-dashed border-slate-200">
                 <div class="bg-slate-50 w-24 h-24 rounded-3xl flex items-center justify-center mx-auto mb-8 animate-pulse">
                     <i class="fa-solid fa-calendar-day text-4xl text-slate-300"></i>
@@ -225,7 +227,7 @@
                 <h3 class="text-2xl font-black text-slate-800 mb-4">¡Todo despejado por aquí!</h3>
                 <p class="text-slate-500 font-bold max-w-sm mx-auto">Parece que no hay clases programadas para estas fechas. Vuelve más tarde o consulta con tu centro.</p>
             </div>
-        @endforelse
+        @endif
     </div>
 
     <!-- CALENDAR VIEW CONTAINER -->

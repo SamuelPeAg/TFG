@@ -11,7 +11,8 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($entrenadores as $entrenador)
+            @if(count($entrenadores) > 0)
+            @foreach ($entrenadores as $entrenador)
             <tr>
                 <td>
                     <div class="user-info">
@@ -43,13 +44,12 @@
 
                         {{-- 2. BOTÓN EDITAR --}}
                         <button type="button" class="btn-icon btn-edit" 
-                            onclick="abrirModalEditar(
-                                '{{ $entrenador->id }}', 
-                                '{{ $entrenador->name }}', 
-                                '{{ $entrenador->email }}',
-                                '{{ $entrenador->iban ?? '' }}',
-                                '{{ $entrenador->foto_de_perfil }}'
-                            )">
+                            data-id="{{ $entrenador->id }}"
+                            data-name="{{ $entrenador->name }}"
+                            data-email="{{ $entrenador->email }}"
+                            data-iban="{{ $entrenador->iban ?? '' }}"
+                            data-foto="{{ $entrenador->foto_de_perfil }}"
+                            onclick="abrirModalEditar(this.dataset.id, this.dataset.name, this.dataset.email, this.dataset.iban, this.dataset.foto)">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
 
@@ -66,13 +66,14 @@
                     </div>
                 </td>
             </tr>
-            @empty
+            @endforeach
+            @else
             <tr>
                 <td colspan="3" style="text-align: center; padding: 30px; color: #94a3b8;">
                     No hay entrenadores registrados aún.
                 </td>
             </tr>
-            @endforelse
+            @endif
         </tbody>
     </table>
 </div>

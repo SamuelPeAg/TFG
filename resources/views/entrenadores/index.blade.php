@@ -72,7 +72,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($entrenadores as $entrenador)
+                            @if(count($entrenadores) > 0)
+                            @foreach ($entrenadores as $entrenador)
                             <tr>
                                 <td data-label="Entrenador">
                                     <div class="user-info">
@@ -98,15 +99,14 @@
                                             $u = \App\Models\User::where('email', $entrenador->email)->first();
                                             $isAdmin = ($u && method_exists($u,'hasRole') && $u->hasRole('admin')) ? '1' : '0';
                                         @endphp
-                                        <button type="button" class="btn-icon btn-edit" 
-                                            onclick="abrirModalEditar(
-                                                '{{ $entrenador->id }}', 
-                                                '{{ $entrenador->name }}', 
-                                                '{{ $entrenador->email }}', 
-                                                '{{ $entrenador->iban }}',
-                                                '{{ $isAdmin }}',
-                                                '{{ $entrenador->foto_de_perfil }}'
-                                            )">
+                                        <button type="button" class="btn-icon btn-edit"
+                                            data-id="{{ $entrenador->id }}"
+                                            data-name="{{ $entrenador->name }}"
+                                            data-email="{{ $entrenador->email }}"
+                                            data-iban="{{ $entrenador->iban ?? '' }}"
+                                            data-admin="{{ $isAdmin }}"
+                                            data-foto="{{ $entrenador->foto_de_perfil }}"
+                                            onclick="abrirModalEditar(this.dataset.id, this.dataset.name, this.dataset.email, this.dataset.iban, this.dataset.admin, this.dataset.foto)">
                                             <i class="fas fa-pencil-alt"></i>
                                         </button>
 
@@ -117,13 +117,14 @@
                                     </div>
                                 </td>
                             </tr>
-                            @empty
+                            @endforeach
+                            @else
                             <tr>
                                 <td colspan="4" style="text-align: center; padding: 30px; color: #94a3b8;">
                                     No hay entrenadores registrados aún.
                                 </td>
                             </tr>
-                            @endforelse
+                            @endif
                         </tbody>
                     </table>
                 </div>

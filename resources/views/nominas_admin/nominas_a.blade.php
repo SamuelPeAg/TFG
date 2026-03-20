@@ -207,13 +207,13 @@
                                     <td class="py-4 px-6 text-right">
                                         <div class="flex items-center justify-end gap-2">
                                             {{-- BOTÓN VISTA PREVIA --}}
-                                            <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
-                                                    class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
+                                            <button data-preview-url="{{ route('nominas.preview', $nomina->id) }}" data-download-url="{{ route('nominas.download', $nomina->id) }}" onclick="abrirModalPreview(this.dataset.previewUrl, this.dataset.downloadUrl)"
+                                                class="w-10 h-10 flex items-center justify-center bg-teal-50 text-brand-teal rounded-xl hover:bg-teal-100 transition-colors shadow-sm" title="Vista Previa PDF">
                                                 <i class="fas fa-file-pdf"></i>
                                             </button>
     
-                                            <button onclick="abrirModalRevisionById({{ $nomina->id }})"
-                                                    class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg shadow hover:bg-slate-700 transition-all">
+                                            <button data-id="{{ $nomina->id }}" onclick="abrirModalRevisionById(this.dataset.id)"
+                                                class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg shadow hover:bg-slate-700 transition-all">
                                                 Revisar
                                             </button>
     
@@ -289,12 +289,14 @@
                                     <td class="py-4 px-6 text-right">
                                         <div class="flex justify-end gap-2">
                                             {{-- BOTÓN VISTA PREVIA --}}
-                                            <button onclick="abrirModalPreview('{{ route('nominas.preview', $nomina->id) }}', '{{ route('nominas.download', $nomina->id) }}')"
+                                            <button data-preview-url="{{ route('nominas.preview', $nomina->id) }}" data-download-url="{{ route('nominas.download', $nomina->id) }}" onclick="abrirModalPreview(this.dataset.previewUrl, this.dataset.downloadUrl)"
                                                     class="w-9 h-9 rounded-lg flex items-center justify-center bg-teal-50 text-brand-teal hover:bg-teal-100 transition-colors" title="Vista Previa PDF">
                                                 <i class="fas fa-file-pdf"></i>
                                             </button>
     
-                                            <button onclick="abrirModalDetalleById({{ $nomina->id }}, 'historial')"
+                                            <button data-id="{{ $nomina->id }}"
+                                                    data-type="historial"
+                                                    onclick="abrirModalDetalleById(this.getAttribute('data-id'), this.getAttribute('data-type'))"
                                                     class="w-9 h-9 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors" title="Ver Detalles">
                                                 <i class="fas fa-eye"></i>
                                             </button>
