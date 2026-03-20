@@ -125,6 +125,7 @@ Route::middleware('auth')->group(function () {
         // Facturación
         Route::get('/facturas', [FacturacionController::class, 'index'])->name('facturas');
         Route::get('/facturas/clases', [FacturacionController::class, 'clases'])->name('facturas.clases');
+        Route::post('/facturas/tickar', [FacturacionController::class, 'tickar'])->name('facturas.tickar');
 
         // Usuarios (Resource)
         Route::resource('users', UserController::class);

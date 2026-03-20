@@ -131,78 +131,87 @@ class FacturacionController extends Controller
         // Matriz inicial vacía
         $matrix = [];
 
-        // 1) Contar desde la tabla `pagos`
+        // 1) Obtener todos los pagos en el rango
         $pagosQuery = Pago::with('entrenadores')->select('id', 'user_id', 'entrenador_id', 'fecha_registro', 'centro', 'importe');
-        if ($desde) {
-            $pagosQuery->whereDate('fecha_registro', '>=', $desde);
-        }
-        if ($hasta) {
-            $pagosQuery->whereDate('fecha_registro', '<=', $hasta);
-        }
-        if ($clienteId) {
-            $pagosQuery->where('user_id', $clienteId);
-        }
+        if ($desde) $pagosQuery->whereDate('fecha_registro', '>=', $desde);
+        if ($hasta) $pagosQuery->whereDate('fecha_registro', '<=', $hasta);
+        if ($clienteId) $pagosQuery->where('user_id', $clienteId);
         if ($entrenadorId) {
             $pagosQuery->where(function ($q) use ($entrenadorId) {
                 $q->where('entrenador_id', $entrenadorId)
                     ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenadorId));
             });
         }
-        if ($centro !== 'todos') {
-            $pagosQuery->where('centro', $centro);
-        }
-
+        if ($centro !== 'todos') $pagosQuery->where('centro', $centro);
         $pagosAll = $pagosQuery->get();
 
-        foreach ($pagosAll as $pago) {
-            $cliente = $pago->user_id;
-            $trainerIds = [];
-            if ($pago->entrenador_id)
-                $trainerIds[] = $pago->entrenador_id;
-            if ($pago->entrenadores && $pago->entrenadores->count()) {
-                foreach ($pago->entrenadores as $t) {
-                    $trainerIds[] = $t->id;
-                }
+        // 2) Obtener todas las reservas en el rango
+        $reservasQ = \App\Models\Reserva::query()
+            ->join('horarios_clases', 'reservas.id_horario_clase', '=', 'horarios_clases.id')
+            ->select('reservas.*', 'horarios_clases.entrenador_id', 'horarios_clases.fecha_hora_inicio', 'horarios_clases.centro_id')
+            ->when($desde, fn($q) => $q->whereDate('horarios_clases.fecha_hora_inicio', '>=', $desde))
+            ->when($hasta, fn($q) => $q->whereDate('horarios_clases.fecha_hora_inicio', '<=', $hasta))
+            ->when($clienteId, fn($q) => $q->where('reservas.id_usuario', $clienteId))
+            ->when($entrenadorId && $entCol, fn($q) => $q->where($entCol, $entrenadorId))
+            ->when($centro !== 'todos' && $centroCol, fn($q) => $q->where($centroCol, $centro));
+        
+        $reservasAll = $reservasQ->get();
+
+        // 3) Construir la matriz
+        $matrix = [];
+
+        // Procesar reservas y vincular con pagos
+        $pagosVinculados = collect();
+
+        foreach ($reservasAll as $res) {
+            $cId = $res->id_usuario;
+            $tId = $res->entrenador_id; // Usar el entrenador del horario
+            
+            if (!$tId && $entCol) {
+                $tId = $res->{$entCol};
             }
-            $trainerIds = array_values(array_unique($trainerIds));
-            foreach ($trainerIds as $tid) {
-                if (!isset($matrix[$cliente][$tid])) {
-                    $matrix[$cliente][$tid] = ['count' => 0, 'amount' => 0];
-                }
-                $matrix[$cliente][$tid]['count'] += 1;
-                $matrix[$cliente][$tid]['amount'] += (float) ($pago->importe ?? 0);
+
+            if (!isset($matrix[$cId][$tId])) {
+                $matrix[$cId][$tId] = ['count' => 0, 'amount' => 0];
+            }
+
+            // Buscar si hay un pago para este cliente/entrenador en este día
+            $fh = \Carbon\Carbon::parse($res->fecha_hora_inicio);
+            $pagoMatch = $pagosAll->where('user_id', $cId)
+                ->where('fecha_registro', '>=', $fh->copy()->startOfDay())
+                ->where('fecha_registro', '<=', $fh->copy()->endOfDay())
+                ->filter(function($p) use ($tId) {
+                    return $p->entrenador_id == $tId || ($p->entrenadores && $p->entrenadores->contains('id', $tId));
+                })
+                ->first();
+
+            $matrix[$cId][$tId]['count'] += 1;
+            if ($pagoMatch) {
+                $matrix[$cId][$tId]['amount'] += (float) ($pagoMatch->importe ?? 0);
+                $pagosVinculados->push($pagoMatch->id);
             }
         }
 
-        // 2) Añadir conteos desde reservas SOLO cuando no existan ya pagos para ese par cliente/entrenador (o sumarlos si queremos todas las clases)
-        // En este caso, el usuario quiere "total de dinero y total de clases", así que sumamos lo que falte
-        if ($entCol) {
-            $reservasQ = \App\Models\Reserva::query()
-                ->selectRaw("reservas.id_usuario as cliente_id, {$entCol} as entrenador_id, count(*) as total")
-                ->join('horarios_clases', 'reservas.id_horario_clase', '=', 'horarios_clases.id')
-                ->groupByRaw("reservas.id_usuario, {$entCol}")
-                ->when($desde, fn($q) => $q->whereDate('horarios_clases.fecha_hora_inicio', '>=', $desde))
-                ->when($hasta, fn($q) => $q->whereDate('horarios_clases.fecha_hora_inicio', '<=', $hasta))
-                ->when($centro !== 'todos' && $centroCol, fn($q) => $q->where($centroCol, $centro))
-                ->when($entrenadorId, fn($q) => $q->whereRaw("{$entCol} = ?", [$entrenadorId]))
-                ->when($clienteId, fn($q) => $q->where('reservas.id_usuario', $clienteId));
+        // Añadir pagos que NO están vinculados a ninguna reserva (entradas POS/Tickar)
+        foreach ($pagosAll as $pago) {
+            if ($pagosVinculados->contains($pago->id)) continue;
 
-            $reservasGrouped = $reservasQ->get();
+            $cId = $pago->user_id;
+            $trainerIds = [];
+            if ($pago->entrenador_id) $trainerIds[] = $pago->entrenador_id;
+            if ($pago->entrenadores) {
+                foreach ($pago->entrenadores as $tt) $trainerIds[] = $tt->id;
+            }
+            $trainerIds = array_unique($trainerIds);
 
-            foreach ($reservasGrouped as $r) {
-                $c = $r->cliente_id;
-                $t = $r->entrenador_id;
-                if (!isset($matrix[$c][$t])) {
-                    $matrix[$c][$t] = ['count' => (int) $r->total, 'amount' => 0];
-                } else {
-                    // Si ya hay pagos, comprobamos si el conteo de reservas es mayor (porque algunas reservas pueden no estar pagadas aún)
-                    // O simplemente confiamos en que los pagos ya cubren las reservas. 
-                    // Por lo general, si hay pagos, el conteo de pagos es lo que se "factura".
-                    // Pero el usuario pide "total de clases", así que usaremos el máximo si divergen o simplemente las clases de reservas si no hay pagos.
-                    if ($matrix[$c][$t]['count'] < (int) $r->total) {
-                        $matrix[$c][$t]['count'] = (int) $r->total;
-                    }
+            foreach ($trainerIds as $tid) {
+                if (!isset($matrix[$cId][$tid])) {
+                    $matrix[$cId][$tid] = ['count' => 0, 'amount' => 0];
                 }
+                $matrix[$cId][$tid]['count'] += 1;
+                // Si el pago es compartido por varios entrenadores, el importe se divide? 
+                // El código anterior lo sumaba entero a cada uno. Mantendré consistencia.
+                $matrix[$cId][$tid]['amount'] += (float) ($pago->importe ?? 0);
             }
         }
 
@@ -237,11 +246,16 @@ class FacturacionController extends Controller
         $entrenadoresIdsConDatos = array_unique($entrenadoresIdsConDatos);
         $entrenadores = User::whereIn('id', $entrenadoresIdsConDatos)->orderBy('name')->get(['id', 'name']);
 
+        $todosLosEntrenadores = User::whereHas('roles', function($q) {
+            $q->whereIn('name', ['entrenador', 'admin']);
+        })->orderBy('name')->get(['id', 'name']);
+        
         $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email']);
 
         return view('facturacion.facturas', [
             'centros' => $centros,
             'entrenadores' => $entrenadores,
+            'todosLosEntrenadores' => $todosLosEntrenadores,
             'clientes' => $clientes,
             'todosLosClientes' => $todosLosClientes,
             'matrix' => $matrix,
@@ -411,4 +425,30 @@ class FacturacionController extends Controller
         return response()->json($result->values());
     }
 
+    public function tickar(Request $request)
+    {
+        $request->validate([
+            'cliente_id' => 'required|exists:users,id',
+            'entrenador_id' => 'required|exists:users,id',
+            'centro' => 'required|string',
+            'items' => 'required|array|min:1',
+            'items.*.tipo' => 'required|string',
+            'items.*.precio' => 'required|numeric',
+        ]);
+
+        foreach ($request->items as $item) {
+            \App\Models\Pago::create([
+                'user_id' => $request->cliente_id,
+                'entrenador_id' => $request->entrenador_id,
+                'centro' => $request->centro,
+                'nombre_clase' => $item['tipo'],
+                'tipo_clase' => $item['tipo'],
+                'importe' => $item['precio'],
+                'fecha_registro' => now(),
+                'metodo_pago' => 'Efectivo',
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Cuenta registrada correctamente']);
+    }
 }
