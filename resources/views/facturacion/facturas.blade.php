@@ -115,7 +115,7 @@
                                 <select name="entrenador_id" class="modern-input">
                                     <option value="">Todos</option>
                                     @foreach($entrenadores as $e)
-                                        <option value="{{ $e->id }}" @selected($entrenadorId == $e->id)>{{ $e->name }}
+                                        <option value="{{ $e->id }}" @selected($entrenadorId == $e->id)>{{ $e->nombre }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -157,7 +157,7 @@
                                         <tr>
                                             <th class="sticky-col-header">Cliente</th>
                                             @foreach($entrenadores as $e)
-                                                <th class="trainer-header">{{ $e->name }}</th>
+                                                <th class="trainer-header">{{ $e->nombre }}</th>
                                             @endforeach
                                         </tr>
                                     </thead>
@@ -184,7 +184,7 @@
                                                         $count = $data['count'] ?? 0;
                                                         $amount = $data['amount'] ?? 0;
                                                     @endphp
-                                                    <td data-label="{{ $e->name }}" data-client-id="{{ $c->id }}"
+                                                    <td data-label="{{ $e->nombre }}" data-client-id="{{ $c->id }}"
                                                         data-trainer-id="{{ $e->id }}" class="data-cell">
                                                         @if($count > 0)
                                                             <div class="cell-stats">
