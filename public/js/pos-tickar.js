@@ -145,24 +145,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const { value: formValues } = await Swal.fire({
             title: isNew ? 'Nuevo Botón' : 'Configurar Botón',
             html: `
-                <div style="text-align:left; font-size:13px; margin-bottom:15px;">
-                    <label style="display:block; margin-bottom:5px; color:#64748b;">Icono:</label>
-                    <div id="icon-selector" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">${iconsHtml}</div>
+                <div class="swal-gym-container" style="text-align:left; font-size:13px; padding: 0 5px;">
+                    <label style="display:block; margin-bottom:8px; color:#64748b; font-weight:600;">Icono:</label>
+                    <div id="icon-selector" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;">${iconsHtml}</div>
                     
-                    <label style="display:block; margin:15px 0 5px; color:#64748b;">Nombre:</label>
-                    <input id="swal-name" class="swal2-input" value="${type.name || ''}" style="margin-top:0;">
+                    <label style="display:block; margin-bottom:5px; color:#64748b; font-weight:600;">Nombre:</label>
+                    <input id="swal-name" class="swal2-input gym-input" value="${type.name || ''}" style="width:100%; margin: 0 0 15px 0;">
                     
-                    <label style="display:block; margin:15px 0 5px; color:#64748b;">Descripción breve:</label>
-                    <input id="swal-desc" class="swal2-input" value="${type.description || ''}" style="margin-top:0;">
+                    <label style="display:block; margin-bottom:5px; color:#64748b; font-weight:600;">Descripción breve:</label>
+                    <input id="swal-desc" class="swal2-input gym-input" value="${type.description || ''}" placeholder="Ej: Pago Individual" style="width:100%; margin: 0 0 15px 0;">
 
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:15px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-top:5px;">
                         <div>
-                            <label style="display:block; margin-bottom:5px; color:#64748b;">Precio Base (€):</label>
-                            <input id="swal-price" type="number" step="0.01" class="swal2-input" value="${type.defaultPrice || ''}" style="margin-top:0; width:100%;">
+                            <label style="display:block; margin-bottom:5px; color:#64748b; font-weight:600;">Precio Base (€):</label>
+                            <input id="swal-price" type="number" step="0.01" class="swal2-input gym-input" value="${type.defaultPrice || ''}" style="width:100%; margin:0;">
                         </div>
                         <div>
-                            <label style="display:block; margin-bottom:5px; color:#64748b;">Descuento %:</label>
-                            <input id="swal-discount" type="number" class="swal2-input" placeholder="0" style="margin-top:0; width:100%;">
+                            <label style="display:block; margin-bottom:5px; color:#64748b; font-weight:600;">Descuento %:</label>
+                            <input id="swal-discount" type="number" class="swal2-input gym-input" placeholder="0" style="width:100%; margin:0;">
                         </div>
                     </div>
                 </div>
@@ -172,7 +172,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 radios.forEach(l => {
                     l.onclick = function() {
                         radios.forEach(r => r.style.borderColor = '#e2e8f0');
+                        radios.forEach(r => r.style.backgroundColor = 'transparent');
                         this.style.borderColor = '#10b981';
+                        this.style.backgroundColor = '#f0fdf4';
                         this.querySelector('input').checked = true;
                     }
                 });
@@ -180,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showCancelButton: true,
             confirmButtonText: 'Guardar',
             confirmButtonColor: '#10b981',
+            cancelButtonText: 'Cancelar',
             preConfirm: () => {
                 const name = document.getElementById('swal-name').value;
                 const priceValue = document.getElementById('swal-price').value;
