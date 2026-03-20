@@ -58,7 +58,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 const mesSel = document.querySelector('select[name="mes"]');
                 if (mesSel && mesSel.value) params.append('mes', mesSel.value);
 
-                const res = await fetch("/facturas/clases?" + params.toString(), { headers: { 'Accept': 'application/json' } });
+                const baseUrl = window.clasesRelUrl || "/facturas/clases";
+                const res = await fetch(baseUrl + "?" + params.toString(), { headers: { 'Accept': 'application/json' } });
+
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    console.error('Response error:', res.status, text);
+                    openModal(`<p>Error ${res.status}: No se pudo obtener la información del servidor.</p>`);
+                    return;
+                }
+
                 const data = await res.json();
 
                 if (!data || data.length === 0) {
@@ -83,8 +93,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 openModal(html);
             } catch (e) {
-                console.error(e);
-                openModal('<p>Error cargando datos.</p>');
+                console.error('Fetch error:', e);
+                openModal(`<p>Error al cargar datos: ${e.message}</p>`);
             }
         });
     });
@@ -108,7 +118,17 @@ document.addEventListener('DOMContentLoaded', function () {
             openModal('<p>Cargando todas las clases del cliente...</p>');
 
             try {
-                const res = await fetch("/facturas/clases?" + params.toString(), { headers: { 'Accept': 'application/json' } });
+                const baseUrl = window.clasesRelUrl || "/facturas/clases";
+                const res = await fetch(baseUrl + "?" + params.toString(), { headers: { 'Accept': 'application/json' } });
+
+                
+                if (!res.ok) {
+                    const text = await res.text();
+                    console.error('Response error:', res.status, text);
+                    openModal(`<p>Error ${res.status}: No se pudo obtener la información del servidor.</p>`);
+                    return;
+                }
+
                 const data = await res.json();
 
                 if (!data || data.length === 0) {
@@ -133,8 +153,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 openModal(html);
             } catch (e) {
-                console.error(e);
-                openModal('<p>Error cargando datos.</p>');
+                console.error('Fetch error:', e);
+                openModal(`<p>Error al cargar datos: ${e.message}</p>`);
             }
         });
     });

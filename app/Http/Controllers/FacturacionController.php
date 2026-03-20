@@ -272,6 +272,7 @@ class FacturacionController extends Controller
     // Devuelve las clases (reservas) que coinciden con cliente y/o entrenador
     public function clases(Request $request)
     {
+        try {
         $clienteId = $request->query('cliente_id');
         $entrenadorId = $request->query('entrenador_id');
         $centro = $request->query('centro', 'todos');
@@ -292,12 +293,21 @@ class FacturacionController extends Controller
         $horarioEntCol = Schema::hasColumn('horarios_clases', 'entrenador_id') ? 'horarios_clases.entrenador_id' : (Schema::hasColumn('horarios_clases', 'id_entrenador') ? 'horarios_clases.id_entrenador' : null);
 
         $horarioCentroCol = null;
+        $centroId = null;
         if (Schema::hasColumn('horarios_clases', 'centro_id')) {
             $horarioCentroCol = 'horarios_clases.centro_id';
+            // Si $centro es un nombre, intentar buscar el ID
+            if ($centro !== 'todos') {
+                $centroId = Centro::where('nombre', $centro)->first()?->id;
+            }
         } elseif (Schema::hasColumn('horarios_clases', 'id_centro')) {
             $horarioCentroCol = 'horarios_clases.id_centro';
+            if ($centro !== 'todos') {
+                $centroId = Centro::where('nombre', $centro)->first()?->id;
+            }
         } elseif (Schema::hasColumn('horarios_clases', 'centro')) {
             $horarioCentroCol = 'horarios_clases.centro';
+            $centroId = $centro;
         }
 
         $q = \App\Models\Reserva::query()
@@ -310,8 +320,8 @@ class FacturacionController extends Controller
         if ($entrenadorId && $horarioEntCol) {
             $q->whereRaw("{$horarioEntCol} = ?", [$entrenadorId]);
         }
-        if ($centro !== 'todos' && $horarioCentroCol) {
-            $q->where($horarioCentroCol, $centro);
+        if ($centro !== 'todos' && $horarioCentroCol && $centroId) {
+            $q->where($horarioCentroCol, $centroId);
         }
         if ($desde) {
             $q->whereDate('horarios_clases.fecha_hora_inicio', '>=', $desde);
@@ -320,7 +330,7 @@ class FacturacionController extends Controller
             $q->whereDate('horarios_clases.fecha_hora_inicio', '<=', $hasta);
         }
 
-        $items = $q->with(['usuario:id,name', 'horarioClase', 'horarioClase.centro', 'horarioClase.entrenador'])->get();
+        $items = $q->with(['usuario:id,name', 'horarioClase', 'horarioClase.centro', 'horarioClase.entrenador', 'horarioClase.clase'])->get();
 
         $result = collect();
 
@@ -396,7 +406,7 @@ class FacturacionController extends Controller
 
             $trainerNames = [];
             if ($p->entrenador_id)
-                $trainerNames[] = $p->entrenador->name ?? 'Sin nombre';
+                $trainerNames[] = $p->entrenador?->name ?? 'Sin nombre';
             foreach ($p->entrenadores as $t)
                 $trainerNames[] = $t->name;
             $trainerNames = array_unique($trainerNames);
@@ -416,11 +426,18 @@ class FacturacionController extends Controller
                 'importe' => $p->importe,
                 'metodo' => $p->metodo_pago ?? null,
                 'nombre_clase' => $p->nombre_clase ?? null,
-                'centro' => $p->centro ? (Centro::find($p->centro)->nombre ?? $p->centro) : null,
+                'centro' => $p->centro,
             ]);
         }
 
-        return response()->json($result->values());
+            return response()->json($result->values());
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error en FacturacionController@clases: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            return response()->json(['error' => 'Error interno del servidor'], 500);
+        }
     }
 
     public function tickar(Request $request)

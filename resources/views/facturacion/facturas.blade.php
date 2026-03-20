@@ -289,6 +289,9 @@
 </body>
 
 </html>
+<script>
+    window.clasesRelUrl = "{{ route('facturas.clases') }}";
+</script>
 <script src="{{ asset('js/facturacion-modal.js') }}"></script>
 <script src="{{ asset('js/pos-tickar.js') }}"></script>
 <script>
