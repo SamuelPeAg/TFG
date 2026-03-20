@@ -32,11 +32,16 @@ class HorarioClase extends Model
 
     public function entrenador()
     {
-        return $this->belongsTo(User::class, 'entrenador_id');
+        return $this->belongsTo(\App\Models\Entrenador::class, 'entrenador_id');
     }
 
     public function centro()
     {
         return $this->belongsTo(Centro::class, 'centro_id');
+    }
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class, 'id_horario_clase');
     }
 }

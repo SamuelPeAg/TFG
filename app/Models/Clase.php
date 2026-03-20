@@ -16,9 +16,10 @@ class Clase extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'duracion_minutos', 
+        'duracion_minutos',
         'nivel',
-        'id_centro', 
+        'id_centro',
+        'precio_hora',
     ];
 
     public function centro()
@@ -30,5 +31,10 @@ class Clase extends Model
     public function horariosClases()
     {
         return $this->hasMany(HorarioClase::class, 'id_clase', 'id'); // FK 'id_clase'
+    }
+
+    public function creditos()
+    {
+        return $this->hasMany(ClaseCredito::class, 'id_clase');
     }
 }

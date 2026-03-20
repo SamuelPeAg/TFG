@@ -15,14 +15,13 @@ class UserSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         // Usuario admin fijo (imprescindible para entrar)
-        $admin = User::firstOrCreate(
+        $admin = \App\Models\Entrenador::firstOrCreate(
             ['email' => 'test@example.com'],
             [
-                'name' => 'Admin',
+                'nombre' => 'Admin',
                 'password' => Hash::make('password'),
                 'foto_de_perfil' => 'perfil_admin.jpg',
                 'iban' => 'ES1234567890123456789012',
-                'firma_digital' => 'firma_admin',
             ]
         );
 
@@ -30,5 +29,18 @@ class UserSeeder extends Seeder
         if (!$admin->hasRole('admin')) {
             $admin->assignRole('admin');
         }
+
+        // Crear un cliente fijo para pruebas
+        $cliente = User::firstOrCreate(
+            ['email' => 'cliente@factomove'],
+            [
+                'name' => 'Cliente de Prueba',
+                'password' => Hash::make('password'),
+            ]
+        );
+        $cliente->assignRole('cliente');
+
+        // Generar 10 alumnos/clientes aleatorios
+        User::factory(10)->cliente()->create();
     }
 }

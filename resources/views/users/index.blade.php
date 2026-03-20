@@ -141,6 +141,211 @@
     </div>
   </div>
 
+  {{-- Modal de Gestión de Suscripciones --}}
+  <div id="modalGestionSuscripciones" class="modal-overlay">
+    <div class="modal-card" style="max-width: 600px;">
+      <button type="button" class="close-btn" onclick="cerrarModalSuscripciones()">&times;</button>
+      <div class="modal-header-custom">
+        <div class="logo-simulado"><i class="fas fa-ticket-alt"></i></div>
+        <h2>Suscripciones de <span id="nombreUsuarioSusc"></span></h2>
+      </div>
+
+      <div style="padding: 20px;">
+        {{-- Listado de suscripciones actuales --}}
+        <div id="listaSuscripcionesUsuario" style="margin-bottom: 25px;">
+           <!-- Se cargará vía JS -->
+        </div>
+
+        <div id="loadingSuscripciones" style="display:none; text-align:center; padding: 20px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #4BB7AE;"></i>
+            <p style="margin-top: 10px; color: #666;">Actualizando saldo...</p>
+        </div>
+
+        <hr style="margin-bottom: 20px; border: 0; border-top: 1px solid #eee;">
+
+        {{-- Formulario para asignar nueva --}}
+        <h4 style="margin-bottom: 15px; color: #333;">Asignar Nueva Suscripción</h4>
+        <form action="{{ route('suscripciones-usuarios.store') }}" method="POST">
+          @csrf
+          <input type="hidden" name="id_usuario" id="idUsuarioSusc">
+          
+          <div class="form-group">
+            <label class="form-label-custom">Seleccionar Suscripción</label>
+            <select name="id_suscripcion" class="form-control-custom" required>
+              <option value="">-- Elige una suscripción --</option>
+              @foreach($suscripciones as $s)
+                <option value="{{ $s->id }}">{{ $s->nombre }} ({{ $s->tipo_credito }}) - {{ $s->centro->nombre ?? 'Sin centro' }}</option>
+              @endforeach
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label-custom">Saldo Inicial (opcional)</label>
+            <input type="number" name="saldo_actual" class="form-control-custom" placeholder="Si se deja vacío, se usará el por defecto">
+          </div>
+
+          <button type="submit" class="btn-facto">Asignar Suscripción</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+    <style>
+        .btn-adjust {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 10px;
+        }
+        .btn-adjust:hover {
+            background: #f1f5f9;
+            color: #4BB7AE;
+            border-color: #4BB7AE;
+        }
+        .btn-adjust:active {
+            transform: scale(0.9);
+        }
+        .suscripcion-item {
+            transition: all 0.3s;
+        }
+        .suscripcion-item:hover {
+            border-color: #4BB7AE !important;
+            transform: translateX(5px);
+        }
+    </style>
+
+    <script>
+    // Pasar los usuarios y sus suscripciones a JS
+    let usersData = @json($users);
+    const modalSusc = document.getElementById('modalGestionSuscripciones');
+    const lista = document.getElementById('listaSuscripcionesUsuario');
+    const loading = document.getElementById('loadingSuscripciones');
+
+    document.querySelectorAll('.js-view-subscriptions').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const userId = this.dataset.id;
+        const userName = this.dataset.name;
+        
+        document.getElementById('idUsuarioSusc').value = userId;
+        document.getElementById('nombreUsuarioSusc').innerText = userName;
+
+        renderSuscripciones(userId);
+        modalSusc.style.display = 'flex';
+      });
+    });
+
+    function renderSuscripciones(userId) {
+        const user = usersData.find(u => u.id == userId);
+        lista.innerHTML = '';
+
+        if (user && user.suscripciones && user.suscripciones.length > 0) {
+          user.suscripciones.forEach(su => {
+            const item = document.createElement('div');
+            item.className = 'suscripcion-item';
+            item.style = 'background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);';
+            item.innerHTML = `
+              <div style="flex: 1;">
+                <strong style="display:block; color: #1e293b; font-size: 15px;">${su.suscripcion.nombre}</strong>
+                <div style="display:flex; flex-direction:column; gap:2px; margin-top:2px;">
+                    <span style="font-size: 11px; color: #64748b;">Tipo: <b style="color:#0e7490; font-weight:700;">${su.suscripcion.tipo_credito}</b></span>
+                    <span style="font-size: 11px; color: #64748b;"><i class="fas fa-map-marker-alt" style="margin-right:4px; font-size:10px;"></i>Centro: <b style="color:#4B5563;">${su.suscripcion.centro ? su.suscripcion.centro.nombre : 'General'}</b></span>
+                </div>
+              </div>
+              
+              <div style="display:flex; align-items:center; gap: 20px;">
+                  <div style="display:flex; flex-direction:column; align-items:center;">
+                    <span style="font-size: 9px; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Balance Actual</span>
+                    <div style="display:flex; align-items:center; gap:10px; background: #f8fafc; padding: 4px 8px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                        <button type="button" onclick="ajustarSaldo(${su.id}, 'dec', ${userId})" class="btn-adjust" title="Quitar 1 crédito"><i class="fas fa-minus"></i></button>
+                        <span id="saldo-${su.id}" style="font-size: 20px; font-weight: 900; color: #4BB7AE; min-width: 30px; text-align:center;">${su.saldo_actual}</span>
+                        <button type="button" onclick="ajustarSaldo(${su.id}, 'inc', ${userId})" class="btn-adjust" title="Añadir 1 crédito"><i class="fas fa-plus"></i></button>
+                    </div>
+                  </div>
+
+                  <form action="{{ url('suscripciones-usuarios') }}/${su.id}" method="POST" style="display:inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="_method" value="DELETE">
+                    <button type="submit" class="btn-icon" style="color: #cbd5e1; hover: color: #ef4444;" title="Quitar suscripción completa" onclick="return confirm('¿Quitar esta suscripción?')">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                  </form>
+              </div>
+            `;
+            lista.appendChild(item);
+          });
+        } else {
+          lista.innerHTML = '<div style="text-align:center; padding: 20px; color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle" style="margin-bottom: 10px; font-size: 20px; display:block;"></i>Este cliente no tiene suscripciones asociadas aún.</div>';
+        }
+    }
+
+    async function ajustarSaldo(suId, accion, userId) {
+        const saldoSpan = document.getElementById(`saldo-${suId}`);
+        const originalValue = saldoSpan.innerText;
+        
+        // Optimistic update
+        let tempValue = parseInt(originalValue);
+        if (accion === 'inc') tempValue++;
+        else if (accion === 'dec' && tempValue > 0) tempValue--;
+        saldoSpan.innerText = tempValue;
+        saldoSpan.style.opacity = '0.5';
+
+        try {
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('accion', accion);
+
+            const routeTemplate = "{{ route('suscripciones-usuarios.ajustar', ['id' => '__ID__']) }}";
+            const res = await fetch(routeTemplate.replace('__ID__', suId), {
+                method: 'POST',
+                headers: { 
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json' 
+                },
+                body: formData
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.message || `Error del servidor: ${res.status}`);
+            }
+
+            const data = await res.json();
+            if (data.success) {
+                saldoSpan.innerText = data.nuevo_saldo;
+                saldoSpan.style.opacity = '1';
+                
+                // Actualizar cache local
+                const user = usersData.find(u => u.id == userId);
+                if (user) {
+                    const su = user.suscripciones.find(s => s.id == suId);
+                    if (su) su.saldo_actual = data.nuevo_saldo;
+                }
+            } else {
+                saldoSpan.innerText = originalValue;
+                saldoSpan.style.opacity = '1';
+                alert('Error: ' + (data.message || 'No se pudo actualizar'));
+            }
+        } catch (e) {
+            console.error(e);
+            saldoSpan.innerText = originalValue;
+            saldoSpan.style.opacity = '1';
+            alert('Error: ' + e.message);
+        }
+    }
+
+    function cerrarModalSuscripciones() {
+      modalSusc.style.display = 'none';
+    }
+  </script>
+
   <script src="{{ asset('js/users.js') }}"></script>
   <script src="{{ asset('js/users-modal-delete.js') }}"></script>
   

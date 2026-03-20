@@ -136,6 +136,47 @@
     </div>
 
     <script src="{{ asset('js/login-tab-navigation.js') }}"></script>
+
+    {{-- Renovar token CSRF para evitar error 419 por formulario antiguo --}}
+    <script>
+        (function () {
+            // Refresca el token CSRF cada 15 minutos sin recargar la página
+            const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 min en ms
+            const MAX_AGE = 110 * 60 * 1000;          // 110 min (justo antes de que expire la sesión de 120 min)
+            const openedAt = Date.now();
+
+            async function refreshCsrfToken() {
+                try {
+                    const response = await fetch('{{ route("csrf-token") }}', {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Actualiza todos los inputs _token del formulario
+                        document.querySelectorAll('input[name="_token"]').forEach(el => {
+                            el.value = data.token;
+                        });
+                    }
+                } catch (e) {
+                    // Si falla, simplemente recargamos la página para tener token fresco
+                    if (Date.now() - openedAt > MAX_AGE) {
+                        window.location.reload();
+                    }
+                }
+            }
+
+            // Refresca cuando la pestaña vuelve a estar activa tras estar oculta
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden && Date.now() - openedAt > MAX_AGE) {
+                    window.location.reload();
+                }
+            });
+
+            // Refresca periódicamente
+            setInterval(refreshCsrfToken, REFRESH_INTERVAL);
+        })();
+    </script>
+
     <x-footers.footer_welcome />
 
 @endsection

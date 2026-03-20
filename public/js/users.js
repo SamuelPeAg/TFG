@@ -162,6 +162,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // (por si venían visibles)
   closeModal(modalCrear);
   closeModal(modalEditar);
+
+  // Auto-abrir modal si la URL trae create=true
+  if (window.location.search.includes('create=true') && modalCrear) {
+    openModal(modalCrear);
+  }
 });
 
 const checkboxes = document.querySelectorAll('.user-check');

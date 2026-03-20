@@ -19,19 +19,19 @@ class NominaAdminController extends Controller
 
         // Nóminas Pendientes de Revisión (Borradores) para el periodo seleccionado
         $borradores = Nomina_entrenador::where('estado_nomina', 'pendiente_revision')
-                        ->where('mes', $mes)
-                        ->where('anio', $anio)
-                        ->with('user')
-                        ->orderBy('user_id')
-                        ->get();
+            ->where('mes', $mes)
+            ->where('anio', $anio)
+            ->with('user')
+            ->orderBy('user_id')
+            ->get();
 
         // Historial (Confirmadas o Pagadas) para el periodo seleccionado
         $historial = Nomina_entrenador::where('estado_nomina', '!=', 'pendiente_revision')
-                        ->where('mes', $mes)
-                        ->where('anio', $anio)
-                        ->with('user')
-                        ->orderBy('created_at', 'desc')
-                        ->get();
+            ->where('mes', $mes)
+            ->where('anio', $anio)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('nominas_admin.nominas_a', compact('borradores', 'historial', 'mes', 'anio'));
     }
@@ -43,50 +43,50 @@ class NominaAdminController extends Controller
         $mes = $request->input('mes', date('n'));
         $anio = $request->input('anio', date('Y'));
 
-        $fecha_inicio = $request->input('fecha_inicio') 
-            ? Carbon::parse($request->input('fecha_inicio'))->startOfDay() 
+        $fecha_inicio = $request->input('fecha_inicio')
+            ? Carbon::parse($request->input('fecha_inicio'))->startOfDay()
             : Carbon::create($anio, $mes, 1)->startOfMonth();
 
-        $fecha_fin = $request->input('fecha_fin') 
-            ? Carbon::parse($request->input('fecha_fin'))->endOfDay() 
+        $fecha_fin = $request->input('fecha_fin')
+            ? Carbon::parse($request->input('fecha_fin'))->endOfDay()
             : Carbon::create($anio, $mes, 1)->endOfMonth();
 
         // 1. Obtener TODOS los entrenadores
-        $entrenadores = User::role('entrenador')->get();
+        $entrenadores = \App\Models\Entrenador::all();
 
         $generadas = 0;
         $actualizadas = 0;
 
         foreach ($entrenadores as $entrenador) {
             // 2. Buscar sus pagos para el rango de fechas seleccionado
-            $pagos = Pago::where(function($q) use ($entrenador) {
-                            $q->where('entrenador_id', $entrenador->id)
-                              ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenador->id));
-                        })
-                        ->whereBetween('fecha_registro', [$fecha_inicio, $fecha_fin])
-                        ->get();
+            $pagos = Pago::where(function ($q) use ($entrenador) {
+                $q->where('entrenador_id', $entrenador->id)
+                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenador->id));
+            })
+                ->whereBetween('fecha_registro', [$fecha_inicio, $fecha_fin])
+                ->get();
 
             // Si no hay pagos en este periodo para este entrenador, NO saltamos, queremos que salga a 0
             // if ($pagos->isEmpty()) continue;
 
             // AGRUPAR POR SESIONES ÚNICAS
             // Clave: fecha + hora + nombre clase + centro (para evitar contar sesiones duplicadas)
-            $sesiones = $pagos->groupBy(function($p) {
+            $sesiones = $pagos->groupBy(function ($p) {
                 return $p->fecha_registro->format('Y-m-d H:i') . '|' . strtolower(trim($p->nombre_clase)) . '|' . $p->centro;
             });
 
             $sesiones_detalle = [];
             $totalMinutos = 0;
-            
+
             foreach ($sesiones as $clave => $grupoPagos) {
                 $primerPago = $grupoPagos->first();
                 $nombreClase = $primerPago->nombre_clase;
                 $centro = $primerPago->centro;
                 $fecha = $primerPago->fecha_registro;
-                
+
                 // Duración siempre es 1 hora (60 min) según requerimiento
                 $duracion = 60;
-                
+
                 $totalMinutos += $duracion;
 
                 // Añadir al detalle del PDF
@@ -102,7 +102,7 @@ class NominaAdminController extends Controller
             }
 
             $horasTrabajadas = $totalMinutos / 60;
-            
+
             // --- CÁLCULO SEGÚN FRANJAS (IMAGEN 1) ---
             $bruto = 0;
             $rem = $horasTrabajadas;
@@ -114,7 +114,7 @@ class NominaAdminController extends Controller
 
             // Tramo 2: 25 - 30 horas -> 10.9 €/h
             if ($rem > 0) {
-                $h2 = min($rem, 5); 
+                $h2 = min($rem, 5);
                 $bruto += $h2 * 10.9;
                 $rem -= $h2;
             }
@@ -125,14 +125,14 @@ class NominaAdminController extends Controller
             }
 
             // --- DEDUCCIONES Y COSTES ---
-            $irpf_porcentaje = 0.00; 
-            $ss_trabajador_porcentaje = 0.0635; 
-            $ss_empresa_porcentaje = 0.3140; 
+            $irpf_porcentaje = 0.00;
+            $ss_trabajador_porcentaje = 0.0635;
+            $ss_empresa_porcentaje = 0.3140;
 
             $ss_trabajador = $bruto * $ss_trabajador_porcentaje;
             $irpf = $bruto * $irpf_porcentaje;
             $salario_neto = $bruto - $ss_trabajador - $irpf;
-            
+
             $ss_empresa = $bruto * $ss_empresa_porcentaje;
             $coste_total = $bruto + $ss_empresa;
 
@@ -149,16 +149,16 @@ class NominaAdminController extends Controller
                 'coste_total' => round($coste_total, 2),
                 'porcentajes' => [
                     'ss_trab' => number_format($ss_trabajador_porcentaje * 100, 2),
-                    'irpf'    => number_format($irpf_porcentaje * 100, 2),
-                    'ss_emp'  => number_format($ss_empresa_porcentaje * 100, 2)
+                    'irpf' => number_format($irpf_porcentaje * 100, 2),
+                    'ss_emp' => number_format($ss_empresa_porcentaje * 100, 2)
                 ]
             ];
 
             // 3. Crear o Actualizar Nómina (El importe es el NETO a percibir por el trabajador)
             $nomina = Nomina_entrenador::where('user_id', $entrenador->id)
-                        ->where('mes', $mes)
-                        ->where('anio', $anio)
-                        ->first();
+                ->where('mes', $mes)
+                ->where('anio', $anio)
+                ->first();
 
             if ($nomina) {
                 if ($nomina->estado_nomina === 'pendiente_revision') {
@@ -190,20 +190,20 @@ class NominaAdminController extends Controller
     {
         $mes = $request->input('mes', date('n'));
         $anio = $request->input('anio', date('Y'));
-        
-        $entrenador = User::find($userId);
+
+        $entrenador = \App\Models\Entrenador::find($userId);
 
         // Buscar pagos del usuario para ese mes/año (considerando ambas formas de asociación)
-        $pagos = Pago::where(function($q) use ($userId) {
-                        $q->where('entrenador_id', $userId)
-                          ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $userId));
-                    })
-                    ->whereMonth('fecha_registro', $mes)
-                    ->whereYear('fecha_registro', $anio)
-                    ->get();
-        
+        $pagos = Pago::where(function ($q) use ($userId) {
+            $q->where('entrenador_id', $userId)
+                ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $userId));
+        })
+            ->whereMonth('fecha_registro', $mes)
+            ->whereYear('fecha_registro', $anio)
+            ->get();
+
         // Agrupar sesiones
-        $sesiones = $pagos->groupBy(function($p) {
+        $sesiones = $pagos->groupBy(function ($p) {
             return $p->fecha_registro->format('Y-m-d H:i') . '|' . strtolower(trim($p->nombre_clase)) . '|' . $p->centro;
         });
 
@@ -231,7 +231,7 @@ class NominaAdminController extends Controller
         }
 
         $horasTrabajadas = $totalMinutos / 60;
-        
+
         // Mismo cálculo por tramos para el recalcular dinámico
         $bruto = 0;
         $rem = $horasTrabajadas;
@@ -265,8 +265,8 @@ class NominaAdminController extends Controller
             'coste_total' => round($coste_total, 2),
             'porcentajes' => [
                 'ss_trab' => $ss_trab_p * 100,
-                'irpf'    => 0,
-                'ss_emp'  => $ss_emp_p * 100
+                'irpf' => 0,
+                'ss_emp' => $ss_emp_p * 100
             ]
         ];
 
@@ -301,7 +301,7 @@ class NominaAdminController extends Controller
 
         // ACTUALIZAR DESGLOSE DETALLADO
         $detalles = $nomina->detalles ?? [];
-        
+
         // Capturar valores del formulario si están presentes
         if ($request->has('salario_bruto')) {
             $detalles['salario_bruto'] = $request->salario_bruto;
@@ -321,7 +321,7 @@ class NominaAdminController extends Controller
         if ($request->has('horas_trabajadas')) {
             $detalles['horas_trabajadas'] = $request->horas_trabajadas;
         }
-        
+
         // Manejo de Extras (Concepto + Importe)
         // Se espera un array de 'extra_conceptos' y 'extra_importes'
         if ($request->has('extra_conceptos')) {
@@ -362,16 +362,16 @@ class NominaAdminController extends Controller
 
         return back()->with('success', $mensaje);
     }
-    
+
     // PAGAR (Marcar como pagado)
     public function marcarPagado($id)
     {
-         $nomina = Nomina_entrenador::findOrFail($id);
-         $nomina->estado_nomina = 'pagado';
-         $nomina->fecha_pago = now();
-         $nomina->save();
-         
-         return back()->with('success', 'Nómina marcada como PAGADA.');
+        $nomina = Nomina_entrenador::findOrFail($id);
+        $nomina->estado_nomina = 'pagado';
+        $nomina->fecha_pago = now();
+        $nomina->save();
+
+        return back()->with('success', 'Nómina marcada como PAGADA.');
     }
 
     // ELIMINAR
@@ -384,9 +384,10 @@ class NominaAdminController extends Controller
         $nomina->delete();
         return back()->with('success', 'Nómina eliminada.');
     }
-    
-    private function getNombreMes($numero) {
-        $meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+    private function getNombreMes($numero)
+    {
+        $meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         return $meses[$numero - 1] ?? 'Mes';
     }
 }

@@ -31,14 +31,14 @@ class FacturacionController extends Controller
         }
 
         $q = Pago::query()
-            ->with(['entrenador:id,name', 'entrenadores:id,name'])
+            ->with(['entrenador:id,nombre', 'entrenadores:id,nombre'])
             ->when($desde, fn($qq) => $qq->whereDate('fecha_registro', '>=', $desde))
             ->when($hasta, fn($qq) => $qq->whereDate('fecha_registro', '<=', $hasta))
             ->when($centro !== 'todos', fn($qq) => $qq->where('centro', $centro))
             ->when($entrenadorId, function ($qq) use ($entrenadorId) {
                 $qq->where(function ($sub) use ($entrenadorId) {
                     $sub->where('entrenador_id', $entrenadorId)
-                        ->orWhereHas('entrenadores', fn($h) => $h->where('users.id', $entrenadorId));
+                        ->orWhereHas('entrenadores', fn($h) => $h->where('entrenadores.id', $entrenadorId));
                 });
             });
 
@@ -86,9 +86,7 @@ class FacturacionController extends Controller
 
         $centros = \App\Models\Centro::all();
 
-        $entrenadores = User::role('entrenador')
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $entrenadores = \App\Models\Entrenador::orderBy('nombre')->get(['id', 'nombre as name']);
 
         // Clientes (filas)
         $clientes = User::role('cliente')
@@ -139,7 +137,7 @@ class FacturacionController extends Controller
         if ($entrenadorId) {
             $pagosQuery->where(function ($q) use ($entrenadorId) {
                 $q->where('entrenador_id', $entrenadorId)
-                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenadorId));
+                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenadorId));
             });
         }
         if ($centro !== 'todos') $pagosQuery->where('centro', $centro);
@@ -244,7 +242,7 @@ class FacturacionController extends Controller
             }
         }
         $entrenadoresIdsConDatos = array_unique($entrenadoresIdsConDatos);
-        $entrenadores = User::whereIn('id', $entrenadoresIdsConDatos)->orderBy('name')->get(['id', 'name']);
+        $entrenadores = \App\Models\Entrenador::whereIn('id', $entrenadoresIdsConDatos)->orderBy('nombre')->get(['id', 'nombre as name']);
 
         $todosLosEntrenadores = User::whereHas('roles', function($q) {
             $q->whereIn('name', ['entrenador', 'admin']);
@@ -342,7 +340,7 @@ class FacturacionController extends Controller
                     $entId = $it->horarioClase?->entrenador_id;
                     if ($entId) {
                         $qq->where('entrenador_id', $entId)
-                            ->orWhereHas('entrenadores', fn($h) => $h->where('users.id', $entId));
+                            ->orWhereHas('entrenadores', fn($h) => $h->where('entrenadores.id', $entId));
                     }
                 })
                 ->whereDate('fecha_registro', optional($it->horarioClase?->fecha_hora_inicio)->toDateString())
@@ -374,7 +372,7 @@ class FacturacionController extends Controller
         if ($entrenadorId) {
             $pagoQuery->where(function ($q) use ($entrenadorId) {
                 $q->where('entrenador_id', $entrenadorId)
-                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenadorId));
+                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenadorId));
             });
         }
         if ($desde) {

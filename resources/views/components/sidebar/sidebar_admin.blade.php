@@ -64,12 +64,17 @@
             <span>FACTURACIÓN</span>
         </a>
 
-        <a href="{{ route('admin.nominas') }}"
-            class="menu-item {{ request()->routeIs('admin.nominas*') ? 'active' : '' }}">
+        <a href="{{ route('admin.nominas') }}" 
+           class="menu-item {{ request()->routeIs('admin.nominas*') ? 'active' : '' }}">
             <i class="fa-solid fa-file-invoice"></i>
             <span>NOMINAS-ADMIN</span>
         </a>
 
+        <a href="{{ route('suscripciones.index') }}" 
+           class="menu-item {{ request()->routeIs('suscripciones.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-ticket-alt"></i>
+            <span>SUSCRIPCIONES</span>
+        </a>
     </nav>
 
     <div class="sidebar-footer">

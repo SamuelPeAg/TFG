@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\EntrenadorRegistrationMail;
-use App\Models\User;
+use App\Models\Entrenador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,7 +15,7 @@ class EntrenadorController extends Controller
 {
     public function index()
     {
-        $entrenadores = User::role('entrenador')->get();
+        $entrenadores = Entrenador::all();
         return view('entrenadores.index', compact('entrenadores'));
     }
 
@@ -23,7 +23,7 @@ class EntrenadorController extends Controller
     {
         $request->validate([
             'nombre' => ['required', 'string', 'min:3', 'max:50'],
-            'email' => ['required', 'email', 'max:191', 'unique:users,email'],
+            'email' => ['required', 'email', 'max:191', 'unique:entrenadores,email'],
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'nombre.min' => 'El nombre debe tener al menos 3 caracteres.',
@@ -33,8 +33,8 @@ class EntrenadorController extends Controller
         ]);
         $token = Str::random(60);
         // Crear el usuario entrenador (solo nombre y email)
-        $user = User::create([
-            'name' => $request->nombre,
+        $user = Entrenador::create([
+            'nombre' => $request->nombre,
             'email' => $request->email,
             'password' => Hash::make(Str::random(24)),
             'activation_token' => $token
@@ -64,7 +64,7 @@ class EntrenadorController extends Controller
             'iban.min' => 'El IBAN debe tener al menos 8 caracteres.',
         ]);
 
-        $user = User::findOrFail($id);
+        $user = Entrenador::findOrFail($id);
 
         $data = [
             'iban' => $request->iban,
@@ -91,7 +91,7 @@ class EntrenadorController extends Controller
 
     public function destroy($id)
     {
-        $user = User::role('entrenador')->whereKey($id)->firstOrFail();
+        $user = Entrenador::findOrFail($id);
 
         $user->delete();
 
@@ -101,12 +101,18 @@ class EntrenadorController extends Controller
     public function activarEntrenador($token)
     {
         // Buscar el usuario con ese token
-        $user = User::where('activation_token', $token)->first();
+        $user = Entrenador::where('activation_token', $token)->first();
 
         // Verificar si el usuario fue encontrado
         if (!$user) {
             // Si no se encuentra el usuario, puedes devolver un error o redirigir
             return redirect()->route('login')->with('error', 'Token de activación inválido.');
+        }
+
+        // Verificar si el token tiene más de 24 horas
+        if ($user->updated_at->diffInHours(now()) >= 24) {
+            $user->update(['activation_token' => null]);
+            return redirect()->route('login')->with('error', 'El token de activación ha expirado.');
         }
 
 
@@ -126,11 +132,17 @@ class EntrenadorController extends Controller
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
-        $user = User::findOrFail($id);
+        $user = Entrenador::findOrFail($id);
 
         // Security Check: Verify token matches
         if ($user->activation_token !== $request->token) {
             return back()->with('error', 'Token de seguridad inválido o expirado.');
+        }
+
+        // Verificar si el token tiene más de 24 horas
+        if ($user->updated_at->diffInHours(now()) >= 24) {
+            $user->update(['activation_token' => null]);
+            return redirect()->route('login')->with('error', 'El token de activación ha expirado.');
         }
 
         $user->update([
@@ -140,7 +152,7 @@ class EntrenadorController extends Controller
         ]);
 
         // Autologin del usuario tras activar la cuenta
-        Auth::login($user); 
+        Auth::guard('entrenador')->login($user);
 
         return redirect()->route('calendario')->with('success', '¡Cuenta activada correctamente! Ya estás dentro de Factomove.');
     }

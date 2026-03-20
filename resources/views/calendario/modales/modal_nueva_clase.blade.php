@@ -59,7 +59,7 @@
         </div>
 
         <!-- Form Content -->
-        <form id="formNuevaClaseWizard" onsubmit="return false;" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <form id="formNuevaClaseWizard" data-url="{{ route('Pagos.store') }}" onsubmit="return false;" style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
             @csrf
             
             <!-- Scrollable Step Area -->
@@ -72,9 +72,8 @@
                     <div class="form-grid-2">
                          <!-- Centro -->
                          <div class="input-group-clean">
-                            <label>Centro Deportivo</label>
-                            <select id="centro" name="centro" class="input-clean" required>
-                                <option value="" disabled selected>Selecciona centro...</option>
+                            <label>Centros Deportivos (Selecciona uno o más)</label>
+                            <select id="centros" name="centros[]" class="input-clean select2-basic" multiple style="width: 100%;" required>
                                 @foreach($centros as $centro)
                                     <option value="{{ $centro->nombre }}">{{ $centro->nombre }}</option>
                                 @endforeach
@@ -90,35 +89,28 @@
                     <div style="margin-top: 24px;">
                         <div class="input-group-clean">
                             <label>Tipo de Sesión</label>
-                            <div class="select-cards-container">
-                                <!-- Custom Radio Cards structure controlled by JS or simple select. Stick to select for simplicity but styled better, or use cards if possible. 
-                                     To ensure compatibility with existing JS logic "window.handleTipoChange()", we keep the SELECT but hide it visually or style it? 
-                                     Let's use a nice styled SELECT first to avoid breaking changes, as requested professional structure. -->
-                                <div class="custom-select-wrapper">
-                                    <select id="tipo_clase" name="tipo_clase" class="input-clean" required onchange="window.handleTipoChange()">
-                                        <option value="EP" selected>EP (Individual)</option>
-                                        <option value="DUO">DUO</option>
-                                        <option value="TRIO">TRIO</option>
-                                        <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
-                                        <option value="GRUPO">GRUPO</option>
-                                    </select>
-                                    <div class="select-icon"><i class="fa-solid fa-chevron-down"></i></div>
-                                </div>
-                            </div>
+                            <select id="tipo_clase" name="tipo_clase" class="input-clean select2-basic" style="width:100%" required>
+                                <option value="ep" selected>EP (Personal)</option>
+                                <option value="duo">Dúo</option>
+                                <option value="trio">Trío</option>
+                                <option value="privado">Privado</option>
+                                <option value="Grupo especial">Grupo especial</option>
+                                <option value="Grupo">Grupo</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div style="margin-top: 32px;">
-                        <div class="form-section-title">EQUIPO TÉCNICO</div>
+                    <div style="margin-top: 40px;">
+                        <div class="form-section-title">ASIGNACIÓN DE ENTRENADORES</div>
                         <div class="trainers-grid-clean">
-                            @if(isset($entrenadores) && $entrenadores->count() > 0)
+                            @if(isset($entrenadores) && count($entrenadores) > 0)
                                 @foreach($entrenadores as $coach)
                                     <label class="trainer-card-clean">
                                         <input type="checkbox" name="trainers[]" value="{{ $coach->id }}">
                                         <div class="t-card-content">
-                                            <div class="t-avatar">
-                                                @if($coach->foto_de_perfil)
-                                                    <img src="{{ asset('storage/' . $coach->foto_de_perfil) }}" alt="{{ $coach->name }}">
+                                             <div class="t-avatar">
+                                                @if($coach->profile_photo_path)
+                                                    <img src="{{ asset('storage/'.$coach->profile_photo_path) }}" alt="{{ $coach->name }}">
                                                 @else
                                                     {{ strtoupper(substr($coach->name, 0, 1)) }}
                                                 @endif
@@ -131,8 +123,6 @@
                                         </div>
                                     </label>
                                 @endforeach
-                            @else
-                                <div class="empty-msg">No hay entrenadores disponibles</div>
                             @endif
                         </div>
                     </div>
@@ -149,14 +139,27 @@
                         </div>
                         <div class="input-group-clean">
                              <label>Precio Base por Persona (€)</label>
-                             <input id="precio_base" type="number" step="0.01" class="input-clean" placeholder="0.00" required>
+                             <input id="precio_base" type="number" step="0.01" class="input-clean" placeholder="0.00" value="0.00" required>
+                        </div>
+                    </div>
+
+                    <!-- REPETICION -->
+                    <div style="margin-top: 24px; padding: 16px; background: #f0fdfa; border: 1px solid #ccfbf1; border-radius: 12px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 0;">
+                            <input type="checkbox" name="is_recurring" id="is_recurring" value="1" style="width: 18px; height: 18px; accent-color: #39c5a7;">
+                            <span style="font-weight: 700; color: #0f172a; font-size: 14px;">Repetir esta clase semanalmente</span>
+                        </label>
+                        <div id="recurrence_options" style="display: none; margin-top: 15px; border-top: 1px solid #ccfbf1; padding-top: 15px;">
+                            <div class="input-group-clean">
+                                <label style="font-size: 12px; color: #134e4a;">Repetir hasta el día:</label>
+                                <input type="date" name="recurrence_end" id="recurrence_end" class="input-clean" style="background: white;">
+                            </div>
                         </div>
                     </div>
 
                     <div style="margin-top: 40px;">
                         <div class="form-section-title">PARTICIPANTES <span id="clients-count" style="font-weight:400; font-size:11px; color:#94a3b8; margin-left:5px;"></span></div>
                         
-                        <!-- Inline Search -->
                         <div class="client-search-wrapper" style="position:relative; margin-bottom: 15px;">
                             <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:12px; color:#94a3b8;"></i>
                             <input type="text" id="client-search-input" class="input-clean" style="padding-left: 36px;" placeholder="Buscar alumno por nombre..." autocomplete="off">
@@ -164,7 +167,6 @@
                         </div>
 
                         <div id="selected-clients-list" class="participants-grid-clean">
-                            <!-- JS Fills this -->
                             <div class="empty-state-clean">
                                 <i class="fa-solid fa-users-slash"></i>
                                 <p>Busca y selecciona alumnos</p>
@@ -202,7 +204,7 @@
                      <button type="button" id="btn-next-step" class="btn-clean-primary">
                         Siguiente <i class="fa-solid fa-arrow-right"></i>
                      </button>
-                     <button type="submit" id="btn-submit-wizard" class="btn-clean-success" style="display: none;">
+                     <button type="button" id="btn-submit-wizard" class="btn-clean-success" style="display: none;">
                         <i class="fa-solid fa-check"></i> CONFIRMAR Y GUARDAR
                      </button>
                 </div>
@@ -211,177 +213,197 @@
     </div>
   </div>
 
-  <!-- Include Scripts -->
-  <script src="{{ asset('js/wizard_clase.js') }}"></script>
   <script type="application/json" id="users_json">
       @json($users->map(fn($u)=>['id'=>$u->id,'name'=>$u->name])->values())
   </script>
 
-  <!-- Clean CSS Styles -->
+  <script>
+    (function() {
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        const modal = document.getElementById('modalNuevaClase');
+        const form = document.getElementById('formNuevaClaseWizard');
+        const btnNext = document.getElementById('btn-next-step');
+        const btnPrev = document.getElementById('btn-prev-step');
+        const btnSubmit = document.getElementById('btn-submit-wizard');
+        const navSteps = document.querySelectorAll('.nav-step');
+        const wizardTitle = document.getElementById('wizard-title');
+        const wizardSubtitle = document.getElementById('wizard-subtitle');
+
+        const stepTitles = {
+            1: { title: "Configuración Inicial", sub: "Define centros, nombre y tipo de sesión." },
+            2: { title: "Planificación Horaria", sub: "Establece la fecha, precio y participantes." },
+            3: { title: "Revisión de Pagos", sub: "Confirma los detalles económicos por asistente." }
+        };
+
+        function updateUI() {
+            document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
+            document.getElementById(`step-${currentStep}`).style.display = 'block';
+
+            navSteps.forEach(ns => {
+                const s = parseInt(ns.dataset.step);
+                ns.classList.toggle('active', s === currentStep);
+                ns.classList.toggle('completed', s < currentStep);
+            });
+
+            btnPrev.style.display = currentStep > 1 ? 'flex' : 'none';
+            btnNext.style.display = currentStep < totalSteps ? 'flex' : 'none';
+            btnSubmit.style.display = currentStep === totalSteps ? 'flex' : 'none';
+
+            if (stepTitles[currentStep]) {
+                wizardTitle.textContent = stepTitles[currentStep].title;
+                wizardSubtitle.textContent = stepTitles[currentStep].sub;
+            }
+
+            if (currentStep === 3) prepareStep3();
+        }
+
+        btnNext.addEventListener('click', () => {
+             if (validateStep(currentStep)) { currentStep++; updateUI(); }
+        });
+        btnPrev.addEventListener('click', () => { currentStep--; updateUI(); });
+
+        function validateStep(step) {
+            const container = document.getElementById(`step-${step}`);
+            const required = container.querySelectorAll('[required]');
+            let ok = true;
+            required.forEach(i => { if(!i.value) { i.style.borderColor = 'red'; ok = false; } else i.style.borderColor = ''; });
+            return ok;
+        }
+
+        const clientInput = document.getElementById('client-search-input');
+        const suggestionsBox = document.getElementById('client-suggestions');
+        const selectedList = document.getElementById('selected-clients-list');
+        const clientsCountEl = document.getElementById('clients-count');
+        let usersData = JSON.parse(document.getElementById('users_json').textContent || '[]');
+
+        clientInput.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase().trim();
+            if (q.length < 1) { suggestionsBox.style.display = 'none'; return; }
+            const matches = usersData.filter(u => u.name.toLowerCase().includes(q)).slice(0, 10);
+            suggestionsBox.innerHTML = matches.map(u => `<div class="suggestion-item" data-id="${u.id}" data-name="${u.name}" style="padding:10px 15px; cursor:pointer; border-bottom:1px solid #f1f5f9;">${u.name}</div>`).join('');
+            suggestionsBox.style.display = 'block';
+
+            suggestionsBox.querySelectorAll('.suggestion-item').forEach(it => {
+                it.addEventListener('click', () => {
+                    addParticipant(it.dataset.id, it.dataset.name);
+                    clientInput.value = '';
+                    suggestionsBox.style.display = 'none';
+                });
+            });
+        });
+
+        function addParticipant(id, name) {
+            if (document.querySelector(`.participant-item-row[data-id="${id}"]`)) return;
+            const empty = selectedList.querySelector('.empty-state-clean');
+            if (empty) empty.remove();
+
+            const div = document.createElement('div');
+            div.className = 'participant-item-row';
+            div.dataset.id = id;
+            div.style.cssText = "display:flex; align-items:center; gap:12px; padding:10px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:5px;";
+            div.innerHTML = `
+                <div class="t-avatar" style="width:28px; height:28px; font-size:10px; background: #4BB7AE; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center;">${name.charAt(0)}</div>
+                <span style="flex:1; font-weight:600; font-size:13px;">${name}</span>
+                <input type="hidden" name="users[]" value="${id}">
+                <button type="button" class="remove-p" style="border:none; background:none; color:#94a3b8; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+            `;
+            div.querySelector('.remove-p').addEventListener('click', () => {
+                div.remove();
+                if (selectedList.children.length === 0) selectedList.innerHTML = '<div class="empty-state-clean"><p>Busca alumnos</p></div>';
+                updatePCount();
+            });
+            selectedList.appendChild(div);
+            updatePCount();
+        }
+
+        function updatePCount() { clientsCountEl.textContent = `(${document.querySelectorAll('.participant-item-row').length})`; }
+
+        function prepareStep3() {
+            const container = document.getElementById('payment-rows-container');
+            const participants = document.querySelectorAll('.participant-item-row');
+            const basePrice = document.getElementById('precio_base').value || 0;
+            container.innerHTML = '';
+            participants.forEach(p => {
+                const id = p.dataset.id;
+                const name = p.querySelector('span').textContent;
+                const row = document.createElement('div');
+                row.className = 'payment-row';
+                row.style.cssText = "display:grid; grid-template-columns:2fr 1fr 1fr; gap:10px; padding:10px; border-bottom:1px solid #f1f5f9;";
+                row.innerHTML = `
+                    <span style="font-weight:600; font-size:13px;">${name}</span>
+                    <input type="number" step="0.01" name="costs[${id}]" value="${basePrice}" class="input-clean" style="padding:4px 8px; font-size:12px;">
+                    <select name="methods[${id}]" class="input-clean" style="padding:4px 8px; font-size:12px;">
+                        <option value="BONO">BONO</option><option value="EFECTIVO">EFECTIVO</option><option value="TARJETA">TARJETA</option>
+                    </select>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        btnSubmit.addEventListener('click', async () => {
+            const payload = {
+                centros: Array.from(document.getElementById('centros').selectedOptions).map(o=>o.value),
+                nombre_clase: document.getElementById('nombre_clase').value,
+                tipo_clase: document.getElementById('tipo_clase').value,
+                trainers: Array.from(document.querySelectorAll('input[name="trainers[]"]:checked')).map(i=>i.value),
+                fecha_hora: document.getElementById('fecha_hora').value,
+                is_recurring: document.getElementById('is_recurring').checked ? 1 : 0,
+                recurrence_end: document.getElementById('recurrence_end').value,
+                users: Array.from(document.querySelectorAll('input[name="users[]"]')).map(i=>i.value),
+                costs: {}, methods: {}
+            };
+            document.querySelectorAll('input[name^="costs["]').forEach(i => { payload.costs[i.name.match(/\[(\d+)\]/)[1]] = i.value; });
+            document.querySelectorAll('select[name^="methods["]').forEach(s => { payload.methods[s.name.match(/\[(\d+)\]/)[1]] = s.value; });
+
+            try {
+                Swal.fire({title:'Guardando...', didOpen:()=>Swal.showLoading()});
+                const res = await fetch(form.getAttribute('data-url'), {
+                    method:'POST', headers:{'Content-Type':'application/json','X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) { 
+                    Swal.fire({icon:'success', title:'Guardado', timer:1500});
+                    location.reload(); 
+                } else { Swal.fire('Error', data.error || 'Error al guardar', 'error'); }
+            } catch(e){ Swal.fire('Error','Error de red','error'); }
+        });
+
+        document.getElementById('is_recurring').addEventListener('change', e => {
+            document.getElementById('recurrence_options').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        updateUI();
+    })();
+  </script>
+
   <style>
-    /* Reset & Fonts */
-    .wizard-box { font-family: 'Inter', sans-serif; }
+    .modal-box { font-family: 'Inter', sans-serif; }
+    .nav-step { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; opacity: 0.5; transition: 0.2s; }
+    .nav-step.active { opacity: 1; background: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .nav-step.completed { opacity: 0.8; }
+    .nav-step-icon { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #cbd5e1; display:flex; align-items:center; justify-content:center; font-weight:700; }
+    .nav-step.active .nav-step-icon { background: linear-gradient(135deg, #39c5a7, #eb567a); color:white; border:none; }
+    .nav-step.completed .nav-step-icon { background: #39c5a7; color:white; border:none; }
     
-    /* Nav Items */
-    .nav-step {
-        display: flex; align-items: center; gap: 12px; padding: 12px 16px;
-        border-radius: 10px; cursor: default; transition: all 0.2s;
-        margin-bottom: 4px;
-    }
-    .nav-step.active { background: #ffffff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-    
-    /* Active Step Icon: Teal-Pink Gradient */
-    .nav-step.active .nav-step-icon { 
-        background: linear-gradient(135deg, #39c5a7, #eb567a); 
-        color: white; 
-        border: none;
-    }
-    .nav-step.active .step-label { color: #0f172a; font-weight: 700; }
-    
-    .nav-step:not(.active) { opacity: 0.6; }
-    .nav-step.completed .nav-step-icon { background: #39c5a7; border-color: #39c5a7; color: white; }
-
-    .nav-step-icon {
-        width: 32px; height: 32px; border-radius: 50%; border: 2px solid #cbd5e1;
-        color: #64748b; font-weight: 700; display: flex; align-items: center; justify-content: center;
-        background: white; flex-shrink: 0; font-size: 14px;
-    }
-    .step-label { display: block; font-size: 14px; color: #475569; font-weight: 600; }
-    .step-desc { display: block; font-size: 11px; color: #94a3b8; }
-
-    /* Forms */
-    .form-section-title { font-size: 12px; font-weight: 800; color: #94a3b8; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 16px; }
+    .form-section-title { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 15px; }
     .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    
-    .input-group-clean label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
-    .input-clean {
-        width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0;
-        font-size: 14px; color: #1e293b; background: #f8fafc; transition: all 0.2s;
-    }
-    .input-clean:focus { background: white; border-color: #39c5a7; outline: none; box-shadow: 0 0 0 3px rgba(57, 197, 167, 0.1); }
+    .input-group-clean label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px; }
+    .input-clean { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; font-size: 14px; }
+    .input-clean:focus { border-color: #39c5a7; outline: none; background: white; }
 
-    /* Trainers Grid */
-    .trainers-grid-clean { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-    .trainer-card-clean { cursor: pointer; position: relative; }
-    .trainer-card-clean input { position: absolute; opacity: 0; }
-    .t-card-content {
-        border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 12px;
-        background: white; transition: all 0.2s;
-    }
-    /* Trainer Checked State */
-    .trainer-card-clean input:checked + .t-card-content { border-color: #39c5a7; background: #f0fdfa; box-shadow: 0 4px 6px -1px rgba(57, 197, 167, 0.1); }
-    
-    /* Trainer Avatar with Gradient */
-    .t-avatar { 
-        width: 36px; height: 36px; 
-        background: linear-gradient(135deg, #39c5a7, #eb567a); 
-        border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-        font-weight: 700; color: white; font-size: 13px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-        overflow: hidden;
-    }
+    .trainers-grid-clean { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .trainer-card-clean input { display: none; }
+    .t-card-content { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .trainer-card-clean input:checked + .t-card-content { border-color: #39c5a7; background: #f0fdfa; }
+    .t-avatar { width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display:flex; align-items:center; justify-content:center; font-weight:700; overflow:hidden; }
+    .t-name { font-size: 13px; font-weight: 600; }
 
-    .t-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .t-info { flex: 1; display: flex; flex-direction: column; }
-    .t-name { font-size: 13px; font-weight: 600; color: #334155; }
-    .t-role { font-size: 11px; color: #94a3b8; }
-    .t-check { display: none; color: #39c5a7; }
-    .trainer-card-clean input:checked + .t-card-content .t-check { display: block; }
-
-    /* Participants */
-    .participants-grid-clean { margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
-    .empty-state-clean { grid-column: 1/-1; text-align: center; color: #cbd5e1; padding: 40px; border: 2px dashed #f1f5f9; border-radius: 12px; }
-    .empty-state-clean i { font-size: 24px; margin-bottom: 8px; }
-
-    /* Payments Table */
-    .payments-table-container { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
-    .table-header { display: grid; grid-template-columns: 2fr 1fr 1fr; background: #f8fafc; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-    .payment-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; align-items: center; background: white; }
-    .payment-row:last-child { border-bottom: none; }
-
-    /* Buttons */
-    .btn-clean-primary { background: #0f172a; color: white; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
-    .btn-clean-primary:hover { background: #1e293b; transform: translateY(-1px); }
-    
-    .btn-clean-secondary { background: white; color: #334155; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; }
-    .btn-clean-secondary:hover { background: #f8fafc; border-color: #cbd5e1; }
-
-    .btn-clean-text { background: transparent; color: #64748b; border: none; font-weight: 600; font-size: 14px; cursor: pointer; padding: 10px 16px; }
-    .btn-clean-text:hover { color: #334155; }
-
-    /* Success Button Gradient Update */
-    .btn-clean-success { 
-        background: linear-gradient(90deg, #39c5a7 0%, #eb567a 100%); 
-        color: white; padding: 10px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; border: none; 
-        cursor: pointer; box-shadow: 0 4px 6px -1px rgba(235, 86, 122, 0.2); 
-    }
-    .btn-clean-success:hover { box-shadow: 0 6px 8px -2px rgba(235, 86, 122, 0.4); transform: translateY(-1px); }
-
-    /* Animation */
-    .wizard-step { animation: fadeIn 0.4s ease; }
-
-    /* RESPONSIVE MOBILE */
-    @media (max-width: 768px) {
-        .modal-box {
-            flex-direction: column !important;
-            width: 100% !important;
-            height: 100% !important;
-            border-radius: 0 !important;
-            max-width: 100% !important;
-            max-height: 100% !important;
-        }
-
-        .wizard-sidebar {
-            width: 100% !important;
-            height: auto !important;
-            flex-direction: row !important;
-            align-items: center;
-            padding: 10px 15px !important;
-            border-right: none !important;
-            border-bottom: 1px solid #e2e8f0;
-            gap: 10px;
-        }
-
-        .sidebar-header, .sidebar-footer { display: none !important; }
-
-        .wizard-nav {
-            flex-direction: row !important;
-            gap: 10px !important;
-            justify-content: center;
-            width: 100%;
-        }
-
-        .nav-step {
-            padding: 5px !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            margin-bottom: 0 !important;
-        }
-
-        .nav-step-info { display: none; }
-        .nav-step-icon { width: 36px; height: 36px; font-size: 14px; }
-
-        .wizard-main { width: 100% !important; }
-        .wizard-header { padding: 15px 20px !important; }
-        .wizard-body { padding: 20px !important; }
-        .wizard-footer { padding: 15px 20px !important; }
-
-        .form-grid-2 { grid-template-columns: 1fr !important; gap: 15px !important; }
-
-        /* Payment Table Mobile */
-        .table-header { display: none !important; }
-        .payment-row {
-            grid-template-columns: 1fr !important;
-            gap: 10px !important;
-            padding: 15px !important;
-            border: 1px solid #f1f5f9;
-            margin-bottom: 10px;
-            border-radius: 8px;
-        }
-    }
+    .btn-clean-primary { background: #4BB7AE; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: all 0.3s; }
+    .btn-clean-primary:hover { background: #3da49c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(75, 183, 174, 0.3); }
+    .btn-clean-success { background: linear-gradient(90deg, #39c5a7, #eb567a); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+    .btn-clean-text { background: none; border: none; color: #64748b; cursor: pointer; font-weight: 600; }
   </style>
 </div>

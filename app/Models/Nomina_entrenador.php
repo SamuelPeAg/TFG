@@ -12,13 +12,13 @@ class Nomina_entrenador extends Model
     protected $table = 'nominas';
 
     protected $fillable = [
-        'user_id', 
-        'mes', 
-        'anio', 
-        'concepto', 
-        'importe', 
-        'estado_nomina', 
-        'fecha_pago', 
+        'user_id',
+        'mes',
+        'anio',
+        'concepto',
+        'importe',
+        'estado_nomina',
+        'fecha_pago',
         'archivo_path',
         'es_auto_generada',
         'detalles'
@@ -32,6 +32,6 @@ class Nomina_entrenador extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(\App\Models\Entrenador::class, 'user_id');
     }
 }

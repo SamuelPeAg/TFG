@@ -21,6 +21,7 @@ class Pago extends Model
         'iban',
         'importe',
         'fecha_registro',
+        'recurrence_group',
     ];
 
     protected $casts = [
@@ -35,11 +36,11 @@ class Pago extends Model
 
     public function entrenador()
     {
-        return $this->belongsTo(User::class, 'entrenador_id');
+        return $this->belongsTo(\App\Models\Entrenador::class, 'entrenador_id');
     }
 
     public function entrenadores()
     {
-        return $this->belongsToMany(User::class, 'pago_entrenador', 'pago_id', 'user_id');
+        return $this->belongsToMany(\App\Models\Entrenador::class, 'pago_entrenador', 'pago_id', 'entrenador_id');
     }
 }

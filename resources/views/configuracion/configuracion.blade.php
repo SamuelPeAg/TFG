@@ -58,6 +58,8 @@
             @include('components.sidebar.sidebar_admin')
         @elseif(auth()->user()->hasRole('entrenador'))
             @include('components.sidebar.sidebar_entrenador')
+        @elseif(auth()->user()->hasRole('cliente'))
+            @include('components.sidebar.sidebar_cliente')
         @endif
     @endauth
     {{-- CONTENIDO PRINCIPAL --}}
@@ -104,7 +106,7 @@
                             <div class="mb-6 flex flex-col items-center sm:flex-row gap-6">
                                 <div class="relative group">
                                     <div class="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-                                        @if($user->foto_de_perfil)
+                                        @if(isset($user->foto_de_perfil) && $user->foto_de_perfil)
                                             <img id="preview-image" src="{{ asset('storage/' . $user->foto_de_perfil) }}" alt="Foto de perfil" class="w-full h-full object-cover">
                                         @else
                                             <div id="preview-placeholder" class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500">
@@ -133,10 +135,20 @@
                                     <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Email</label>
                                     <input type="email" name="email" value="{{ old('email', $user->email) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none" readonly>
                                 </div>
+                                
+                                @if($user instanceof \App\Models\Entrenador || \Schema::hasColumn('users', 'iban'))
                                 <div>
                                     <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">IBAN</label>
                                     <input type="text" name="iban" value="{{ old('iban', $user->iban) }}" placeholder="ES00 0000 0000 0000 0000 0000" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
                                 </div>
+                                @endif
+                                
+                                @if(!($user instanceof \App\Models\Entrenador) && \Schema::hasColumn('users', 'firma_digital'))
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Firma Digital</label>
+                                    <input type="text" name="firma_digital" value="{{ old('firma_digital', $user->firma_digital) }}" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-brandTeal outline-none">
+                                </div>
+                                @endif
                             </div>
                         </div>
                         {{-- SECCIÓN SEGURIDAD --}}

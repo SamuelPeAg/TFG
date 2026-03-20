@@ -79,33 +79,35 @@
                     
                     <div class="flex items-center gap-4 ml-4 border-l pl-6 border-gray-200">
                         
-                        @guest
+                        @php
+                            $user = Auth::guard('web')->user() ?? Auth::guard('entrenador')->user();
+                        @endphp
+
+                        @if(!$user)
                             <a href="{{ route('login') }}" class="text-gray-700 font-bold hover:text-brandTeal transition">
                                 Iniciar Sesión
                             </a>
-                        
-                            {{-- <a href="{{ route('register') }}" class="bg-brandTeal text-white px-5 py-2.5 rounded-full font-bold shadow-md hover:bg-opacity-90 hover:shadow-lg transition transform hover:-translate-y-0.5">
-                                Crear Cuenta
-                            </a> --}}
                         @else
                             <div class="flex items-center gap-3">
-                                
-                                <a href="{{ route('calendario') }}" class="flex items-center gap-3 group hover:opacity-80 transition-opacity duration-200">
+                                @php
+                                    $panelRoute = $user->hasRole('cliente') ? route('configuracion.edit') : route('calendario');
+                                @endphp
+                                <a href="{{ $panelRoute }}" class="flex items-center gap-3 group hover:opacity-80 transition-opacity duration-200">
                                     
                                     <div class="hidden md:flex flex-col items-end leading-tight">
                                         <span class="font-bold text-gray-700 text-sm group-hover:text-brandTeal transition-colors">
-                                            {{ auth()->user()->name }}
+                                            {{ $user->name ?? $user->nombre }}
                                         </span>
-                                        <span class="text-[11px] text-gray-500 font-medium tracking-wide">
-                                            Panel de Gestión
+                                        <span class="text-[11px] text-gray-500 font-medium tracking-wide text-right">
+                                            Mi Cuenta
                                         </span>
                                     </div>
                                     
                                     <div class="h-10 w-10 rounded-full bg-brandTeal text-white flex items-center justify-center font-bold text-lg shadow-sm border-2 border-white ring-1 ring-gray-100 group-hover:ring-brandTeal transition-all overflow-hidden">
-                                        @if(auth()->user()->foto_de_perfil)
-                                            <img src="{{ asset('storage/' . auth()->user()->foto_de_perfil) }}" alt="{{ auth()->user()->name }}" class="h-full w-full object-cover">
+                                        @if(isset($user->foto_de_perfil) && $user->foto_de_perfil)
+                                            <img src="{{ asset('storage/' . $user->foto_de_perfil) }}" alt="{{ $user->name ?? $user->nombre }}" class="h-full w-full object-cover">
                                         @else
-                                            {{ substr(auth()->user()->name, 0, 1) }}
+                                            {{ substr($user->name ?? $user->nombre, 0, 1) }}
                                         @endif
                                     </div>
                                 </a>

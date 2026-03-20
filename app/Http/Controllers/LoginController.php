@@ -19,38 +19,32 @@ class LoginController extends Controller
     }
     public function login(Request $request)
     {
+        // Validación de las credenciales
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ], [
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El correo electrónico no es válido.',
+            'password.required' => 'La contraseña es obligatoria.',
+        ]);
 
-         // Validación de las credenciales
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required', 'string'],
-    ], [
-        'email.required' => 'El correo electrónico es obligatorio.',
-        'email.email' => 'El correo electrónico no es válido.',
-        'password.required' => 'La contraseña es obligatoria.',
-    ]);
-
-    // Intentar autenticar usando el modelo User
-    if (Auth::attempt($credentials)) {
-        // Regenerar sesión para mayor seguridad
-        $request->session()->regenerate();
-
-        // Redirigir según rol o intención
-        $user = Auth::user();
-        
-        if ($user->hasRole('admin')) {
-            return redirect('/calendario');
-        } elseif ($user->hasRole('entrenador')) {
+        // 1. Intentar autenticar como Entrenador (Admin o Entrenador)
+        if (Auth::guard('entrenador')->attempt($credentials)) {
+            $request->session()->regenerate();
             return redirect('/calendario');
         }
 
-        return redirect('/calendario');
-    }
+        // 2. Intentar autenticar como User (Cliente)
+        if (Auth::guard('web')->attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect('/mis-clases');
+        }
 
-    // Si falla la autenticación
-    return back()->withErrors([
-        'email' => 'Las credenciales no son correctas.',
-    ])->onlyInput('email');
+        // Si falla la autenticación
+        return back()->withErrors([
+            'email' => 'Las credenciales no son correctas.',
+        ])->onlyInput('email');
     }
 
     /**

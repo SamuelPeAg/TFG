@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
@@ -17,11 +16,6 @@ return new class extends Migration
 
             // Nuevo campo para el token de activación
             $table->string('activation_token', 60)->nullable()->unique();
-
-            // Otros campos
-            $table->string('foto_de_perfil')->nullable();
-            $table->string('iban')->nullable()->unique();
-            $table->text('firma_digital')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

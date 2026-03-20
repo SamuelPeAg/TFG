@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\User;
+use App\Models\Entrenador;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -14,7 +14,7 @@ class EntrenadorRegistrationMail extends Mailable
     public $user;
     public $token;
 
-    public function __construct(User $user, $token)
+    public function __construct(Entrenador $user, $token)
     {
         $this->user = $user;
         $this->token = $token;
@@ -23,10 +23,10 @@ class EntrenadorRegistrationMail extends Mailable
     public function build()
     {
         return $this->subject('Completa tu registro como Entrenador')
-                    ->view('emails.email_entrenador')
-                    ->with([
-                        'url' => route('entrenadores.activar', ['token' => $this->token]),
-                        'nombre' => $this->user->name,
-                    ]);
+            ->view('emails.email_entrenador')
+            ->with([
+                'url' => route('entrenadores.activar', ['token' => $this->token]),
+                'nombre' => $this->user->nombre,
+            ]);
     }
 }
