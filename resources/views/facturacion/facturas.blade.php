@@ -10,6 +10,20 @@
     <link rel="stylesheet" href="{{ asset('css/facturacion.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pos-tickar.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .pos-btn-icon { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; color: #64748b; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .pos-btn-icon:hover { background: #e2e8f0; color: #1e293b; }
+        .pos-btn-icon.active { background: #10b981; color: white; }
+        .pos-item-btn.wiggling i:first-child { animation: wiggle 0.3s infinite; }
+        @keyframes wiggle { 0% { transform: rotate(0deg); } 25% { transform: rotate(3deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(-3deg); } 100% { transform: rotate(0deg); } }
+        .pos-item-edit-overlay { position: absolute; inset: 0; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #10b981; opacity: 0; transition: opacity 0.2s; border: 2px solid #10b981; border-radius: 12px; pointer-events: none; }
+        .pos-item-btn:hover .pos-item-edit-overlay { opacity: 1; }
+        .remove-custom { position: absolute; top: -8px; right: -8px; background: white; border-radius: 50%; color: #ef4444; font-size: 18px; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .swal2-html-container { overflow-x: hidden !important; }
+        .gym-input { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; font-size: 14px !important; transition: all 0.2s !important; box-shadow: none !important; }
+        .gym-input:focus { border-color: #10b981 !important; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important; }
+    </style>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
 </head>
@@ -240,7 +254,7 @@
                                     <select id="pos-entrenador-id" class="pos-select">
                                         <option value="">Seleccionar entrenador...</option>
                                         @foreach($todosLosEntrenadores as $te)
-                                            <option value="{{ $te->id }}">{{ $te->name }}</option>
+                                            <option value="{{ $te->id }}">{{ $te->nombre }}</option>
                                         @endforeach
                                     </select>
                                 </div>

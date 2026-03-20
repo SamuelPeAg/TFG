@@ -244,9 +244,7 @@ class FacturacionController extends Controller
         $entrenadoresIdsConDatos = array_unique($entrenadoresIdsConDatos);
         $entrenadores = \App\Models\Entrenador::whereIn('id', $entrenadoresIdsConDatos)->orderBy('nombre')->get(['id', 'nombre as name']);
 
-        $todosLosEntrenadores = User::whereHas('roles', function($q) {
-            $q->whereIn('name', ['entrenador', 'admin']);
-        })->orderBy('name')->get(['id', 'name']);
+        $todosLosEntrenadores = \App\Models\Entrenador::orderBy('nombre', 'asc')->get();
         
         $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email']);
 

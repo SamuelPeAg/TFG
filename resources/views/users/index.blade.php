@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="{{ asset('css/global.css') }}">
   <link rel="stylesheet" href="{{ asset('css/tablaCRUD.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body>
@@ -171,7 +173,7 @@
           
           <div class="form-group">
             <label class="form-label-custom">Seleccionar Suscripción</label>
-            <select name="id_suscripcion" class="form-control-custom" required>
+            <select name="id_suscripcion" class="form-control-custom select2-basic" style="width:100%" required>
               <option value="">-- Elige una suscripción --</option>
               @foreach($suscripciones as $s)
                 <option value="{{ $s->id }}">{{ $s->nombre }} ({{ $s->tipo_credito }}) - {{ $s->centro->nombre ?? 'Sin centro' }}</option>
@@ -239,6 +241,17 @@
 
         renderSuscripciones(userId);
         modalSusc.style.display = 'flex';
+
+        // Inicializar o refrescar Select2 al abrir el modal
+        if (typeof $ !== 'undefined' && $.fn.select2) {
+          setTimeout(() => {
+            $('.select2-basic').select2({
+              dropdownParent: $('#modalGestionSuscripciones'),
+              placeholder: "-- Elige una suscripción --",
+              allowClear: true
+            });
+          }, 100);
+        }
       });
     });
 
