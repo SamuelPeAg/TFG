@@ -25,7 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
         { class: 'fa-star', label: 'Especial' },
         { class: 'fa-tag', label: 'Oferta' },
         { class: 'fa-bolt', label: 'Express' },
-        { class: 'fa-fire', label: 'Hot' }
+        { class: 'fa-fire', label: 'Hot' },
+        { class: 'fa-coins', label: 'Céntimos' }
     ];
 
     // Open Modal
@@ -281,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const totalPagar = cart.reduce((sum, item) => sum + item.price, 0);
                 let current = parseFloat(entregadoInput.value);
                 if (isNaN(current)) {
-                    current = totalPagar;
+                    current = 0;
                 }
                 entregadoInput.value = (current + type.defaultPrice).toFixed(2);
                 updateTotal();
@@ -373,6 +374,24 @@ document.addEventListener('DOMContentLoaded', function() {
         entregadoInput.addEventListener('input', updateTotal);
     }
 
+    // Quick Money Buttons
+    document.querySelectorAll('.quick-money-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const val = parseFloat(this.getAttribute('data-val'));
+            if (!entregadoInput) return;
+            
+            if (val === 0) {
+                entregadoInput.value = '0.00';
+            } else {
+                let current = parseFloat(entregadoInput.value) || 0;
+                let newVal = current + val;
+                if (newVal < 0) newVal = 0;
+                entregadoInput.value = newVal.toFixed(2);
+            }
+            updateTotal();
+        });
+    });
+
     if (btnCheckout) {
         btnCheckout.addEventListener('click', async () => {
             // Usamos jQuery val() para evitar problemas con Select2, con fallback a document...
@@ -396,9 +415,17 @@ document.addEventListener('DOMContentLoaded', function() {
             btnCheckout.disabled = true;
             btnCheckout.innerText = 'Procesando...';
             try {
-                const response = await fetch('/facturas/tickar', {
+                // Usamos una ruta relativa al origen para evitar problemas con subcarpetas en XAMPP
+                const currentPath = window.location.pathname.replace(/\/$/, '');
+                const targetUrl = currentPath.includes('facturas') ? currentPath + '/tickar' : '/facturas/tickar';
+
+                const response = await fetch(targetUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Accept': 'application/json', 
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') 
+                    },
                     body: JSON.stringify({ 
                         cliente_id: clienteId, 
                         entrenador_id: entrenadorId, 
@@ -407,7 +434,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         items: cart.map(i => ({ tipo: i.name, precio: i.price, is_abono: i.is_abono })) 
                     })
                 });
-                const data = await response.json();
+                
+                let data;
+                const responseClone1 = response.clone();
+                const responseClone2 = response.clone();
+                try {
+                    data = await responseClone1.json();
+                } catch (e) {
+                    const text = await responseClone2.text();
+                    data = { message: 'El servidor no devolvió JSON válido', error_tecnico: text };
+                }
+                
                 if (response.ok && data.success) {
                     posModal.style.display = 'none';
                     const successModal = document.getElementById('success-modal');
@@ -415,13 +452,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     const successClose = document.getElementById('success-close-btn');
                     if (successClose) { successClose.onclick = () => { location.reload(); }; }
                 } else {
-                    let errStr = data.message || 'Desconocido';
+                    let errStr = data.message || 'Error Desconocido';
+                    
                     if (data.errors) {
-                        errStr += '\\n' + Object.values(data.errors).map(e => e.join(', ')).join('\\n');
+                        errStr += '\n\nDetalles:\n' + Object.values(data.errors).map(e => (Array.isArray(e) ? e.join(', ') : e)).join('\n');
                     }
-                    alert('Error: ' + errStr);
+                    
+                    if (response.status === 419) {
+                        errStr = 'Error 419: La sesión ha expirado por inactividad. Refresca la página (F5).';
+                    }
+
+                    if (data.error_tecnico) {
+                        // Limpiar tags HTML para que sea legible en el alert
+                        const cleanTech = data.error_tecnico.replace(/<[^>]*>?/gm, ' ').substring(0, 300);
+                        errStr += '\n\nError Técnico (Breve):\n' + cleanTech + '...';
+                    }
+
+                    alert('Error del Servidor (' + response.status + '):\n\n' + errStr);
                 }
-            } catch (error) { console.error('Error:', error); alert('Hubo un error al procesar la cuenta.'); } finally { btnCheckout.disabled = false; btnCheckout.innerText = 'Cobrar Cuenta'; }
+            } catch (error) { 
+                console.error('Error Crítico:', error); 
+                alert('Fallo Crítico:\n' + error.message); 
+            } finally { 
+                btnCheckout.disabled = false; 
+                btnCheckout.innerText = 'Cobrar Cuenta'; 
+            }
         });
     }
 });
