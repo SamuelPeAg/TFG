@@ -24,6 +24,7 @@ class Pago extends Model
         'recurrence_group',
         'capacidad',
         'suscripciones_permitidas',
+        'archivo_xml_id',
     ];
 
     protected $casts = [

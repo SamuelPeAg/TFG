@@ -19,6 +19,7 @@ class User extends Authenticatable
         'password',
         'activation_token',
         'foto_de_perfil',
+        'saldo',
     ];
 
     // Campos ocultos que no queremos exponer al usuario

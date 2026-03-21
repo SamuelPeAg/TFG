@@ -246,7 +246,10 @@ class FacturacionController extends Controller
 
         $todosLosEntrenadores = \App\Models\Entrenador::orderBy('nombre', 'asc')->get();
         
-        $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email']);
+        $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email', 'saldo']);
+
+        $clientesConSaldo = User::role('cliente')->whereNotNull('saldo')->where('saldo', '!=', 0)->orderBy('name')->get();
+        $archivosXml = \App\Models\ArchivoXml::orderBy('created_at', 'desc')->get();
 
         return view('facturacion.facturas', [
             'centros' => $centros,
@@ -254,6 +257,8 @@ class FacturacionController extends Controller
             'todosLosEntrenadores' => $todosLosEntrenadores,
             'clientes' => $clientes,
             'todosLosClientes' => $todosLosClientes,
+            'clientesConSaldo' => $clientesConSaldo,
+            'archivosXml' => $archivosXml,
             'matrix' => $matrix,
             'resumen' => $resumen,
             'clienteTotals' => $clienteTotals,
@@ -288,11 +293,16 @@ class FacturacionController extends Controller
 
         $query = Pago::query()
             ->with(['user', 'entrenador', 'entrenadores'])
+            ->whereNull('archivo_xml_id') // Solo pagos no remesados (no incluidos en archivos anteriores)
             ->when($desde, fn($q) => $q->whereDate('fecha_registro', '>=', $desde))
             ->when($hasta, fn($q) => $q->whereDate('fecha_registro', '<=', $hasta))
             ->when($centro !== 'todos', fn($q) => $q->where('centro', $centro));
 
         $pagos = $query->get();
+
+        if ($pagos->isEmpty()) {
+            return back()->with('error', 'No hay pagos pendientes de facturar en este periodo o centro.');
+        }
 
         $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><facturacion></facturacion>');
         
@@ -321,11 +331,26 @@ class FacturacionController extends Controller
             $item->addChild('entrenador', htmlspecialchars($entrenadorStr));
         }
 
-        $fileName = 'facturacion_' . ($centro !== 'todos' ? str_replace(' ', '_', $centro) : 'todos') . '_' . $anio . ($mes ? '_' . $mes : '') . '.xml';
+        $fileName = 'facturacion_' . ($centro !== 'todos' ? str_replace(' ', '_', $centro) : 'todos') . '_' . time() . '.xml';
+        
+        $ruta = 'public/xml/' . $fileName;
+        \Illuminate\Support\Facades\Storage::put($ruta, $xml->asXML());
 
-        return response($xml->asXML(), 200)
-            ->header('Content-Type', 'application/xml')
-            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+        $archivoXml = \App\Models\ArchivoXml::create([
+            'nombre_archivo' => $fileName,
+            'ruta' => $ruta,
+            'desde' => $desde,
+            'hasta' => $hasta
+        ]);
+
+        foreach ($pagos as $p) {
+            $p->archivo_xml_id = $archivoXml->id;
+            $p->save();
+        }
+
+        return \Illuminate\Support\Facades\Storage::download($ruta, $fileName, [
+            'Content-Type' => 'application/xml',
+        ]);
     }
 
     // Devuelve las clases (reservas) que coinciden con cliente y/o entrenador
@@ -503,24 +528,42 @@ class FacturacionController extends Controller
     {
         $request->validate([
             'cliente_id' => 'required|exists:users,id',
-            'entrenador_id' => 'required|exists:users,id',
+            'entrenador_id' => 'required|exists:entrenadores,id',
             'centro' => 'required|string',
-            'items' => 'required|array|min:1',
-            'items.*.tipo' => 'required|string',
-            'items.*.precio' => 'required|numeric',
+            'items' => 'nullable|array',
+            'items.*.tipo' => 'string',
+            'items.*.precio' => 'numeric',
+            'importe_entregado' => 'nullable|numeric'
         ]);
 
-        foreach ($request->items as $item) {
-            \App\Models\Pago::create([
-                'user_id' => $request->cliente_id,
-                'entrenador_id' => $request->entrenador_id,
-                'centro' => $request->centro,
-                'nombre_clase' => $item['tipo'],
-                'tipo_clase' => $item['tipo'],
-                'importe' => $item['precio'],
-                'fecha_registro' => now(),
-                'metodo_pago' => 'Efectivo',
-            ]);
+        $totalItems = 0;
+        if (!empty($request->items)) {
+            foreach ($request->items as $item) {
+                if (empty($item['is_abono'])) {
+                    $totalItems += $item['precio'];
+                }
+                \App\Models\Pago::create([
+                    'user_id' => $request->cliente_id,
+                    'entrenador_id' => $request->entrenador_id,
+                    'centro' => $request->centro,
+                    'nombre_clase' => $item['tipo'],
+                    'tipo_clase' => $item['tipo'],
+                    'importe' => $item['precio'],
+                    'fecha_registro' => now(),
+                    'metodo_pago' => 'Efectivo',
+                ]);
+            }
+        }
+        
+        $entregado = $request->importe_entregado ?? $totalItems;
+        $diferencia = $entregado - $totalItems;
+        
+        if ($diferencia != 0) {
+            $user = \App\Models\User::find($request->cliente_id);
+            if ($user) {
+                $user->saldo = ($user->saldo ?? 0) + $diferencia;
+                $user->save();
+            }
         }
 
         return response()->json(['success' => true, 'message' => 'Cuenta registrada correctamente']);

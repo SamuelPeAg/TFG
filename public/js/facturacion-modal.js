@@ -80,13 +80,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 html += '<thead><tr><th>Cliente</th><th>Entrenador</th><th>Fecha</th><th>Centro</th><th class="text-right">Coste</th><th>Clase</th></tr></thead>';
                 html += '<tbody>';
                 data.forEach(d => {
+                    const claseBadge = d.nombre_clase 
+                        ? `<span style="background-color: #3b82f6; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap; display: inline-block;">${d.nombre_clase}</span>` 
+                        : '-';
                     html += `<tr>
                         <td data-label="Cliente">${d.cliente ?? '-'}</td>
                         <td data-label="Entrenador">${d.entrenador ?? '-'}</td>
                         <td data-label="Fecha">${d.fecha ?? '-'}</td>
                         <td data-label="Centro">${d.centro ?? '-'}</td>
                         <td data-label="Coste" class="text-right">${d.importe ? d.importe + ' €' : '-'}</td>
-                        <td data-label="Clase">${d.nombre_clase ?? '-'}</td>
+                        <td data-label="Clase">${claseBadge}</td>
                     </tr>`;
                 });
                 html += '</tbody></table>';
@@ -140,13 +143,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 html += '<thead><tr><th>Cliente</th><th>Entrenador</th><th>Fecha</th><th>Centro</th><th class="text-right">Coste</th><th>Clase</th></tr></thead>';
                 html += '<tbody>';
                 data.forEach(d => {
+                    const claseBadge = d.nombre_clase 
+                        ? `<span style="background-color: #3b82f6; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 11px; white-space: nowrap; display: inline-block;">${d.nombre_clase}</span>` 
+                        : '-';
                     html += `<tr>
                         <td data-label="Cliente">${d.cliente ?? '-'}</td>
                         <td data-label="Entrenador">${d.entrenador ?? '-'}</td>
                         <td data-label="Fecha">${d.fecha ?? '-'}</td>
                         <td data-label="Centro">${d.centro ?? '-'}</td>
                         <td data-label="Coste" class="text-right">${d.importe ? d.importe + ' €' : '-'}</td>
-                        <td data-label="Clase">${d.nombre_clase ?? '-'}</td>
+                        <td data-label="Clase">${claseBadge}</td>
                     </tr>`;
                 });
                 html += '</tbody></table>';

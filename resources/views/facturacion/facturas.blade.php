@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="{{ asset('css/pos-tickar.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
         /* Base specific classes to avoid !important */
         .dashboard-container .pos-btn-icon { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; color: #64748b; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
@@ -31,6 +34,17 @@
         
         .dashboard-container .gym-input { border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: all 0.2s; box-shadow: none; width: 100%; padding: 8px 12px; }
         .dashboard-container .gym-input:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        
+        /* Select2 Theme Tweaks */
+        .select2-container--default .select2-selection--single {
+            border: 1px solid #e2e8f0; border-radius: 8px; height: 38px; display: flex; align-items: center;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+        .select2-container--default .select2-selection--single:focus {
+            border-color: #10b981; outline: none; 
+        }
     </style>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -218,7 +232,67 @@
                         </div>
                     </div>
 
-                    <!-- Modal detalles -->
+                    {{-- Tabla de Saldos --}}
+                    <div class="data-table-container" style="margin-top: 30px;">
+                        <div class="table-header">
+                            <h4 class="table-title">Saldos Positivos o Pendientes de Clientes</h4>
+                        </div>
+                        <div class="matrix-container" style="padding: 15px;">
+                            <table class="matrix-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align:left;">Cliente</th>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align:right;">Saldo (A favor o Deuda)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($clientesConSaldo as $cs)
+                                        <tr>
+                                            <td style="padding: 10px; border-bottom: 1px solid #f3f4f6;">{{ $cs->name }} <br><span style="font-size:12px; color:#64748b;">{{ $cs->email }}</span></td>
+                                            <td style="padding: 10px; border-bottom: 1px solid #f3f4f6; text-align:right; font-weight:bold; color: {{ $cs->saldo > 0 ? '#10b981' : '#ef4444' }}">
+                                                {{ $cs->saldo > 0 ? '+ '.number_format($cs->saldo, 2) : number_format($cs->saldo, 2) }} €
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="2" style="padding:15px; text-align:center; color:#64748b;">No hay clientes con saldos pendientes a favor o en contra.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- Tabla de XMLs --}}
+                    <div class="data-table-container" style="margin-top: 30px;">
+                        <div class="table-header">
+                            <h4 class="table-title">Historial de Archivos XML Generados</h4>
+                        </div>
+                        <div class="matrix-container" style="padding: 15px;">
+                            <table class="matrix-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align:left;">Fecha Generado</th>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align:left;">Nombre de Archivo</th>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align:left;">Periodo (Desde - Hasta)</th>
+                                        <th style="padding: 10px; border-bottom: 2px solid #e5e7eb; text-align:center;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($archivosXml as $xml)
+                                        <tr>
+                                            <td style="padding: 10px; border-bottom: 1px solid #f3f4f6;">{{ $xml->created_at->format('d/m/Y H:i') }}</td>
+                                            <td style="padding: 10px; border-bottom: 1px solid #f3f4f6;">{{ $xml->nombre_archivo }}</td>
+                                            <td style="padding: 10px; border-bottom: 1px solid #f3f4f6;">{{ $xml->desde ?? 'N/A' }} / {{ $xml->hasta ?? 'N/A' }}</td>
+                                            <td style="padding: 10px; border-bottom: 1px solid #f3f4f6; text-align:center;">
+                                                <a href="{{ asset('storage/xml/' . $xml->nombre_archivo) }}" target="_blank" class="pos-btn-icon" style="display:inline-flex; width:auto; padding:5px 10px; font-size:12px; text-decoration:none;"><i class="fa-solid fa-download" style="margin-right:5px;"></i> Descargar</a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="4" style="padding:15px; text-align:center; color:#64748b;">No se han generado archivos XML anteriormente.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                     <div id="modal-overlay"
                         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:60; align-items:center; justify-content:center;">
                         <div id="modal"
@@ -288,9 +362,19 @@
                                 <!-- Cart items generated by JS -->
                             </div>
                             <div class="cart-footer">
-                                <div class="cart-total">
-                                    <span>TOTAL</span>
-                                    <span id="cart-total-value">0.00 €</span>
+                                <div class="cart-total" style="margin-bottom: 8px;">
+                                    <span>Total Cuenta:</span>
+                                    <span id="cart-total-value" style="font-weight:bold;">0.00 €</span>
+                                </div>
+                                <div class="cart-total" style="align-items:center; border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-bottom: 8px;">
+                                    <span>Abonado / Entregado:</span>
+                                    <div style="display:flex; align-items:center;">
+                                        <input type="number" id="pos-importe-entregado" step="0.01" class="gym-input" style="width:80px; text-align:right; padding:4px;" placeholder="0.00">
+                                        <span style="margin-left:5px; font-weight:bold;">€</span>
+                                    </div>
+                                </div>
+                                <div id="pos-cambio-container" style="display:none; text-align:right; font-size:12px; color:#64748b; margin-bottom:12px;">
+                                    Diferencia al saldo: <span id="pos-cambio-value" style="font-weight:bold; color:#10b981;">0.00 €</span>
                                 </div>
                                 <button id="btn-checkout" class="btn-checkout">Cobrar Cuenta</button>
                             </div>

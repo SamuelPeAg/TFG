@@ -33,6 +33,23 @@ document.addEventListener('DOMContentLoaded', function() {
         openPosBtn.addEventListener('click', () => {
             posModal.style.display = 'flex';
             renderMenuItems();
+            
+            if (typeof jQuery !== 'undefined' && $.fn.select2) {
+                $('#pos-cliente-id').select2({
+                    dropdownParent: $('#pos-modal'),
+                    width: '100%',
+                    placeholder: 'Seleccionar cliente...'
+                });
+                $('#pos-entrenador-id').select2({
+                    dropdownParent: $('#pos-modal'),
+                    width: '100%',
+                    placeholder: 'Seleccionar entrenador...'
+                });
+                $('#pos-centro').select2({
+                    dropdownParent: $('#pos-modal'),
+                    width: '100%'
+                });
+            }
         });
     }
 
@@ -115,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="pos-item-name">${type.name}</span>
             ${type.description ? `<span style="font-size:10px; color:#64748b; margin-top:-4px;">${type.description}</span>` : ''}
             <span class="pos-item-price">${type.defaultPrice}€</span>
+            ${type.is_abono ? `<span style="position:absolute; top:4px; left:4px; font-size:10px; background:#10b981; color:white; padding:2px 6px; border-radius:10px;">Saldo</span>` : ''}
             ${isEditMode ? `
                 <div class="pos-item-edit-overlay">
                     <i class="fa-solid fa-gear"></i>
@@ -165,6 +183,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             <input id="swal-discount" type="number" class="swal2-input gym-input" placeholder="0" style="width:100%; margin:0;">
                         </div>
                     </div>
+
+                    <div style="margin-top:15px; padding:10px; border-radius:8px; background:#f0fdf4; border:1px solid #10b981; display:flex; align-items:center; gap:10px;">
+                        <input type="checkbox" id="swal-is-abono" ${type.is_abono ? 'checked' : ''} style="width:18px; height:18px; accent-color:#10b981;">
+                        <div>
+                            <span style="font-weight:bold; color:#065f46;">Es una Recarga de Saldo</span><br>
+                            <span style="font-size:10px; color:#047857;">En lugar de cobrar, añade este dinero al saldo a favor del cliente.</span>
+                        </div>
+                    </div>
                 </div>
             `,
             didOpen: () => {
@@ -191,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const discount = parseFloat(discountValue);
                 const icon = document.querySelector('input[name="swal-icon"]:checked')?.value || 'fa-tag';
                 const desc = document.getElementById('swal-desc').value;
+                const isAbono = document.getElementById('swal-is-abono').checked;
 
                 if (!name || isNaN(price)) {
                     Swal.showValidationMessage('Nombre y precio base son obligatorios');
@@ -205,7 +232,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     name: name,
                     description: desc,
                     defaultPrice: parseFloat(finalPrice.toFixed(2)),
-                    icon: icon
+                    icon: icon,
+                    is_abono: isAbono
                 }
             }
         });
@@ -247,11 +275,26 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function addToCart(type) {
+        if (type.is_abono) {
+            const entregadoInput = document.getElementById('pos-importe-entregado');
+            if (entregadoInput) {
+                const totalPagar = cart.reduce((sum, item) => sum + item.price, 0);
+                let current = parseFloat(entregadoInput.value);
+                if (isNaN(current)) {
+                    current = totalPagar;
+                }
+                entregadoInput.value = (current + type.defaultPrice).toFixed(2);
+                updateTotal();
+            }
+            return; // No lo añadimos al carrito como clase
+        }
+
         const item = {
             id: Date.now(),
             tipo: type.id,
             name: type.name,
-            price: type.defaultPrice
+            price: type.defaultPrice,
+            is_abono: type.is_abono || false
         };
         cart.push(item);
         renderCart();
@@ -292,33 +335,92 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateTotal() {
         if (!cartTotalValue) return;
-        const total = cart.reduce((sum, item) => sum + item.price, 0);
-        cartTotalValue.innerText = total.toFixed(2) + ' €';
+        const totalPagar = cart.reduce((sum, item) => sum + item.price, 0); // Coste de clases en carrito
+        const totalClasesCost = totalPagar; // Ya no hay abonos en el carrito, todo es clase.
+
+        cartTotalValue.innerText = totalPagar.toFixed(2) + ' €';
+        
+        const entregadoInput = document.getElementById('pos-importe-entregado');
+        const cambioContainer = document.getElementById('pos-cambio-container');
+        const cambioValue = document.getElementById('pos-cambio-value');
+        
+        if (entregadoInput && cambioContainer && cambioValue) {
+            let entregado = totalPagar; // Por defecto entrega el total a pagar
+            if (entregadoInput.value !== '') {
+                entregado = parseFloat(entregadoInput.value);
+            }
+            
+            if (!isNaN(entregado)) {
+                // El saldo que gana/pierde el cliente es lo que entrega MENOS lo que cuestan las clases
+                const diferencia = entregado - totalClasesCost;
+                cambioValue.innerText = diferencia > 0 ? '+' + diferencia.toFixed(2) + ' €' : diferencia.toFixed(2) + ' €';
+                if (diferencia < 0) {
+                    cambioValue.style.color = '#ef4444'; // red (debe dinero)
+                } else if (diferencia > 0) {
+                    cambioValue.style.color = '#10b981'; // green (a favor)
+                } else {
+                    cambioValue.style.color = '#64748b'; // neutral
+                }
+                cambioContainer.style.display = 'block';
+            } else {
+                cambioContainer.style.display = 'none';
+            }
+        }
+    }
+
+    const entregadoInput = document.getElementById('pos-importe-entregado');
+    if (entregadoInput) {
+        entregadoInput.addEventListener('input', updateTotal);
     }
 
     if (btnCheckout) {
         btnCheckout.addEventListener('click', async () => {
-            if (cart.length === 0) { alert('Añade al menos una clase.'); return; }
-            const clienteId = document.getElementById('pos-cliente-id').value;
-            const entrenadorId = document.getElementById('pos-entrenador-id').value;
-            const centro = document.getElementById('pos-centro').value;
+            // Usamos jQuery val() para evitar problemas con Select2, con fallback a document...
+            const clienteId = typeof jQuery !== 'undefined' ? $('#pos-cliente-id').val() : document.getElementById('pos-cliente-id').value;
+            const entrenadorId = typeof jQuery !== 'undefined' ? $('#pos-entrenador-id').val() : document.getElementById('pos-entrenador-id').value;
+            const centro = typeof jQuery !== 'undefined' ? $('#pos-centro').val() : document.getElementById('pos-centro').value;
+            
             if (!clienteId || !entrenadorId || !centro) { alert('Por favor selecciona cliente, entrenador y centro.'); return; }
+            const totalPagar = cart.reduce((sum, item) => sum + item.price, 0);
+            const entregadoInput = document.getElementById('pos-importe-entregado');
+            let importeEntregado = totalPagar; // Si no pone nada, asume que paga lo que dice la cuenta
+            if (entregadoInput && entregadoInput.value !== '') {
+                importeEntregado = parseFloat(entregadoInput.value);
+            }
+
+            if (cart.length === 0 && (isNaN(importeEntregado) || importeEntregado <= 0)) {
+                alert('Añade al menos una clase o indica un importe entregado válido.');
+                return;
+            }
+
             btnCheckout.disabled = true;
             btnCheckout.innerText = 'Procesando...';
             try {
                 const response = await fetch('/facturas/tickar', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
-                    body: JSON.stringify({ cliente_id: clienteId, entrenador_id: entrenadorId, centro: centro, items: cart.map(i => ({ tipo: i.name, precio: i.price })) })
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+                    body: JSON.stringify({ 
+                        cliente_id: clienteId, 
+                        entrenador_id: entrenadorId, 
+                        centro: centro, 
+                        importe_entregado: importeEntregado,
+                        items: cart.map(i => ({ tipo: i.name, precio: i.price, is_abono: i.is_abono })) 
+                    })
                 });
                 const data = await response.json();
-                if (data.success) {
+                if (response.ok && data.success) {
                     posModal.style.display = 'none';
                     const successModal = document.getElementById('success-modal');
                     if (successModal) successModal.style.display = 'flex';
                     const successClose = document.getElementById('success-close-btn');
                     if (successClose) { successClose.onclick = () => { location.reload(); }; }
-                } else { alert('Error: ' + data.message); }
+                } else {
+                    let errStr = data.message || 'Desconocido';
+                    if (data.errors) {
+                        errStr += '\\n' + Object.values(data.errors).map(e => e.join(', ')).join('\\n');
+                    }
+                    alert('Error: ' + errStr);
+                }
             } catch (error) { console.error('Error:', error); alert('Hubo un error al procesar la cuenta.'); } finally { btnCheckout.disabled = false; btnCheckout.innerText = 'Cobrar Cuenta'; }
         });
     }
