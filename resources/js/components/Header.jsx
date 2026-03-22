@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 
 export default function Header() {
+  const user = window.AppConfig?.user;
+
   return (
     <nav className="fixed w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm transition-all duration-300 top-0 border-b border-transparent dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,9 +25,29 @@ export default function Header() {
             </Link>
             
             <div className="flex items-center gap-4 ml-4 border-l pl-6 border-gray-200 dark:border-gray-700">
-              <Link to="/login" className="text-gray-700 dark:text-gray-200 font-bold hover:text-brandTeal transition">
-                Iniciar Sesión
-              </Link>
+              {user ? (
+                <>
+                  <div className="flex items-center gap-2 mr-2">
+                    {user.photo ? (
+                      <img src={user.photo} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-sm">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-sm font-bold text-gray-700 dark:text-gray-200 hidden lg:block">
+                      Hola, {user.name.split(' ')[0]}
+                    </span>
+                  </div>
+                  <Link to="/calendario" className="bg-[#38C1A3] hover:bg-teal-500 text-white px-5 py-2.5 rounded-full font-bold transition shadow-md hover:shadow-lg">
+                    Dashboard
+                  </Link>
+                </>
+              ) : (
+                <Link to="/login" className="text-gray-700 dark:text-gray-200 font-bold hover:text-[#38C1A3] transition">
+                  Iniciar Sesión
+                </Link>
+              )}
             </div>
           </div>
         </div>

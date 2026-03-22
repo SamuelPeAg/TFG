@@ -15,6 +15,7 @@ export default function UserModals({
     password_confirmation: '',
     iban: '',
     firma_digital: '',
+    precio_hora: '',
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -26,6 +27,7 @@ export default function UserModals({
         email: user.email || '',
         iban: user.iban || '',
         firma_digital: user.firma_digital || '',
+        precio_hora: user.precio_hora || '',
         password: '',
         password_confirmation: '',
       });
@@ -37,6 +39,7 @@ export default function UserModals({
         password_confirmation: '',
         iban: '',
         firma_digital: '',
+        precio_hora: '',
       });
     }
     setErrors({});
@@ -200,6 +203,24 @@ export default function UserModals({
                   />
                 </div>
                 {errors.firma_digital && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1">{errors.firma_digital[0]}</p>}
+              </div>
+
+              {/* Precio Hora */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Precio Hora (€)</label>
+                <div className="relative group">
+                  <i className="fas fa-euro-sign absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="precio_hora"
+                    value={formData.precio_hora}
+                    onChange={handleChange}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
+                    placeholder="0.00"
+                  />
+                </div>
+                {errors.precio_hora && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1">{errors.precio_hora[0]}</p>}
               </div>
             </div>
 

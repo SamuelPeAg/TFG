@@ -14,7 +14,8 @@ class CalendarioController extends Controller
             $users = User::role('cliente')->orderBy('name')->get();
             $entrenadores = User::role('entrenador')->orderBy('name')->get();
             $centros = \App\Models\Centro::all();
-            return response()->json(compact('users', 'entrenadores', 'centros'));
+            $suscripciones = \App\Models\Suscripcion::with('centro')->orderBy('nombre')->get();
+            return response()->json(compact('users', 'entrenadores', 'centros', 'suscripciones'));
         }
         
         return view('app');

@@ -33,7 +33,11 @@ class NominaAdminController extends Controller
                         ->orderBy('created_at', 'desc')
                         ->get();
 
-        return view('nominas_admin.nominas_a', compact('borradores', 'historial', 'mes', 'anio'));
+        if ($request->wantsJson()) {
+            return response()->json(compact('borradores', 'historial', 'mes', 'anio'));
+        }
+
+        return view('app');
     }
 
     // GENERAR BORRADORES (AUTO)
@@ -182,7 +186,12 @@ class NominaAdminController extends Controller
             }
         }
 
-        return back()->with('success', "Proceso finalizado: $generadas nóminas creadas y $actualizadas actualizadas para el mes $mes/$anio.");
+        $msg = "Proceso finalizado: $generadas nóminas creadas y $actualizadas actualizadas para el mes $mes/$anio.";
+
+        if ($request->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => $msg]);
+        }
+        return back()->with('success', $msg);
     }
 
     // CALCULAR NÓMINA DINÁMICA
@@ -360,6 +369,9 @@ class NominaAdminController extends Controller
 
         $nomina->save();
 
+        if ($request->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => $mensaje]);
+        }
         return back()->with('success', $mensaje);
     }
     
@@ -370,7 +382,9 @@ class NominaAdminController extends Controller
          $nomina->estado_nomina = 'pagado';
          $nomina->fecha_pago = now();
          $nomina->save();
-         
+         if (request()->wantsJson()) {
+             return response()->json(['status' => 'success', 'message' => 'Nómina marcada como PAGADA.']);
+         }
          return back()->with('success', 'Nómina marcada como PAGADA.');
     }
 
@@ -382,6 +396,9 @@ class NominaAdminController extends Controller
             Storage::disk('public')->delete($nomina->archivo_path);
         }
         $nomina->delete();
+        if (request()->wantsJson()) {
+            return response()->json(['status' => 'success', 'message' => 'Nómina eliminada.']);
+        }
         return back()->with('success', 'Nómina eliminada.');
     }
     

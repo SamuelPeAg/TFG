@@ -75,9 +75,7 @@ Route::post('/contacto/enviar', function (Request $request) {
     ]);
 })->name('contact.send');
 
-// Activación entrenador
-Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'activarEntrenador'])
-    ->name('entrenadores.activar');
+
 
 Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'completeActivation'])
     ->name('entrenadores.complete');
@@ -150,6 +148,20 @@ Route::middleware('auth')->group(function () {
         // Facturación
         Route::get('/facturas', [FacturacionController::class, 'index'])->name('facturas');
         Route::get('/facturas/clases', [FacturacionController::class, 'clases'])->name('facturas.clases');
+        Route::get('/facturas/export-xml', [FacturacionController::class, 'exportXML'])->name('facturas.export_xml');
+        Route::post('/facturas/tickar', [FacturacionController::class, 'tickar'])->name('facturas.tickar');
+
+        // Suscripciones
+        Route::get('/suscripciones', [\App\Http\Controllers\SuscripcionController::class, 'index'])->name('suscripciones.index');
+        Route::post('/suscripciones', [\App\Http\Controllers\SuscripcionController::class, 'store'])->name('suscripciones.store');
+        Route::put('/suscripciones/{id}', [\App\Http\Controllers\SuscripcionController::class, 'update'])->name('suscripciones.update');
+        Route::delete('/suscripciones/{id}', [\App\Http\Controllers\SuscripcionController::class, 'destroy'])->name('suscripciones.destroy');
+
+        // Suscripciones de Usuarios
+        Route::post('/suscripciones-usuarios', [\App\Http\Controllers\SuscripcionUsuarioController::class, 'store'])->name('suscripciones_usuarios.store');
+        Route::put('/suscripciones-usuarios/{id}', [\App\Http\Controllers\SuscripcionUsuarioController::class, 'update'])->name('suscripciones_usuarios.update');
+        Route::delete('/suscripciones-usuarios/{id}', [\App\Http\Controllers\SuscripcionUsuarioController::class, 'destroy'])->name('suscripciones_usuarios.destroy');
+        Route::post('/suscripciones-usuarios/{id}/ajustar-saldo', [\App\Http\Controllers\SuscripcionUsuarioController::class, 'ajustarSaldo'])->name('suscripciones_usuarios.ajustar_saldo');
 
         // Usuarios (Resource & React view)
         Route::get('/clientes', [UserController::class, 'index'])->name('clientes.index');
@@ -171,12 +183,14 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+        
+        // Estadísticas / Dashboard
+        Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'index'])->name('estadisticas.index');
 
         // Gestión de Entrenadores
         Route::resource('entrenadores', EntrenadorController::class);
 
         // Acciones Avanzadas de Pagos (Solo Admin)
-        Route::get('/Pagos', [PagosController::class, 'index'])->name('Pagos.index'); // Listado completo
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
         Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
 

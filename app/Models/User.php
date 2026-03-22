@@ -21,6 +21,7 @@ class User extends Authenticatable
         'foto_de_perfil',
         'iban',
         'firma_digital',
+        'precio_hora',
     ];
 
     // Campos ocultos que no queremos exponer al usuario
@@ -44,5 +45,11 @@ class User extends Authenticatable
     public function horariosComoEntrenador()
     {
         return $this->hasMany(HorarioClase::class, 'entrenador_id');
+    }
+
+    // Relación de uno a muchos con SuscripcionUsuario (para clientes)
+    public function suscripciones()
+    {
+        return $this->hasMany(\App\Models\SuscripcionUsuario::class, 'id_usuario');
     }
 }

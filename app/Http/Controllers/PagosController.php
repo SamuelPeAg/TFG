@@ -9,13 +9,6 @@ use Illuminate\Http\Request;
 
 class PagosController extends Controller
 {
-    public function index()
-    {
-        $users = User::role('cliente')->orderBy('name')->get();
-        $entrenadores = User::role('entrenador')->orderBy('name')->get();
-        $centros = \App\Models\Centro::all();
-        return view('Pagos.index', compact('users', 'entrenadores', 'centros'));
-    }
 
     public function buscarPorUsuario(Request $request)
     {

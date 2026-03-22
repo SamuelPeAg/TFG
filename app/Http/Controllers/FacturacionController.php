@@ -238,12 +238,14 @@ class FacturacionController extends Controller
         $entrenadores = User::whereIn('id', $entrenadoresIdsConDatos)->orderBy('name')->get(['id', 'name']);
 
         $todosLosClientes = User::role('cliente')->orderBy('name')->get(['id', 'name', 'email']);
+        $todosLosEntrenadores = User::role(['admin', 'entrenador'])->orderBy('name')->get(['id', 'name']);
 
-        return view('facturacion.facturas', [
+        $data = [
             'centros' => $centros,
             'entrenadores' => $entrenadores,
             'clientes' => $clientes,
             'todosLosClientes' => $todosLosClientes,
+            'todosLosEntrenadores' => $todosLosEntrenadores,
             'matrix' => $matrix,
             'resumen' => $resumen,
             'clienteTotals' => $clienteTotals,
@@ -254,7 +256,13 @@ class FacturacionController extends Controller
             'clienteId' => $clienteId,
             'anio' => $anio,
             'mes' => $mes,
-        ]);
+        ];
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json($data);
+        }
+
+        return view('app');
     }
 
     // Devuelve las clases (reservas) que coinciden con cliente y/o entrenador
@@ -411,4 +419,47 @@ class FacturacionController extends Controller
         return response()->json($result->values());
     }
 
+    /**
+     * TPV Terminal (PosTickarModal)
+     * Procesa un cobro rápido creando los objetos 'Pago' pertinentes.
+     */
+    public function tickar(Request $request)
+    {
+        $request->validate([
+            'cliente_id' => 'required|exists:users,id',
+            'entrenador_id' => 'required|exists:users,id',
+            'centro' => 'required|string',
+            'items' => 'required|array|min:1',
+            'items.*.tipo' => 'required|string',
+            'items.*.precio' => 'required|numeric|min:0',
+            'importe_entregado' => 'nullable|numeric'
+        ]);
+
+        $fecha = \Carbon\Carbon::now();
+        $user = \App\Models\User::findOrFail($request->cliente_id);
+
+        foreach ($request->items as $item) {
+            $pago = \App\Models\Pago::create([
+                'user_id' => $user->id,
+                'entrenador_id' => $request->entrenador_id,
+                'iban' => $user->iban,
+                'importe' => $item['precio'],
+                'fecha_registro' => $fecha,
+                'centro' => $request->centro,
+                'nombre_clase' => $item['tipo'], // ej: 'EP / Duo'
+                'tipo_clase' => 'Ticket TPV',
+                'metodo_pago' => 'Efectivo', // Asumimos efectivo por defecto en TPV rápido
+            ]);
+
+            // Sync entrenador
+            if ($request->entrenador_id) {
+                $pago->entrenadores()->sync([$request->entrenador_id]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cobro registrado correctamente'
+        ]);
+    }
 }

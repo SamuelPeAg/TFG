@@ -16,7 +16,10 @@ class EntrenadorController extends Controller
     public function index()
     {
         $entrenadores = User::role('entrenador')->get();
-        return view('entrenadores.index', compact('entrenadores'));
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json($entrenadores);
+        }
+        return view('app');
     }
 
     public function store(Request $request)
@@ -46,6 +49,10 @@ class EntrenadorController extends Controller
 
         // Enviar el email con el enlace de activación
         Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.', 'user' => $user], 201);
+        }
 
         return redirect()->route('entrenadores.index')->with('success', 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.');
     }
@@ -85,6 +92,10 @@ class EntrenadorController extends Controller
 
         $user->update($data);
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Datos del entrenador actualizados correctamente.', 'user' => $user], 200);
+        }
+
         return redirect()->route('entrenadores.index')->with('success', 'Datos del entrenador actualizados correctamente.');
     }
 
@@ -95,24 +106,14 @@ class EntrenadorController extends Controller
 
         $user->delete();
 
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['message' => 'Entrenador eliminado correctamente.'], 200);
+        }
+
         return redirect()->route('entrenadores.index');
     }
 
-    public function activarEntrenador($token)
-    {
-        // Buscar el usuario con ese token
-        $user = User::where('activation_token', $token)->first();
 
-        // Verificar si el usuario fue encontrado
-        if (!$user) {
-            // Si no se encuentra el usuario, puedes devolver un error o redirigir
-            return redirect()->route('login')->with('error', 'Token de activación inválido.');
-        }
-
-
-        // Si se encuentra el usuario, renderizamos la vista de activación
-        return view('entrenadores.activar', compact('user', 'token'));
-    }
 
 
     public function completeActivation(Request $request, $id)

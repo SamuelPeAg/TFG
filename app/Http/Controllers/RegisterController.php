@@ -10,10 +10,6 @@ use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
-     public function show()
-    {
-        return view('login.signup.register');
-    }
 
     /**
      * Procesa el formulario de registro

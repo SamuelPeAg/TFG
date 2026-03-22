@@ -66,7 +66,8 @@ window.initCalendarioVanilla = () => {
         },
 
         eventClick: function (info) {
-            mostrarDetallesEvento(info.event);
+            // mostrarDetallesEvento(info.event); // old logic
+            window.dispatchEvent(new CustomEvent('openVerClaseReact', { detail: { event: info.event } }));
         },
 
         dateClick: function (info) {
@@ -102,12 +103,9 @@ window.initCalendarioVanilla = () => {
 
     // ====== 2. LÓGICA DE CLICK EN FECHA ======
     function abrirModalNuevaClase(dateObj) {
-        openModal(modalNueva);
-
         const offsetMs = dateObj.getTimezoneOffset() * 60000;
         const localISOTime = (new Date(dateObj.getTime() - offsetMs)).toISOString().slice(0, 16);
-
-        if (inputFechaHora) inputFechaHora.value = localISOTime;
+        window.dispatchEvent(new CustomEvent('openCrearClaseReact', { detail: { date: localISOTime } }));
     }
 
     // ====== 3. MOSTRAR DETALLES EVENTO (REDISEÑADO) ======
@@ -647,14 +645,6 @@ window.initCalendarioVanilla = () => {
             if (e.target === overlay) closeModal(overlay);
         });
     });
-
-    if (document.getElementById('btnNuevaClase'))
-        document.getElementById('btnNuevaClase').addEventListener('click', () => {
-            openModal(modalNueva);
-            const now = new Date();
-            const offsetMs = now.getTimezoneOffset() * 60000;
-            inputFechaHora.value = (new Date(now.getTime() - offsetMs)).toISOString().slice(0, 16);
-        });
 
     if (btnConfirmarSalir) {
         btnConfirmarSalir.addEventListener('click', () => {

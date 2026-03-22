@@ -42,10 +42,13 @@ class UserController extends Controller
     public function index()
     {
         // Mostrar solo clientes en la interfaz de usuarios
-        $users = User::role('cliente')->get();
+        $users = User::role('cliente')->with('suscripciones.suscripcion.centro')->get();
         
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json($users);
+        }
 
-        return view('users.index', compact('users',));
+        return view('app');
     }
 
     public function store(Request $request)
@@ -66,6 +69,7 @@ class UserController extends Controller
             
             // Firma: Opcional + Texto + Máximo 255
             'firma_digital' => 'nullable|string|max:255',
+            'precio_hora'   => 'nullable|numeric|min:0',
         ], $this->validationMessages());
 
         $user = User::create([
@@ -74,10 +78,15 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'iban' => $request->iban,
             'firma_digital' => $request->firma_digital,
+            'precio_hora' => $request->precio_hora ?? 0,
         ]);
 
         // Asignar rol cliente por defecto
         $user->assignRole('cliente');
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Usuario creado correctamente.', 'user' => $user], 201);
+        }
 
         return redirect()->route('users.index')->with('success', 'Usuario creado correctamente.');
     }
@@ -91,6 +100,7 @@ class UserController extends Controller
             'email'         => 'required|email|unique:users,email,' . $user->id,
             'iban'          => 'nullable|string|min:8|max:34|unique:users,iban,' . $user->id,
             'firma_digital' => 'nullable|string|max:255',
+            'precio_hora'   => 'nullable|numeric|min:0',
         ], $this->validationMessages());
 
         $data = [
@@ -98,6 +108,7 @@ class UserController extends Controller
             'email' => $request->email,
             'iban' => $request->iban,
             'firma_digital' => $request->firma_digital,
+            'precio_hora' => $request->precio_hora,
         ];
 
         // Solo actualizar contraseña si se ha rellenado
@@ -120,12 +131,21 @@ class UserController extends Controller
 
         $user->update($data);
 
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['message' => 'Usuario actualizado correctamente.', 'user' => $user], 200);
+        }
+
         return redirect()->route('users.index')->with('success', 'Usuario actualizado correctamente.');
     }
 
     public function destroy(User $user)
     {
         $user->delete();
+
+        if (request()->wantsJson() || request()->ajax()) {
+            return response()->json(['message' => 'Usuario eliminado correctamente.'], 200);
+        }
+
         return redirect()->route('users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 
@@ -134,9 +154,10 @@ class UserController extends Controller
     //Metodos de configuración
     public function configuracion(Request $request)
     {
-        return view('configuracion.configuracion', [
-            'user' => $request->user(),
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json(['user' => $request->user()]);
+        }
+        return view('app');
     }
 
     public function updateConfiguracion(Request $request)
@@ -188,6 +209,9 @@ class UserController extends Controller
             ]);
 
             if (!Hash::check($request->current_password, $user->password)) {
+                if ($request->wantsJson()) {
+                    return response()->json(['errors' => ['current_password' => ['La contraseña actual no es correcta.']]], 422);
+                }
                 return back()
                     ->withErrors(['current_password' => 'La contraseña actual no es correcta.'])
                     ->withInput();
@@ -197,6 +221,10 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Configuración actualizada correctamente.', 'user' => $user]);
+        }
 
         return back()->with('success', 'Configuración actualizada correctamente.');
     }

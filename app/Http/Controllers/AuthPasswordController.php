@@ -11,10 +11,6 @@ use Illuminate\Support\Facades\Password;
 
 class AuthPasswordController extends Controller
 {
-    public function forgotForm()
-    {
-        return view('auth.forgot-password');
-    }
 
     public function sendReset(Request $request)
     {
@@ -33,13 +29,6 @@ class AuthPasswordController extends Controller
         return back()->with('status', 'Si el correo existe, te hemos enviado un enlace para restablecer la contraseña.');
     }
 
-    public function resetForm(string $token, Request $request)
-    {
-        return view('auth.reset-password', [
-            'token' => $token,
-            'email' => $request->query('email'),
-        ]);
-    }
 
     public function updatePassword(Request $request)
     {

@@ -11,6 +11,13 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Calendario from './pages/Calendario'
 import Clientes from './pages/Clientes'
+import Entrenadores from './pages/Entrenadores'
+import Facturacion from './pages/Facturacion'
+import AdminNominas from './pages/AdminNominas'
+import MisNominas from './pages/MisNominas'
+import Configuracion from './pages/Configuracion'
+import Suscripciones from './pages/Suscripciones'
+import Estadisticas from './pages/Estadisticas'
 
 function App() {
   return (
@@ -34,6 +41,14 @@ function App() {
       <Route path="/calendario" element={<Calendario />} />
       <Route path="/clientes" element={<Clientes />} />
       <Route path="/users" element={<Clientes />} />
+      <Route path="/entrenadores" element={<Entrenadores />} />
+      <Route path="/facturas" element={<Facturacion />} />
+      <Route path="/admin/nominas" element={<AdminNominas />} />
+      <Route path="/mis-nominas" element={<MisNominas />} />
+      <Route path="/configuracion" element={<Configuracion />} />
+      <Route path="/configuracion/edit" element={<Configuracion />} />
+      <Route path="/suscripciones" element={<Suscripciones />} />
+      <Route path="/estadisticas" element={<Estadisticas />} />
     </Routes>
   )
 }

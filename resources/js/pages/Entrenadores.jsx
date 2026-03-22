@@ -2,44 +2,33 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
-import UsersTable from '../components/UsersTable';
-import UserModals from '../components/UserModals';
-import ClientSubscriptionsModal from '../components/ClientSubscriptionsModal';
+import EntrenadoresTable from '../components/EntrenadoresTable';
+import EntrenadorModals from '../components/EntrenadorModals';
 
-export default function Clientes() {
-  const [users, setUsers] = useState([]);
+export default function Entrenadores() {
+  const [entrenadores, setEntrenadores] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('create');
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedEntrenador, setSelectedEntrenador] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const [susModalOpen, setSusModalOpen] = useState(false);
-  const [selectedUserForSus, setSelectedUserForSus] = useState(null);
-
-  const handleManageSubscriptions = (user) => {
-    setSelectedUserForSus(user);
-    setSusModalOpen(true);
-  };
-
   useEffect(() => {
-    fetchUsers();
+    fetchEntrenadores();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchEntrenadores = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/users', {
-        headers: {
-          'Accept': 'application/json'
-        }
+      const response = await axios.get('/entrenadores', {
+        headers: { Accept: 'application/json' }
       });
-      setUsers(response.data);
+      setEntrenadores(response.data);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching entrenadores:', error);
     } finally {
       setLoading(false);
     }
@@ -47,48 +36,54 @@ export default function Clientes() {
 
   const handleCreate = () => {
     setModalMode('create');
-    setSelectedUser(null);
+    setSelectedEntrenador(null);
     setModalOpen(true);
   };
 
-  const handleEdit = (user) => {
+  const handleEdit = (entrenador) => {
     setModalMode('edit');
-    setSelectedUser(user);
+    setSelectedEntrenador(entrenador);
     setModalOpen(true);
   };
 
-  const handleDelete = async (user) => {
-    if (confirm(`¿Estás seguro de que deseas eliminar a ${user.name}?`)) {
+  const handleDelete = async (entrenador) => {
+    if (confirm(`¿Estás seguro de que deseas eliminar a ${entrenador.name}?`)) {
       try {
-        await axios.delete(`/users/${user.id}`);
-        fetchUsers();
+        await axios.delete(`/entrenadores/${entrenador.id}`, {
+            headers: { Accept: 'application/json' }
+        });
+        fetchEntrenadores();
       } catch (error) {
-        console.error('Error deleting user:', error);
-        alert('No se pudo eliminar al usuario.');
+        console.error('Error deleting entrenador:', error);
+        alert('No se pudo eliminar al entrenador.');
       }
     }
   };
 
   const handleSave = async (formData, mode, id) => {
     if (mode === 'create') {
-      await axios.post('/users', formData);
+      await axios.post('/entrenadores', formData, {
+        headers: { Accept: 'application/json' }
+      });
     } else {
-      await axios.put(`/users/${id}`, formData);
+      await axios.put(`/entrenadores/${id}`, formData, {
+        headers: { Accept: 'application/json' }
+      });
     }
-    fetchUsers();
+    fetchEntrenadores();
   };
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEntrenadores = entrenadores.filter(entrenador => 
+    entrenador.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    entrenador.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const currentUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(filteredEntrenadores.length / itemsPerPage);
+  const currentEntrenadores = filteredEntrenadores.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
@@ -114,9 +109,9 @@ export default function Clientes() {
             </button>
             <div>
                 <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
-                    Gestión de Clientes
+                    Gestión de Entrenadores
                 </h1>
-                <p className="text-slate-400 mt-1 font-medium text-sm">Administración del padrón de alumnos</p>
+                <p className="text-slate-400 mt-1 font-medium text-sm">Administración del equipo técnico</p>
             </div>
           </div>
 
@@ -130,7 +125,7 @@ export default function Clientes() {
                   type="text" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar cliente..." 
+                  placeholder="Buscar entrenador..." 
                   className="pl-10 pr-4 py-2 w-full sm:w-64 bg-white border border-slate-200 rounded-full focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-600 placeholder:text-slate-400 text-sm shadow-sm"
                 />
               </div>
@@ -149,12 +144,11 @@ export default function Clientes() {
         <div className="flex-1 overflow-auto p-4 sm:p-8">
           <div className="w-full mx-auto space-y-6">
             <div className="bg-white p-1 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-              <UsersTable 
-                users={currentUsers} 
+              <EntrenadoresTable 
+                entrenadores={currentEntrenadores} 
                 loading={loading} 
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                onManageSubscriptions={handleManageSubscriptions}
               />
             </div>
           </div>
@@ -163,7 +157,7 @@ export default function Clientes() {
         {/* Status bar */}
         <footer className="px-6 py-3 bg-white border-t border-slate-100 flex justify-between items-center shrink-0">
             <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                {filteredUsers.length} registros encontrados
+                {filteredEntrenadores.length} registros encontrados
             </p>
             {totalPages > 1 ? (
                 <div className="flex items-center gap-2">
@@ -194,19 +188,12 @@ export default function Clientes() {
         </footer>
       </main>
 
-      <UserModals 
+      <EntrenadorModals 
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleSave}
-        user={selectedUser}
+        entrenador={selectedEntrenador}
         mode={modalMode}
-      />
-      
-      <ClientSubscriptionsModal 
-        isOpen={susModalOpen}
-        user={selectedUserForSus}
-        onClose={() => setSusModalOpen(false)}
-        onUpdate={fetchUsers}
       />
     </div>
   );

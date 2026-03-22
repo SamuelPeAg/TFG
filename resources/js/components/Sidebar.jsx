@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
@@ -13,15 +14,29 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   // Helper para verificar ruta activa
   const isActive = (path) => location.pathname.startsWith(path);
 
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post('/logout');
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      window.location.href = '/';
+    }
+  };
+
   const adminLinks = [
+    { name: 'PANEL', path: '/estadisticas', icon: 'fa-solid fa-chart-line' },
     { name: 'ENTRENADORES', path: '/entrenadores', icon: 'fa-solid fa-dumbbell' },
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
     { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice' },
     { name: 'NOMINAS-ADMIN', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice' },
+    { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt' },
   ];
 
   const trainerLinks = [
+    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
     { name: 'MIS NOMINAS', path: '/mis-nominas', icon: 'fa-solid fa-file-invoice' },
   ];
@@ -36,22 +51,20 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       />
       
       <aside 
-        style={{ backgroundColor: '#38C1A3' }}
-        className={`fixed top-0 left-0 h-full w-64 text-white flex flex-col z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 overflow-y-auto shadow-2xl`}
+        style={{ backgroundImage: 'linear-gradient(to bottom, #4eb7ac, #334352)' }}
+        className={`fixed top-0 left-0 h-full w-72 text-white flex flex-col z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 overflow-hidden shadow-2xl`}
       >
-        <div className="p-6 flex flex-col items-center border-b border-white/10">
-          <Link to="/" className="flex flex-col items-center gap-2 group">
-            <div className="bg-white p-2 rounded-xl shadow-lg transition-transform group-hover:scale-110">
-              <img src="/img/logopng.png" alt="Factomove Logo" className="h-10 w-auto" />
-            </div>
-            <h2 className="text-xl font-black text-white tracking-tighter">Factomove</h2>
+        <div className="pt-10 pb-6 flex flex-col items-center">
+          <Link to="/" className="flex flex-col items-center gap-3 group">
+            <img src="/img/logopng.png" alt="Factomove Logo" className="h-14 w-auto drop-shadow-md transition-transform group-hover:scale-105" />
+            <h2 className="text-2xl font-black text-white tracking-tighter drop-shadow-sm">Factomove</h2>
           </Link>
         </div>
 
-        <div className="p-6 flex items-center gap-4 bg-white/10">
+        <div className="px-8 py-4 flex items-center gap-4">
           <div 
             style={{ color: '#38C1A3' }}
-            className="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold text-xl shrink-0 overflow-hidden shadow-md"
+            className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center font-black text-xl shrink-0 overflow-hidden shadow-sm"
           >
             {user.photo ? (
               <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
@@ -60,47 +73,42 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             )}
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className="font-bold truncate text-white" title={user.name}>{user.name}</span>
-            <span className="text-xs text-teal-50 uppercase tracking-widest font-semibold opacity-80">{user.role}</span>
+            <span className="font-extrabold truncate text-white text-[15px] drop-shadow-sm" title={user.name}>{user.name}</span>
+            <span className="text-[10px] text-white/80 uppercase tracking-widest font-black drop-shadow-sm">{user.role}</span>
           </div>
         </div>
 
-        <nav className="grow py-4 px-2 space-y-1">
+        <nav className="grow py-6 px-5 space-y-3 flex flex-col">
           {linksToShow.map((link) => (
             <Link 
               key={link.path}
               to={link.path} 
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
+              className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold text-sm transition-colors ${
                 isActive(link.path) 
-                  ? 'bg-white shadow-lg scale-105 mx-2' 
-                  : 'text-white/90 hover:bg-white/10 hover:text-white'
+                  ? 'bg-white text-[#38C1A3] shadow-md' 
+                  : 'text-white hover:bg-white/10'
               }`}
-              style={isActive(link.path) ? { color: '#38C1A3' } : {}}
-              onClick={() => setIsOpen(false)}
             >
-              <i className={`${link.icon} w-5 text-center`}></i>
-              <span>{link.name}</span>
+              <i className={`${link.icon} w-5 text-center text-lg`}></i>
+              <span className="tracking-wide">{link.name}</span>
             </Link>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/10 space-y-2">
-          <Link to="/" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-white/90 hover:bg-white/10 hover:text-white transition-all">
-            <i className="fa-solid fa-house w-5 text-center"></i>
-            <span>VOLVER</span>
-          </Link>
-          <Link to="/configuracion" className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-white/90 hover:bg-white/10 hover:text-white transition-all">
-            <i className="fa-solid fa-user-gear w-5 text-center"></i>
-            <span>MI PERFIL</span>
+        <div className="px-5 py-8 border-t border-white/20 mt-auto space-y-2">
+          <a href="/" className="flex items-center gap-4 px-5 py-3 rounded-2xl font-bold text-sm text-white hover:bg-white/10 transition-colors">
+            <i className="fa-solid fa-house w-5 text-center text-lg"></i>
+            <span className="tracking-wide">VOLVER</span>
+          </a>
+          <Link to="/configuracion" className="flex items-center gap-4 px-5 py-3 rounded-2xl font-bold text-sm text-white hover:bg-white/10 transition-colors">
+            <i className="fa-solid fa-user-gear w-5 text-center text-lg"></i>
+            <span className="tracking-wide">MI PERFIL</span>
           </Link>
           
-          <form method="POST" action="/logout" className="m-0">
-            <input type="hidden" name="_token" value={document.head.querySelector('meta[name="csrf-token"]')?.content || ''} />
-            <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-white hover:bg-rose-500 transition-all text-left">
-              <i className="fa-solid fa-right-from-bracket w-5 text-center"></i>
-              <span>SALIR</span>
-            </button>
-          </form>
+          <button onClick={handleLogout} className="w-full flex items-center gap-4 px-5 py-3 rounded-2xl font-black text-sm text-rose-300 hover:text-white hover:bg-rose-500 transition-colors text-left tracking-wider">
+            <i className="fa-solid fa-right-from-bracket w-5 text-center text-lg"></i>
+            <span>SALIR</span>
+          </button>
         </div>
       </aside>
     </>

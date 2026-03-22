@@ -12,24 +12,15 @@ class NominaEntrenadorController extends Controller
     {
         $userId = Auth::id();
 
-        // Filtro: 'pendiente' (por defecto) o 'pagado'
-        // 'pendiente' muestra las que están en estado 'pendiente_pago' (confirmadas por admin)
-        // 'pagado' muestra las que están 'pagado'
-        $filtro = $request->input('estado', 'pendiente');
-
-        $query = Nomina_entrenador::where('user_id', $userId);
-
-        if ($filtro == 'pagado') {
-            $query->where('estado_nomina', 'pagado');
-        } else {
-            // Por defecto mostramos las pendientes de pago (confirmadas)
-            // NO mostramos borradores ('pendiente_revision')
-            $query->where('estado_nomina', 'pendiente_pago');
+        if ($request->wantsJson() || $request->ajax()) {
+            $nominas = Nomina_entrenador::where('user_id', $userId)
+                ->where('estado_nomina', '!=', 'pendiente_revision') // No mostrar borradores al entrenador
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return response()->json($nominas);
         }
 
-        $nominas = $query->orderBy('created_at', 'desc')->get();
-
-        return view('nominas_entrenador.nominas_e', compact('nominas', 'filtro'));
+        return view('app');
     }
 
     public function descargar($id)

@@ -2,12 +2,22 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import CalendarModals from '../components/CalendarModals';
+import CrearClaseModal from '../components/Calendario/CrearClaseModal';
+import VerClaseModal from '../components/Calendario/VerClaseModal';
 import Button from '../components/Button';
 
 export default function Calendario() {
   const [data, setData] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // React Modal State
+  const [isCrearModalOpen, setIsCrearModalOpen] = useState(false);
+  const [selectedDateForNewClass, setSelectedDateForNewClass] = useState(null);
+  
+  const [isVerModalOpen, setIsVerModalOpen] = useState(false);
+  const [selectedEventParaVer, setSelectedEventParaVer] = useState(null);
+
   const user = window.AppConfig?.user;
 
   // 1. Fetch initialization data
@@ -57,7 +67,7 @@ export default function Calendario() {
         await loadScript('/css/calendario.css');
         await loadScript('/css/global.css');
         await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js');
-        await loadScript('/js/wizard_clase.js');
+        // El script wizard_clase ya no es necesario para la creacion, se omite o mantiene para compatibilidad parcial si hay otras cosas
         await loadScript('/js/calendario.js');
 
         // Allow some time for DOM to be ready
@@ -72,7 +82,24 @@ export default function Calendario() {
 
     initScripts();
 
-    // Cleanup isn't strictly necessary here because it's meant to be persistent on this route
+    // Event Listener for Vanilla FullCalendar triggering React Modal
+    const handleOpenReactModal = (e) => {
+        setSelectedDateForNewClass(e.detail?.date || null);
+        setIsCrearModalOpen(true);
+    };
+    
+    const handleOpenVerReactModal = (e) => {
+        setSelectedEventParaVer(e.detail?.event || null);
+        setIsVerModalOpen(true);
+    };
+
+    window.addEventListener('openCrearClaseReact', handleOpenReactModal);
+    window.addEventListener('openVerClaseReact', handleOpenVerReactModal);
+
+    return () => {
+        window.removeEventListener('openCrearClaseReact', handleOpenReactModal);
+        window.removeEventListener('openVerClaseReact', handleOpenVerReactModal);
+    };
   }, [data, user]);
 
   return (
@@ -88,20 +115,23 @@ export default function Calendario() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-64">
+      <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
         
         {/* Top Header Controls */}
-        <header className="bg-white border-b border-slate-200 px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-20 shadow-sm">
+        <header className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex items-center gap-3">
             <button 
-              className="lg:hidden p-2 text-slate-500 hover:text-teal-600 rounded-lg hover:bg-slate-100 transition-colors"
+              className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3] rounded-lg hover:bg-slate-100 transition-colors"
               onClick={() => setIsSidebarOpen(true)}
             >
               <i className="fa-solid fa-bars text-xl"></i>
             </button>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight m-0">
-              Historial de Pagos
-            </h1>
+            <div>
+                <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
+                    Calendario de Clases
+                </h1>
+                <p className="text-slate-400 mt-1 font-medium text-sm">Planificación y gestión de eventos</p>
+            </div>
           </div>
 
           {!loading && data && (
@@ -141,10 +171,13 @@ export default function Calendario() {
 
               {/* Botón Nueva Clase */}
               <Button 
-                id="btnNuevaClase"
                 variant="primary"
                 icon="fa-solid fa-plus"
                 className="btn-design"
+                onClick={() => {
+                   setSelectedDateForNewClass(null);
+                   setIsCrearModalOpen(true);
+                }}
               >
                 NUEVA CLASE
               </Button>
@@ -154,7 +187,7 @@ export default function Calendario() {
 
         {/* Calendar Body */}
         <section className="flex-1 overflow-auto p-4 sm:p-6 bg-slate-50/50">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 sm:p-4 min-h-[500px] flex flex-col">
+         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 sm:p-4 min-h-[500px] flex flex-col">
             {loading ? (
               <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-3">
                 <i className="fa-solid fa-spinner fa-spin text-3xl text-teal-500"></i>
@@ -174,11 +207,37 @@ export default function Calendario() {
 
       {/* Render Modals if data is loaded */}
       {!loading && data && (
-         <CalendarModals 
-            centros={data.centros} 
-            entrenadores={data.entrenadores} 
-            users={data.users} 
-         />
+         <>
+           <CalendarModals 
+              centros={data.centros} 
+              entrenadores={data.entrenadores} 
+              users={data.users} 
+           />
+           <CrearClaseModal 
+              isOpen={isCrearModalOpen}
+              onClose={() => setIsCrearModalOpen(false)}
+              initialDate={selectedDateForNewClass}
+              centros={data.centros}
+              entrenadores={data.entrenadores}
+              users={data.users}
+              onSuccess={() => {
+                  if (window.calendar) window.calendar.refetchEvents();
+                  const summaryEl = document.getElementById('calendar-summary');
+                  if (summaryEl) summaryEl.innerHTML = `<p style="color:#10b981; font-weight:bold;"><i class="fa-solid fa-check-circle"></i> ¡Clase agendada correctamente!</p>`;
+              }}
+           />
+           <VerClaseModal 
+              isOpen={isVerModalOpen}
+              onClose={() => setIsVerModalOpen(false)}
+              selectedEvent={selectedEventParaVer}
+              centros={data.centros}
+              entrenadores={data.entrenadores}
+              users={data.users}
+              onSuccess={() => {
+                  if (window.calendar) window.calendar.refetchEvents();
+              }}
+           />
+         </>
       )}
     </div>
   );

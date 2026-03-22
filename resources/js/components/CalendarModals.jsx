@@ -16,16 +16,7 @@ export default function CalendarModals({ centros = [], entrenadores = [], users 
         </div>
       </div>
 
-      {/* 2. Modal Info */}
-      <div id="infoPopup" className="modal-overlay" aria-hidden="true">
-        <div className="modal-box modal-expanded">
-          <button type="button" className="close-icon" id="btnCerrarPopup" style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', fontSize: '24px', color: '#9ca3af', cursor: 'pointer' }}>&times;</button>
-          <h2 id="modal-fecha-titulo">Detalles</h2>
-          <div id="lista-Pagos" className="modal-details"></div>
-          <br />
-          <button type="button" className="btn-modal btn-cancel" id="btnCerrarPopup2">Cerrar</button>
-        </div>
-      </div>
+      {/* 2. Modal Info (REMOVIDO Y MIGRADO A COMPONENTE REACT: VerClaseModal.jsx) */}
 
       {/* 3. Modal Selección Clientes */}
       <div id="modalSeleccionClientes" className="modal-overlay" aria-hidden="true" style={{ zIndex: 10000 }}>
@@ -52,197 +43,7 @@ export default function CalendarModals({ centros = [], entrenadores = [], users 
         </div>
       </div>
 
-      {/* 4. Modal Nueva Clase */}
-      <div id="modalNuevaClase" className="modal-overlay" role="dialog" aria-hidden="true">
-        <div className="modal-box modal-expanded" style={{ maxWidth: '950px', height: '85vh', padding: 0, display: 'flex', borderRadiu: '16px', overflow: 'hidden' }}>
-          
-          {/* LEFT SIDEBAR */}
-          <div className="wizard-sidebar" style={{ width: '260px', background: '#f8fafc', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', padding: '24px' }}>
-            <div className="sidebar-header" style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img src="/img/logopng.png" alt="Logo" style={{ width: '32px', height: '32px' }} />
-              <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '16px', letterSpacing: '-0.5px' }}>FACTOMOVE</span>
-            </div>
-
-            <div className="wizard-nav" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div className="nav-step active" data-step="1">
-                <div className="nav-step-icon">1</div>
-                <div className="nav-step-info">
-                  <span className="step-label">Configuración</span>
-                  <span className="step-desc">Centro y Entrenadores</span>
-                </div>
-              </div>
-              <div className="nav-step" data-step="2">
-                <div className="nav-step-icon">2</div>
-                <div className="nav-step-info">
-                  <span className="step-label">Planificación</span>
-                  <span className="step-desc">Horario y Alumnos</span>
-                </div>
-              </div>
-              <div className="nav-step" data-step="3">
-                <div className="nav-step-icon">3</div>
-                <div className="nav-step-info">
-                  <span className="step-label">Facturación</span>
-                  <span className="step-desc">Detalles de pagos</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="sidebar-footer" style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #e2e8f0', color: '#94a3b8', fontSize: '12px' }}>
-              <p>&copy; {new Date().getFullYear()} Factomove</p>
-            </div>
-          </div>
-
-          {/* RIGHT CONTENT */}
-          <div className="wizard-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#ffffff', position: 'relative' }}>
-            <button type="button" className="close-icon" id="btnCerrarNuevaClase" style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10, color: '#64748b', background: 'transparent', border: 'none', fontSize: '24px', cursor: 'pointer' }}>&times;</button>
-
-            <div className="wizard-header" style={{ padding: '24px 32px', borderBottom: '1px solid #f1f5f9' }}>
-              <h2 id="wizard-title" style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#0f172a' }}>Agendar Nueva Clase</h2>
-              <p id="wizard-subtitle" style={{ margin: '4px 0 0', color: '#64748b', fontSize: '14px' }}>Completa los detalles para crear una sesión.</p>
-            </div>
-
-            <form id="formNuevaClaseWizard" action="/Pagos" onSubmit={(e) => e.preventDefault()} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <input type="hidden" name="_token" value={document.querySelector('meta[name="csrf-token"]')?.content || ''} />
-              
-              <div className="wizard-body" style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
-                
-                {/* STEP 1 */}
-                <div id="step-1" className="wizard-step">
-                  <div className="form-section-title">DETALLES GENERALES</div>
-                  
-                  <div className="form-grid-2">
-                    <div className="input-group-clean">
-                      <label>Centro Deportivo</label>
-                      <select id="centro" name="centro" className="input-clean" required defaultValue="">
-                        <option value="" disabled>Selecciona centro...</option>
-                        {centros.map(centro => (
-                          <option key={centro.id} value={centro.nombre}>{centro.nombre}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="input-group-clean">
-                      <label>Nombre de la Clase</label>
-                      <input id="nombre_clase" type="text" name="nombre_clase" className="input-clean" placeholder="Ej. Pilates Reformer" required />
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: '24px' }}>
-                    <div className="input-group-clean">
-                      <label>Tipo de Sesión</label>
-                      <div className="select-cards-container">
-                        <div className="custom-select-wrapper">
-                          <select id="tipo_clase" name="tipo_clase" className="input-clean" required onChange={() => window.handleTipoChange?.()} defaultValue="EP">
-                            <option value="EP">EP (Individual)</option>
-                            <option value="DUO">DUO</option>
-                            <option value="TRIO">TRIO</option>
-                            <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
-                            <option value="GRUPO">GRUPO</option>
-                          </select>
-                          <div className="select-icon"><i className="fa-solid fa-chevron-down"></i></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: '32px' }}>
-                    <div className="form-section-title">EQUIPO TÉCNICO</div>
-                    <div className="trainers-grid-clean">
-                      {entrenadores.length > 0 ? entrenadores.map(coach => (
-                        <label className="trainer-card-clean" key={coach.id}>
-                          <input type="checkbox" name="trainers[]" value={coach.id} />
-                          <div className="t-card-content">
-                            <div className="t-avatar">
-                              {coach.foto_de_perfil ? (
-                                <img src={`/storage/${coach.foto_de_perfil}`} alt={coach.name} />
-                              ) : (
-                                coach.name.charAt(0).toUpperCase()
-                              )}
-                            </div>
-                            <div className="t-info">
-                              <span className="t-name">{coach.name}</span>
-                              <span className="t-role">Entrenador</span>
-                            </div>
-                            <div className="t-check"><i className="fa-solid fa-circle-check"></i></div>
-                          </div>
-                        </label>
-                      )) : (
-                        <div className="empty-msg">No hay entrenadores disponibles</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* STEP 2 */}
-                <div id="step-2" className="wizard-step" style={{ display: 'none' }}>
-                  <div className="form-section-title">AGENDA Y PRECIOS</div>
-                  
-                  <div className="form-grid-2">
-                    <div className="input-group-clean">
-                      <label>Fecha y Hora</label>
-                      <input id="fecha_hora" type="datetime-local" name="fecha_hora" className="input-clean" required />
-                    </div>
-                    <div className="input-group-clean">
-                      <label>Precio Base por Persona (€)</label>
-                      <input id="precio_base" type="number" step="0.01" className="input-clean" placeholder="0.00" required />
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: '40px' }}>
-                    <div className="form-section-title">PARTICIPANTES <span id="clients-count" style={{ fontWeight: 400, fontSize: '11px', color: '#94a3b8', marginLeft: '5px' }}></span></div>
-                    
-                    <div className="client-search-wrapper" style={{ position: 'relative', marginBottom: '15px' }}>
-                      <i className="fa-solid fa-magnifying-glass" style={{ position: 'absolute', left: '12px', top: '12px', color: '#94a3b8' }}></i>
-                      <input type="text" id="client-search-input" className="input-clean" style={{ paddingLeft: '36px' }} placeholder="Buscar alumno por nombre..." autoComplete="off" />
-                      <div id="client-suggestions" style={{ display: 'none', position: 'absolute', top: '100%', left: 0, width: '100%', maxHeight: '200px', overflowY: 'auto', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', zIndex: 50, marginTop: '4px' }}></div>
-                    </div>
-
-                    <div id="selected-clients-list" className="participants-grid-clean">
-                      <div className="empty-state-clean">
-                        <i className="fa-solid fa-users-slash"></i>
-                        <p>Busca y selecciona alumnos</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* STEP 3 */}
-                <div id="step-3" className="wizard-step" style={{ display: 'none' }}>
-                  <div className="form-section-title">DETALLES DE PAGO INDIVIDUAL</div>
-                  <p style={{ color: '#64748b', fontSize: '14px', marginBottom: '24px' }}>Revisa los importes y métodos de pago para cada asistente.</p>
-                  
-                  <div className="payments-table-container">
-                    <div className="table-header">
-                      <span>Alumno</span>
-                      <span>Precio (€)</span>
-                      <span>Método</span>
-                    </div>
-                    <div id="payment-rows-container" className="table-body">
-                      {/* JS Fills */}
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Footer Actions */}
-              <div className="wizard-footer" style={{ flexShrink: 0, padding: '20px 32px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#ffffff' }}>
-                <button type="button" id="btn-prev-step" className="btn-clean-text" style={{ display: 'none' }}>
-                  <i className="fa-solid fa-arrow-left"></i> Anterior
-                </button>
-                
-                <div style={{ marginLeft: 'auto' }}>
-                  <button type="button" id="btn-next-step" className="btn-clean-primary">
-                    Siguiente <i className="fa-solid fa-arrow-right"></i>
-                  </button>
-                  <button type="submit" id="btn-submit-wizard" className="btn-clean-success" style={{ display: 'none' }}>
-                    <i className="fa-solid fa-check"></i> CONFIRMAR Y GUARDAR
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+      {/* 4. Modal Nueva Clase (REMOVIDO Y MIGRADO A COMPONENTE REACT: CrearClaseModal.jsx) */}
 
       {/* JSON data for JS compatibility */}
       <script type="application/json" id="users_json" dangerouslySetInnerHTML={{ __html: JSON.stringify(users.map(u => ({ id: u.id, name: u.name }))) }} />
@@ -300,7 +101,7 @@ export default function CalendarModals({ centros = [], entrenadores = [], users 
         /* Trainer Checked State */
         .trainer-card-clean input:checked + .t-card-content { border-color: #39c5a7; background: #f0fdfa; box-shadow: 0 4px 6px -1px rgba(57, 197, 167, 0.1); }
         
-        /* Trainer Avatar with Gradient */
+        /* Trainer Avatar */
         .t-avatar { 
             width: 36px; height: 36px; 
             background: linear-gradient(135deg, #39c5a7, #eb567a); 
