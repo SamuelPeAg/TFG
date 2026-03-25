@@ -150,26 +150,32 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess }) {
 
     const totals = calculateTotals();
 
-    const handleSubmit = async (e, accion) => {
-        e.preventDefault();
+    const handleSubmit = async (e, forcedAccion = null) => {
+        if (e) e.preventDefault();
+        
+        // Determinar la acción: si se pasó por parámetro (clic en botón) o usamos la de defecto
+        const finalAccion = forcedAccion || 'confirmar';
+        
         setLoading(true);
 
         const formData = new FormData();
         formData.append('_method', 'PUT');
-        formData.append('accion', accion);
+        formData.append('accion', finalAccion);
         formData.append('user_id', nomina.user_id);
         formData.append('importe', totals.neto);
-        formData.append('salario_bruto', detalles.salario_bruto);
-        formData.append('ss_trabajador', totals.ss_trabajador);
-        formData.append('irpf', totales.irpfAmount);
-        formData.append('ss_empresa', totals.ss_empresa);
-        formData.append('coste_total', totals.coste_total);
-        formData.append('horas_trabajadas', detalles.horas_trabajadas);
+        formData.append('salario_bruto', detalles.salario_bruto || 0);
+        formData.append('ss_trabajador', totals.ss_trabajador || 0);
+        formData.append('irpf', totals.irpfAmount || 0);
+        formData.append('ss_empresa', totals.ss_empresa || 0);
+        formData.append('coste_total', totals.coste_total || 0);
+        formData.append('horas_trabajadas', detalles.horas_trabajadas || 0);
 
-        extras.forEach(ex => {
-            formData.append('extra_conceptos[]', ex.concepto);
-            formData.append('extra_importes[]', ex.importe);
-        });
+        if (Array.isArray(extras)) {
+            extras.forEach(ex => {
+                formData.append('extra_conceptos[]', ex.concepto || '');
+                formData.append('extra_importes[]', ex.importe || 0);
+            });
+        }
 
         if (file) {
             formData.append('archivo', file);
@@ -179,11 +185,12 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess }) {
             const res = await axios.post(`/admin/nominas/${nomina.id}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' }
             });
-            onSuccess(res.data.message || (accion === 'confirmar' ? 'Nómina publicada.' : 'Borrador actualizado.'));
+            onSuccess(res.data.message || (finalAccion === 'confirmar' ? 'Nómina publicada.' : 'Borrador actualizado.'));
             onClose();
         } catch (error) {
-            console.error(error);
-            alert('Error al procesar la nómina');
+            console.error('Error procesando nómina:', error);
+            const msg = error.response?.data?.message || 'Error al procesar la nómina';
+            alert(msg);
         } finally {
             setLoading(false);
         }
@@ -200,110 +207,113 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess }) {
     const { ss_trabajador, irpfAmount, neto, ss_empresa, coste_total } = totals;
 
     return (
-        <div className="fixed inset-0 z-2000 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+        <div className="fixed inset-0 z-[2005] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
             <div className="bg-white w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl relative my-8 animate-in fade-in zoom-in duration-200">
-                <button onClick={onClose} className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors z-10">
+                <button type="button" onClick={onClose} className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors z-10">
                     <i className="fas fa-times"></i>
                 </button>
                 
-                <div className="bg-slate-50 border-b border-slate-100 px-8 py-6 text-center">
-                    <div className="w-14 h-14 bg-orange-100 text-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl shadow-sm">
-                        <i className="fas fa-calculator"></i>
-                    </div>
-                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">Cálculo Detallado</h2>
-                    <p className="text-slate-500 text-sm font-medium mt-1">{nomina.user.name} - Periodo: {nomina.mes}/{nomina.anio}</p>
-                </div>
-
-                <div className="p-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                        {/* Base */}
-                        <div className="space-y-4">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Datos Base</h4>
-                            <div className="space-y-1.5 flex flex-col">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase">Horas Trabajadas</label>
-                                <input type="number" step="0.01" value={detalles.horas_trabajadas} onChange={(e) => setDetalles({...detalles, horas_trabajadas: e.target.value})} 
-                                       className="w-full text-sm font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-[#38C1A3] focus:bg-white outline-none" />
-                            </div>
+                <form onSubmit={(e) => handleSubmit(e, 'confirmar')}>
+                    <div className="bg-slate-50 border-b border-slate-100 px-8 py-6 text-center">
+                        <div className="w-14 h-14 bg-orange-100 text-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl shadow-sm">
+                            <i className="fas fa-calculator"></i>
                         </div>
-
-                        {/* Economics */}
-                        <div className="space-y-4">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Desglose Económico</h4>
-                            <div className="flex items-center justify-between gap-4">
-                                <label className="text-xs font-bold text-slate-600">Salario Bruto (€)</label>
-                                <input type="number" step="0.01" value={detalles.salario_bruto} onChange={(e) => setDetalles({...detalles, salario_bruto: e.target.value})} 
-                                      className="w-32 bg-slate-50 p-2 text-sm rounded-xl border border-slate-200 text-right font-black text-slate-700 outline-none focus:border-[#38C1A3]" />
-                            </div>
-                            <div className="flex items-center justify-between text-rose-500">
-                                <label className="text-[11px] font-bold uppercase">- SS Trab ({(sstPorcentaje*100).toFixed(2)}%)</label>
-                                <span className="font-bold text-sm tracking-wide">{ss_trabajador.toFixed(2)} €</span>
-                            </div>
-                            <div className="flex items-center justify-between text-rose-500">
-                                <label className="text-[11px] font-bold uppercase">- Monto IRPF (€)</label>
-                                <input type="number" step="0.01" value={detalles.irpf} onChange={(e) => setDetalles({...detalles, irpf: e.target.value})} 
-                                      className="w-24 bg-rose-50/50 p-2 text-xs rounded-xl border border-rose-100 text-right font-black outline-none focus:border-rose-300" />
-                            </div>
-                        </div>
+                        <h2 className="text-2xl font-black text-slate-800 tracking-tight">Cálculo Detallado</h2>
+                        <p className="text-slate-500 text-sm font-medium mt-1">{nomina.user?.name} - Periodo: {nomina.mes}/{nomina.anio}</p>
                     </div>
 
-                    {/* Extras */}
-                    <div className="mb-8 p-5 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extras y Bonos</h4>
-                            <button onClick={addExtra} className="text-[10px] font-black bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 transition-colors uppercase tracking-wider">
-                                <i className="fas fa-plus"></i> Añadir
-                            </button>
-                        </div>
-                        <div className="space-y-3">
-                            {extras.map((ex, idx) => (
-                                <div key={idx} className="flex gap-3">
-                                    <input type="text" placeholder="Concepto (ej. Bono Objetivos)" value={ex.concepto} onChange={(e) => updateExtra(idx, 'concepto', e.target.value)} 
-                                           className="flex-1 px-3 py-2 text-sm font-semibold border border-slate-200 rounded-xl bg-white focus:border-[#38C1A3] outline-none" />
-                                    <input type="number" step="0.01" value={ex.importe} onChange={(e) => updateExtra(idx, 'importe', e.target.value)} 
-                                           className="w-28 px-3 py-2 text-sm font-black text-right border border-slate-200 rounded-xl bg-white focus:border-[#38C1A3] outline-none" />
-                                    <button onClick={() => removeExtra(idx)} className="w-10 h-10 shrink-0 flex items-center justify-center bg-white text-rose-400 hover:text-white hover:bg-rose-500 rounded-xl border border-slate-200 transition-colors">
-                                        <i className="fas fa-times"></i>
-                                    </button>
+                    <div className="p-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            {/* Base */}
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Datos Base</h4>
+                                <div className="space-y-1.5 flex flex-col">
+                                    <label className="text-[11px] font-bold text-slate-500 uppercase">Horas Trabajadas</label>
+                                    <input type="number" step="0.01" value={detalles.horas_trabajadas} onChange={(e) => setDetalles({...detalles, horas_trabajadas: e.target.value})} 
+                                           className="w-full text-sm font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-[#38C1A3] focus:bg-white outline-none" />
                                 </div>
-                            ))}
-                            {extras.length === 0 && <p className="text-xs text-slate-400 font-medium">No se han añadido conceptos extra.</p>}
-                        </div>
-                    </div>
-
-                    {/* Totals */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                        <div className="bg-teal-50 p-6 rounded-2xl border border-teal-100 flex flex-col justify-center">
-                            <label className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1">Salario Neto (A Pagar)</label>
-                            <span className="text-4xl font-black text-teal-700 tracking-tighter">{neto.toFixed(2)} €</span>
-                        </div>
-                        <div className="bg-slate-800 p-6 rounded-2xl text-white flex flex-col justify-between">
-                            <div className="flex justify-between items-center mb-2">
-                                <span className="text-[11px] font-bold text-slate-400 uppercase mt-1">SS Empresa (31.4%):</span>
-                                <span className="font-bold tracking-wide">{ss_empresa.toFixed(2)} €</span>
                             </div>
-                            <div className="flex justify-between items-center pt-3 border-t border-slate-700">
-                                <span className="text-xs font-black text-white uppercase tracking-wider">COSTE TOTAL:</span>
-                                <span className="text-xl font-black text-[#38C1A3] tracking-tight">{coste_total.toFixed(2)} €</span>
+
+                            {/* Economics */}
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Desglose Económico</h4>
+                                <div className="flex items-center justify-between gap-4">
+                                    <label className="text-xs font-bold text-slate-600">Salario Bruto (€)</label>
+                                    <input type="number" step="0.01" value={detalles.salario_bruto} onChange={(e) => setDetalles({...detalles, salario_bruto: e.target.value})} 
+                                          className="w-32 bg-slate-50 p-2 text-sm rounded-xl border border-slate-200 text-right font-black text-slate-700 outline-none focus:border-[#38C1A3]" />
+                                </div>
+                                <div className="flex items-center justify-between text-rose-500">
+                                    <label className="text-[11px] font-bold uppercase">- SS Trab ({(sstPorcentaje*100).toFixed(2)}%)</label>
+                                    <span className="font-bold text-sm tracking-wide">{ss_trabajador.toFixed(2)} €</span>
+                                </div>
+                                <div className="flex items-center justify-between text-rose-500">
+                                    <label className="text-[11px] font-bold uppercase">- Monto IRPF (€)</label>
+                                    <input type="number" step="0.01" value={detalles.irpf} onChange={(e) => setDetalles({...detalles, irpf: e.target.value})} 
+                                          className="w-24 bg-rose-50/50 p-2 text-xs rounded-xl border border-rose-100 text-right font-black outline-none focus:border-rose-300" />
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* PDF Upload */}
-                    <div className="mb-8">
-                        <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 pl-1">Documento PDF (Opcional)</label>
-                        <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files[0])}
-                               className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-slate-100 file:text-slate-600 hover:file:bg-slate-200 border border-dashed border-slate-200 rounded-xl p-2" />
-                    </div>
+                        {/* Extras */}
+                        <div className="mb-8 p-5 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                            <div className="flex justify-between items-center mb-4">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extras y Bonos</h4>
+                                <button type="button" onClick={addExtra} className="text-[10px] font-black bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-300 transition-colors uppercase tracking-wider">
+                                    <i className="fas fa-plus"></i> Añadir
+                                </button>
+                            </div>
+                            <div className="space-y-3">
+                                {Array.isArray(extras) && extras.map((ex, idx) => (
+                                    <div key={idx} className="flex gap-3">
+                                        <input type="text" placeholder="Concepto (ej. Bono Objetivos)" value={ex.concepto} onChange={(e) => updateExtra(idx, 'concepto', e.target.value)} 
+                                               className="flex-1 px-3 py-2 text-sm font-semibold border border-slate-200 rounded-xl bg-white focus:border-[#38C1A3] outline-none" />
+                                        <input type="number" step="0.01" value={ex.importe} onChange={(e) => updateExtra(idx, 'importe', e.target.value)} 
+                                               className="w-28 px-3 py-2 text-sm font-black text-right border border-slate-200 rounded-xl bg-white focus:border-[#38C1A3] outline-none" />
+                                        <button type="button" onClick={() => removeExtra(idx)} className="w-10 h-10 shrink-0 flex items-center justify-center bg-white text-rose-400 hover:text-white hover:bg-rose-500 rounded-xl border border-slate-200 transition-colors">
+                                            <i className="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                ))}
+                                {(!Array.isArray(extras) || extras.length === 0) && <p className="text-xs text-slate-400 font-medium">No se han añadido conceptos extra.</p>}
+                            </div>
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <Button type="button" onClick={(e) => handleSubmit(e, 'guardar')} disabled={loading} className="bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 text-sm">
-                            <i className="fas fa-save mr-2"></i> Solo Guardar
-                        </Button>
-                        <Button type="button" onClick={(e) => handleSubmit(e, 'confirmar')} variant="primary" disabled={loading} className="py-3 text-sm flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                            <i className="fas fa-check-circle mr-2"></i> Confirmar y Publicar
-                        </Button>
+                        {/* Totals */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                            <div className="bg-teal-50 p-6 rounded-2xl border border-teal-100 flex flex-col justify-center">
+                                <label className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-1">Salario Neto (A Pagar)</label>
+                                <span className="text-4xl font-black text-teal-700 tracking-tighter">{neto.toFixed(2)} €</span>
+                            </div>
+                            <div className="bg-slate-800 p-6 rounded-2xl text-white flex flex-col justify-between">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-[11px] font-bold text-slate-400 uppercase mt-1">SS Empresa (31.4%):</span>
+                                    <span className="font-bold tracking-wide">{ss_empresa.toFixed(2)} €</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-3 border-t border-slate-700">
+                                    <span className="text-xs font-black text-white uppercase tracking-wider">COSTE TOTAL:</span>
+                                    <span className="text-xl font-black text-[#38C1A3] tracking-tight">{coste_total.toFixed(2)} €</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* PDF Upload */}
+                        <div className="mb-8">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2 pl-1">Documento PDF (Opcional)</label>
+                            <input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files[0])}
+                                   className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:tracking-wider file:bg-slate-100 file:text-slate-600 hover:file:bg-slate-200 border border-dashed border-slate-200 rounded-xl p-2" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <Button type="button" onClick={(e) => handleSubmit(e, 'guardar')} disabled={loading} className="bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 text-sm">
+                                <i className="fas fa-save mr-2"></i> Solo Guardar
+                            </Button>
+                            <Button type="submit" variant="primary" disabled={loading} className="py-3 text-sm flex items-center justify-center shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                                {loading ? <i className="fas fa-spinner fa-spin mr-2"></i> : <i className="fas fa-check-circle mr-2"></i>}
+                                Confirmar y Publicar
+                            </Button>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );

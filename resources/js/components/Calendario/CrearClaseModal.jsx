@@ -10,6 +10,9 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     // Búsqueda de alumnos (Paso 2)
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredUsers, setFilteredUsers] = useState([]);
+    
+    // Búsqueda de suscripciones (Paso 2)
+    const [susSearchQuery, setSusSearchQuery] = useState('');
 
     const [formData, setFormData] = useState({
         centro: '', // Now it's an array for multiple centers
@@ -132,18 +135,28 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     // --- Enviar ---
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateStep(3)) return; 
+        if (!validateStep(2)) return; 
         
         setLoading(true);
         try {
+            const typeMapping = {
+                'ep': 'EP',
+                'duo': 'DUO',
+                'trio': 'TRIO',
+                'privado': 'GRUPO_PRIVADO',
+                'Grupo especial': 'GRUPO_PRIVADO',
+                'Grupo': 'GRUPO',
+            };
+            
             const payload = { 
                 ...formData, 
                 trainers: formData.trainers.map(t=>t.id), 
                 participants: formData.participants.map(p => ({
                     user_id: p.id,
-                    precio: formData.tipo_clase === 'ep' ? (p.precio_hora || 0) : 0,
-                    metodo_pago: 'Por defecto'
-                })) 
+                    precio: (formData.tipo_clase === 'ep' || formData.tipo_clase === 'EP') ? (p.precio_hora || 0) : 0,
+                    metodo_pago: 'EF' // Passing EF as default to satisfy backend validation
+                })),
+                tipo_clase: typeMapping[formData.tipo_clase] || formData.tipo_clase.toUpperCase()
             };
             const response = await axios.post('/Pagos', payload);
             if (response.data.success) {
@@ -207,17 +220,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                             </div>
                         </div>
 
-                        {/* Step 3 */}
-                        <div className={`flex items-start gap-4 transition-opacity ${currentStep === 3 ? 'opacity-100' : 'opacity-50'}`}>
-                            <div className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-sm shadow-sm transition-colors duration-300 
-                                ${currentStep === 3 ? 'bg-[#38C1A3] text-white border-0 shadow-md shadow-teal-500/20' : 'bg-white border-2 border-slate-200 text-slate-400'}`}>
-                                3
-                            </div>
-                            <div>
-                                <h4 className={`font-bold ${currentStep === 3 ? 'text-slate-900' : 'text-slate-600'}`}>Accesibilidad</h4>
-                                <p className="text-xs text-slate-500 font-medium">Filtro de suscripciones</p>
-                            </div>
-                        </div>
+                        {/* Removed Step 3 from Sidebar */}
                     </div>
 
                     <div className="mt-auto pt-6 text-xs text-slate-400 font-medium border-t border-slate-200/60">
@@ -417,51 +420,54 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                         )}
                                     </div>
                                 </section>
-                            </div>
-                        )}
 
-                        {/* ————————————————— PASO 3: ACCESIBILIDAD ————————————————— */}
-                        {currentStep === 3 && (
-                            <div className="animate-in slide-in-from-right-4 fade-in duration-300 w-full max-w-2xl mx-auto">
-                                <section>
-                                    <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase mb-2">Control de Acceso por Suscripción</h3>
-                                    <p className="text-slate-500 font-medium text-sm mb-6">Selecciona qué paquetes de suscripción tienen permitido el acceso a esta sesión específica.</p>
+                                {/* Merged Subscription section into Step 2 with Search */}
+                                <section className="pt-6 border-t border-slate-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase">Suscripciones Permitidas</h3>
+                                        <div className="relative w-48">
+                                            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Buscar..." 
+                                                value={susSearchQuery}
+                                                onChange={(e) => setSusSearchQuery(e.target.value)}
+                                                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-[#38C1A3]"
+                                            />
+                                        </div>
+                                    </div>
                                     
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {suscripciones.length > 0 ? suscripciones.map(sus => {
-                                            const isChecked = formData.suscripciones_permitidas.includes(sus.id);
-                                            return (
-                                                <label key={sus.id} className="cursor-pointer block relative">
-                                                    <input type="checkbox" className="hidden" checked={isChecked} onChange={() => toggleSuscripcion(sus.id)} />
-                                                    <div className={`border-2 rounded-2xl p-4 transition-all ${isChecked ? 'border-[#38C1A3] bg-teal-50/20' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}>
-                                                        <div className="flex justify-between items-start mb-2">
-                                                            <span className="font-bold text-sm text-slate-800">{sus.nombre}</span>
-                                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isChecked ? 'bg-[#38C1A3] border-transparent' : 'bg-white border-slate-200'}`}>
-                                                                {isChecked && <i className="fa-solid fa-check text-[10px] text-white"></i>}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin">
+                                        {suscripciones
+                                            .filter(s => s.nombre.toLowerCase().includes(susSearchQuery.toLowerCase()))
+                                            .map(sus => {
+                                                const isChecked = formData.suscripciones_permitidas.includes(sus.id);
+                                                return (
+                                                    <label key={sus.id} className="cursor-pointer block relative">
+                                                        <input type="checkbox" className="hidden" checked={isChecked} onChange={() => toggleSuscripcion(sus.id)} />
+                                                        <div className={`border rounded-xl p-3 transition-all ${isChecked ? 'border-[#38C1A3] bg-teal-50/20' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}>
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <span className={`font-bold text-xs ${isChecked ? 'text-slate-900' : 'text-slate-600'}`}>{sus.nombre}</span>
+                                                                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isChecked ? 'bg-[#38C1A3] border-transparent' : 'bg-white border-slate-200'}`}>
+                                                                    {isChecked && <i className="fa-solid fa-check text-[8px] text-white"></i>}
+                                                                </div>
                                                             </div>
+                                                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tighter">TIPO: {sus.tipo_credito}</span>
                                                         </div>
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tipo: {sus.tipo_credito}</span>
-                                                            <span className="text-[11px] font-semibold text-slate-400">Centro: {sus.centro?.nombre || 'Global'}</span>
-                                                        </div>
-                                                    </div>
-                                                </label>
-                                            )
-                                        }) : (
-                                            <div className="col-span-full py-8 text-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
-                                                <i className="fa-solid fa-box-open text-slate-300 text-3xl mb-2"></i>
-                                                <p className="text-slate-500 text-sm font-medium">No hay suscripciones configuradas en el sistema todavía.</p>
+                                                    </label>
+                                                )
+                                        })}
+                                        {suscripciones.filter(s => s.nombre.toLowerCase().includes(susSearchQuery.toLowerCase())).length === 0 && (
+                                            <div className="col-span-full py-4 text-center text-slate-400 text-xs italic font-medium">
+                                                No se encontraron suscripciones.
                                             </div>
                                         )}
-                                    </div>
-
-                                    <div className="mt-8 p-3 bg-sky-50 border border-sky-100 rounded-xl text-sky-800 text-xs font-semibold flex gap-3 items-start">
-                                        <i className="fa-solid fa-info-circle mt-0.5"></i>
-                                        <p>Los alumnos con las suscripciones marcadas visualizarán esta clase en su app y podrán reservar con sus créditos automáticamente.</p>
                                     </div>
                                 </section>
                             </div>
                         )}
+
+                        {/* Step 3 was here */}
                     </div>
 
                     {/* Footer Actions Main */}
@@ -472,7 +478,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                             </button>
                         ) : <div></div>}
 
-                        {currentStep < 3 ? (
+                        {currentStep < 2 ? (
                             <button type="button" onClick={nextStep} className="px-8 py-2.5 bg-[#4BB7AE] hover:bg-[#3da49c] text-white rounded-xl font-bold text-sm shadow-md transition-transform hover:-translate-y-0.5 flex items-center gap-2">
                                 Siguiente <i className="fa-solid fa-arrow-right"></i>
                             </button>

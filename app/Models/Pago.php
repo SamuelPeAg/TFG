@@ -42,4 +42,9 @@ class Pago extends Model
     {
         return $this->belongsToMany(User::class, 'pago_entrenador', 'pago_id', 'user_id');
     }
+
+    public function suscripciones()
+    {
+        return $this->belongsToMany(Suscripcion::class, 'pago_suscripcion', 'pago_id', 'suscripcion_id');
+    }
 }

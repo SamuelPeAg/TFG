@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros, entrenadores, users, onSuccess }) {
+export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros, entrenadores, users, suscripciones, onSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // State for selectors
@@ -226,6 +226,28 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                           <span className="text-sm font-bold text-slate-600 uppercase">{localProps.tipo_clase}</span>
                       </div>
                   )}
+              </div>
+
+              {/* Suscripciones Permitidas */}
+              <div className="mb-8 p-5 bg-[#F0FDFB] border border-[#CCFBF1] rounded-[20px]">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[#2D7A74] mb-3">
+                      SUSCRIPCIONES CANJEABLES
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                      {localProps.suscripciones_detalles && localProps.suscripciones_detalles.length > 0 ? (
+                          localProps.suscripciones_detalles.map(s => (
+                              <span key={s.id} className="inline-flex items-center gap-2 bg-white border border-[#99F6E4] px-3 py-1.5 rounded-xl shadow-sm">
+                                  <div className="w-2 h-2 rounded-full bg-[#4BB7AE]"></div>
+                                  <span className="text-xs font-bold text-slate-700">{s.nombre}</span>
+                              </span>
+                          ))
+                      ) : (
+                          <div className="text-xs text-slate-400 font-bold italic py-1">
+                              <i className="fa-solid fa-circle-exclamation mr-1.5"></i>
+                              No hay filtros de suscripción aplicados (Acceso libre)
+                          </div>
+                      )}
+                  </div>
               </div>
 
               {/* Attendees */}

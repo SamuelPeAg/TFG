@@ -35,7 +35,8 @@ class ClientProfileController extends Controller
                 'ciudad' => $user->ciudad,
                 'additional_attributes' => $user->additional_attributes ?? [],
             ],
-            'files' => $files
+            'files' => $files,
+            'subscriptions' => $user->suscripciones()->with('suscripcion')->get()
         ]);
     }
 

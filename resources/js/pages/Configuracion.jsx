@@ -44,7 +44,7 @@ export default function Configuracion() {
               password_confirmation: ''
           });
           if (user.foto_de_perfil) {
-              setPhotoPreview(`/storage/${user.foto_de_perfil}`);
+              setPhotoPreview(`${window.location.origin}/storage/${user.foto_de_perfil}`);
           }
       } catch (error) {
           console.error('Error fetching user config:', error);
@@ -110,7 +110,9 @@ export default function Configuracion() {
           
           if (res.data.user && res.data.user.foto_de_perfil) {
               if (window.AppConfig && window.AppConfig.user) {
-                  window.AppConfig.user.photo = `/storage/${res.data.user.foto_de_perfil}`;
+                  window.AppConfig.user.photo = `${window.location.origin}/storage/${res.data.user.foto_de_perfil}`;
+                  // Dispatch event to notify other components (like Sidebar)
+                  window.dispatchEvent(new CustomEvent('user-updated'));
               }
           }
           

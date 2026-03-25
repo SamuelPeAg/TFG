@@ -17,7 +17,7 @@ class PagosController extends Controller
         $start = $request->input('start');
         $end = $request->input('end');
 
-        $query = Pago::with(['user', 'entrenadores']);
+        $query = Pago::with(['user', 'entrenadores', 'suscripciones']);
 
         if ($start) {
             try {
@@ -122,7 +122,11 @@ class PagosController extends Controller
                         'fecha_hora' => $first->fecha_registro->format('Y-m-d H:i:s'),
                         'nombre_clase' => $first->nombre_clase,
                         'centro' => $first->centro
-                    ]
+                    ],
+                    'suscripciones_permitidas' => $first->suscripciones->pluck('id')->toArray(),
+                    'suscripciones_detalles' => $first->suscripciones->map(function($s) {
+                        return ['id' => $s->id, 'nombre' => $s->nombre];
+                    })->toArray()
                 ],
             ];
         }
@@ -144,6 +148,8 @@ class PagosController extends Controller
             'participants.*.user_id' => ['required', 'exists:users,id'],
             'participants.*.precio' => ['required', 'numeric', 'min:0'],
             'participants.*.metodo_pago' => ['required', 'in:TPV,EF,DD,CC'],
+            'suscripciones_permitidas' => ['nullable', 'array'],
+            'suscripciones_permitidas.*' => ['exists:suscripciones,id'],
         ]);
 
         $fecha = Carbon::parse($request->input('fecha_hora'));
@@ -167,6 +173,10 @@ class PagosController extends Controller
                 'tipo_clase' => $request->input('tipo_clase'),
                 'metodo_pago' => $pData['metodo_pago'],
             ]);
+
+            if ($request->has('suscripciones_permitidas')) {
+                $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+            }
 
             if (!empty($trainers)) {
                 $pago->entrenadores()->sync($trainers);
@@ -335,6 +345,12 @@ class PagosController extends Controller
             'tipo_clase' => $existingPago->tipo_clase,
             'metodo_pago' => $existingPago->metodo_pago, // Asume mismo método por defecto, o podría pedirse
         ]);
+
+        // Copiar suscripciones
+        $subs = $existingPago->suscripciones->pluck('id')->toArray();
+        if (!empty($subs)) {
+            $newPago->suscripciones()->sync($subs);
+        }
 
         // 4. Copiar relaciones de entrenadores
         $trainers = $existingPago->entrenadores->pluck('id')->toArray();

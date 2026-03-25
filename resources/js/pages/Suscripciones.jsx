@@ -175,12 +175,9 @@ export default function Suscripciones() {
                         </div>
                         <button 
                             onClick={openCreate}
-                            className="h-[45px] px-5 flex items-center justify-center gap-2 whitespace-nowrap text-white font-bold transition-colors"
-                            style={{ backgroundColor: '#4BB7AE', border: 'none', borderRadius: '12px' }}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#3f9c94'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#4BB7AE'}
+                            className="h-[45px] px-6 flex items-center justify-center gap-2 whitespace-nowrap bg-[#38C1A3] hover:bg-teal-500 text-white font-black rounded-xl shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all"
                         >
-                            <i className="fas fa-plus pointer-events-none"></i> <span className="pointer-events-none">Añadir</span>
+                            <i className="fas fa-plus pointer-events-none"></i> <span className="pointer-events-none">Añadir Suscripción</span>
                         </button>
                     </div>
                 </header>
@@ -278,91 +275,113 @@ export default function Suscripciones() {
                         </div>
 
                         {/* Form */}
-                        <form onSubmit={handleSubmit} className="px-8 py-7 space-y-5 max-h-[70vh] overflow-y-auto">
-                            
-                            {/* Información General */}
-                            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                <i className="fas fa-info-circle text-[#38C1A3]"></i> Información General
-                            </p>
+                        <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[85vh]">
+                            <div className="px-8 py-7 space-y-7 overflow-y-auto flex-1 custom-scrollbar">
+                                
+                                {/* Información General */}
+                                <div>
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-[#38C1A3] flex items-center gap-2 mb-4">
+                                        <i className="fas fa-info-circle"></i> Información General
+                                    </p>
+                                    
+                                    <div className="space-y-4">
+                                        {/* Nombre */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Nombre de la Suscripción</label>
+                                            <input type="text" name="nombre" value={form.nombre} onChange={handleFormChange}
+                                                placeholder="Ej: Bono Mensual EP"
+                                                className={`w-full bg-slate-50 border ${formErrors.nombre ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`} />
+                                            {formErrors.nombre && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.nombre}</p>}
+                                        </div>
 
-                            {/* Nombre */}
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-600">Nombre de la Suscripción</label>
-                                <input type="text" name="nombre" value={form.nombre} onChange={handleFormChange}
-                                    placeholder="Ej: Bono Mensual EP"
-                                    className={`w-full bg-slate-50 border ${formErrors.nombre ? 'border-rose-400' : 'border-slate-200'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#38C1A3]`} />
-                                {formErrors.nombre && <p className="text-xs text-rose-500 font-bold">{formErrors.nombre}</p>}
-                            </div>
-
-                            {/* Tipo + Centro */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-600">Tipo de Clase/Servicio</label>
-                                    <select name="tipo_credito" value={form.tipo_credito} onChange={handleFormChange}
-                                        className={`w-full bg-slate-50 border ${formErrors.tipo_credito ? 'border-rose-400' : 'border-slate-200'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#38C1A3]`}>
-                                        <option value="">-- Selecciona Tipo --</option>
-                                        {TIPOS_PERMITIDOS.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
-                                    </select>
-                                    {formErrors.tipo_credito && <p className="text-xs text-rose-500 font-bold">{formErrors.tipo_credito}</p>}
-                                    <p className="text-[10px] text-slate-400">Jerarquía: EP › Privado › Dúo › Trío › Especial › Grupo</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-600">Centro asignado</label>
-                                    <select name="id_centro" value={form.id_centro} onChange={handleFormChange}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#38C1A3]">
-                                        <option value="">Global (Todos)</option>
-                                        {centros.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-
-                            {/* Ciclo de Créditos */}
-                            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-3">
-                                <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Ciclo de Créditos</p>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-slate-600">¿Cuántos créditos?</label>
-                                        <input type="number" name="creditos_por_periodo" value={form.creditos_por_periodo} onChange={handleFormChange} min="1"
-                                            className={`w-full bg-white border ${formErrors.creditos_por_periodo ? 'border-rose-400' : 'border-slate-200'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#38C1A3]`} />
-                                        {formErrors.creditos_por_periodo && <p className="text-xs text-rose-500 font-bold">{formErrors.creditos_por_periodo}</p>}
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-slate-600">¿Cuándo se entregan?</label>
-                                        <select name="periodo" value={form.periodo} onChange={handleFormChange}
-                                            className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#38C1A3]">
-                                            <option value="semanal">Semanal</option>
-                                            <option value="mensual">Mensual</option>
-                                        </select>
+                                        {/* Tipo + Centro */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Tipo de Clase/Servicio</label>
+                                                <select name="tipo_credito" value={form.tipo_credito} onChange={handleFormChange}
+                                                    className={`w-full bg-slate-50 border ${formErrors.tipo_credito ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`}>
+                                                    <option value="">-- Selecciona Tipo --</option>
+                                                    {TIPOS_PERMITIDOS.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                                                </select>
+                                                {formErrors.tipo_credito && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.tipo_credito}</p>}
+                                                <p className="text-[9px] text-slate-400 font-medium pl-1">Jerarquía: EP › Privado › Dúo › Trío › Especial › Grupo</p>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Centro asignado</label>
+                                                <select name="id_centro" value={form.id_centro} onChange={handleFormChange}
+                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white">
+                                                    <option value="">Global (Todos)</option>
+                                                    {centros.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+
+                                {/* Ciclo de Créditos */}
+                                <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 space-y-4">
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                        <i className="fas fa-coins text-[#38C1A3]"></i> Ciclo de Créditos
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-5">
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">¿Cuántos créditos?</label>
+                                            <input type="number" name="creditos_por_periodo" value={form.creditos_por_periodo} onChange={handleFormChange} min="1"
+                                                className={`w-full bg-white border ${formErrors.creditos_por_periodo ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:ring-4 focus:ring-[#38C1A3]/5`} />
+                                            {formErrors.creditos_por_periodo && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.creditos_por_periodo}</p>}
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">¿Cuándo se entregan?</label>
+                                            <select name="periodo" value={form.periodo} onChange={handleFormChange}
+                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3]">
+                                                <option value="semanal">Semanal</option>
+                                                <option value="mensual">Mensual</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Ahorro y Caducidad */}
+                                <div>
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
+                                        <i className="fas fa-clock-rotate-left text-[#38C1A3]"></i> Ahorro y Caducidad
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-5">
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Límite Acumulación</label>
+                                            <input type="number" name="limite_acumulacion" value={form.limite_acumulacion} onChange={handleFormChange}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white" />
+                                            <p className="text-[10px] text-slate-400 font-medium pl-1">0 = sin límite de crédito acumulable</p>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Caducidad</label>
+                                            <select name="meses_reset" value={form.meses_reset} onChange={handleFormChange}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white">
+                                                {METROS_RESET.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Ahorro y Caducidad */}
-                            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 pt-1">
-                                <i className="fas fa-clock-rotate-left text-[#38C1A3]"></i> Ahorro y Caducidad
-                            </p>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-600">Límite Acumulación</label>
-                                    <input type="number" name="limite_acumulacion" value={form.limite_acumulacion} onChange={handleFormChange}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#38C1A3]" />
-                                    <p className="text-[10px] text-slate-400">0 = sin límite</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-600">Caducidad</label>
-                                    <select name="meses_reset" value={form.meses_reset} onChange={handleFormChange}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-[#38C1A3]">
-                                        {METROS_RESET.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                                    </select>
-                                </div>
+                            {/* Sticky Modal Footer */}
+                            <div className="px-8 py-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+                                <button 
+                                    type="button" 
+                                    onClick={closeModal}
+                                    className="px-6 py-3 text-slate-500 font-bold text-sm hover:text-slate-700 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={saving}
+                                    className="px-8 py-3 bg-[#38C1A3] hover:bg-teal-500 text-white font-black rounded-xl shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all flex items-center gap-2 min-w-[180px] justify-center"
+                                >
+                                    {saving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-check-circle"></i>}
+                                    {saving ? 'Guardando...' : editingId ? 'Guardar Cambios' : 'Crear Suscripción'}
+                                </button>
                             </div>
-
-                            {/* Submit */}
-                            <button type="submit" disabled={saving}
-                                className="w-full py-3.5 bg-gradient-to-r from-[#38C1A3] to-[#4BB7AE] text-white font-black rounded-2xl shadow-lg shadow-teal-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 mt-2">
-                                {saving ? <i className="fas fa-spinner fa-spin"></i> : <i className="fas fa-check"></i>}
-                                {saving ? 'Guardando...' : 'Guardar Configuración'}
-                            </button>
                         </form>
                     </div>
                 </div>

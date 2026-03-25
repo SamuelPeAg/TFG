@@ -58,13 +58,21 @@ export default function UsersTable({ users, onEdit, onDelete, onManageSubscripti
                 </td>
                 <td className="px-6 py-4" data-label="Saldo">
                   {(user.suscripciones && user.suscripciones.length > 0) ? (
-                    <div className="flex flex-col gap-1">
-                      {user.suscripciones.map((su) => (
-                        <div key={su.id} className="text-[11px] flex items-center gap-1.5">
-                          <span className="bg-[#4BB7AE] text-white px-2 py-0.5 rounded border border-[#3f9c94] font-bold shadow-sm">{su.saldo_actual}</span> 
-                          <span className="text-slate-500 font-medium capitalize">{su.suscripcion?.tipo_credito}</span>
-                        </div>
-                      ))}
+                    <div className="flex flex-col gap-1.5">
+                      {user.suscripciones.map((su) => {
+                        const isMensual = su.suscripcion?.periodo === 'mensual';
+                        const badgeColor = isMensual ? 'bg-emerald-500 border-emerald-600' : 'bg-amber-500 border-amber-600';
+                        return (
+                          <div key={su.id} className="text-[10px] flex items-center gap-2 group/saldo">
+                            <span className={`${badgeColor} text-white px-2 py-0.5 rounded-lg border font-black shadow-sm min-w-[24px] text-center`}>
+                              {su.saldo_actual}
+                            </span> 
+                            <span className="text-slate-500 font-bold uppercase tracking-tight">
+                              {su.suscripcion?.nombre || 'Suscripción'}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <span className="text-slate-400 text-xs italic font-medium">Sin saldo</span>

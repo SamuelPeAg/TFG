@@ -1,9 +1,18 @@
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 export default function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
-  const user = window.AppConfig?.user;
+  const [user, setUser] = useState(window.AppConfig?.user);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setUser({ ...window.AppConfig.user });
+    };
+    window.addEventListener('user-updated', handleUpdate);
+    return () => window.removeEventListener('user-updated', handleUpdate);
+  }, []);
 
   // Si no hay usuario, el sidebar no debería renderizar nada importante o debería redirigir
   if (!user) return null;
@@ -65,20 +74,30 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </Link>
         </div>
 
-        <div className="px-8 py-4 flex items-center gap-4">
+        <div className="px-8 py-6 mb-2 flex items-center gap-4 bg-white/5 rounded-[32px] mx-4 border border-white/10 shadow-inner">
           <div 
-            style={{ color: '#38C1A3' }}
-            className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center font-black text-xl shrink-0 overflow-hidden shadow-sm"
+            className="w-14 h-14 rounded-full bg-white flex items-center justify-center font-black text-xl shrink-0 overflow-hidden shadow-lg border-2 border-white/20"
           >
             {user.photo ? (
-              <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
+              <img 
+                src={user.photo} 
+                alt={user.name} 
+                className="w-full h-full object-cover shadow-inner" 
+                onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = `<span class="text-[#38C1A3]">${user.name.charAt(0).toUpperCase()}</span>`;
+                }}
+              />
             ) : (
-              <span>{user.name.charAt(0).toUpperCase()}</span>
+              <span className="text-[#38C1A3]">{user.name.charAt(0).toUpperCase()}</span>
             )}
           </div>
           <div className="flex flex-col overflow-hidden">
-            <span className="font-extrabold truncate text-white text-[15px] drop-shadow-sm" title={user.name}>{user.name}</span>
-            <span className="text-[10px] text-white/80 uppercase tracking-widest font-black drop-shadow-sm">{user.role}</span>
+            <span className="font-extrabold truncate text-white text-[15px] leading-tight mb-0.5 tracking-tight" title={user.name}>{user.name}</span>
+            <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                <span className="text-[9px] text-white/60 uppercase tracking-[0.15em] font-black">{user.role}</span>
+            </div>
           </div>
         </div>
 

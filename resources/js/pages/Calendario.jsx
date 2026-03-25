@@ -220,6 +220,7 @@ export default function Calendario() {
               centros={data.centros}
               entrenadores={data.entrenadores}
               users={data.users}
+              suscripciones={data.suscripciones}
               onSuccess={() => {
                   if (window.calendar) window.calendar.refetchEvents();
                   const summaryEl = document.getElementById('calendar-summary');
@@ -233,6 +234,7 @@ export default function Calendario() {
               centros={data.centros}
               entrenadores={data.entrenadores}
               users={data.users}
+              suscripciones={data.suscripciones}
               onSuccess={() => {
                   if (window.calendar) window.calendar.refetchEvents();
               }}

@@ -12,6 +12,9 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
     additional_attributes: []
   });
   const [files, setFiles] = useState([]);
+  const [userSubscriptions, setUserSubscriptions] = useState([]);
+  const [availableSubscriptions, setAvailableSubscriptions] = useState([]);
+  const [selectedSuscripcionId, setSelectedSuscripcionId] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -19,8 +22,24 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   useEffect(() => {
     if (isOpen && user) {
         fetchFicha();
+        fetchAvailableSubscriptions();
     }
   }, [isOpen, user]);
+
+  const fetchAvailableSubscriptions = async () => {
+    try {
+        const res = await axios.get('/suscripciones');
+        const subs = res.data.suscripciones || [];
+        setAvailableSubscriptions(subs);
+        
+        // If there's only one subscription, select it by default
+        if (subs.length > 0 && !selectedSuscripcionId) {
+            setSelectedSuscripcionId(subs[0].id.toString());
+        }
+    } catch (error) {
+        console.error("Error fetching available subscriptions:", error);
+    }
+  };
 
   const fetchFicha = async () => {
     setLoading(true);
@@ -34,11 +53,42 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             ciudad: data.ciudad || '',
             additional_attributes: Array.isArray(data.additional_attributes) ? data.additional_attributes : []
         });
-        setFiles(res.data.files);
+        setFiles(res.data.files || []);
+        setUserSubscriptions(res.data.subscriptions || []);
     } catch (error) {
         console.error("Error fetching ficha:", error);
     } finally {
         setLoading(false);
+    }
+  };
+
+  const handleAssignSubscription = async () => {
+    if (!selectedSuscripcionId) return;
+    setSaving(true);
+    try {
+        await axios.post('/suscripciones-usuarios', {
+            id_usuario: user.id,
+            id_suscripcion: selectedSuscripcionId
+        });
+        alert('Suscripción asignada correctamente');
+        fetchFicha(); // Recargar datos
+    } catch (error) {
+        const msg = error.response?.data?.message || 'Error al asignar suscripción';
+        alert(msg);
+    } finally {
+        setSaving(false);
+    }
+  };
+
+  const handleUpdateSubscriptionSaldo = async (subId, action) => {
+    try {
+        await axios.post(`/suscripciones-usuarios/${subId}/ajustar-saldo`, {
+            accion: action,
+            cantidad: 1
+        });
+        fetchFicha();
+    } catch (error) {
+        alert('Error al actualizar saldo');
     }
   };
 
@@ -143,13 +193,15 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
 
         {/* Tabs */}
         <div className="bg-white px-10 flex gap-8 border-b border-slate-100 shrink-0">
-            {['profile', 'files'].map(tab => (
+            {['profile', 'files', 'subscriptions'].map(tab => (
                 <button 
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`py-4 font-black text-xs uppercase tracking-widest transition-all relative ${activeTab === tab ? 'text-[#38C1A3]' : 'text-slate-300 hover:text-slate-500'}`}
                 >
-                    {tab === 'profile' ? 'Datos y Atributos' : `Archivos y Documentos (${files.length})`}
+                    {tab === 'profile' ? 'Datos y Atributos' : 
+                     tab === 'files' ? `Archivos y Documentos (${files.length})` :
+                     'Suscripciones'}
                     {activeTab === tab && <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#38C1A3] rounded-t-full animate-in slide-in-from-bottom-1 duration-200"></div>}
                 </button>
             ))}
@@ -188,6 +240,38 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </section>
+245: 
+                    {/* Saldo Summary */}
+                    <section>
+                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                             <div className="w-1 h-1 bg-[#38C1A3] rounded-full"></div> SALDO ACTUAL
+                        </h3>
+                        <div className="flex flex-wrap gap-4">
+                            {userSubscriptions.length === 0 ? (
+                                <p className="text-slate-400 text-xs italic font-medium ml-1">Sin suscripciones activas</p>
+                            ) : (
+                                userSubscriptions.map(su => {
+                                    const isMensual = su.suscripcion?.periodo === 'mensual';
+                                    const badgeColor = isMensual ? 'bg-emerald-500 border-emerald-600' : 'bg-amber-500 border-amber-600';
+                                    return (
+                                        <div key={su.id} className="bg-white px-5 py-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                                            <div className={`${badgeColor} w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md`}>
+                                                {su.saldo_actual}
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter leading-none mb-1">
+                                                    {su.suscripcion?.periodo}
+                                                </p>
+                                                <p className="text-xs font-bold text-slate-700 capitalize">
+                                                    {su.suscripcion?.tipo_credito || 'Clases'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </section>
 
@@ -229,6 +313,101 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                     </div>
                                 ))
                             )}
+                        </div>
+                    </section>
+                </div>
+            ) : activeTab === 'subscriptions' ? (
+                <div className="space-y-12 max-w-3xl mx-auto">
+                    {/* Active Subscriptions */}
+                    <section>
+                        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                             <div className="w-1 h-1 bg-[#38C1A3] rounded-full"></div> SUSCRIPCIONES ACTIVAS
+                        </h3>
+                        <div className="space-y-4">
+                            {userSubscriptions.length === 0 ? (
+                                <div className="bg-white rounded-3xl p-10 text-center border-2 border-dashed border-slate-100">
+                                    <p className="text-slate-400 font-bold italic">Este cliente no tiene suscripciones activas.</p>
+                                </div>
+                            ) : (
+                                userSubscriptions.map(sub => (
+                                    <div key={sub.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-14 h-14 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl">
+                                                <i className="fa-solid fa-crown"></i>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-slate-800 text-base">{sub.suscripcion?.nombre}</h4>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-tighter">
+                                                        {sub.suscripcion?.periodo}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-slate-400">
+                                                        Saldo: <span className="text-[#38C1A3] font-black">{sub.saldo_actual} CRÉDITOS</span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'dec')}
+                                                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all"
+                                                title="Descontar crédito"
+                                            >
+                                                <i className="fa-solid fa-minus"></i>
+                                            </button>
+                                            <button 
+                                                onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'inc')}
+                                                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-teal-50 text-[#38C1A3] hover:bg-[#38C1A3] hover:text-white transition-all"
+                                                title="Añadir crédito"
+                                            >
+                                                <i className="fa-solid fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Assign New Subscription */}
+                    <section className="bg-slate-50 rounded-[2.5rem] p-8 border border-slate-100">
+                        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                             <div className="w-2 h-2 bg-[#38C1A3] rounded-full"></div> ASIGNAR NUEVA SUSCRIPCIÓN
+                        </h3>
+                        <div className="flex flex-col md:flex-row gap-4">
+                            <div className="flex-1">
+                                <select 
+                                    value={selectedSuscripcionId}
+                                    onChange={(e) => {
+                                        console.log("Selected ID changed to:", e.target.value);
+                                        setSelectedSuscripcionId(e.target.value);
+                                    }}
+                                    className="w-full px-5 py-4 bg-white border border-slate-100 rounded-2xl shadow-sm outline-none focus:border-[#38C1A3] text-sm font-bold text-slate-700 appearance-none"
+                                >
+                                    <option value="">Selecciona una suscripción...</option>
+                                    {availableSubscriptions.map(s => (
+                                        <option key={s.id} value={s.id}>{s.nombre} ({s.periodo}) - {s.creditos_por_periodo} créditos</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    if (!selectedSuscripcionId) {
+                                        alert(`Error: No hay suscripción seleccionada. ID actual: "${selectedSuscripcionId}". Disponibles: ${availableSubscriptions.length}`);
+                                        return;
+                                    }
+                                    if (!user || !user.id) {
+                                        alert("Error: El usuario no tiene un ID válido.");
+                                        return;
+                                    }
+                                    console.log("Assign button clicked. selectedSuscripcionId:", selectedSuscripcionId, "for user:", user.id);
+                                    handleAssignSubscription();
+                                }}
+                                className={`px-8 py-4 bg-[#38C1A3] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#2D9B82] transition-all shadow-lg shadow-teal-100 ${(!selectedSuscripcionId || saving) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                {saving ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : null}
+                                ASIGNAR
+                            </button>
                         </div>
                     </section>
                 </div>
