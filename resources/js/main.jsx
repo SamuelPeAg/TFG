@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import './app'; // Load bootstrap and select2-init
 import App from './App.jsx'
 import '../css/index.css'
 
