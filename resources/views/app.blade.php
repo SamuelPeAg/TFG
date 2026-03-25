@@ -39,6 +39,7 @@
     </script>
 
     <!-- Vite entry point -->
+    @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/main.jsx'])
 
     <script>
