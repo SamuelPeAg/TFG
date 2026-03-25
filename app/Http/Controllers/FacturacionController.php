@@ -530,6 +530,8 @@ class FacturacionController extends Controller
             'cliente_id' => 'required|exists:users,id',
             'entrenador_id' => 'required|exists:entrenadores,id',
             'centro' => 'required|string',
+            'tipo_empresa' => 'nullable|string',
+            'iva_aplicado' => 'nullable|numeric',
             'items' => 'nullable|array',
             'items.*.tipo' => 'string',
             'items.*.precio' => 'numeric',
@@ -537,28 +539,37 @@ class FacturacionController extends Controller
         ]);
 
         $totalItems = 0;
+        $ivaTotal = $request->iva_aplicado ?? 0;
+
         if (!empty($request->items)) {
-            foreach ($request->items as $item) {
+            foreach ($request->items as $index => $item) {
                 if (empty($item['is_abono'])) {
                     $totalItems += $item['precio'];
                 }
+
+                // Asignamos el IVA total al primer item para simplificar el reporte
+                $ivaItem = ($index === 0) ? $ivaTotal : 0;
+
                 \App\Models\Pago::create([
                     'user_id' => $request->cliente_id,
                     'entrenador_id' => $request->entrenador_id,
                     'centro' => $request->centro,
+                    'tipo_empresa' => $request->tipo_empresa,
                     'nombre_clase' => $item['tipo'],
                     'tipo_clase' => $item['tipo'],
                     'importe' => $item['precio'],
+                    'iva' => $ivaItem,
                     'fecha_registro' => now(),
                     'metodo_pago' => 'Efectivo',
                 ]);
             }
         }
         
-        $entregado = $request->importe_entregado ?? $totalItems;
-        $diferencia = $entregado - $totalItems;
+        $totalConIva = $totalItems + $ivaTotal;
+        $entregado = $request->importe_entregado ?? $totalConIva;
+        $diferencia = $entregado - $totalConIva;
         
-        if ($diferencia != 0) {
+        if (abs($diferencia) > 0.001) {
             $user = \App\Models\User::find($request->cliente_id);
             if ($user) {
                 $user->saldo = ($user->saldo ?? 0) + $diferencia;

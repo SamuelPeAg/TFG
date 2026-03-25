@@ -25,6 +25,8 @@ class Pago extends Model
         'capacidad',
         'suscripciones_permitidas',
         'archivo_xml_id',
+        'tipo_empresa',
+        'iva',
     ];
 
     protected $casts = [

@@ -61,9 +61,10 @@ class NominaAdminController extends Controller
             // 2. Buscar sus pagos para el rango de fechas seleccionado
             $pagos = Pago::where(function ($q) use ($entrenador) {
                 $q->where('entrenador_id', $entrenador->id)
-                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenador->id));
+                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenador->id));
             })
                 ->whereBetween('fecha_registro', [$fecha_inicio, $fecha_fin])
+                ->with('user')
                 ->get();
 
             // Si no hay pagos en este periodo para este entrenador, NO saltamos, queremos que salga a 0
@@ -97,7 +98,7 @@ class NominaAdminController extends Controller
                     'centro' => $centro,
                     'duracion' => $duracion,
                     'alumnos_count' => $grupoPagos->count(),
-                    'alumnos' => $grupoPagos->pluck('nombre_cliente')->unique()->values()->all()
+                    'alumnos' => $grupoPagos->map(fn($p) => $p->user->name ?? 'Cliente Desconocido')->unique()->values()->all()
                 ];
             }
 
@@ -196,10 +197,11 @@ class NominaAdminController extends Controller
         // Buscar pagos del usuario para ese mes/año (considerando ambas formas de asociación)
         $pagos = Pago::where(function ($q) use ($userId) {
             $q->where('entrenador_id', $userId)
-                ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $userId));
+                ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $userId));
         })
             ->whereMonth('fecha_registro', $mes)
             ->whereYear('fecha_registro', $anio)
+            ->with('user')
             ->get();
 
         // Agrupar sesiones
@@ -226,7 +228,7 @@ class NominaAdminController extends Controller
                 'centro' => $centro,
                 'duracion' => $duracion,
                 'alumnos_count' => $grupoPagos->count(),
-                'alumnos' => $grupoPagos->pluck('nombre_cliente')->unique()->values()->all()
+                'alumnos' => $grupoPagos->map(fn($p) => $p->user->name ?? 'Cliente Desconocido')->unique()->values()->all()
             ];
         }
 

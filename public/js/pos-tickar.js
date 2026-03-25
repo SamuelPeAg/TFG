@@ -18,15 +18,16 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
 
     const iconOptions = [
-        { class: 'fa-user', label: 'Individual' },
-        { class: 'fa-users', label: 'Duo' },
-        { class: 'fa-people-group', label: 'Trio' },
-        { class: 'fa-layer-group', label: 'Grupo' },
-        { class: 'fa-star', label: 'Especial' },
+        { class: 'fa-user', label: '1 Persona' },
+        { class: 'fa-user-friends', label: '2 Personas' },
+        { class: 'fa-users', label: 'Grupo' },
+        { class: 'fa-user-check', label: 'Validado' },
+        { class: 'fa-id-card', label: 'Cliente' },
+        { class: 'fa-star', label: 'Premium' },
         { class: 'fa-tag', label: 'Oferta' },
-        { class: 'fa-bolt', label: 'Express' },
-        { class: 'fa-fire', label: 'Hot' },
-        { class: 'fa-coins', label: 'Céntimos' }
+        { class: 'fa-dumbbell', label: 'Entrenamiento' },
+        { class: 'fa-heartbeat', label: 'Salud' },
+        { class: 'fa-coins', label: 'Descuento' }
     ];
 
     // Open Modal
@@ -50,6 +51,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     dropdownParent: $('#pos-modal'),
                     width: '100%'
                 });
+                $('#pos-tipo-empresa').select2({
+                    dropdownParent: $('#pos-modal'),
+                    width: '100%'
+                }).on('change', () => updateTotal());
             }
         });
     }
@@ -166,8 +171,18 @@ document.addEventListener('DOMContentLoaded', function() {
             html: `
                 <div class="swal-gym-container" style="text-align:left; font-size:13px; padding: 0 5px;">
                     <label style="display:block; margin-bottom:8px; color:#64748b; font-weight:600;">Icono:</label>
-                    <div id="icon-selector" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:20px;">${iconsHtml}</div>
+                    <div id="icon-selector" style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:10px;">${iconsHtml}</div>
                     
+                    <div style="margin-bottom:20px;">
+                        <label style="display:block; margin-bottom:5px; color:#64748b; font-weight:600;">O escribe una clase personalizada (ej: fa-heart):</label>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input id="swal-custom-icon" class="swal2-input gym-input" placeholder="fa-tag" value="${type.custom_icon || ''}" style="width:100%; margin:0;" onkeyup="document.getElementById('icon-preview').className = 'fas ' + this.value">
+                            <div style="width:40px; height:40px; display:flex; align-items:center; justify-content:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:18px; color:#10b981;">
+                                <i id="icon-preview" class="fas ${type.custom_icon || 'fa-tag'}"></i>
+                            </div>
+                        </div>
+                    </div>
+
                     <label style="display:block; margin-bottom:5px; color:#64748b; font-weight:600;">Nombre:</label>
                     <input id="swal-name" class="swal2-input gym-input" value="${type.name || ''}" style="width:100%; margin: 0 0 15px 0;">
                     
@@ -184,18 +199,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             <input id="swal-discount" type="number" class="swal2-input gym-input" placeholder="0" style="width:100%; margin:0;">
                         </div>
                     </div>
-
-                    <div style="margin-top:15px; padding:10px; border-radius:8px; background:#f0fdf4; border:1px solid #10b981; display:flex; align-items:center; gap:10px;">
-                        <input type="checkbox" id="swal-is-abono" ${type.is_abono ? 'checked' : ''} style="width:18px; height:18px; accent-color:#10b981;">
-                        <div>
-                            <span style="font-weight:bold; color:#065f46;">Es una Recarga de Saldo</span><br>
-                            <span style="font-size:10px; color:#047857;">En lugar de cobrar, añade este dinero al saldo a favor del cliente.</span>
-                        </div>
-                    </div>
                 </div>
             `,
             didOpen: () => {
                 const radios = document.querySelectorAll('#icon-selector label');
+                const customIconInput = document.getElementById('swal-custom-icon');
+
                 radios.forEach(l => {
                     l.onclick = function() {
                         radios.forEach(r => r.style.borderColor = '#e2e8f0');
@@ -203,6 +212,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.style.borderColor = '#10b981';
                         this.style.backgroundColor = '#f0fdf4';
                         this.querySelector('input').checked = true;
+                        // Clear custom icon input if a radio is selected
+                        if (customIconInput) {
+                            customIconInput.value = '';
+                            document.getElementById('icon-preview').className = 'fas ' + this.querySelector('input').value;
+                        }
                     }
                 });
             },
@@ -216,9 +230,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const discountValue = document.getElementById('swal-discount').value || 0;
                 const price = parseFloat(priceValue);
                 const discount = parseFloat(discountValue);
-                const icon = document.querySelector('input[name="swal-icon"]:checked')?.value || 'fa-tag';
+                const customIcon = document.getElementById('swal-custom-icon').value;
+                const selectedIcon = document.querySelector('input[name="swal-icon"]:checked')?.value || 'fa-tag';
+                const icon = customIcon || selectedIcon;
                 const desc = document.getElementById('swal-desc').value;
-                const isAbono = document.getElementById('swal-is-abono').checked;
 
                 if (!name || isNaN(price)) {
                     Swal.showValidationMessage('Nombre y precio base son obligatorios');
@@ -234,7 +249,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     description: desc,
                     defaultPrice: parseFloat(finalPrice.toFixed(2)),
                     icon: icon,
-                    is_abono: isAbono
+                    custom_icon: customIcon,
+                    is_abono: false
                 }
             }
         });
@@ -276,25 +292,12 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function addToCart(type) {
-        if (type.is_abono) {
-            const entregadoInput = document.getElementById('pos-importe-entregado');
-            if (entregadoInput) {
-                const totalPagar = cart.reduce((sum, item) => sum + item.price, 0);
-                let current = parseFloat(entregadoInput.value);
-                if (isNaN(current)) {
-                    current = 0;
-                }
-                entregadoInput.value = (current + type.defaultPrice).toFixed(2);
-                updateTotal();
-            }
-            return; // No lo añadimos al carrito como clase
-        }
-
         const item = {
-            id: Date.now(),
+            id: Date.now() + '_' + Math.floor(Math.random() * 1000),
             tipo: type.id,
             name: type.name,
             price: type.defaultPrice,
+            basePrice: type.defaultPrice,
             is_abono: type.is_abono || false
         };
         cart.push(item);
@@ -309,8 +312,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.updateItemPrice = function(id, newPrice) {
         const item = cart.find(i => i.id === id);
         if (item) {
-            item.price = parseFloat(newPrice) || 0;
-            updateTotal();
+            const newP = parseFloat(newPrice) || 0;
+            const itemType = item.tipo;
+            
+            // Actualizar todos los items del mismo tipo
+            cart.forEach(i => {
+                if (i.tipo === itemType) {
+                    i.price = newP;
+                }
+            });
+            renderCart();
         }
     };
 
@@ -325,8 +336,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="cart-item-title">${item.name}</div>
                 </div>
                 <div>
-                    <input type="number" class="cart-item-price-edit" value="${item.price}" onchange="updateItemPrice(${item.id}, this.value)"> €
-                    <i class="fa-solid fa-trash cart-item-remove" onclick="removeFromCart(${item.id})"></i>
+                    <input type="number" class="cart-item-price-edit" value="${item.price}" onchange="updateItemPrice('${item.id}', this.value)"> €
+                    <i class="fa-solid fa-trash cart-item-remove" onclick="removeFromCart('${item.id}')"></i>
                 </div>
             `;
             cartItemsList.appendChild(div);
@@ -336,35 +347,44 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateTotal() {
         if (!cartTotalValue) return;
-        const totalPagar = cart.reduce((sum, item) => sum + item.price, 0); // Coste de clases en carrito
-        const totalClasesCost = totalPagar; // Ya no hay abonos en el carrito, todo es clase.
+        
+        const rawTotal = cart.reduce((sum, item) => sum + item.price, 0);
+        const tipoEmpresa = document.getElementById('pos-tipo-empresa').value;
+        
+        let subtotal = 0; // Base Imponible
+        let iva = 0;
+        let total = rawTotal; // Siempre el precio del botón
 
-        cartTotalValue.innerText = totalPagar.toFixed(2) + ' €';
+        if (tipoEmpresa === 'entrenamiento') {
+            // El precio del botón ya incluye el 21% de IVA
+            subtotal = total / 1.21;
+            iva = total - subtotal;
+        } else {
+            // Salud (0% IVA), el total es el mismo pero todo es base (sin IVA)
+            subtotal = total;
+            iva = 0;
+        }
+
+        // Update UI
+        const subtotalEl = document.getElementById('cart-subtotal-value');
+        const ivaEl = document.getElementById('cart-iva-value');
+        const ivaLabelEl = ivaEl ? ivaEl.parentElement.querySelector('span:first-child') : null;
         
+        if (subtotalEl) subtotalEl.innerText = subtotal.toFixed(2) + ' €';
+        if (ivaEl) ivaEl.innerText = iva.toFixed(2) + ' €';
+        if (cartTotalValue) cartTotalValue.innerText = total.toFixed(2) + ' €';
+        
+        if (ivaLabelEl) {
+            ivaLabelEl.innerText = tipoEmpresa === 'entrenamiento' ? 'IVA (21%):' : 'IVA (0%):';
+        }
+
+        // Importe entregado se iguala al total por defecto
         const entregadoInput = document.getElementById('pos-importe-entregado');
-        const cambioContainer = document.getElementById('pos-cambio-container');
-        const cambioValue = document.getElementById('pos-cambio-value');
-        
-        if (entregadoInput && cambioContainer && cambioValue) {
-            let entregado = totalPagar; // Por defecto entrega el total a pagar
-            if (entregadoInput.value !== '') {
-                entregado = parseFloat(entregadoInput.value);
-            }
-            
-            if (!isNaN(entregado)) {
-                // El saldo que gana/pierde el cliente es lo que entrega MENOS lo que cuestan las clases
-                const diferencia = entregado - totalClasesCost;
-                cambioValue.innerText = diferencia > 0 ? '+' + diferencia.toFixed(2) + ' €' : diferencia.toFixed(2) + ' €';
-                if (diferencia < 0) {
-                    cambioValue.style.color = '#ef4444'; // red (debe dinero)
-                } else if (diferencia > 0) {
-                    cambioValue.style.color = '#10b981'; // green (a favor)
-                } else {
-                    cambioValue.style.color = '#64748b'; // neutral
-                }
-                cambioContainer.style.display = 'block';
-            } else {
-                cambioContainer.style.display = 'none';
+        if (entregadoInput) {
+            entregadoInput.value = total.toFixed(2);
+            const cambioContainer = document.getElementById('pos-cambio-container');
+            if (cambioContainer && cambioContainer.style.display !== 'none') {
+                updateCambio();
             }
         }
     }
@@ -374,23 +394,54 @@ document.addEventListener('DOMContentLoaded', function() {
         entregadoInput.addEventListener('input', updateTotal);
     }
 
-    // Quick Money Buttons
+    // Quick Money Buttons (Now for Adjustments to all sessions)
     document.querySelectorAll('.quick-money-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const val = parseFloat(this.getAttribute('data-val'));
-            if (!entregadoInput) return;
             
             if (val === 0) {
-                entregadoInput.value = '0.00';
+                // Reset all sessions to their base price and remove manual adjustments
+                cart.forEach(item => {
+                    if (item.basePrice !== undefined) {
+                        item.price = item.basePrice;
+                    }
+                });
+                cart = cart.filter(item => item.tipo !== 'ajuste_manual');
             } else {
-                let current = parseFloat(entregadoInput.value) || 0;
-                let newVal = current + val;
-                if (newVal < 0) newVal = 0;
-                entregadoInput.value = newVal.toFixed(2);
+                // Apply the value to ALL sessions in the cart
+                cart.forEach(item => {
+                    if (item.tipo !== 'ajuste_manual') {
+                        item.price = parseFloat((Math.max(0, item.price + val)).toFixed(2));
+                    }
+                });
             }
-            updateTotal();
+            renderCart();
         });
     });
+
+    // Global Discount Button
+    const btnGlobalDiscount = document.getElementById('btn-global-discount');
+    if (btnGlobalDiscount) {
+        btnGlobalDiscount.addEventListener('click', () => {
+            if (cart.length === 0) return;
+            
+            // Only apply to sessions (items that are NOT adjustments)
+            let affected = 0;
+            cart.forEach(item => {
+                if (item.tipo !== 'ajuste_manual') {
+                    item.price = parseFloat((Math.max(0, item.price - 2)).toFixed(2));
+                    affected++;
+                }
+            });
+            
+            if (affected > 0) {
+                renderCart();
+                // Subtle feedback
+                btnGlobalDiscount.style.background = '#dcfce7';
+                setTimeout(() => btnGlobalDiscount.style.background = '#eff6ff', 500);
+            }
+        });
+    }
 
     if (btnCheckout) {
         btnCheckout.addEventListener('click', async () => {
@@ -400,15 +451,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const centro = typeof jQuery !== 'undefined' ? $('#pos-centro').val() : document.getElementById('pos-centro').value;
             
             if (!clienteId || !entrenadorId || !centro) { alert('Por favor selecciona cliente, entrenador y centro.'); return; }
+            
+            const tipoEmpresa = document.getElementById('pos-tipo-empresa').value;
             const totalPagar = cart.reduce((sum, item) => sum + item.price, 0);
-            const entregadoInput = document.getElementById('pos-importe-entregado');
-            let importeEntregado = totalPagar; // Si no pone nada, asume que paga lo que dice la cuenta
-            if (entregadoInput && entregadoInput.value !== '') {
-                importeEntregado = parseFloat(entregadoInput.value);
+            
+            let iva = 0;
+            if (tipoEmpresa === 'entrenamiento') {
+                iva = totalPagar - (totalPagar / 1.21);
+            } else {
+                iva = 0;
             }
-
-            if (cart.length === 0 && (isNaN(importeEntregado) || importeEntregado <= 0)) {
-                alert('Añade al menos una clase o indica un importe entregado válido.');
+            
+            if (cart.length === 0) {
+                alert('Añade al menos una clase o ajuste a la cuenta.');
                 return;
             }
 
@@ -430,7 +485,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         cliente_id: clienteId, 
                         entrenador_id: entrenadorId, 
                         centro: centro, 
-                        importe_entregado: importeEntregado,
+                        tipo_empresa: tipoEmpresa,
+                        iva_aplicado: iva,
+                        importe_entregado: totalPagar,
                         items: cart.map(i => ({ tipo: i.name, precio: i.price, is_abono: i.is_abono })) 
                     })
                 });

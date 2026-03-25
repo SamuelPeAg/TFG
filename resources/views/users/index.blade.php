@@ -9,7 +9,10 @@
   <link rel="stylesheet" href="{{ asset('css/tablaCRUD.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  {{-- Tailwind CSS via CDN --}}
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
   <style>
     /* Remove !important by using parent specificity */
     .dashboard-container .main-content .alert-success { background-color: #f0fdf4; border-color: #bbf7d0; color: #166534; }

@@ -197,7 +197,7 @@
         })();
     </script>
 
-    @vite('resources/js/app.js')
+    {{-- @vite('resources/js/app.js') --}}
     <script src="{{ asset('js/wizard_clase.js') }}?v=1.2"></script>
     <script src="{{ asset('js/calendario.js') }}?v=1.3"></script>
     <script src="{{ asset('js/calendario-modal-logout.js') }}"></script>
