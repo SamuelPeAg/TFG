@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NominaEntrenadorController;
 use App\Http\Controllers\PagosController;
 use App\Http\Controllers\NominaAdminController;
+use App\Http\Controllers\ClientProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -125,6 +126,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/nominas/{id}/preview', [\App\Http\Controllers\NominaPdfController::class, 'preview'])->name('nominas.preview');
     Route::get('/nominas/{id}/download', [\App\Http\Controllers\NominaPdfController::class, 'download'])->name('nominas.download');
 
+    // Descarga de archivos de cliente (Visible para dueño del archivo o staff)
+    Route::get('/client-file/{file}/download', [ClientProfileController::class, 'downloadFile'])->name('client-file.download');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -136,6 +140,16 @@ Route::middleware('auth')->group(function () {
         // Calendario (Vista principal)
         Route::get('/calendario', [CalendarioController::class, 'index'])
             ->name('calendario'); // Revertido para evitar error RouteNotFoundException
+
+        // Listas para POS (Shared)
+        Route::prefix('api')->group(function () {
+            Route::get('/empresas-list', function() {
+                return \App\Models\Empresa::all();
+            });
+            Route::get('/centros-list', function() {
+                return \App\Models\Centro::all();
+            });
+        });
 
         // Gestión de Pagos / Clases (Acciones del Calendario)
         Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
@@ -171,6 +185,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
         Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
 
+        // Ficha de Cliente y Archivos (Historia Clínica / Notas)
+        Route::prefix('client-profile')->group(function() {
+            Route::get('/{user}', [ClientProfileController::class, 'show']);
+            Route::put('/{user}', [ClientProfileController::class, 'update']);
+            Route::post('/{user}/upload', [ClientProfileController::class, 'uploadFile']);
+            Route::post('/file/{file}/toggle-privacy', [ClientProfileController::class, 'toggleFilePrivacy']);
+            Route::delete('/file/{file}', [ClientProfileController::class, 'deleteFile']);
+        });
+
         /* RUTAS DE GRUPOS (DESHABILITADAS TEMPORALMENTE)
         Route::post('/users/crear-grupo', [UserController::class, 'storeGroup'])->name('users.group.store');
         Route::delete('/users/grupos/{id}', [UserController::class, 'destroyGroup'])->name('users.group.destroy');
@@ -184,8 +207,24 @@ Route::middleware('auth')->group(function () {
     */
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
         
-        // Estadísticas / Dashboard
+        // Vista de Estadísticas
         Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'index'])->name('estadisticas.index');
+
+        // Rutas de Datos / Gestión API
+        Route::prefix('api')->group(function () {
+            // Datos de Estadísticas
+            Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'data'])->name('api.estadisticas.data');
+            
+            // Gestión de Empresas
+            Route::post('/admin/empresas', [\App\Http\Controllers\EstadisticasController::class, 'storeEmpresa']);
+            Route::put('/admin/empresas/{empresa}', [\App\Http\Controllers\EstadisticasController::class, 'updateEmpresa']);
+            Route::delete('/admin/empresas/{empresa}', [\App\Http\Controllers\EstadisticasController::class, 'destroyEmpresa']);
+
+            // Gestión de Centros
+            Route::post('/admin/centros', [\App\Http\Controllers\EstadisticasController::class, 'storeCentro']);
+            Route::put('/admin/centros/{centro}', [\App\Http\Controllers\EstadisticasController::class, 'updateCentro']);
+            Route::delete('/admin/centros/{centro}', [\App\Http\Controllers\EstadisticasController::class, 'destroyCentro']);
+        });
 
         // Gestión de Entrenadores
         Route::resource('entrenadores', EntrenadorController::class);

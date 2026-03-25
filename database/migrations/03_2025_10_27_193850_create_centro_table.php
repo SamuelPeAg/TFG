@@ -11,7 +11,11 @@ return new class extends Migration
         Schema::create('centros', function (Blueprint $table) {
             $table->id();
             $table->string("nombre");
-            $table->string("direccion");
+            $table->string("cif")->nullable();
+            $table->string("direccion")->nullable();
+            $table->string("cp")->nullable();
+            $table->string("ciudad")->nullable();
+            $table->decimal("iva_default", 5, 2)->default(21);
             $table->text("google_maps_link")->nullable();
             $table->timestamps();
             $table->softDeletes();

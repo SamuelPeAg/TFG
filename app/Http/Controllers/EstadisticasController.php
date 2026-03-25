@@ -8,14 +8,19 @@ use App\Models\Pago;
 use App\Models\HorarioClase;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\Empresa;
+use App\Models\Centro;
 
 class EstadisticasController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        if ($request->wantsJson() || $request->ajax()) {
-            
-            // 1. KPIs Generales
+        return view('app');
+    }
+
+    public function data(Request $request)
+    {
+        // 1. KPIs Generales
             $totalClientes = User::role('cliente')->count();
             $totalEntrenadores = User::role('entrenador')->count();
             
@@ -82,10 +87,75 @@ class EstadisticasController extends Controller
                 'ingresos6Meses' => $ingresos6Meses,
                 'popularidadClases' => $clasesPopulares,
                 'sesionesPorCentro' => $sesionesPorCentro,
-                'ultimosPagos' => $ultimosPagos
+                'ultimosPagos' => $ultimosPagos,
+                'empresas' => Empresa::all(),
+                'centros_list' => Centro::all()
             ]);
-        }
+    }
 
-        return view('app');
+    // Gestion de Empresas
+    public function storeEmpresa(Request $request) {
+        $data = $request->validate([
+            'nombre' => 'required',
+            'cif_dni' => 'required|unique:empresas,cif_dni',
+            'direccion' => 'nullable',
+            'cp' => 'nullable',
+            'ciudad' => 'nullable',
+            'iva_configurable' => 'nullable|numeric'
+        ]);
+        $empresa = Empresa::create($data);
+        return response()->json($empresa);
+    }
+
+    public function updateEmpresa(Request $request, Empresa $empresa) {
+        $data = $request->validate([
+            'nombre' => 'required',
+            'cif_dni' => 'required|unique:empresas,cif_dni,'.$empresa->id,
+            'direccion' => 'nullable',
+            'cp' => 'nullable',
+            'ciudad' => 'nullable',
+            'iva_configurable' => 'nullable|numeric'
+        ]);
+        $empresa->update($data);
+        return response()->json($empresa);
+    }
+
+    public function destroyEmpresa(Empresa $empresa) {
+        $empresa->delete();
+        return response()->json(['message' => 'Empresa eliminada']);
+    }
+
+    // Gestion de Centros
+    public function storeCentro(Request $request) {
+        $data = $request->validate([
+            'nombre' => 'required',
+            'cif' => 'nullable',
+            'direccion' => 'nullable',
+            'cp' => 'nullable',
+            'ciudad' => 'nullable',
+            'iva_default' => 'nullable|numeric',
+            'google_maps_link' => 'nullable'
+        ]);
+        $centro = Centro::create($data);
+        return response()->json($centro);
+    }
+
+    public function updateCentro(Request $request, Centro $centro) {
+        $data = $request->validate([
+            'nombre' => 'required',
+            'cif' => 'nullable',
+            'direccion' => 'nullable',
+            'cp' => 'nullable',
+            'ciudad' => 'nullable',
+            'iva_default' => 'nullable|numeric',
+            'google_maps_link' => 'nullable'
+        ]);
+        $centro->update($data);
+        return response()->json($centro);
+    }
+
+    public function destroyCentro(Centro $centro) {
+        $centro->delete();
+        return response()->json(['message' => 'Centro eliminado']);
     }
 }

@@ -20,8 +20,12 @@ class User extends Authenticatable
         'activation_token',  // Agregado para el token de activación
         'foto_de_perfil',
         'iban',
-        'firma_digital',
         'precio_hora',
+        'dni',
+        'direccion',
+        'codigo_postal',
+        'ciudad',
+        'additional_attributes',
     ];
 
     // Campos ocultos que no queremos exponer al usuario
@@ -33,6 +37,7 @@ class User extends Authenticatable
     // Si deseas castear algún campo, como la fecha de verificación del correo
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'additional_attributes' => 'array',
     ];
 
     
@@ -51,5 +56,11 @@ class User extends Authenticatable
     public function suscripciones()
     {
         return $this->hasMany(\App\Models\SuscripcionUsuario::class, 'id_usuario');
+    }
+
+    // Relación con archivos del cliente
+    public function clientFiles()
+    {
+        return $this->hasMany(ClientFile::class);
     }
 }

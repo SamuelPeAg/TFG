@@ -26,7 +26,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   };
 
   const adminLinks = [
-    { name: 'PANEL', path: '/estadisticas', icon: 'fa-solid fa-chart-line' },
+    { name: 'ESTADÍSTICAS', path: '/estadisticas', icon: 'fa-solid fa-chart-line' },
     { name: 'ENTRENADORES', path: '/entrenadores', icon: 'fa-solid fa-dumbbell' },
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
@@ -41,7 +41,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'MIS NOMINAS', path: '/mis-nominas', icon: 'fa-solid fa-file-invoice' },
   ];
 
-  const linksToShow = isAdmin ? adminLinks : trainerLinks;
+  const clientLinks = [
+    { name: 'MI FICHA', path: '/mi-ficha', icon: 'fa-solid fa-folder-open text-[#38C1A3]' },
+  ];
+
+  const linksToShow = isAdmin ? adminLinks : (isTrainer ? trainerLinks : clientLinks);
 
   return (
     <>

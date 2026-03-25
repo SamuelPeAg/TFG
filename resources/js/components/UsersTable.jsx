@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function UsersTable({ users, onEdit, onDelete, onManageSubscriptions, loading }) {
+export default function UsersTable({ users, onEdit, onDelete, onManageSubscriptions, onShowFicha, loading }) {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
@@ -17,7 +17,6 @@ export default function UsersTable({ users, onEdit, onDelete, onManageSubscripti
             <th className="text-left px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Cliente</th>
             <th className="text-left px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Email</th>
             <th className="text-left px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">IBAN</th>
-            <th className="text-left px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Firma</th>
             <th className="text-left px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Saldo</th>
             <th className="text-center px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Acciones</th>
           </tr>
@@ -57,11 +56,6 @@ export default function UsersTable({ users, onEdit, onDelete, onManageSubscripti
                     {user.iban || '---'}
                   </span>
                 </td>
-                <td className="px-6 py-4" data-label="Firma">
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${user.firma_digital ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                    {user.firma_digital ? 'VINCULADA' : 'PENDIENTE'}
-                  </span>
-                </td>
                 <td className="px-6 py-4" data-label="Saldo">
                   {(user.suscripciones && user.suscripciones.length > 0) ? (
                     <div className="flex flex-col gap-1">
@@ -78,6 +72,13 @@ export default function UsersTable({ users, onEdit, onDelete, onManageSubscripti
                 </td>
                 <td className="px-6 py-4" data-label="Acciones">
                   <div className="flex justify-center gap-2">
+                    <button
+                      onClick={() => onShowFicha && onShowFicha(user)}
+                      className="w-9 h-9 flex items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all duration-300"
+                      title="Ver Ficha Cliente"
+                    >
+                      <i className="fas fa-address-card text-sm"></i>
+                    </button>
                     <button
                       onClick={() => onManageSubscriptions && onManageSubscriptions(user)}
                       className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#4BB7AE] text-white hover:bg-[#3f9c94] transition-all duration-300 shadow-sm"

@@ -11,13 +11,10 @@ const INITIAL_SESSIONS = [
 
 export default function PosTickarModal({ isOpen, onClose, centros, entrenadores, clientes, onSuccess }) {
   const [sessions, setSessions] = useState(INITIAL_SESSIONS);
-  const [empresas, setEmpresas] = useState([
-    { id: 'salud', name: 'Salud', iva: 0 },
-    { id: 'deportes', name: 'Deportes', iva: 21 }
-  ]);
+  const [empresas, setEmpresas] = useState([]);
   const [cart, setCart] = useState([]); // Array of { id, title, price, quantity }
   const [isEditMode, setIsEditMode] = useState(false);
-  const [empresaId, setEmpresaId] = useState('salud');
+  const [empresaId, setEmpresaId] = useState('');
   const [formData, setFormData] = useState({
       cliente_id: '',
       entrenador_id: '',
@@ -92,15 +89,21 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
         setFormData({ cliente_id: '', entrenador_id: '', centro: centros && centros.length > 0 ? centros[0].nombre : '' });
         setShowSuccess(false);
         setIsEditMode(false);
-        setEmpresaId('salud');
+        
+        // Cargar empresas desde el DB
+        axios.get('/api/empresas-list').then(res => {
+            const emps = res.data || [];
+            setEmpresas(emps);
+            if (emps.length > 0) setEmpresaId(emps[0].id);
+        });
     }
   }, [isOpen, centros]);
 
   if (!isOpen) return null;
 
-  const currEmpresa = empresas.find(e => e.id === empresaId) || empresas[0];
+  const currEmpresa = empresas.find(e => String(e.id) === String(empresaId)) || (empresas.length > 0 ? empresas[0] : { iva_configurable: 21 });
   const subtotal = cart.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0);
-  const ivaRate = currEmpresa.iva / 100;
+  const ivaRate = (currEmpresa.iva_configurable || 0) / 100;
   const ivaAmount = subtotal * ivaRate;
   const total = subtotal + ivaAmount;
 
@@ -318,25 +321,13 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                     <div className="space-y-1">
                         <div className="flex items-center justify-between">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Empresa / IVA</label>
-                            {isEditMode && (
-                                <button 
-                                    onClick={() => {
-                                        const name = prompt('Nombre de la nueva empresa:');
-                                        const iva = parseInt(prompt('IVA para esta empresa (0, 10, 21...):') || '0');
-                                        if (name) setEmpresas([...empresas, { id: name.toLowerCase(), name, iva }]);
-                                    }} 
-                                    className="text-[#38C1A3] text-[9px] font-black hover:underline"
-                                >
-                                    + AÑADIR EMPRESA
-                                </button>
-                            )}
                         </div>
                         <select 
                             value={empresaId} 
                             onChange={(e) => setEmpresaId(e.target.value)} 
                             className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 outline-none focus:border-[#38C1A3]"
                         >
-                            {empresas.map(e => <option key={e.id} value={e.id}>{e.name} ({e.iva}%)</option>)}
+                            {empresas.map(e => <option key={e.id} value={e.id}>{e.nombre} ({e.iva_configurable}%)</option>)}
                         </select>
                     </div>
 

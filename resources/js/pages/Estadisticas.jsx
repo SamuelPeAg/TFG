@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import EmpresaTable from '../components/EmpresaTable';
+import CentroTable from '../components/CentroTable';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,17 +37,18 @@ export default function Estadisticas() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchData = async () => {
+    try {
+      const res = await axios.get('/api/estadisticas', { headers: { Accept: 'application/json' } });
+      setData(res.data);
+    } catch (err) {
+      console.error('Error al cargar estadísticas:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get('/estadisticas', { headers: { Accept: 'application/json' } });
-        setData(res.data);
-      } catch (err) {
-        console.error('Error al cargar estadísticas:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
 
@@ -152,6 +155,12 @@ export default function Estadisticas() {
               <i className="fa-solid fa-spinner fa-spin text-3xl text-[#4BB7AE]"></i>
               <p className="font-medium animate-pulse">Cargando estadísticas...</p>
             </div>
+          ) : !data ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-3 text-red-500">
+              <i className="fa-solid fa-triangle-exclamation text-3xl"></i>
+              <p className="font-medium">No se pudieron cargar las estadísticas. Verifica la base de datos o las migraciones.</p>
+              <button onClick={fetchData} className="mt-4 px-4 py-2 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">Reintentar</button>
+            </div>
           ) : (
             <div className="w-full space-y-5">
               
@@ -164,7 +173,7 @@ export default function Estadisticas() {
                   </div>
                   <div>
                     <h3 className="text-xs uppercase text-[#959697] m-0">Clientes Totales</h3>
-                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data.kpis.totalClientes}</p>
+                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data?.kpis?.totalClientes || 0}</p>
                   </div>
                 </Link>
 
@@ -174,7 +183,7 @@ export default function Estadisticas() {
                   </div>
                   <div>
                     <h3 className="text-xs uppercase text-[#959697] m-0">Entrenadores</h3>
-                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data.kpis.totalEntrenadores}</p>
+                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data?.kpis?.totalEntrenadores || 0}</p>
                   </div>
                 </Link>
 
@@ -185,7 +194,7 @@ export default function Estadisticas() {
                   <div>
                     <h3 className="text-xs uppercase text-[#959697] m-0">Ingresos del Mes</h3>
                     <p className="text-lg font-extrabold text-[#53565A] m-0">
-                      {parseFloat(data.kpis.ingresosMes || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}€
+                      {parseFloat(data?.kpis?.ingresosMes || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}€
                     </p>
                   </div>
                 </Link>
@@ -196,7 +205,7 @@ export default function Estadisticas() {
                   </div>
                   <div>
                     <h3 className="text-xs uppercase text-[#959697] m-0">Sesiones del Mes</h3>
-                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data.kpis.sesionesMes}</p>
+                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data?.kpis?.sesionesMes || 0}</p>
                   </div>
                 </Link>
               </div>
@@ -248,10 +257,10 @@ export default function Estadisticas() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50 text-sm">
-                        {data.ultimosPagos?.length === 0 && (
+                        {data?.ultimosPagos?.length === 0 && (
                           <tr><td colSpan="4" className="text-center py-4 text-slate-400">Sin movimientos recientes</td></tr>
                         )}
-                        {data.ultimosPagos?.map(pago => (
+                        {data?.ultimosPagos?.map(pago => (
                           <tr key={pago.id} className="hover:bg-slate-50 transition-colors">
                             <td className="py-2.5 px-3 font-medium text-slate-600">{pago.fecha}</td>
                             <td className="py-2.5 px-3">{pago.cliente}</td>
@@ -269,6 +278,18 @@ export default function Estadisticas() {
                     </table>
                   </div>
                 </div>
+              </div>
+
+              {/* Gestión de Empresas y Centros */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
+                <EmpresaTable 
+                  empresas={data.empresas || []} 
+                  onUpdate={fetchData} 
+                />
+                <CentroTable 
+                  centros={data.centros_list || []} 
+                  onUpdate={fetchData} 
+                />
               </div>
 
             </div>

@@ -17,8 +17,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
-            'iban' => fake()->iban(),
-            'firma_digital' => 'firma_' . fake()->uuid(),
+            'iban' => $this->fakeSpanishIban(),
         ];
     }
 

@@ -4,25 +4,27 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Centro extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = "centros";
     protected $primaryKey = "id";
 
     protected $fillable = [
         "nombre",
+        "cif",
         "direccion",
+        "cp",
+        "ciudad",
+        "iva_default",
         "google_maps_link"
     ];
 
-
-    //Un Centro tiene N HorariosClases
     public function horariosClases()
     {
-        return $this->hasMany(HorarioClase::class, 'id_centro', 'id'); // FK 'id_centro'
+        return $this->hasMany(HorarioClase::class, 'id_centro', 'id');
     }
 }

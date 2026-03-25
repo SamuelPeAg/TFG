@@ -16,6 +16,7 @@ return new class extends Migration
 
             $table->string('centro');
             $table->string('nombre_clase');
+            $table->string('tipo_clase')->default('EP');
             $table->string('metodo_pago');
 
             $table->string('iban')->nullable();

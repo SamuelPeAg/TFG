@@ -22,6 +22,7 @@ return new class extends Migration
             $table->date('fecha_pago')->nullable();
             $table->string('archivo_path')->nullable();
             $table->boolean('es_auto_generada')->default(false);
+            $table->json('detalles')->nullable();
             $table->timestamps();
         });
     }

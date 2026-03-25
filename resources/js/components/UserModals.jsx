@@ -14,7 +14,6 @@ export default function UserModals({
     password: '',
     password_confirmation: '',
     iban: '',
-    firma_digital: '',
     precio_hora: '',
   });
   const [loading, setLoading] = useState(false);
@@ -26,7 +25,6 @@ export default function UserModals({
         name: user.name || '',
         email: user.email || '',
         iban: user.iban || '',
-        firma_digital: user.firma_digital || '',
         precio_hora: user.precio_hora || '',
         password: '',
         password_confirmation: '',
@@ -38,7 +36,6 @@ export default function UserModals({
         password: '',
         password_confirmation: '',
         iban: '',
-        firma_digital: '',
         precio_hora: '',
       });
     }
@@ -169,7 +166,7 @@ export default function UserModals({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Password */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 col-span-1">
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">
                   {mode === 'edit' ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}
                 </label>
@@ -188,22 +185,7 @@ export default function UserModals({
                 {errors.password && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1">{errors.password[0]}</p>}
               </div>
 
-              {/* Firma Digital */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Firma Digital</label>
-                <div className="relative group">
-                  <i className="fas fa-pen-nib absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                  <input
-                    type="text"
-                    name="firma_digital"
-                    value={formData.firma_digital}
-                    onChange={handleChange}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
-                    placeholder="Código de firma"
-                  />
-                </div>
-                {errors.firma_digital && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1">{errors.firma_digital[0]}</p>}
-              </div>
+
 
               {/* Precio Hora */}
               <div className="space-y-1.5">

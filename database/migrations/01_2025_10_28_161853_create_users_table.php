@@ -15,13 +15,16 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
 
-            // Nuevo campo para el token de activación
+            $table->string('dni')->nullable()->unique();
+            $table->string('direccion')->nullable();
+            $table->string('codigo_postal')->nullable();
+            $table->string('ciudad')->nullable();
+            
             $table->string('activation_token', 60)->nullable()->unique();
-
-            // Otros campos
             $table->string('foto_de_perfil')->nullable();
             $table->string('iban')->nullable()->unique();
-            $table->text('firma_digital')->nullable();
+            $table->decimal('precio_hora', 10, 2)->default(0);
+            $table->json('additional_attributes')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

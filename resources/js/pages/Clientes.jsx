@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import UsersTable from '../components/UsersTable';
 import UserModals from '../components/UserModals';
 import ClientSubscriptionsModal from '../components/ClientSubscriptionsModal';
+import ClientFichaModal from '../components/ClientFichaModal';
 
 export default function Clientes() {
   const [users, setUsers] = useState([]);
@@ -20,9 +21,17 @@ export default function Clientes() {
   const [susModalOpen, setSusModalOpen] = useState(false);
   const [selectedUserForSus, setSelectedUserForSus] = useState(null);
 
+  const [fichaModalOpen, setFichaModalOpen] = useState(false);
+  const [selectedUserForFicha, setSelectedUserForFicha] = useState(null);
+
   const handleManageSubscriptions = (user) => {
     setSelectedUserForSus(user);
     setSusModalOpen(true);
+  };
+
+  const handleShowFicha = (user) => {
+    setSelectedUserForFicha(user);
+    setFichaModalOpen(true);
   };
 
   useEffect(() => {
@@ -155,6 +164,7 @@ export default function Clientes() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onManageSubscriptions={handleManageSubscriptions}
+                onShowFicha={handleShowFicha}
               />
             </div>
           </div>
@@ -207,6 +217,12 @@ export default function Clientes() {
         user={selectedUserForSus}
         onClose={() => setSusModalOpen(false)}
         onUpdate={fetchUsers}
+      />
+
+      <ClientFichaModal 
+        isOpen={fichaModalOpen}
+        user={selectedUserForFicha}
+        onClose={() => setFichaModalOpen(false)}
       />
     </div>
   );

@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             // 2. Datos base
+            EmpresaSeeder::class,
             CentroSeeder::class,
             
             // 3. Clases y Horarios

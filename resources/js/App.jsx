@@ -18,6 +18,7 @@ import MisNominas from './pages/MisNominas'
 import Configuracion from './pages/Configuracion'
 import Suscripciones from './pages/Suscripciones'
 import Estadisticas from './pages/Estadisticas'
+import MiFicha from './pages/MiFicha'
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
       <Route path="/configuracion/edit" element={<Configuracion />} />
       <Route path="/suscripciones" element={<Suscripciones />} />
       <Route path="/estadisticas" element={<Estadisticas />} />
+      <Route path="/mi-ficha" element={<MiFicha />} />
     </Routes>
   )
 }
