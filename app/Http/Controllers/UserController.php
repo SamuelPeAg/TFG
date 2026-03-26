@@ -149,7 +149,24 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 
+    public function importClients(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:5120', // Máx 5MB
+        ], [
+            'file.required' => 'Debes seleccionar un archivo Excel o CSV.',
+            'file.mimes'    => 'El archivo debe ser un formato Excel válido (xlsx, xls, csv).',
+            'file.max'      => 'El archivo no puede pesar más de 5MB.',
+        ]);
 
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\ClientImport, $request->file('file'));
+            return response()->json(['message' => 'Clientes importados correctamente.']);
+        } catch (\Exception $e) {
+            \Log::error('Error importing clients: ' . $e->getMessage());
+            return response()->json(['errors' => ['file' => ['Hubo un error al procesar el archivo. Asegúrate de que el formato es correcto.']]], 422);
+        }
+    }
 
     //Metodos de configuración
     public function configuracion(Request $request)
@@ -227,6 +244,41 @@ class UserController extends Controller
         }
 
         return back()->with('success', 'Configuración actualizada correctamente.');
+    }
+
+    public function sendActivation(User $user)
+    {
+        $user->activation_token = \Illuminate\Support\Str::random(60);
+        $user->save();
+        $url = route('activate.show', ['token' => $user->activation_token]);
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AccountActivationMail($user, $url));
+            return response()->json(['message' => 'Correo de activación enviado correctamente.']);
+        } catch (\Exception $e) {
+            \Log::error('Error sending activation mail: ' . $e->getMessage());
+            return response()->json(['message' => 'Error al enviar el correo.'], 500);
+        }
+    }
+
+    public function showActivationForm($token)
+    {
+        $user = User::where('activation_token', $token)->first();
+        if (!$user) return redirect('/login')->with('error', 'Token no válido.');
+        return view('app');
+    }
+
+    public function activate(Request $request, $token)
+    {
+        $user = User::where('activation_token', $token)->first();
+        if (!$user) return response()->json(['message' => 'Token no válido.'], 422);
+        $request->validate(['password' => 'required|min:6|confirmed']);
+        $user->update([
+            'password' => Hash::make($request->password),
+            'activo' => true,
+            'activation_token' => null,
+            'email_verified_at' => now(),
+        ]);
+        return response()->json(['message' => 'Cuenta activada correctamente.']);
     }
 
 }

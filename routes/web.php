@@ -101,6 +101,9 @@ Route::middleware('guest')->group(function () {
 | 3. RUTAS PROTEGIDAS (AUTH)
 |--------------------------------------------------------------------------
 */
+Route::get('/activate-account/{token}', [UserController::class, 'showActivationForm'])->name('activate.show');
+Route::post('/activate-account/{token}', [UserController::class, 'activate'])->name('activate.process');
+
 Route::middleware('auth')->group(function () {
 
     // Logout
@@ -184,6 +187,8 @@ Route::middleware('auth')->group(function () {
         // Configuración de Perfil
         Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
         Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
+        Route::post('/users/import', [UserController::class, 'importClients'])->name('users.import');
+        Route::post('/users/{user}/send-activation', [UserController::class, 'sendActivation'])->name('users.send-activation');
 
         // Ficha de Cliente y Archivos (Historia Clínica / Notas)
         Route::prefix('client-profile')->group(function() {
