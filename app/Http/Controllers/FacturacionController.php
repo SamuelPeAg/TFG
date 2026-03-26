@@ -451,6 +451,32 @@ class FacturacionController extends Controller
                 'metodo_pago' => 'Efectivo', // Asumimos efectivo por defecto en TPV rápido
             ]);
 
+            // Si el item es una suscripción, actualizamos el saldo del usuario
+            if (isset($item['suscripcion_id']) && $item['suscripcion_id']) {
+                $suscripcion = \App\Models\Suscripcion::find($item['suscripcion_id']);
+                if ($suscripcion) {
+                    $userSub = \App\Models\SuscripcionUsuario::where('id_usuario', $user->id)
+                        ->where('id_suscripcion', $suscripcion->id)
+                        ->first();
+                    
+                    if ($userSub) {
+                        // Añadimos los créditos definidos en la suscripción
+                        $userSub->increment('saldo_actual', $suscripcion->creditos_por_periodo);
+                        $userSub->update(['ultima_recarga' => now()]);
+                    } else {
+                        // Si no la tenía asignada pero la compró, se la asignamos directamente con sus créditos
+                        \App\Models\SuscripcionUsuario::create([
+                            'id_usuario' => $user->id,
+                            'id_suscripcion' => $suscripcion->id,
+                            'id_entrenador' => $request->entrenador_id,
+                            'saldo_actual' => $suscripcion->creditos_por_periodo,
+                            'ultima_recarga' => now(),
+                            'estado' => 'activo'
+                        ]);
+                    }
+                }
+            }
+
             // Sync entrenador
             if ($request->entrenador_id) {
                 $pago->entrenadores()->sync([$request->entrenador_id]);

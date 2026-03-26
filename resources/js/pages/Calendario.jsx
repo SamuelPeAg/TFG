@@ -70,11 +70,23 @@ export default function Calendario() {
         // El script wizard_clase ya no es necesario para la creacion, se omite o mantiene para compatibilidad parcial si hay otras cosas
         await loadScript('/js/calendario.js');
 
-        // Allow some time for DOM to be ready
+        // Allow some time for DOM to be ready and scripts to execute
         setTimeout(() => {
-          if (window.initCalendarioVanilla) window.initCalendarioVanilla();
-          if (window.initWizardClase) window.initWizardClase();
-        }, 100);
+          if (window.FullCalendar) {
+            if (window.initCalendarioVanilla) window.initCalendarioVanilla();
+            if (window.initWizardClase) window.initWizardClase();
+          } else {
+            console.warn("FullCalendar not found after script load, retrying...");
+            let retries = 0;
+            const retry = setInterval(() => {
+              if (window.FullCalendar) {
+                if (window.initCalendarioVanilla) window.initCalendarioVanilla();
+                clearInterval(retry);
+              }
+              if (++retries > 10) clearInterval(retry);
+            }, 500);
+          }
+        }, 200);
       } catch (e) {
         console.error("Error al cargar scripts del calendario:", e);
       }

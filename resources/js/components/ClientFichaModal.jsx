@@ -92,6 +92,16 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
     }
   };
 
+  const handleDeleteSubscription = async (subId) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta suscripción?')) return;
+    try {
+        await axios.delete(`/suscripciones-usuarios/${subId}`);
+        fetchFicha();
+    } catch (error) {
+        alert('Error al eliminar suscripción');
+    }
+  };
+
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
@@ -325,42 +335,70 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                         </h3>
                         <div className="space-y-4">
                             {userSubscriptions.length === 0 ? (
-                                <div className="bg-white rounded-3xl p-10 text-center border-2 border-dashed border-slate-100">
-                                    <p className="text-slate-400 font-bold italic">Este cliente no tiene suscripciones activas.</p>
+                                <div className="bg-white rounded-[3rem] p-16 text-center border-2 border-dashed border-slate-100/50 shadow-inner group">
+                                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200 text-3xl group-hover:scale-110 transition-transform duration-500">
+                                        <i className="fa-solid fa-ticket"></i>
+                                    </div>
+                                    <p className="text-slate-400 font-extrabold italic text-sm tracking-tight text-balance uppercase">Este cliente no dispone de suscripciones vinculadas en este momento.</p>
+                                    <p className="text-[10px] text-slate-300 font-bold uppercase tracking-[0.2em] mt-3">Utiliza el panel inferior para asignar un nuevo plan</p>
                                 </div>
                             ) : (
                                 userSubscriptions.map(sub => (
-                                    <div key={sub.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-14 h-14 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl">
-                                                <i className="fa-solid fa-crown"></i>
+                                    <div key={sub.id} className="bg-white p-7 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 group hover:shadow-2xl hover:shadow-slate-200/40 transition-all duration-700">
+                                        <div className="flex items-center gap-6">
+                                            <div className="relative group/badge">
+                                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-xl font-black shadow-lg transition-all duration-500 group-hover/badge:rotate-6 group-hover/badge:scale-110 ${sub.saldo_actual > 0 ? 'bg-gradient-to-br from-[#38C1A3] to-[#2D9B82] text-white shadow-teal-100' : 'bg-slate-100 text-slate-400 shadow-slate-100'}`}>
+                                                    {sub.saldo_actual}
+                                                </div>
+                                                <div className="absolute -top-2 -right-2 bg-white w-6 h-6 rounded-xl flex items-center justify-center text-[10px] text-slate-300 font-black shadow-sm border border-slate-50">
+                                                    #{sub.id}
+                                                </div>
                                             </div>
                                             <div>
-                                                <h4 className="font-black text-slate-800 text-base">{sub.suscripcion?.nombre}</h4>
-                                                <div className="flex items-center gap-3 mt-1">
-                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase tracking-tighter">
-                                                        {sub.suscripcion?.periodo}
+                                                <h4 className="font-black text-slate-800 text-lg tracking-tighter leading-none">{sub.suscripcion?.nombre || 'PLAN DE ENTRENAMIENTO'}</h4>
+                                                <div className="flex items-center gap-3 mt-3">
+                                                    <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl border transition-colors ${sub.suscripcion?.periodo === 'mensual' ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 'border-amber-100 bg-amber-50 text-amber-600'}`}>
+                                                        {sub.suscripcion?.periodo?.toUpperCase() || 'PERSONALIZADO'}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-slate-400">
-                                                        Saldo: <span className="text-[#38C1A3] font-black">{sub.saldo_actual} CRÉDITOS</span>
+                                                    <span className="text-[10px] font-bold text-slate-400 flex items-center gap-2">
+                                                        <i className="fa-solid fa-calendar text-slate-200"></i>
+                                                        Alta: {new Date(sub.created_at).toLocaleDateString()}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+
+                                        <div className="flex items-center gap-5 w-full sm:w-auto">
+                                            {/* Saldo Magic Adjuster */}
+                                            <div className="flex-1 sm:flex-none flex items-center bg-slate-50 rounded-[2rem] p-2 border border-slate-100 shadow-inner group-hover:bg-white transition-all duration-700">
+                                                <button 
+                                                    onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'dec')}
+                                                    className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white text-slate-400 hover:text-rose-500 hover:shadow-lg transition-all active:scale-90 border border-transparent hover:border-rose-100"
+                                                    title="Restar Sesión"
+                                                >
+                                                    <i className="fa-solid fa-minus text-xs"></i>
+                                                </button>
+                                                <div className="w-16 text-center select-none">
+                                                    <span className="text-sm font-black text-slate-800 block leading-none">{sub.saldo_actual}</span>
+                                                    <span className="text-[8px] font-black text-slate-300 uppercase tracking-tighter mt-1 block">CLASES</span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'inc')}
+                                                    className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white text-slate-400 hover:text-[#38C1A3] hover:shadow-lg transition-all active:scale-90 border border-transparent hover:border-teal-100"
+                                                    title="Sumar Sesión"
+                                                >
+                                                    <i className="fa-solid fa-plus text-xs"></i>
+                                                </button>
+                                            </div>
+
+                                            <div className="w-[1px] h-10 bg-slate-100 hidden sm:block mx-1"></div>
+
                                             <button 
-                                                onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'dec')}
-                                                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all"
-                                                title="Descontar crédito"
+                                                onClick={() => handleDeleteSubscription(sub.id)}
+                                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm hover:shadow-rose-100 active:scale-95"
+                                                title="Eliminar Suscripción"
                                             >
-                                                <i className="fa-solid fa-minus"></i>
-                                            </button>
-                                            <button 
-                                                onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'inc')}
-                                                className="w-10 h-10 flex items-center justify-center rounded-2xl bg-teal-50 text-[#38C1A3] hover:bg-[#38C1A3] hover:text-white transition-all"
-                                                title="Añadir crédito"
-                                            >
-                                                <i className="fa-solid fa-plus"></i>
+                                                <i className="fa-solid fa-trash-can"></i>
                                             </button>
                                         </div>
                                     </div>

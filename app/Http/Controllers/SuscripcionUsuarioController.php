@@ -20,7 +20,9 @@ class SuscripcionUsuarioController extends Controller
 
         $suscripcion = Suscripcion::find($validated['id_suscripcion']);
         
-        $saldo = $validated['saldo_actual'] ?? $suscripcion->creditos_por_periodo;
+        // El cliente solo recibe créditos para clases si el pago está marcado como realizado (via Tickar)
+        // Por lo tanto, al asignar inicialmente, el saldo es 0 a menos que se especifique lo contrario (ej: migración manual)
+        $saldo = $validated['saldo_actual'] ?? 0;
 
         $susuario = SuscripcionUsuario::updateOrCreate(
             [
@@ -38,7 +40,7 @@ class SuscripcionUsuarioController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['success' => true, 'suscripcion_usuario' => $susuario]);
         }
-        return back()->with('success', 'Suscripción asignada correctamente');
+        return back()->with('success', 'Suscripción asignada correctamente (Pendiente de Pago para añadir créditos)');
     }
 
     public function update(Request $request, $id)

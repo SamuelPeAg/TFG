@@ -32,6 +32,7 @@ class SuscripcionController extends Controller
     {
         $data = $request->validate([
             'nombre'                => 'required|string|max:255',
+            'precio'                => 'required|numeric|min:0',
             'tipo_credito'          => 'required|string|max:100',
             'id_centro'             => 'nullable|exists:centros,id',
             'creditos_por_periodo'  => 'required|integer|min:1',
@@ -54,6 +55,7 @@ class SuscripcionController extends Controller
 
         $data = $request->validate([
             'nombre'                => 'required|string|max:255',
+            'precio'                => 'required|numeric|min:0',
             'tipo_credito'          => 'required|string|max:100',
             'id_centro'             => 'nullable|exists:centros,id',
             'creditos_por_periodo'  => 'required|integer|min:1',

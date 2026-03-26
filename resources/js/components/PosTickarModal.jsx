@@ -96,6 +96,24 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
             setEmpresas(emps);
             if (emps.length > 0) setEmpresaId(emps[0].id);
         });
+
+        // Cargar suscripciones del centro para el TPV
+        axios.get('/suscripciones').then(res => {
+            const subs = res.data.suscripciones || [];
+            setSessions([
+                ...INITIAL_SESSIONS,
+                ...subs.map(s => ({
+                    id: `sub_${s.id}`,
+                    title: s.nombre,
+                    subtitle: `${s.creditos_por_periodo} CLASES`,
+                    price: parseFloat(s.precio) || 0,
+                    icon: 'fa-solid fa-crown',
+                    colorClass: 'text-amber-500',
+                    isSuscripcion: true,
+                    suscripcion_id: s.id
+                }))
+            ]);
+        });
     }
   }, [isOpen, centros]);
 
@@ -162,7 +180,11 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
               subtotal,
               iva_amount: ivaAmount,
               total,
-              items: cart.flatMap(item => Array(item.quantity).fill({ tipo: item.title, precio: item.price })),
+              items: cart.flatMap(item => Array(item.quantity).fill({ 
+                  tipo: item.title, 
+                  precio: item.price,
+                  suscripcion_id: item.suscripcion_id || null 
+              })),
               importe_entregado: total // Se asume pago exacto
           };
           await axios.post('/facturas/tickar', payload, { headers: { Accept: 'application/json' }});
