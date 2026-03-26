@@ -41,7 +41,10 @@ class CentroSeeder extends Seeder
         ];
 
         foreach ($centros as $centro) {
-            Centro::create($centro);
+            Centro::updateOrCreate(
+                ['cif' => $centro['cif']],
+                $centro
+            );
         }
     }
 }

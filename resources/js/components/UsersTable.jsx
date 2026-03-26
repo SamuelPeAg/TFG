@@ -1,6 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
-export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loading }) {
+export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loading, onUpdate }) {
+  const [sendingId, setSendingId] = useState(null);
+
+  const handleSendActivation = async (user) => {
+    setSendingId(user.id);
+    try {
+      await axios.post(`/users/${user.id}/send-activation`);
+      alert('Correo de activación enviado correctamente a ' + user.email);
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error(error);
+      alert('Error al enviar el correo de activación.');
+    } finally {
+      setSendingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-24">
@@ -43,11 +60,13 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                             <span>{user.name.charAt(0).toUpperCase()}</span>
                         )}
                         </div>
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-400 border-2 border-white rounded-full"></div>
+                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full ${user.activo ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-rose-400'}`} title={user.activo ? 'Activado' : 'Pendiente'}></div>
                     </div>
                     <div>
                         <span className="font-black text-slate-800 text-sm block tracking-tight">{user.name}</span>
-                        <span className="text-[10px] font-bold text-[#38C1A3] uppercase tracking-tighter">Alumno Activo</span>
+                        <span className={`text-[10px] font-bold uppercase tracking-tighter ${user.activo ? 'text-[#38C1A3]' : 'text-rose-400'}`}>
+                            {user.activo ? 'Alumno Activo' : 'Pendiente de Alta'}
+                        </span>
                     </div>
                   </div>
                 </td>
@@ -105,6 +124,16 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                     >
                       <i className="fa-solid fa-pen-to-square"></i>
                     </button>
+                    {!user.activo && (
+                      <button
+                        onClick={() => handleSendActivation(user)}
+                        disabled={sendingId === user.id}
+                        className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all duration-300 hover:scale-110 shadow-sm ${sendingId === user.id ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-indigo-50 text-indigo-500 hover:bg-indigo-600 hover:text-white'}`}
+                        title="Enviar Email de Activación"
+                      >
+                        <i className={`fas ${sendingId === user.id ? 'fa-spinner fa-spin' : 'fa-paper-plane'}`}></i>
+                      </button>
+                    )}
                     <button
                       onClick={() => onDelete(user)}
                       className="w-10 h-10 flex items-center justify-center rounded-2xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all duration-300 hover:scale-110 shadow-sm"

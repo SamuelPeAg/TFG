@@ -41,10 +41,13 @@ class ClaseSeeder extends Seeder
         ];
 
         foreach ($clases as $clase) {
-            Clase::create($clase);
+            Clase::updateOrCreate(
+                ['nombre' => $clase['nombre'], 'id_centro' => $clase['id_centro']],
+                $clase
+            );
         }
 
         // Generar algunas clases adicionales aleatorias usando el factory (que ya usa centros existentes)
-        Clase::factory()->count(5)->create();
+        // Clase::factory()->count(5)->create();
     }
 }

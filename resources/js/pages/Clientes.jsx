@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import UsersTable from '../components/UsersTable';
 import UserModals from '../components/UserModals';
+import ClientSubscriptionsModal from '../components/ClientSubscriptionsModal';
 import ClientFichaModal from '../components/ClientFichaModal';
+import ClientsImportModal from '../components/ClientsImportModal';
 import Pagination from '../components/Pagination';
 import Sidebar from '../components/Sidebar';
 
@@ -21,9 +23,20 @@ export default function Clientes() {
   const [fichaModalOpen, setFichaModalOpen] = useState(false);
   const [selectedUserForFicha, setSelectedUserForFicha] = useState(null);
 
+  const [subscriptionsModalOpen, setSubscriptionsModalOpen] = useState(false);
+  const [selectedUserForSubscriptions, setSelectedUserForSubscriptions] = useState(null);
+
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+
   const handleShowFicha = (user) => {
     setSelectedUserForFicha(user);
     setFichaModalOpen(true);
+  };
+
+  const handleShowSubscriptions = (user) => {
+    setSelectedUserForSubscriptions(user);
+    setSubscriptionsModalOpen(true);
   };
 
   useEffect(() => {
@@ -145,8 +158,22 @@ export default function Clientes() {
                 <i className="fas fa-plus"></i>
                 NUEVO ALUMNO
               </button>
+              <button 
+                onClick={() => setImportModalOpen(true)}
+                className="px-8 py-3 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-100 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2 active:scale-95 shrink-0"
+              >
+                <i className="fas fa-file-excel"></i>
+                IMPORTAR
+              </button>
           </div>
         </header>
+        
+        {toast && (
+            <div className="px-8 py-4 bg-emerald-50 border-y border-emerald-100 text-emerald-600 text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-4">
+                <i className="fas fa-check-circle"></i>
+                {toast}
+            </div>
+        )}
         
         <div className="flex-1 overflow-auto p-4 sm:p-10 scrollbar-hide">
           <div className="w-full mx-auto space-y-8">
@@ -185,6 +212,16 @@ export default function Clientes() {
         isOpen={fichaModalOpen}
         user={selectedUserForFicha}
         onClose={() => setFichaModalOpen(false)}
+      />
+
+      <ClientsImportModal 
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImportSuccess={() => {
+            fetchUsers();
+            setToast('Clientes importados correctamente desde el archivo Excel.');
+            setTimeout(() => setToast(null), 5000);
+        }}
       />
     </div>
   );
