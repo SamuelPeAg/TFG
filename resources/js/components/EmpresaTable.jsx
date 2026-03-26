@@ -10,10 +10,15 @@ export default function EmpresaTable({ empresas, onUpdate }) {
 
     const handleAdd = async () => {
         try {
-            await axios.post('/api/admin/empresas', formData);
+            const data = { ...formData, iva_configurable: parseFloat(formData.iva_configurable) || 0 };
+            await axios.post('/api/admin/empresas', data);
             setFormData({ nombre: '', cif_dni: '', direccion: '', cp: '', ciudad: '', iva_configurable: 21 });
             onUpdate();
-        } catch (e) { alert('Error al añadir empresa'); }
+            setEditMode(null);
+        } catch (e) { 
+            console.error('Error adding:', e.response?.data);
+            alert('Error al añadir empresa: ' + (e.response?.data?.message || 'CIF/DNI duplicado o datos inválidos')); 
+        }
     };
 
     const handleEdit = (emp) => {
@@ -23,10 +28,14 @@ export default function EmpresaTable({ empresas, onUpdate }) {
 
     const handleSaveEdit = async () => {
         try {
-            await axios.put(`/api/admin/empresas/${editMode}`, formData);
+            const data = { ...formData, iva_configurable: parseFloat(formData.iva_configurable) || 0 };
+            await axios.put(`/api/admin/empresas/${editMode}`, data);
             setEditMode(null);
             onUpdate();
-        } catch (e) { alert('Error al actualizar'); }
+        } catch (e) { 
+            console.error('Error editing:', e.response?.data);
+            alert('Error al actualizar: ' + (e.response?.data?.message || 'Error desconocido')); 
+        }
     };
 
     const handleDelete = async (id) => {
@@ -83,7 +92,7 @@ export default function EmpresaTable({ empresas, onUpdate }) {
                             <input type="text" placeholder="Nombre / Razón Social" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none font-bold" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} />
                             <div className="grid grid-cols-2 gap-4">
                                 <input type="text" placeholder="CIF / DNI" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none font-bold" value={formData.cif_dni} onChange={e => setFormData({...formData, cif_dni: e.target.value})} />
-                                <input type="number" placeholder="IVA %" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none font-bold" value={formData.iva_configurable} onChange={e => setFormData({...formData, iva_configurable: e.target.value})} />
+                                <input type="number" step="0.01" placeholder="IVA %" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none font-bold" value={formData.iva_configurable} onChange={e => setFormData({...formData, iva_configurable: e.target.value})} />
                             </div>
                             <input type="text" placeholder="Dirección" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none" value={formData.direccion} onChange={e => setFormData({...formData, direccion: e.target.value})} />
                             <div className="grid grid-cols-2 gap-4">

@@ -120,13 +120,15 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
   if (!isOpen) return null;
 
   const currEmpresa = empresas.find(e => Number(e.id) === Number(empresaId)) || 
-                      (empresas.length > 0 ? empresas[0] : { iva_configurable: 21 });
+                      (empresas.length > 0 ? empresas[0] : null);
   
   const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * item.quantity, 0);
   
   // Explicitly parse IVA to handle string values from DB like "0.00"
+  // If no company found or selected, default to 21% as global safety
   const rawIvaValue = currEmpresa ? currEmpresa.iva_configurable : 21;
-  const ivaRate = (parseFloat(rawIvaValue) || 0) / 100;
+  const ivaPercent = parseFloat(rawIvaValue);
+  const ivaRate = (isNaN(ivaPercent) ? 21 : ivaPercent) / 100;
   
   const ivaAmount = subtotal * ivaRate;
   const total = subtotal + ivaAmount;
@@ -425,7 +427,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                         <span>{subtotal.toFixed(2)} €</span>
                     </div>
                     <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        <span>IVA ({ivaRate * 100}%)</span>
+                        <span>IVA ({ivaPercent}%)</span>
                         <span>{ivaAmount.toFixed(2)} €</span>
                     </div>
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200">
