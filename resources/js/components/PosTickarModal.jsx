@@ -14,13 +14,14 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
   const [empresas, setEmpresas] = useState([]);
   const [cart, setCart] = useState([]); // Array of { id, title, price, quantity }
   const [isEditMode, setIsEditMode] = useState(false);
-  const [empresaId, setEmpresaId] = useState('');
-  const [formData, setFormData] = useState({
-      cliente_id: '',
-      entrenador_id: '',
-      centro: ''
-  });
-  const [submitting, setSubmitting] = useState(false);
+   const [empresaId, setEmpresaId] = useState('');
+   const [formData, setFormData] = useState({
+       cliente_id: '',
+       entrenador_id: '',
+       centro: ''
+   });
+   const [ivaPercent, setIvaPercent] = useState(21);
+   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const clientRef = useRef(null);
@@ -117,23 +118,23 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
     }
   }, [isOpen, centros]);
 
-  if (!isOpen) return null;
-
-  const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * item.quantity, 0);
+  // Move calculation and hooks before early return (Rules of Hooks)
+  const currEmpresa = empresas.find(e => String(e.id) === String(empresaId)) || (empresas.length > 0 ? empresas[0] : { iva_configurable: 21, nombre: 'Empresa' });
   
-  // DRASIC: Calculate IVA strictly from the selected ID in real-time
-  const getSelectedIva = () => {
-    if (!empresas || empresas.length === 0) return 21;
-    // Fallback to first empresa ID if none selected
-    const targetId = empresaId || empresas[0].id;
-    const found = empresas.find(e => String(e.id) === String(targetId));
-    return found ? parseFloat(found.iva_configurable) : 21;
-  };
+  useEffect(() => {
+    if (currEmpresa) {
+        setIvaPercent(parseFloat(currEmpresa.iva_configurable) || 0);
+    }
+  }, [empresaId, empresas]);
 
-  const ivaPercent = getSelectedIva();
+  const total = cart.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * item.quantity, 0);
+  
+  // Math: IVA is X% of Total
+  const ivaAmount = total * (ivaPercent / 100);
+  const baseSubtotal = total - ivaAmount;
   const ivaRate = ivaPercent / 100;
-  const ivaAmount = subtotal * ivaRate;
-  const total = subtotal + ivaAmount;
+
+  if (!isOpen) return null;
 
   const addToCart = (session) => {
       setCart(prev => {
@@ -185,9 +186,9 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
       try {
           const payload = {
               ...formData,
-              empresa: currEmpresa.name,
+              empresa: currEmpresa.nombre || currEmpresa.name,
               iva_rate: ivaRate,
-              subtotal,
+              subtotal: baseSubtotal,
               iva_amount: ivaAmount,
               total,
               items: cart.flatMap(item => Array(item.quantity).fill({ 
@@ -429,13 +430,15 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
 
                 <div className="p-5 bg-slate-50 flex flex-col gap-2 border-t border-slate-100">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        <span>Base Subtotal</span>
-                        <span>{subtotal.toFixed(2)} €</span>
+                        <span>Base a Percibir</span>
+                        <span>{baseSubtotal.toFixed(2)} €</span>
                     </div>
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        <span>IVA ({ivaPercent}%)</span>
-                        <span>{ivaAmount.toFixed(2)} €</span>
-                    </div>
+                    {ivaPercent > 0 && (
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            <span>IVA ({ivaPercent}%)</span>
+                            <span>{ivaAmount.toFixed(2)} €</span>
+                        </div>
+                    )}
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200">
                         <span className="text-sm text-slate-500 font-extrabold uppercase tracking-widest">Total Cobrar</span>
                         <span className="text-3xl font-black text-slate-800 underline decoration-[#38C1A3] decoration-4">{total.toFixed(2)} €</span>
