@@ -29,22 +29,39 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Frontend validation
+    const newErrors = {}
+    if (!formData.email) newErrors.email = ['El correo es obligatorio']
+    if (!formData.password) newErrors.password = ['La contraseña es obligatoria']
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
     setLoading(true)
     setErrors({})
 
     try {
-      const response = await axios.post('/login', formData)
-      // Si el login es exitoso, redirigir al calendario (como indica Laravel)
-      if (response.status === 200 || response.status === 204) {
-        window.location.href = '/calendario'
+      const response = await axios.post('/login', formData, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      
+      if (response.data.success || response.status === 200 || response.status === 204) {
+        window.location.href = response.data.redirect || '/calendario'
       }
     } catch (err) {
+      console.error('Login error:', err.response?.data)
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors)
       } else if (err.response?.data?.message) {
-        setErrors({ general: err.response.data.message })
+        setErrors({ general: [err.response.data.message] })
       } else {
-        setErrors({ general: 'Error al iniciar sesión. Intenta de nuevo.' })
+        setErrors({ general: ['Error al iniciar sesión. Intenta de nuevo.'] })
       }
     } finally {
       setLoading(false)

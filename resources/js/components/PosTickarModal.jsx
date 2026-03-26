@@ -119,9 +119,15 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
 
   if (!isOpen) return null;
 
-  const currEmpresa = empresas.find(e => String(e.id) === String(empresaId)) || (empresas.length > 0 ? empresas[0] : { iva_configurable: 21 });
-  const subtotal = cart.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0);
-  const ivaRate = (currEmpresa.iva_configurable || 0) / 100;
+  const currEmpresa = empresas.find(e => Number(e.id) === Number(empresaId)) || 
+                      (empresas.length > 0 ? empresas[0] : { iva_configurable: 21 });
+  
+  const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * item.quantity, 0);
+  
+  // Explicitly parse IVA to handle string values from DB like "0.00"
+  const rawIvaValue = currEmpresa ? currEmpresa.iva_configurable : 21;
+  const ivaRate = (parseFloat(rawIvaValue) || 0) / 100;
+  
   const ivaAmount = subtotal * ivaRate;
   const total = subtotal + ivaAmount;
 

@@ -19,38 +19,51 @@ class LoginController extends Controller
     }
     public function login(Request $request)
     {
-
          // Validación de las credenciales
-    $credentials = $request->validate([
-        'email' => ['required', 'email'],
-        'password' => ['required', 'string'],
-    ], [
-        'email.required' => 'El correo electrónico es obligatorio.',
-        'email.email' => 'El correo electrónico no es válido.',
-        'password.required' => 'La contraseña es obligatoria.',
-    ]);
-
-    // Intentar autenticar usando el modelo User
-    if (Auth::attempt($credentials)) {
-        // Regenerar sesión para mayor seguridad
-        $request->session()->regenerate();
-
-        // Redirigir según rol o intención
-        $user = Auth::user();
-        
-        if ($user->hasRole('admin')) {
-            return redirect('/calendario');
-        } elseif ($user->hasRole('entrenador')) {
-            return redirect('/calendario');
+        try {
+            $credentials = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string'],
+            ], [
+                'email.required' => 'El correo electrónico es obligatorio.',
+                'email.email' => 'El correo electrónico no es válido.',
+                'password.required' => 'La contraseña es obligatoria.',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json($e->errors(), 422);
+            }
+            throw $e;
         }
 
-        return redirect('/calendario');
-    }
+        // Intentar autenticar
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
-    // Si falla la autenticación
-    return back()->withErrors([
-        'email' => 'Las credenciales no son correctas.',
-    ])->onlyInput('email');
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'redirect' => '/calendario',
+                    'user' => Auth::user()
+                ]);
+            }
+
+            return redirect()->intended('/calendario');
+        }
+
+        // Si falla la autenticación
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Las credenciales no coinciden.',
+                'errors' => [
+                    'general' => ['Correo electrónico o contraseña incorrectos.']
+                ]
+            ], 422);
+        }
+
+        return back()->withErrors([
+            'email' => 'Las credenciales no son correctas.',
+        ])->onlyInput('email');
     }
 
     /**
