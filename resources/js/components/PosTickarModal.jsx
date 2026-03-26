@@ -119,17 +119,19 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
 
   if (!isOpen) return null;
 
-  const currEmpresa = empresas.find(e => Number(e.id) === Number(empresaId)) || 
-                      (empresas.length > 0 ? empresas[0] : null);
-  
   const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * item.quantity, 0);
   
-  // Explicitly parse IVA to handle string values from DB like "0.00"
-  // If no company found or selected, default to 21% as global safety
-  const rawIvaValue = currEmpresa ? currEmpresa.iva_configurable : 21;
-  const ivaPercent = parseFloat(rawIvaValue);
-  const ivaRate = (isNaN(ivaPercent) ? 21 : ivaPercent) / 100;
-  
+  // DRASIC: Calculate IVA strictly from the selected ID in real-time
+  const getSelectedIva = () => {
+    if (!empresas || empresas.length === 0) return 21;
+    // Fallback to first empresa ID if none selected
+    const targetId = empresaId || empresas[0].id;
+    const found = empresas.find(e => String(e.id) === String(targetId));
+    return found ? parseFloat(found.iva_configurable) : 21;
+  };
+
+  const ivaPercent = getSelectedIva();
+  const ivaRate = ivaPercent / 100;
   const ivaAmount = subtotal * ivaRate;
   const total = subtotal + ivaAmount;
 
@@ -353,11 +355,15 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Empresa / IVA</label>
                         </div>
                         <select 
-                            value={empresaId} 
+                            value={empresaId || ''} 
                             onChange={(e) => setEmpresaId(e.target.value)} 
                             className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 outline-none focus:border-[#38C1A3]"
                         >
-                            {empresas.map(e => <option key={e.id} value={e.id}>{e.nombre} ({e.iva_configurable}%)</option>)}
+                            {empresas.map(e => (
+                                <option key={e.id} value={e.id}>
+                                    {e.nombre} ({parseFloat(e.iva_configurable)}%)
+                                </option>
+                            ))}
                         </select>
                     </div>
 
