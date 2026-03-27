@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('direccion')->nullable();
             $table->string('cp')->nullable();
             $table->string('ciudad')->nullable();
-            $table->decimal('iva_configurable', 5, 2)->default(21);
+            $table->decimal('iva_configurable', 5, 2);
             $table->timestamps();
             $table->softDeletes();
         });

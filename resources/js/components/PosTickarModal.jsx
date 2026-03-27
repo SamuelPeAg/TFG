@@ -26,6 +26,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
 
   const clientRef = useRef(null);
   const trainerRef = useRef(null);
+  const empresaRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -55,9 +56,14 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                 setFormData(prev => ({ ...prev, entrenador_id: e.target.value }));
             });
 
+            $(empresaRef.current).select2(options).on('change', (e) => {
+                setEmpresaId(e.target.value);
+            });
+
             // Sincronizar valor inicial
             $(clientRef.current).val(formData.cliente_id).trigger('change.select2');
             $(trainerRef.current).val(formData.entrenador_id).trigger('change.select2');
+            $(empresaRef.current).val(empresaId).trigger('change.select2');
         }
     }, 100);
 
@@ -67,6 +73,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
         if ($ && typeof $.fn.select2 === 'function') {
             if (clientRef.current) $(clientRef.current).select2('destroy');
             if (trainerRef.current) $(trainerRef.current).select2('destroy');
+            if (empresaRef.current) $(empresaRef.current).select2('destroy');
         }
     };
   }, [isOpen, clientes, entrenadores]);
@@ -81,8 +88,11 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
         if ($(trainerRef.current).val() !== formData.entrenador_id) {
             $(trainerRef.current).val(formData.entrenador_id).trigger('change.select2');
         }
+        if ($(empresaRef.current).val() !== String(empresaId)) {
+            $(empresaRef.current).val(empresaId).trigger('change.select2');
+        }
     }
-  }, [formData.cliente_id, formData.entrenador_id, isOpen]);
+  }, [formData.cliente_id, formData.entrenador_id, empresaId, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -129,9 +139,9 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
 
   const total = cart.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * item.quantity, 0);
   
-  // Math: IVA is X% of Total
-  const ivaAmount = total * (ivaPercent / 100);
-  const baseSubtotal = total - ivaAmount;
+  // Math: Reverse IVA calculation (Total includes IVA)
+  const baseSubtotal = total / (1 + (ivaPercent / 100));
+  const ivaAmount = total - baseSubtotal;
   const ivaRate = ivaPercent / 100;
 
   if (!isOpen) return null;
@@ -230,7 +240,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
         {/* Header */}
         <div className="bg-[#1E293B] text-white px-6 py-4 flex items-center justify-between shrink-0">
             <h2 className="font-bold text-lg tracking-tight flex items-center gap-2">
-                <i className="fa-solid fa-cash-register text-[#38C1A3]"></i> Nuevo Ticket - Factomove
+                <i className="fa-solid fa-cash-register text-[#38C1A3]"></i> Nuevo Ticket - {currEmpresa.nombre || 'TPV'}
             </h2>
             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-700">
                 <i className="fa-solid fa-xmark text-xl"></i>
@@ -356,6 +366,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Empresa / IVA</label>
                         </div>
                         <select 
+                            ref={empresaRef}
                             value={empresaId || ''} 
                             onChange={(e) => setEmpresaId(e.target.value)} 
                             className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 outline-none focus:border-[#38C1A3]"
@@ -433,12 +444,10 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                         <span>Base a Percibir</span>
                         <span>{baseSubtotal.toFixed(2)} €</span>
                     </div>
-                    {ivaPercent > 0 && (
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                            <span>IVA ({ivaPercent}%)</span>
-                            <span>{ivaAmount.toFixed(2)} €</span>
-                        </div>
-                    )}
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        <span>IVA ({ivaPercent}%)</span>
+                        <span>{ivaAmount.toFixed(2)} €</span>
+                    </div>
                     <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200">
                         <span className="text-sm text-slate-500 font-extrabold uppercase tracking-widest">Total Cobrar</span>
                         <span className="text-3xl font-black text-slate-800 underline decoration-[#38C1A3] decoration-4">{total.toFixed(2)} €</span>
