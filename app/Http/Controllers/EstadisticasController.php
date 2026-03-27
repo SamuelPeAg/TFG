@@ -89,7 +89,7 @@ class EstadisticasController extends Controller
                 'sesionesPorCentro' => $sesionesPorCentro,
                 'ultimosPagos' => $ultimosPagos,
                 'empresas' => Empresa::all(),
-                'centros_list' => Centro::all()
+                'centros_list' => Centro::with('empresa')->get()
             ]);
     }
 
@@ -133,7 +133,7 @@ class EstadisticasController extends Controller
             'direccion' => 'nullable',
             'cp' => 'nullable',
             'ciudad' => 'nullable',
-            'iva_default' => 'nullable|numeric',
+            'empresa_id' => 'nullable|exists:empresas,id',
             'google_maps_link' => 'nullable'
         ]);
         $centro = Centro::create($data);
@@ -147,7 +147,7 @@ class EstadisticasController extends Controller
             'direccion' => 'nullable',
             'cp' => 'nullable',
             'ciudad' => 'nullable',
-            'iva_default' => 'nullable|numeric',
+            'empresa_id' => 'nullable|exists:empresas,id',
             'google_maps_link' => 'nullable'
         ]);
         $centro->update($data);

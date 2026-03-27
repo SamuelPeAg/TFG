@@ -19,9 +19,14 @@ class Centro extends Model
         "direccion",
         "cp",
         "ciudad",
-        "iva_default",
+        "empresa_id",
         "google_maps_link"
     ];
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
 
     public function horariosClases()
     {

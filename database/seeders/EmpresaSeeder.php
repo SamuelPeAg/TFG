@@ -9,24 +9,24 @@ class EmpresaSeeder extends Seeder
     public function run(): void
     {
         Empresa::updateOrCreate(
-            ['cif_dni' => 'B12345678'],
+            ['cif_dni' => 'B75272062'],
             [
-                'nombre' => 'Factomove S.L.',
-                'direccion' => 'Calle Principal 123',
-                'cp' => '14001',
+                'nombre' => 'MDV SALUD Y EJERCICIO SL',
+                'direccion' => 'Escritora Antonia Palacios 5 3-2',
+                'cp' => '14012',
                 'ciudad' => 'Córdoba',
                 'iva_configurable' => 21
             ]
         );
         
         Empresa::updateOrCreate(
-            ['cif_dni' => '12345678Z'],
+            ['cif_dni' => 'B72950207'],
             [
-                'nombre' => 'Moverte da Vida Autónomo',
-                'direccion' => 'Avenida Secundaria 45',
-                'cp' => '14002',
+                'nombre' => 'MVD ANDALUCIA',
+                'direccion' => 'C/Machaquito n26 4,3',
+                'cp' => '14005',
                 'ciudad' => 'Córdoba',
-                'iva_configurable' => 21
+                'iva_configurable' => 0
             ]
         );
     }

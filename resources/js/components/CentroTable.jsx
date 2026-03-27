@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Button from './Button';
 
-export default function CentroTable({ centros, onUpdate }) {
+export default function CentroTable({ centros, empresas, onUpdate }) {
     const [editMode, setEditMode] = useState(null);
     const [formData, setFormData] = useState({
-        nombre: '', cif: '', direccion: '', cp: '', ciudad: '', iva_default: 21, google_maps_link: ''
+        nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: ''
     });
 
     const handleAdd = async () => {
         try {
             await axios.post('/api/admin/centros', formData);
-            setFormData({ nombre: '', cif: '', direccion: '', cp: '', ciudad: '', iva_default: 21, google_maps_link: '' });
+            setFormData({ nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '' });
             onUpdate();
         } catch (e) { alert('Error al añadir centro'); }
     };
@@ -52,7 +52,7 @@ export default function CentroTable({ centros, onUpdate }) {
                         <tr>
                             <th className="pb-3 px-2">Centro</th>
                             <th className="pb-3 px-2">CIF/NIF</th>
-                            <th className="pb-3 px-2">IVA Default</th>
+                            <th className="pb-3 px-2">Empresa Default</th>
                             <th className="pb-3 px-2">Ciudad</th>
                             <th className="pb-3 px-2 text-right">Acciones</th>
                         </tr>
@@ -62,7 +62,11 @@ export default function CentroTable({ centros, onUpdate }) {
                             <tr key={c.id} className="text-sm hover:bg-slate-50/50 transition-colors">
                                 <td className="py-4 px-2 font-black text-slate-700">{c.nombre}</td>
                                 <td className="py-4 px-2 text-slate-500 font-medium">{c.cif || '---'}</td>
-                                <td className="py-4 px-2"><span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-lg font-black">{c.iva_default}%</span></td>
+                                <td className="py-4 px-2">
+                                    <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-lg font-black italic text-xs">
+                                        {c.empresa?.nombre || 'Sin empresa'}
+                                    </span>
+                                </td>
                                 <td className="py-4 px-2 text-slate-400">{c.ciudad || '---'}</td>
                                 <td className="py-4 px-2 text-right space-x-2">
                                     <button onClick={() => handleEdit(c)} className="text-slate-300 hover:text-emerald-500 transition-colors"><i className="fa-solid fa-pencil"></i></button>
@@ -83,7 +87,12 @@ export default function CentroTable({ centros, onUpdate }) {
                             <input type="text" placeholder="Nombre" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} />
                             <div className="grid grid-cols-2 gap-4">
                                 <input type="text" placeholder="CIF" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold" value={formData.cif} onChange={e => setFormData({...formData, cif: e.target.value})} />
-                                <input type="number" placeholder="IVA Default %" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold" value={formData.iva_default} onChange={e => setFormData({...formData, iva_default: e.target.value})} />
+                                <select className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold text-slate-500 text-sm" value={formData.empresa_id} onChange={e => setFormData({...formData, empresa_id: e.target.value})}>
+                                    <option value="">Empresa Default...</option>
+                                    {empresas.map(emp => (
+                                        <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+                                    ))}
+                                </select>
                             </div>
                             <input type="text" placeholder="Dirección" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none" value={formData.direccion} onChange={e => setFormData({...formData, direccion: e.target.value})} />
                             <div className="grid grid-cols-2 gap-4">

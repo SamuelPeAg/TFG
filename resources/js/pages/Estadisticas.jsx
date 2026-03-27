@@ -288,6 +288,7 @@ export default function Estadisticas() {
                 />
                 <CentroTable 
                   centros={data.centros_list || []} 
+                  empresas={data.empresas || []}
                   onUpdate={fetchData} 
                 />
               </div>
