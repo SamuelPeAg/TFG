@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('suscripciones', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->decimal('precio', 10, 2)->default(0);
             $table->string('tipo_credito');
             $table->foreignId('id_centro')->nullable()->constrained('centros')->onDelete('cascade');
             $table->integer('creditos_por_periodo')->default(1);

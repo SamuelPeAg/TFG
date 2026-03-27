@@ -13,6 +13,7 @@ class Suscripcion extends Model
 
     protected $fillable = [
         'nombre',
+        'precio',
         'tipo_credito',
         'id_centro',
         'creditos_por_periodo',
