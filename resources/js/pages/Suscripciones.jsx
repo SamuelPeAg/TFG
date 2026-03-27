@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
@@ -15,6 +15,7 @@ const METROS_RESET = [
 
 const EMPTY_FORM = {
     nombre: '',
+    precio: '',
     tipo_credito: '',
     id_centro: '',
     creditos_por_periodo: '',
@@ -36,6 +37,73 @@ export default function Suscripciones() {
     const [form, setForm] = useState(EMPTY_FORM);
     const [saving, setSaving] = useState(false);
     const [formErrors, setFormErrors] = useState({});
+
+    // Refs for Select2
+    const tipoRef = useRef(null);
+    const centroRef = useRef(null);
+    const periodoRef = useRef(null);
+    const resetRef = useRef(null);
+
+    // Initializer for Select2 (similar to TPV)
+    useEffect(() => {
+        if (!modalOpen) return;
+
+        const checkInterval = setInterval(() => {
+            const $ = window.$;
+            if ($ && typeof $.fn.select2 === 'function' && tipoRef.current && centroRef.current && periodoRef.current && resetRef.current) {
+                clearInterval(checkInterval);
+
+                const options = {
+                    width: '100%',
+                    dropdownParent: $(tipoRef.current).parent(),
+                    placeholder: 'Selecciona...',
+                    language: { noResults: () => "Sin resultados" }
+                };
+
+                // Initialize each
+                $(tipoRef.current).select2(options).on('change', (e) => {
+                    handleFormChange({ target: { name: 'tipo_credito', value: e.target.value } });
+                });
+                $(centroRef.current).select2(options).on('change', (e) => {
+                    handleFormChange({ target: { name: 'id_centro', value: e.target.value } });
+                });
+                $(periodoRef.current).select2({ ...options, minimumResultsForSearch: -1 }).on('change', (e) => {
+                    handleFormChange({ target: { name: 'periodo', value: e.target.value } });
+                });
+                $(resetRef.current).select2({ ...options, minimumResultsForSearch: -1 }).on('change', (e) => {
+                    handleFormChange({ target: { name: 'meses_reset', value: e.target.value } });
+                });
+
+                // Sync initial values
+                $(tipoRef.current).val(form.tipo_credito).trigger('change.select2');
+                $(centroRef.current).val(form.id_centro).trigger('change.select2');
+                $(periodoRef.current).val(form.periodo).trigger('change.select2');
+                $(resetRef.current).val(form.meses_reset).trigger('change.select2');
+            }
+        }, 100);
+
+        return () => {
+            clearInterval(checkInterval);
+            const $ = window.$;
+            if ($ && typeof $.fn.select2 === 'function') {
+                if (tipoRef.current) $(tipoRef.current).select2('destroy');
+                if (centroRef.current) $(centroRef.current).select2('destroy');
+                if (periodoRef.current) $(periodoRef.current).select2('destroy');
+                if (resetRef.current) $(resetRef.current).select2('destroy');
+            }
+        };
+    }, [modalOpen]);
+
+    // React state -> Select2 sync
+    useEffect(() => {
+        const $ = window.$;
+        if (!modalOpen || !$) return;
+        
+        if ($(tipoRef.current).val() !== form.tipo_credito) $(tipoRef.current).val(form.tipo_credito).trigger('change.select2');
+        if ($(centroRef.current).val() !== String(form.id_centro)) $(centroRef.current).val(form.id_centro).trigger('change.select2');
+        if ($(periodoRef.current).val() !== form.periodo) $(periodoRef.current).val(form.periodo).trigger('change.select2');
+        if ($(resetRef.current).val() !== String(form.meses_reset)) $(resetRef.current).val(form.meses_reset).trigger('change.select2');
+    }, [form, modalOpen]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -63,6 +131,7 @@ export default function Suscripciones() {
         setEditingId(s.id);
         setForm({
             nombre: s.nombre || '',
+            precio: s.precio || '',
             tipo_credito: s.tipo_credito || '',
             id_centro: s.id_centro || '',
             creditos_por_periodo: s.creditos_por_periodo || '',
@@ -86,6 +155,7 @@ export default function Suscripciones() {
         e.preventDefault();
         const errs = {};
         if (!form.nombre.trim()) errs.nombre = 'El nombre es obligatorio.';
+        if (!form.precio) errs.precio = 'El precio es obligatorio.';
         if (!form.tipo_credito) errs.tipo_credito = 'Obligatorio.';
         if (!form.creditos_por_periodo) errs.creditos_por_periodo = 'Obligatorio.';
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
@@ -203,6 +273,7 @@ export default function Suscripciones() {
                                         <tr>
                                             <th className="px-6 py-4">Nombre</th>
                                             <th className="px-6 py-4">Tipo Clase</th>
+                                            <th className="px-6 py-4 text-center">Precio</th>
                                             <th className="px-6 py-4">Centro</th>
                                             <th className="px-6 py-4 text-center">Créditos / Periodo</th>
                                             <th className="px-6 py-4 text-center">Límite</th>
@@ -219,6 +290,9 @@ export default function Suscripciones() {
                                                         <span className={`${badge.bg} text-white text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full`}>
                                                             {badge.label || s.tipo_credito}
                                                         </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center font-black text-slate-800 text-sm">
+                                                        {Number(s.precio || 0).toFixed(2)} €
                                                     </td>
                                                     <td className="px-6 py-4 text-sm text-slate-600 font-medium" data-label="Centro">
                                                         {s.centro?.nombre || <span className="text-slate-400 italic">Global</span>}
@@ -285,21 +359,32 @@ export default function Suscripciones() {
                                     </p>
                                     
                                     <div className="space-y-4">
-                                        {/* Nombre */}
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Nombre de la Suscripción</label>
-                                            <input type="text" name="nombre" value={form.nombre} onChange={handleFormChange}
-                                                placeholder="Ej: Bono Mensual EP"
-                                                className={`w-full bg-slate-50 border ${formErrors.nombre ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`} />
-                                            {formErrors.nombre && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.nombre}</p>}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Nombre */}
+                                            <div className="space-y-1.5 flex-1">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Nombre de la Suscripción</label>
+                                                <input type="text" name="nombre" value={form.nombre} onChange={handleFormChange}
+                                                    placeholder="Ej: Bono Mensual EP"
+                                                    className={`w-full bg-slate-50 border ${formErrors.nombre ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`} />
+                                                {formErrors.nombre && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.nombre}</p>}
+                                            </div>
+
+                                            {/* Precio */}
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Precio (€)</label>
+                                                <input type="number" step="0.01" name="precio" value={form.precio} onChange={handleFormChange}
+                                                    placeholder="0.00"
+                                                    className={`w-full bg-slate-50 border ${formErrors.precio ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`} />
+                                                {formErrors.precio && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.precio}</p>}
+                                            </div>
                                         </div>
 
                                         {/* Tipo + Centro */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Tipo de Clase/Servicio</label>
-                                                <select name="tipo_credito" value={form.tipo_credito} onChange={handleFormChange}
-                                                    className={`w-full bg-slate-50 border ${formErrors.tipo_credito ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`}>
+                                                <select ref={tipoRef} name="tipo_credito" value={form.tipo_credito} onChange={handleFormChange}
+                                                    className={`w-full bg-slate-50 select2-ignore border ${formErrors.tipo_credito ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`}>
                                                     <option value="">-- Selecciona Tipo --</option>
                                                     {TIPOS_PERMITIDOS.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
                                                 </select>
@@ -308,8 +393,8 @@ export default function Suscripciones() {
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Centro asignado</label>
-                                                <select name="id_centro" value={form.id_centro} onChange={handleFormChange}
-                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white">
+                                                <select ref={centroRef} name="id_centro" value={form.id_centro} onChange={handleFormChange}
+                                                    className="w-full bg-slate-50 select2-ignore border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white">
                                                     <option value="">Global (Todos)</option>
                                                     {centros.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                                                 </select>
@@ -332,8 +417,8 @@ export default function Suscripciones() {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">¿Cuándo se entregan?</label>
-                                            <select name="periodo" value={form.periodo} onChange={handleFormChange}
-                                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3]">
+                                            <select ref={periodoRef} name="periodo" value={form.periodo} onChange={handleFormChange}
+                                                className="w-full bg-white select2-ignore border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3]">
                                                 <option value="semanal">Semanal</option>
                                                 <option value="mensual">Mensual</option>
                                             </select>
@@ -355,8 +440,8 @@ export default function Suscripciones() {
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Caducidad</label>
-                                            <select name="meses_reset" value={form.meses_reset} onChange={handleFormChange}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white">
+                                            <select ref={resetRef} name="meses_reset" value={form.meses_reset} onChange={handleFormChange}
+                                                className="w-full bg-slate-50 select2-ignore border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white">
                                                 {METROS_RESET.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                                             </select>
                                         </div>

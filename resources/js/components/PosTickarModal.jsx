@@ -18,7 +18,8 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
    const [formData, setFormData] = useState({
        cliente_id: '',
        entrenador_id: '',
-       centro: ''
+       centro_id: '',
+       fecha: new Date().toISOString().split('T')[0]
    });
    const [ivaPercent, setIvaPercent] = useState(21);
    const [submitting, setSubmitting] = useState(false);
@@ -27,6 +28,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
   const clientRef = useRef(null);
   const trainerRef = useRef(null);
   const empresaRef = useRef(null);
+  const centroRef = useRef(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -35,7 +37,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
     // Se usa un intervalo para asegurar que Select2 esté cargado y los elementos existan
     const checkInterval = setInterval(() => {
         const $ = window.$;
-        if ($ && typeof $.fn.select2 === 'function' && clientRef.current && trainerRef.current) {
+        if ($ && typeof $.fn.select2 === 'function' && clientRef.current && trainerRef.current && empresaRef.current && centroRef.current) {
             clearInterval(checkInterval);
 
             const options = {
@@ -60,10 +62,22 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                 setEmpresaId(e.target.value);
             });
 
+            $(centroRef.current).select2(options).on('change', (e) => {
+                const selectedCentroId = e.target.value;
+                setFormData(prev => ({ ...prev, centro_id: selectedCentroId }));
+                
+                // Lógica de Empresa Default
+                const centro = centros.find(c => String(c.id) === String(selectedCentroId));
+                if (centro && centro.empresa_id) {
+                    setEmpresaId(String(centro.empresa_id));
+                }
+            });
+
             // Sincronizar valor inicial
             $(clientRef.current).val(formData.cliente_id).trigger('change.select2');
             $(trainerRef.current).val(formData.entrenador_id).trigger('change.select2');
             $(empresaRef.current).val(empresaId).trigger('change.select2');
+            $(centroRef.current).val(formData.centro_id).trigger('change.select2');
         }
     }, 100);
 
@@ -74,6 +88,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
             if (clientRef.current) $(clientRef.current).select2('destroy');
             if (trainerRef.current) $(trainerRef.current).select2('destroy');
             if (empresaRef.current) $(empresaRef.current).select2('destroy');
+            if (centroRef.current) $(centroRef.current).select2('destroy');
         }
     };
   }, [isOpen, clientes, entrenadores]);
@@ -91,13 +106,30 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
         if ($(empresaRef.current).val() !== String(empresaId)) {
             $(empresaRef.current).val(empresaId).trigger('change.select2');
         }
+        if ($(centroRef.current).val() !== String(formData.centro_id)) {
+            $(centroRef.current).val(formData.centro_id).trigger('change.select2');
+        }
     }
-  }, [formData.cliente_id, formData.entrenador_id, empresaId, isOpen]);
+  }, [formData.cliente_id, formData.entrenador_id, formData.centro_id, empresaId, isOpen]);
 
   useEffect(() => {
     if (isOpen) {
         setCart([]);
-        setFormData({ cliente_id: '', entrenador_id: '', centro: centros && centros.length > 0 ? centros[0].nombre : '' });
+        const initialCentro = centros && centros.length > 0 ? centros[0] : null;
+        const initialCentroId = initialCentro ? String(initialCentro.id) : '';
+        const initialEmpresaId = initialCentro?.empresa_id ? String(initialCentro.empresa_id) : '';
+
+        setFormData({ 
+            cliente_id: '', 
+            entrenador_id: '', 
+            centro_id: initialCentroId,
+            fecha: new Date().toISOString().split('T')[0]
+        });
+        
+        if (initialEmpresaId) {
+            setEmpresaId(initialEmpresaId);
+        }
+
         setShowSuccess(false);
         setIsEditMode(false);
         
@@ -105,7 +137,12 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
         axios.get('/api/empresas-list').then(res => {
             const emps = res.data || [];
             setEmpresas(emps);
-            if (emps.length > 0) setEmpresaId(emps[0].id);
+            
+            // Si ya tenemos una empresa por el centro, no la sobrescribimos
+            if (initialEmpresaId) return;
+
+            // Si no, ponemos la primera de la lista
+            if (emps.length > 0) setEmpresaId(String(emps[0].id));
         });
 
         // Cargar suscripciones del centro para el TPV
@@ -188,6 +225,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
   };
 
   const handleSubmit = async () => {
+      if (!formData.centro_id) return alert('Debes seleccionar un centro.');
       if (!formData.cliente_id) return alert('Debes seleccionar un cliente.');
       if (!formData.entrenador_id) return alert('Debes seleccionar un entrenador.');
       if (cart.length === 0) return alert('Debes añadir al menos un concepto a la cuenta.');
@@ -196,7 +234,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
       try {
           const payload = {
               ...formData,
-              empresa: currEmpresa.nombre || currEmpresa.name,
+              centro: centros.find(c => String(c.id) === String(formData.centro_id))?.nombre,
               iva_rate: ivaRate,
               subtotal: baseSubtotal,
               iva_amount: ivaAmount,
@@ -377,6 +415,30 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Centro</label>
+                            <select 
+                                ref={centroRef}
+                                value={formData.centro_id} 
+                                onChange={(e) => setFormData({...formData, centro_id: e.target.value})} 
+                                className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 outline-none focus:border-[#38C1A3]"
+                            >
+                                <option value="">Seleccionar...</option>
+                                {centros?.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                            </select>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha</label>
+                            <input 
+                                type="date"
+                                value={formData.fecha}
+                                onChange={(e) => setFormData({...formData, fecha: e.target.value})}
+                                className="w-full p-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 outline-none focus:border-[#38C1A3] h-[38px]"
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-1">

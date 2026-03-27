@@ -76,6 +76,11 @@ function initializeSelect2() {
     const $select = $(this);
     const selectId = $select.attr('id') || $select.attr('name') || 'unnamed';
 
+    // Skip if has ignore class
+    if ($select.hasClass('select2-ignore')) {
+        return;
+    }
+
     // Skip if already initialized
     if ($select.hasClass('select2-hidden-accessible')) {
       console.log(`Select2 already initialized on: ${selectId}`);
