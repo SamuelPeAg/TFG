@@ -118,11 +118,9 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
     const file = e.target.files[0];
     if (!file) return;
 
-    const isPrivate = window.confirm('¿Quieres que este archivo sea PRIVADO solo para el staff?');
-    
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('is_private', isPrivate ? 1 : 0);
+    formData.append('is_private', 0); // Desactivado por ahora a petición del usuario
 
     setUploading(true);
     try {
@@ -498,20 +496,20 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             <h4 className="font-black text-slate-800 text-sm line-clamp-1">{file.file_name}</h4>
                                             <div className="flex items-center gap-3 mt-1">
                                                 <span className="text-[10px] font-bold text-slate-400">Por: {file.uploader?.name}</span>
-                                                <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${file.is_private ? 'border-rose-100 bg-rose-50 text-rose-500' : 'border-emerald-100 bg-emerald-50 text-emerald-500'}`}>
+                                                {/* <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${file.is_private ? 'border-rose-100 bg-rose-50 text-rose-500' : 'border-emerald-100 bg-emerald-50 text-emerald-500'}`}>
                                                     {file.is_private ? 'PRIVADO (Staff)' : 'VISIBLE PARA CLIENTE'}
-                                                </span>
+                                                </span> */}
                                             </div>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <button 
+                                        {/* <button 
                                             onClick={() => togglePrivacy(file.id)}
                                             className={`w-10 h-10 flex items-center justify-center rounded-2xl transition-all ${file.is_private ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500'} hover:scale-110`}
                                             title="Cambiar Privacidad"
                                         >
                                             <i className={file.is_private ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'}></i>
-                                        </button>
+                                        </button> */}
                                         <a 
                                             href={`/client-file/${file.id}/download`}
                                             className="w-10 h-10 flex items-center justify-center rounded-2xl bg-teal-50 text-[#38C1A3] hover:bg-[#38C1A3] hover:text-white transition-all hover:scale-110"

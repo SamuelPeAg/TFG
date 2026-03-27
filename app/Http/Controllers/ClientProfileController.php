@@ -14,12 +14,19 @@ class ClientProfileController extends Controller
     {
         // El entrenador o admin pueden ver todo.
         // El propio cliente solo ve los archivos que no son privados.
+        /* Desactivado por ahora a petición del usuario
         $canSeePrivate = Auth::user()->hasRole('admin') || Auth::user()->hasRole('entrenador');
         
         $files = $user->clientFiles()
             ->when(!$canSeePrivate, function($query) {
                 return $query->where('is_private', false);
             })
+            ->with('uploader:id,name')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        */
+
+        $files = $user->clientFiles()
             ->with('uploader:id,name')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -59,7 +66,7 @@ class ClientProfileController extends Controller
     {
         $request->validate([
             'file' => 'required|file|max:10240', // 10MB
-            'is_private' => 'required|boolean'
+            'is_private' => 'nullable' // Desactivado por ahora
         ]);
 
         $file = $request->file('file');
@@ -70,7 +77,7 @@ class ClientProfileController extends Controller
             'file_path' => $path,
             'file_name' => $file->getClientOriginalName(),
             'file_type' => $file->getClientOriginalExtension(),
-            'is_private' => $request->is_private,
+            'is_private' => $request->is_private ?? 0,
             'uploaded_by' => Auth::id(),
         ]);
 
