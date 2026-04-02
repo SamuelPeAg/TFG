@@ -1,21 +1,67 @@
-/* Select2 Custom Styling - Minimal overrides */
+/* Select2 Custom Styling - Overrides to fix visibility */
 
 /* Ensure Select2 containers are responsive */
 .select2-container {
   width: 100% !important;
 }
 
-/* Better spacing for search input */
-.select2-container--classic .select2-search--dropdown .select2-search__field {
+/* Ensure Dropdown is always visible (Dark text on White BG) */
+/* Targeted at body-appended dropdowns that might inherit dark mode colors */
+.select2-dropdown {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important; /* slate-300 */
+}
+
+.select2-results__option {
+  color: #111827 !important; /* slate-900 / nearly black */
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--classic .select2-selection--single .select2-selection__rendered {
+  color: #111827 !important;
+}
+
+/* Specific for the search input in the dropdown */
+.select2-search__field {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* Fix for highlighted option (when hovering) - use brand teal */
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+.select2-container--classic .select2-results__option--highlighted[aria-selected] {
+  background-color: #4BB7AE !important;
+  color: #ffffff !important;
+}
+
+/* Fix for selected option in list */
+.select2-container--default .select2-results__option[aria-selected=true],
+.select2-container--classic .select2-results__option[aria-selected=true] {
+  background-color: #f1f5f9 !important;
+  color: #111827 !important;
+}
+
+/* Spacing and aesthetics */
+.select2-container--classic .select2-search--dropdown .select2-search__field,
+.select2-container--default .select2-search--dropdown .select2-search__field {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
+  margin: 4px 0;
 }
 
-/* Dropdown styling with proper spacing */
-.select2-container--classic .select2-results__options {
-  max-height: 300px;
+.select2-container--classic .select2-results__options,
+.select2-container--default .select2-results__options {
+  max-height: 250px;
 }
 
-.select2-container--classic .select2-results__option {
-  padding: 0.5rem 1rem;
+.select2-container--classic .select2-results__option,
+.select2-container--default .select2-results__option {
+  padding: 0.6rem 1rem;
+}
+
+/* Fix generic native select visibility if not using select2 */
+select option {
+  color: #111827 !important;
+  background-color: #ffffff !important;
 }

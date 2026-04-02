@@ -36,6 +36,7 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
           <tr className="text-slate-400">
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Cliente</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Contacto</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Clasificación</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">IBAN / Identificación</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Saldo / Suscripciones</th>
             <th className="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Acciones</th>
@@ -68,6 +69,26 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                             {user.activo ? 'Alumno Activo' : 'Pendiente de Alta'}
                         </span>
                     </div>
+                  </div>
+                </td>
+                <td className="px-6 py-5" data-label="Clasificación">
+                  <div className="flex flex-col gap-1">
+                    {user.empresa && (
+                        <div className="flex items-center gap-2">
+                            <span className="bg-indigo-50 text-indigo-700 text-[10px] font-black px-2.5 py-1 rounded-lg border border-indigo-100 uppercase tracking-tighter">
+                                {user.empresa.nombre}
+                            </span>
+                        </div>
+                    )}
+                    {user.centro && (
+                        <div className="flex items-center gap-1.5 text-slate-400">
+                            <i className="fa-solid fa-building text-[9px]"></i>
+                            <span className="text-[10px] font-bold uppercase">{user.centro.nombre}</span>
+                        </div>
+                    )}
+                    {!user.empresa && !user.centro && (
+                        <span className="text-[10px] text-slate-300 font-bold italic">SIN CLASIFICAR</span>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-5" data-label="Contacto">
@@ -147,7 +168,7 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="px-6 py-20 text-center">
+              <td colSpan="7" className="px-6 py-20 text-center">
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center">
                     <i className="fas fa-users text-slate-200 text-2xl"></i>

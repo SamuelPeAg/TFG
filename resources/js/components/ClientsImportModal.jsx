@@ -63,16 +63,19 @@ export default function ClientsImportModal({ isOpen, onClose, onImportSuccess })
                     </div>
 
                     <div className="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Formato Sugerido (Cabeceras)</h4>
-                        <div className="grid grid-cols-3 gap-1 text-[10px] font-bold text-slate-600 uppercase">
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-[#38C1A3]">nombre*</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-[#38C1A3]">email*</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">contrasena</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">dni</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">iban</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">precio_hora</span>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Formato de Columnas (Cabeceras)</h4>
+                        <div className="grid grid-cols-3 gap-1 text-[9px] font-bold text-slate-600 uppercase">
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-[#38C1A3]">empresa</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-indigo-400">mes</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-indigo-400">fecha</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-[#38C1A3]">cliente*</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">precio</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">pago</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">centro</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">entrenador</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">servicio</span>
                         </div>
-                        <p className="text-[9px] text-slate-400 mt-3 px-1 italic">* Campos obligatorios. El resto son opcionales.</p>
+                        <p className="text-[9px] text-slate-400 mt-3 px-1 italic">El sistema reconocerá automáticamente las columnas. El campo 'cliente' es obligatorio para identificar al alumno.</p>
                     </div>
 
                     {errors?.general && (

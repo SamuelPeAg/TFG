@@ -25,6 +25,8 @@ class User extends Authenticatable
         'direccion',
         'codigo_postal',
         'ciudad',
+        'empresa_id',
+        'centro_id',
         'additional_attributes',
     ];
 
@@ -41,6 +43,16 @@ class User extends Authenticatable
     ];
 
     
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+
+    public function centro()
+    {
+        return $this->belongsTo(Centro::class);
+    }
+
     public function PagosCreadas()
     {
         return $this->hasMany(Pago::class, 'entrenador_id');

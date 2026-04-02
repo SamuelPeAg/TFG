@@ -42,7 +42,9 @@ class UserController extends Controller
     public function index()
     {
         // Mostrar solo clientes en la interfaz de usuarios
-        $users = User::role('cliente')->with('suscripciones.suscripcion.centro')->get();
+        $users = User::role('cliente')
+            ->with(['suscripciones.suscripcion.centro', 'empresa', 'centro'])
+            ->get();
         
         if (request()->wantsJson() || request()->ajax()) {
             return response()->json($users);
