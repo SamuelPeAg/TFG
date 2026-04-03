@@ -49,6 +49,17 @@ class PagosController extends Controller
             return $p->fecha_registro->format('Y-m-d H:i:s') . '|' . strtolower(trim($p->nombre_clase)) . '|' . $p->centro;
         });
 
+        // Extraer roles del request
+        $currentUser = request()->user();
+        $isClientOnly = $currentUser && $currentUser->hasRole('cliente') && !$currentUser->hasRole('admin') && !$currentUser->hasRole('entrenador');
+        $activeSubIds = [];
+        if ($isClientOnly) {
+            $activeSubIds = $currentUser->suscripciones()
+                ->where('saldo_actual', '>', 0)
+                ->pluck('id_suscripcion')
+                ->toArray();
+        }
+
         $events = [];
         foreach ($grouped as $key => $grupo) {
             $first = $grupo->first();
@@ -101,9 +112,21 @@ class PagosController extends Controller
                 $textColor = '#ffffff';
             }
 
+            $classSubIds = $first->suscripciones->pluck('id')->toArray();
+
+            // Filtrado del lado del cliente: solo ver clases compatibles con sus bonos activos
+            if (isset($isClientOnly) && $isClientOnly) {
+                if (empty($classSubIds)) {
+                    continue; // Si la clase no admite bonos, el cliente no la ve
+                }
+                $hasMatchingSub = !empty(array_intersect($activeSubIds, $classSubIds));
+                if (!$hasMatchingSub) {
+                    continue; // El cliente no tiene bonos compatibles para esta clase
+                }
+            }
+
             $events[] = [
                 'id' => $first->id,
-                // Usamos propiedades personalizadas para identificar la sesión única y poder editar todos
                 'groupId' => $key,
                 'title' => $title,
                 'start' => $first->fecha_registro ? $first->fecha_registro->toIso8601String() : null,
@@ -116,14 +139,13 @@ class PagosController extends Controller
                     'clase_nombre' => $first->nombre_clase,
                     'tipo_clase' => $first->tipo_clase,
                     'alumnos' => $alumnos,
-                    'entrenadores' => $entrenadoresList, // Array de entrenadores
-                    // Datos clave para identificar la sesión al añadir/quitar entrenadores
+                    'entrenadores' => $entrenadoresList,
                     'session_key' => [
                         'fecha_hora' => $first->fecha_registro->format('Y-m-d H:i:s'),
                         'nombre_clase' => $first->nombre_clase,
                         'centro' => $first->centro
                     ],
-                    'suscripciones_permitidas' => $first->suscripciones->pluck('id')->toArray(),
+                    'suscripciones_permitidas' => $classSubIds,
                     'suscripciones_detalles' => $first->suscripciones->map(function($s) {
                         return ['id' => $s->id, 'nombre' => $s->nombre];
                     })->toArray()

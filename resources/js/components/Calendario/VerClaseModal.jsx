@@ -267,21 +267,23 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                  </div>
                                  <div>
                                      <div className="font-bold text-slate-800 text-sm leading-tight">{alum.nombre}</div>
-                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{alum.pago || "TARJETA"}</div>
+                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{alum.pago || "Suscripción"}</div>
                                  </div>
                              </div>
                              <div className="flex items-center gap-5">
                                  <div className="font-black text-slate-900 text-sm">
-                                     €{Number(alum.coste || 0).toFixed(2)}
+                                     {window.IS_ADMIN ? `€${Number(alum.coste || 0).toFixed(2)}` : ''}
                                  </div>
-                                 <button 
-                                     onClick={() => handleRemoveClient(alum.id)}
-                                     disabled={isSubmitting}
-                                     className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors disabled:opacity-50"
-                                     title="Eliminar Alumno"
-                                 >
-                                    <i className="fa-solid fa-trash-can"></i>
-                                 </button>
+                                 {window.IS_ADMIN && (
+                                     <button 
+                                         onClick={() => handleRemoveClient(alum.id)}
+                                         disabled={isSubmitting}
+                                         className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors disabled:opacity-50"
+                                         title="Eliminar Alumno"
+                                     >
+                                        <i className="fa-solid fa-trash-can"></i>
+                                     </button>
+                                 )}
                              </div>
                          </div>
                      ))
@@ -289,53 +291,55 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
               </div>
 
               {/* Add Client Dotted Button */}
-              <div className="relative">
-                  <div className="w-full flex items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:border-[#4BB7AE] hover:text-[#4BB7AE] hover:bg-teal-50 transition-colors focus-within:border-[#4BB7AE] focus-within:bg-teal-50 focus-within:text-[#4BB7AE] relative overflow-hidden">
-                      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none opacity-50">
-                          <i className="fa-solid fa-user-plus text-lg"></i>
+              {window.IS_ADMIN && (
+                  <div className="relative">
+                      <div className="w-full flex items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:border-[#4BB7AE] hover:text-[#4BB7AE] hover:bg-teal-50 transition-colors focus-within:border-[#4BB7AE] focus-within:bg-teal-50 focus-within:text-[#4BB7AE] relative overflow-hidden">
+                          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none opacity-50">
+                              <i className="fa-solid fa-user-plus text-lg"></i>
+                          </div>
+                          <input 
+                              type="text" 
+                              placeholder="SELECCIONAR CLIENTE..." 
+                              className="w-full py-4 pl-12 pr-4 bg-transparent outline-none text-center font-bold text-xs placeholder:text-inherit text-slate-700"
+                              value={clientSearchTerm}
+                              onChange={(e) => {
+                                  setClientSearchTerm(e.target.value);
+                                  setShowClientSuggestions(true);
+                              }}
+                              onFocus={() => setShowClientSuggestions(true)}
+                              onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
+                          />
                       </div>
-                      <input 
-                          type="text" 
-                          placeholder="SELECCIONAR CLIENTE..." 
-                          className="w-full py-4 pl-12 pr-4 bg-transparent outline-none text-center font-bold text-xs placeholder:text-inherit text-slate-700"
-                          value={clientSearchTerm}
-                          onChange={(e) => {
-                              setClientSearchTerm(e.target.value);
-                              setShowClientSuggestions(true);
-                          }}
-                          onFocus={() => setShowClientSuggestions(true)}
-                          onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
-                      />
+                      
+                      {/* Suggestions Box */}
+                      {showClientSuggestions && clientSearchTerm && (
+                          <div className="absolute top-14 left-0 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-10 overflow-hidden">
+                              {filteredUsers.length === 0 ? (
+                                  <div className="p-4 text-xs font-semibold text-slate-400 text-center">No se encontraron clientes</div>
+                              ) : (
+                                  filteredUsers.map(u => (
+                                      <div 
+                                         key={u.id} 
+                                         className="px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 cursor-pointer flex items-center gap-3 transition-colors"
+                                         onClick={() => handleAddClient(u)}
+                                      >
+                                          <div className="w-8 h-8 rounded-full bg-[#4BB7AE]/10 text-[#4BB7AE] flex items-center justify-center font-bold text-xs">
+                                              {u.name.charAt(0).toUpperCase()}
+                                          </div>
+                                          <div className="flex-1">
+                                              <div className="text-sm font-bold text-slate-700">{u.name}</div>
+                                              <div className="text-[10px] text-slate-400 font-semibold">{u.email}</div>
+                                          </div>
+                                      </div>
+                                  ))
+                              )}
+                          </div>
+                      )}
                   </div>
-                  
-                  {/* Suggestions Box */}
-                  {showClientSuggestions && clientSearchTerm && (
-                      <div className="absolute top-14 left-0 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-10 overflow-hidden">
-                          {filteredUsers.length === 0 ? (
-                              <div className="p-4 text-xs font-semibold text-slate-400 text-center">No se encontraron clientes</div>
-                          ) : (
-                              filteredUsers.map(u => (
-                                  <div 
-                                     key={u.id} 
-                                     className="px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 cursor-pointer flex items-center gap-3 transition-colors"
-                                     onClick={() => handleAddClient(u)}
-                                  >
-                                      <div className="w-8 h-8 rounded-full bg-[#4BB7AE]/10 text-[#4BB7AE] flex items-center justify-center font-bold text-xs">
-                                          {u.name.charAt(0).toUpperCase()}
-                                      </div>
-                                      <div className="flex-1">
-                                          <div className="text-sm font-bold text-slate-700">{u.name}</div>
-                                          <div className="text-[10px] text-slate-400 font-semibold">{u.email}</div>
-                                      </div>
-                                  </div>
-                              ))
-                          )}
-                      </div>
-                  )}
-              </div>
+              )}
            </div>
 
-           {/* Right Column (Trainers & Danger Zone) */}
+           {/* Right Column (Trainers & Danger Zone or JOIN Zone) */}
            <div className="w-full md:w-72 border-t md:border-t-0 md:border-l border-slate-100 bg-white flex flex-col pt-8 pb-10 px-8 relative">
                 
                 {/* Equipo Técnico */}
@@ -352,57 +356,87 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                         localProps.entrenadores.map(t => (
                             <div key={t.id} className="flex items-center justify-between p-3 border border-slate-100 rounded-xl group/trainer bg-slate-50">
                                 <div className="text-sm font-bold text-slate-700">{t.name || 'Personal'}</div>
-                                <button 
-                                    onClick={() => handleRemoveTrainer(t.id)}
-                                    disabled={isSubmitting}
-                                    className="text-slate-300 hover:text-rose-500 transition-colors hidden group-hover/trainer:block disabled:opacity-50"
-                                >
-                                    <i className="fa-solid fa-xmark"></i>
-                                </button>
+                                {window.IS_ADMIN && (
+                                    <button 
+                                        onClick={() => handleRemoveTrainer(t.id)}
+                                        disabled={isSubmitting}
+                                        className="text-slate-300 hover:text-rose-500 transition-colors hidden group-hover/trainer:block disabled:opacity-50"
+                                    >
+                                        <i className="fa-solid fa-xmark"></i>
+                                    </button>
+                                )}
                             </div>
                         ))
                     )}
                 </div>
 
-                {/* Asignar Personal */}
-                <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4 text-center">
-                    ASIGNAR PERSONAL
-                </h4>
-                <div className="flex gap-2 mb-auto">
-                    <div className="relative flex-1">
-                        <select 
-                            value={selectedTrainerToAdd}
-                            onChange={(e) => setSelectedTrainerToAdd(e.target.value)}
-                            className="w-full h-10 appearance-none bg-white border border-slate-200 rounded-xl px-4 py-0 text-xs font-bold text-slate-700 outline-none focus:border-[#0f172a] transition-colors shadow-sm"
+                {window.IS_ADMIN ? (
+                    <>
+                        <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4 text-center">
+                            ASIGNAR PERSONAL
+                        </h4>
+                        <div className="flex gap-2 mb-auto">
+                            <div className="relative flex-1">
+                                <select 
+                                    value={selectedTrainerToAdd}
+                                    onChange={(e) => setSelectedTrainerToAdd(e.target.value)}
+                                    className="w-full h-10 appearance-none bg-white border border-slate-200 rounded-xl px-4 py-0 text-xs font-bold text-slate-700 outline-none focus:border-[#0f172a] transition-colors shadow-sm"
+                                >
+                                    <option value="">Elegir...</option>
+                                    {entrenadores.map(t => (
+                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                    ))}
+                                </select>
+                                <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+                            </div>
+                            <button 
+                                onClick={handleAddTrainer}
+                                disabled={!selectedTrainerToAdd || isSubmitting}
+                                className="w-10 h-10 shrink-0 bg-[#0f172a] text-white rounded-xl flex items-center justify-center hover:bg-[#1e293b] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <i className="fas fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                        
+                        <hr className="my-8 border-slate-100" />
+
+                        <button 
+                           onClick={handleDeleteSession}
+                           disabled={isSubmitting}
+                           className="w-full py-4 text-center text-[11px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
                         >
-                            <option value="">Elegir...</option>
-                            {entrenadores.map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                        </select>
-                        <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
+                            <i className="fas fa-trash-can mr-2"></i> ELIMINAR SESIÓN
+                        </button>
+                    </>
+                ) : (
+                    <div className="mt-auto">
+                        <hr className="my-8 border-slate-100" />
+                        {(() => {
+                           const isJoined = (localProps.alumnos || []).some(a => String(a.id) === String(window.AppConfig?.user?.id));
+                           if (isJoined) {
+                               return (
+                                   <button 
+                                      onClick={() => handleRemoveClient(window.AppConfig?.user?.id)}
+                                      disabled={isSubmitting}
+                                      className="w-full py-4 text-center text-sm font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 rounded-xl shadow-lg shadow-rose-500/20 transition-all disabled:opacity-50"
+                                   >
+                                       <i className="fa-solid fa-user-xmark mr-2"></i> CANCELAR CLASE
+                                   </button>
+                               );
+                           } else {
+                               return (
+                                   <button 
+                                      onClick={() => handleAddClient(window.AppConfig?.user)}
+                                      disabled={isSubmitting}
+                                      className="w-full py-4 text-center text-sm font-black uppercase tracking-widest text-white bg-[#0f172a] hover:bg-[#1e293b] rounded-xl shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50"
+                                   >
+                                       <i className="fa-solid fa-check mr-2"></i> INSCRIBIRME
+                                   </button>
+                               );
+                           }
+                        })()}
                     </div>
-                    <button 
-                        onClick={handleAddTrainer}
-                        disabled={!selectedTrainerToAdd || isSubmitting}
-                        className="w-10 h-10 shrink-0 bg-[#0f172a] text-white rounded-xl flex items-center justify-center hover:bg-[#1e293b] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <i className="fas fa-plus text-sm"></i>
-                    </button>
-                </div>
-
-                {/* Separator */}
-                <hr className="my-8 border-slate-100" />
-
-                {/* Eliminar Sesion */}
-                <button 
-                   onClick={handleDeleteSession}
-                   disabled={isSubmitting}
-                   className="w-full py-4 text-center text-[11px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
-                >
-                    <i className="fas fa-trash-can mr-2"></i> ELIMINAR SESIÓN
-                </button>
-
+                )}
            </div>
         </div>
 

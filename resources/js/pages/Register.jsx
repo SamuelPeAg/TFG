@@ -38,7 +38,8 @@ export default function Register() {
     try {
       const response = await axios.post('register', formData)
       if (response.status === 201 || response.status === 200) {
-        window.location.href = (window.AppConfig?.baseUrl || '/') + 'login?registered=true'
+        // Redirige al dashboard/homepage porque ya viene logeado
+        window.location.href = response.data.redirect || (window.AppConfig?.baseUrl || '/');
       }
     } catch (err) {
       if (err.response?.data?.errors) {

@@ -144,6 +144,15 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::post('/Pagos/add-client', [PagosController::class, 'addClientToSession'])->name('Pagos.addClient');
     Route::post('/Pagos/remove-client', [PagosController::class, 'removeClientFromSession'])->name('Pagos.removeClient');
 
+    // Configuración de Perfil (Para TODOS los usuarios)
+    Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
+    Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
+
+    // Perfil de Cliente (Lectura propia para clientes, total para staff)
+    Route::get('/client-profile/{user}', [ClientProfileController::class, 'show']);
+    Route::put('/client-profile/{user}', [ClientProfileController::class, 'update']);
+    Route::post('/client-profile/{user}/upload', [ClientProfileController::class, 'uploadFile']);
+
 
     /*
     |--------------------------------------------------------------------------
@@ -186,17 +195,11 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::get('/clientes', [UserController::class, 'index'])->name('clientes.index');
         Route::resource('users', UserController::class);
 
-        // Configuración de Perfil
-        Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
-        Route::put('/configuracion', [UserController::class, 'updateConfiguracion'])->name('configuracion.update');
         Route::post('/users/import', [UserController::class, 'importClients'])->name('users.import');
         Route::post('/users/{user}/send-activation', [UserController::class, 'sendActivation'])->name('users.send-activation');
 
-        // Ficha de Cliente y Archivos (Historia Clínica / Notas)
+        // Ficha de Cliente y Archivos (Historia Clínica / Notas) - Escritura y gestión de archivos solo staff
         Route::prefix('client-profile')->group(function() {
-            Route::get('/{user}', [ClientProfileController::class, 'show']);
-            Route::put('/{user}', [ClientProfileController::class, 'update']);
-            Route::post('/{user}/upload', [ClientProfileController::class, 'uploadFile']);
             Route::post('/file/{file}/toggle-privacy', [ClientProfileController::class, 'toggleFilePrivacy']);
             Route::delete('/file/{file}', [ClientProfileController::class, 'deleteFile']);
         });

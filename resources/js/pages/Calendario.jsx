@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import CalendarModals from '../components/CalendarModals';
 import CrearClaseModal from '../components/Calendario/CrearClaseModal';
 import VerClaseModal from '../components/Calendario/VerClaseModal';
+import VistaTarjetas from '../components/Calendario/VistaTarjetas';
 import Button from '../components/Button';
 
 export default function Calendario() {
@@ -11,6 +12,9 @@ export default function Calendario() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   
+  const user = window.AppConfig?.user;
+  const [viewMode, setViewMode] = useState(user?.role === 'cliente' ? 'cards' : 'calendar');
+
   // React Modal State
   const [isCrearModalOpen, setIsCrearModalOpen] = useState(false);
   const [selectedDateForNewClass, setSelectedDateForNewClass] = useState(null);
@@ -18,7 +22,9 @@ export default function Calendario() {
   const [isVerModalOpen, setIsVerModalOpen] = useState(false);
   const [selectedEventParaVer, setSelectedEventParaVer] = useState(null);
 
-  const user = window.AppConfig?.user;
+  // States for filtering VistaTarjetas
+  const [centroFiltro, setCentroFiltro] = useState('');
+  const [userFiltro, setUserFiltro] = useState('');
 
   // 1. Fetch initialization data
   useEffect(() => {
@@ -162,7 +168,11 @@ export default function Calendario() {
                     id="filter-center" 
                     className="modern-select-no-border" 
                     style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', cursor: 'pointer', color: '#374151', fontSize: '14px', appearance: 'none' }}
-                    defaultValue=""
+                    value={centroFiltro}
+                    onChange={(e) => {
+                       setCentroFiltro(e.target.value);
+                       if (window.calendar && viewMode === 'calendar') setTimeout(() => window.calendar.refetchEvents(), 100);
+                    }}
                   >
                     <option value="">Todos los centros</option>
                     {data.centros?.map(centro => (
@@ -182,30 +192,49 @@ export default function Calendario() {
                     id="search-user" 
                     placeholder="Buscar usuario..." 
                     autoComplete="off" 
+                    value={userFiltro}
+                    onChange={(e) => setUserFiltro(e.target.value)}
                   />
                   <div id="search_user_suggestions" className="suggestions" hidden></div>
                 </div>
               </div>
 
-              {/* Botón Nueva Clase */}
-              <Button 
-                variant="primary"
-                icon="fa-solid fa-plus"
-                className="btn-design"
-                onClick={() => {
-                   setSelectedDateForNewClass(null);
-                   setIsCrearModalOpen(true);
-                }}
-              >
-                NUEVA CLASE
-              </Button>
+              {/* Botón TOGGLE */}
+              <div className="flex bg-slate-100 p-1 rounded-xl">
+                <button
+                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white shadow text-[#4BB7AE]' : 'text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => setViewMode('calendar')}
+                >
+                  <i className="fa-solid fa-calendar-days"></i><span className="hidden sm:inline">Calendario</span>
+                </button>
+                <button
+                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 ${viewMode === 'cards' ? 'bg-white shadow text-[#4BB7AE]' : 'text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => setViewMode('cards')}
+                >
+                  <i className="fa-solid fa-table-cells-large"></i><span className="hidden sm:inline">Tarjetas</span>
+                </button>
+              </div>
+
+              {user?.role !== 'cliente' && (
+                  <Button 
+                    variant="primary"
+                    icon="fa-solid fa-plus"
+                    className="btn-design"
+                    onClick={() => {
+                       setSelectedDateForNewClass(null);
+                       setIsCrearModalOpen(true);
+                    }}
+                  >
+                    NUEVA CLASE
+                  </Button>
+              )}
             </div>
           )}
         </header>
 
         {/* Calendar Body */}
-        <section className="flex-1 overflow-auto p-4 sm:p-6 bg-slate-50/50">
-         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 sm:p-4 min-h-[500px] flex flex-col">
+        <section className={`flex-1 overflow-auto p-4 sm:p-6 ${viewMode === 'calendar' ? 'bg-slate-50/50' : 'bg-transparent'}`}>
+         <div className={`${viewMode === 'calendar' ? 'bg-white rounded-2xl shadow-sm border border-slate-100 p-2 sm:p-4 min-h-[500px] flex flex-col' : 'hidden'}`}>
             {loading ? (
               <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-3">
                 <i className="fa-solid fa-spinner fa-spin text-3xl text-teal-500"></i>
@@ -219,7 +248,21 @@ export default function Calendario() {
                 </div>
               </>
             )}
-          </div>
+         </div>
+
+         {viewMode === 'cards' && (
+             <VistaTarjetas 
+                 centroFiltro={centroFiltro} 
+                 userFiltro={userFiltro} 
+                 onClickEvent={(ev) => {
+                     setSelectedEventParaVer({
+                         start: new Date(ev.start),
+                         extendedProps: ev.extendedProps
+                     });
+                     setIsVerModalOpen(true);
+                 }} 
+             />
+         )}
         </section>
       </main>
 
@@ -240,7 +283,7 @@ export default function Calendario() {
               users={data.users}
               suscripciones={data.suscripciones}
               onSuccess={() => {
-                  if (window.calendar) window.calendar.refetchEvents();
+                  if (window.calendar && viewMode === 'calendar') window.calendar.refetchEvents();
                   const summaryEl = document.getElementById('calendar-summary');
                   if (summaryEl) summaryEl.innerHTML = `<p style="color:#10b981; font-weight:bold;"><i class="fa-solid fa-check-circle"></i> ¡Clase agendada correctamente!</p>`;
               }}
@@ -254,7 +297,7 @@ export default function Calendario() {
               users={data.users}
               suscripciones={data.suscripciones}
               onSuccess={() => {
-                  if (window.calendar) window.calendar.refetchEvents();
+                  if (window.calendar && viewMode === 'calendar') window.calendar.refetchEvents();
               }}
            />
          </>

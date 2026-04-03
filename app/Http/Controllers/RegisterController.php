@@ -40,10 +40,27 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        Auth::login($user);
+        // Asegurar que el usuario se registra como 'cliente'
+        $user->assignRole('cliente');
 
-        // REDIRIGIR DESPUÉS DE REGISTRAR
-        return redirect('/');  // Cambia esto si quieres otra ruta
+        // Autenticamos automáticamente al usuario recién registrado
+        Auth::guard('web')->login($user);
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Cuenta creada correctamente.',
+                'redirect' => url('/'),
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => 'cliente',
+                ]
+            ], 201);
+        }
+
+        // Si por alguna razón entra normal envés de por json de React
+        return redirect('/');
     }
 
 }

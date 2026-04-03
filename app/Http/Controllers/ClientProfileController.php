@@ -12,7 +12,13 @@ class ClientProfileController extends Controller
 {
     public function show(User $user)
     {
-        // El entrenador o admin pueden ver todo.
+        // El cliente solo puede ver su propia ficha.
+        if (Auth::user()->hasRole('cliente') && !Auth::user()->hasRole('admin') && !Auth::user()->hasRole('entrenador')) {
+            if (Auth::id() !== $user->id) {
+                return abort(403, 'No tienes permiso para ver esta ficha.');
+            }
+        }
+
         // El propio cliente solo ve los archivos que no son privados.
         /* Desactivado por ahora a petición del usuario
         $canSeePrivate = Auth::user()->hasRole('admin') || Auth::user()->hasRole('entrenador');
@@ -49,6 +55,13 @@ class ClientProfileController extends Controller
 
     public function update(Request $request, User $user)
     {
+        // El cliente solo puede actualizar su propia ficha.
+        if (Auth::user()->hasRole('cliente') && !Auth::user()->hasRole('admin') && !Auth::user()->hasRole('entrenador')) {
+            if (Auth::id() !== $user->id) {
+                return abort(403, 'No tienes permiso para actualizar esta ficha.');
+            }
+        }
+
         $validated = $request->validate([
             'dni' => 'nullable|string|max:20',
             'direccion' => 'nullable|string|max:255',
@@ -64,6 +77,13 @@ class ClientProfileController extends Controller
 
     public function uploadFile(Request $request, User $user)
     {
+        // El cliente solo puede subir archivos a su propia ficha.
+        if (Auth::user()->hasRole('cliente') && !Auth::user()->hasRole('admin') && !Auth::user()->hasRole('entrenador')) {
+            if (Auth::id() !== $user->id) {
+                return abort(403, 'No tienes permiso para subir archivos a esta ficha.');
+            }
+        }
+
         $request->validate([
             'file' => 'required|file|max:10240', // 10MB
             'is_private' => 'nullable' // Desactivado por ahora
