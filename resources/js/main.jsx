@@ -8,9 +8,12 @@ import '../css/index.css'
 const rootElement = document.getElementById('root');
 if (rootElement) {
   const root = ReactDOM.createRoot(rootElement);
+  // Detectar si estamos en una subcarpeta (ej: /public/)
+  const basename = window.location.pathname.startsWith('/public') ? '/public' : '';
+  
   root.render(
     <React.StrictMode>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <App />
       </BrowserRouter>
     </React.StrictMode>,

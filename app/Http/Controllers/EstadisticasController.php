@@ -21,15 +21,28 @@ class EstadisticasController extends Controller
     public function data(Request $request)
     {
         // 1. KPIs Generales
-            $totalClientes = User::role('cliente')->count();
-            $totalEntrenadores = User::role('entrenador')->count();
+            $totalClientes = 0;
+            try {
+                $totalClientes = User::role('cliente', 'web')->count();
+            } catch (\Exception $e) { \Log::error("Error clientes: " . $e->getMessage()); }
+
+            $totalEntrenadores = 0;
+            try {
+                $totalEntrenadores = \App\Models\Entrenador::role('entrenador', 'staff')->count();
+            } catch (\Exception $e) { \Log::error("Error entrenadores: " . $e->getMessage()); }
             
             $startOfMonth = Carbon::now()->startOfMonth();
             $endOfMonth = Carbon::now()->endOfMonth();
             
-            $ingresosMes = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])->sum('importe');
+            $ingresosMes = 0;
+            try {
+                $ingresosMes = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])->sum('importe');
+            } catch (\Exception $e) { }
             
-            $sesionesMesCount = HorarioClase::whereBetween('fecha_hora_inicio', [$startOfMonth, $endOfMonth])->count();
+            $sesionesMesCount = 0;
+            try {
+                $sesionesMesCount = HorarioClase::whereBetween('fecha_hora_inicio', [$startOfMonth, $endOfMonth])->count();
+            } catch (\Exception $e) { }
 
             // 2. Gráfico de Ingresos (Últimos 6 meses)
             $ingresos6Meses = [];

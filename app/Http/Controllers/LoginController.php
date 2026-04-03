@@ -19,51 +19,55 @@ class LoginController extends Controller
     }
     public function login(Request $request)
     {
-         // Validación de las credenciales
+        // Validación de las credenciales
         try {
             $credentials = $request->validate([
                 'email' => ['required', 'email'],
                 'password' => ['required', 'string'],
-            ], [
-                'email.required' => 'El correo electrónico es obligatorio.',
-                'email.email' => 'El correo electrónico no es válido.',
-                'password.required' => 'La contraseña es obligatoria.',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json($e->errors(), 422);
-            }
-            throw $e;
+            return response()->json($e->errors(), 422);
         }
 
-        // Intentar autenticar
-        if (Auth::attempt($credentials)) {
+        // 1. Intentar autenticar como Personal (Admin/Entrenador)
+        if (Auth::guard('staff')->attempt($credentials)) {
             $request->session()->regenerate();
-
-            if ($request->wantsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'redirect' => '/calendario',
-                    'user' => Auth::user()
-                ]);
-            }
-
-            return redirect()->intended('/calendario');
-        }
-
-        // Si falla la autenticación
-        if ($request->wantsJson() || $request->ajax()) {
+            $user = Auth::guard('staff')->user();
+            
             return response()->json([
-                'message' => 'Las credenciales no coinciden.',
-                'errors' => [
-                    'general' => ['Correo electrónico o contraseña incorrectos.']
+                'success' => true,
+                'redirect' => route('calendario'),
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->hasRole('admin') ? 'admin' : 'entrenador',
                 ]
-            ], 422);
+            ]);
         }
 
-        return back()->withErrors([
-            'email' => 'Las credenciales no son correctas.',
-        ])->onlyInput('email');
+        // 2. Intentar autenticar como Cliente
+        if (Auth::guard('web')->attempt($credentials)) {
+            $request->session()->regenerate();
+            $user = Auth::guard('web')->user();
+
+            return response()->json([
+                'success' => true,
+                'redirect' => route('welcome'),
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => 'cliente',
+                ]
+            ]);
+        }
+
+        // Si falla la autenticación en ambos
+        return response()->json([
+            'message' => 'Las credenciales no coinciden.',
+            'errors' => [
+                'general' => ['Correo electrónico o contraseña incorrectos.']
+            ]
+        ], 422);
     }
 
     /**

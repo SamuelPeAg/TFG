@@ -8,21 +8,21 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class Entrenador extends Authenticatable
 {
     use HasFactory, SoftDeletes, Notifiable, HasRoles;
+
+    protected $table = 'entrenadores';
+    protected $guard_name = 'staff'; // Forzar la guardia para Spatie
 
     protected $fillable = [
         'name',
         'email',
         'password',
         'dni',
-        'direccion',
-        'codigo_postal',
-        'ciudad',
-        'activation_token',
         'foto_de_perfil',
-        'additional_attributes',
+        'iban',
+        'precio_hora',
         'centro_id',
         'empresa_id',
     ];
@@ -34,7 +34,6 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'additional_attributes' => 'array',
     ];
 
     public function empresa()
@@ -47,15 +46,13 @@ class User extends Authenticatable
         return $this->belongsTo(Centro::class);
     }
 
-    // Relación de uno a muchos con SuscripcionUsuario (para clientes)
-    public function suscripciones()
+    public function clasesImpartidas()
     {
-        return $this->hasMany(\App\Models\SuscripcionUsuario::class, 'id_usuario');
+        return $this->hasMany(HorarioClase::class, 'entrenador_id');
     }
 
-    // Relación con archivos del cliente (Historia Clínica / Notas)
-    public function clientFiles()
+    public function nominas()
     {
-        return $this->hasMany(ClientFile::class);
+        return $this->hasMany(Nomina_entrenador::class, 'entrenador_id');
     }
 }

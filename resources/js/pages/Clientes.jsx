@@ -46,7 +46,7 @@ export default function Clientes() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/users', {
+      const response = await axios.get('users', {
         headers: {
           'Accept': 'application/json'
         }
@@ -74,7 +74,7 @@ export default function Clientes() {
   const handleDelete = async (user) => {
     if (confirm(`¿Estás seguro de que deseas eliminar a ${user.name}?`)) {
       try {
-        await axios.delete(`/users/${user.id}`);
+        await axios.delete(`users/${user.id}`);
         fetchUsers();
       } catch (error) {
         console.error('Error deleting user:', error);
@@ -85,9 +85,9 @@ export default function Clientes() {
 
   const handleSave = async (formData, mode, id) => {
     if (mode === 'create') {
-      await axios.post('/users', formData);
+      await axios.post('users', formData);
     } else {
-      await axios.put(`/users/${id}`, formData);
+      await axios.put(`users/${id}`, formData);
     }
     fetchUsers();
   };

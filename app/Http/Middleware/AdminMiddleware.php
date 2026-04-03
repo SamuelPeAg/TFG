@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use Illuminate\Support\Facades\Auth;
+
 class AdminMiddleware
 {
     /**
@@ -15,8 +17,9 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-        if (! $user || ! method_exists($user, 'hasRole') || ! $user->hasRole('admin')) {
+        $user = Auth::guard('staff')->user();
+        
+        if (! $user || ! $user->hasRole('admin')) {
             abort(403, 'Acceso prohibido: se requiere rol admin.');
         }
 

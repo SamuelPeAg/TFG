@@ -17,44 +17,20 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => Hash::make('password'),
-            'iban' => $this->fakeSpanishIban(),
+            'dni' => fake()->unique()->regexify('[0-9]{8}[A-Z]'),
+            'direccion' => fake()->streetAddress(),
+            'codigo_postal' => fake()->postcode(),
+            'ciudad' => fake()->city(),
         ];
     }
 
     /**
-     * Estados con roles Spatie
+     * Estados con roles Spatie (Guard: web)
      */
-    public function admin(): static
-    {
-        return $this->afterCreating(function (User $user) {
-            $user->assignRole('admin');
-        });
-    }
-
-    public function entrenador(): static
-    {
-        return $this->afterCreating(function (User $user) {
-            $user->assignRole('entrenador');
-        });
-    }
-
     public function cliente(): static
     {
         return $this->afterCreating(function (User $user) {
             $user->assignRole('cliente');
         });
-    }
-
-    /**
-     * Helper: IBAN español falso (válido en formato, no necesariamente real)
-     */
-    private function fakeSpanishIban(): string
-    {
-        // ES + 22 dígitos
-        $digits = '';
-        for ($i = 0; $i < 22; $i++) {
-            $digits .= (string) random_int(0, 9);
-        }
-        return 'ES' . $digits;
     }
 }

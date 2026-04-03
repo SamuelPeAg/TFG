@@ -42,7 +42,7 @@ class UserController extends Controller
     public function index()
     {
         // Mostrar solo clientes en la interfaz de usuarios
-        $users = User::role('cliente')
+        $users = User::role('cliente', 'web')
             ->with(['suscripciones.suscripcion.centro', 'empresa', 'centro'])
             ->get();
         

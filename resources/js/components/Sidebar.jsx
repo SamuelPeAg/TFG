@@ -25,12 +25,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   const handleLogout = async (e) => {
     e.preventDefault();
+    const baseUrl = window.AppConfig?.baseUrl || '/';
     try {
-      await axios.post('/logout');
-      window.location.href = '/';
+      await axios.post(`${baseUrl}logout`);
+      window.location.href = baseUrl;
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
-      window.location.href = '/';
+      window.location.href = baseUrl;
     }
   };
 
@@ -52,6 +53,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   const clientLinks = [
     { name: 'MI FICHA', path: '/mi-ficha', icon: 'fa-solid fa-folder-open text-[#38C1A3]' },
+    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
   ];
 
   const linksToShow = isAdmin ? adminLinks : (isTrainer ? trainerLinks : clientLinks);
@@ -69,7 +71,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       >
         <div className="pt-10 pb-6 flex flex-col items-center">
           <Link to="/" className="flex flex-col items-center gap-3 group">
-            <img src="/img/logopng.png" alt="Factomove Logo" className="h-14 w-auto drop-shadow-md transition-transform group-hover:scale-105" />
+            <img src={`${window.AppConfig?.baseUrl || '/'}img/logopng.png`} alt="Factomove Logo" className="h-14 w-auto drop-shadow-md transition-transform group-hover:scale-105" />
             <h2 className="text-2xl font-black text-white tracking-tighter drop-shadow-sm">Factomove</h2>
           </Link>
         </div>

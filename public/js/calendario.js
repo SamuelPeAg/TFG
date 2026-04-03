@@ -49,7 +49,8 @@ window.initCalendarioVanilla = () => {
         events: function (info, successCallback, failureCallback) {
             const centro = document.getElementById('filter-center')?.value || '';
             const userQ = document.getElementById('search-user')?.value || '';
-            const url = `/usuarios/Pagos?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}`;
+            const baseUrl = window.BASE_URL || '/';
+            const url = `${baseUrl}usuarios/Pagos?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}`;
 
             fetch(url)
                 .then(res => {
@@ -379,7 +380,8 @@ window.initCalendarioVanilla = () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/add-trainer', {
+            const baseUrl = window.BASE_URL || '/';
+            const res = await fetch(`${baseUrl}Pagos/add-trainer`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -424,7 +426,8 @@ window.initCalendarioVanilla = () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/remove-trainer', {
+            const baseUrl = window.BASE_URL || '/';
+            const res = await fetch(`${baseUrl}Pagos/remove-trainer`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -474,7 +477,8 @@ window.initCalendarioVanilla = () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/add-client', {
+            const baseUrl = window.BASE_URL || '/';
+            const res = await fetch(`${baseUrl}Pagos/add-client`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -516,7 +520,8 @@ window.initCalendarioVanilla = () => {
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/remove-client', {
+            const baseUrl = window.BASE_URL || '/';
+            const res = await fetch(`${baseUrl}Pagos/remove-client`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -545,11 +550,12 @@ window.initCalendarioVanilla = () => {
         if (!confirm('¿Estás seguro de eliminar esta sesión y todos sus pagos?')) return;
 
         try {
+            const baseUrl = window.BASE_URL || '/';
             const formData = new FormData();
             formData.append('fecha_hora', sessionKey.fecha_hora);
             formData.append('nombre_clase', sessionKey.nombre_clase);
             formData.append('centro', sessionKey.centro);
-            const res = await fetch('/Pagos/delete-session', {
+            const res = await fetch(`${baseUrl}Pagos/delete-session`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
                 body: formData
@@ -582,7 +588,8 @@ window.initCalendarioVanilla = () => {
             // if ((tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') && payload.users.length < 4) { ... }
 
             try {
-                const res = await fetch(formNuevaClase.action, {
+                const baseUrl = window.BASE_URL || '/';
+                const res = await fetch(`${baseUrl}Pagos`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

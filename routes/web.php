@@ -104,7 +104,7 @@ Route::middleware('guest')->group(function () {
 Route::get('/activate-account/{token}', [UserController::class, 'showActivationForm'])->name('activate.show');
 Route::post('/activate-account/{token}', [UserController::class, 'activate'])->name('activate.process');
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:web,staff')->group(function () {
 
     // Logout
     Route::post('/logout', function () {
@@ -133,16 +133,24 @@ Route::middleware('auth')->group(function () {
     Route::get('/client-file/{file}/download', [ClientProfileController::class, 'downloadFile'])->name('client-file.download');
 
 
+    // Calendario (Vista principal) para todos los usuarios autenticados
+    Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario');
+
+    // Gestión de Pagos / Clases (Acciones del Calendario) para todos los usuarios autenticados
+    Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
+    Route::get('/usuarios/Pagos', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar');
+    Route::post('/Pagos/add-trainer', [PagosController::class, 'addTrainerToSession'])->name('Pagos.addTrainer');
+    Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])->name('Pagos.removeTrainer');
+    Route::post('/Pagos/add-client', [PagosController::class, 'addClientToSession'])->name('Pagos.addClient');
+    Route::post('/Pagos/remove-client', [PagosController::class, 'removeClientFromSession'])->name('Pagos.removeClient');
+
+
     /*
     |--------------------------------------------------------------------------
     | 3.1 COMPARTIDO (ADMIN & ENTRENADOR)
     |--------------------------------------------------------------------------
     */
     Route::middleware(\App\Http\Middleware\AdminOrEntrenadorMiddleware::class)->group(function () {
-
-        // Calendario (Vista principal)
-        Route::get('/calendario', [CalendarioController::class, 'index'])
-            ->name('calendario'); // Revertido para evitar error RouteNotFoundException
 
         // Listas para POS (Shared)
         Route::prefix('api')->group(function () {
@@ -154,13 +162,7 @@ Route::middleware('auth')->group(function () {
             });
         });
 
-        // Gestión de Pagos / Clases (Acciones del Calendario)
-        Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
-        Route::get('/usuarios/Pagos', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar');
-        Route::post('/Pagos/add-trainer', [PagosController::class, 'addTrainerToSession'])->name('Pagos.addTrainer');
-        Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])->name('Pagos.removeTrainer');
-        Route::post('/Pagos/add-client', [PagosController::class, 'addClientToSession'])->name('Pagos.addClient');
-        Route::post('/Pagos/remove-client', [PagosController::class, 'removeClientFromSession'])->name('Pagos.removeClient');
+        // Movido arriba
 
         // Facturación
         Route::get('/facturas', [FacturacionController::class, 'index'])->name('facturas');

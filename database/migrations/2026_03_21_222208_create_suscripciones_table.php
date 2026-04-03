@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('id_centro')->nullable()->constrained('centros')->onDelete('cascade');
             $table->integer('creditos_por_periodo')->default(1);
             $table->enum('periodo', ['semanal', 'mensual'])->default('semanal');
+            $table->decimal('precio', 10, 2)->default(0);
             $table->integer('limite_acumulacion')->nullable()->default(0);
             $table->integer('meses_reset')->nullable()->default(1);
             $table->timestamps();

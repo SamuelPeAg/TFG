@@ -14,10 +14,11 @@ class NominaPdfController extends Controller
      */
     public function preview($id)
     {
-        $nomina = Nomina_entrenador::with('user')->findOrFail($id);
+        $nomina = Nomina_entrenador::with('entrenador')->findOrFail($id);
+        $user = Auth::guard('staff')->user();
 
-        // Seguridad: Solo admin o el propio entrenador
-        if (!Auth::user()->hasRole('admin') && Auth::id() !== $nomina->user_id) {
+        // Seguridad: Solo admin staff o el propio entrenador
+        if (!$user || (!$user->hasRole('admin') && $user->id !== $nomina->entrenador_id)) {
             abort(403);
         }
 
@@ -31,15 +32,16 @@ class NominaPdfController extends Controller
      */
     public function download($id)
     {
-        $nomina = Nomina_entrenador::with('user')->findOrFail($id);
+        $nomina = Nomina_entrenador::with('entrenador')->findOrFail($id);
+        $user = Auth::guard('staff')->user();
 
-        if (!Auth::user()->hasRole('admin') && Auth::id() !== $nomina->user_id) {
+        if (!$user || (!$user->hasRole('admin') && $user->id !== $nomina->entrenador_id)) {
             abort(403);
         }
 
         $pdf = $this->generatePdf($nomina);
         
-        return $pdf->download("nomina_{$nomina->user->name}_{$nomina->mes}_{$nomina->anio}.pdf");
+        return $pdf->download("nomina_{$nomina->entrenador->name}_{$nomina->mes}_{$nomina->anio}.pdf");
     }
 
     /**
@@ -49,7 +51,7 @@ class NominaPdfController extends Controller
     {
         $data = [
             'nomina' => $nomina,
-            'user' => $nomina->user,
+            'entrenador' => $nomina->entrenador,
             'detalles' => $nomina->detalles,
             'mes_nombre' => $this->getNombreMes($nomina->mes)
         ];

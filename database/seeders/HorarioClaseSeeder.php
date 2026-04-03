@@ -12,7 +12,7 @@ class HorarioClaseSeeder extends Seeder
     public function run(): void
     {
         $clases = \App\Models\Clase::all();
-        $entrenadores = \App\Models\User::role('entrenador')->get();
+        $entrenadores = \App\Models\Entrenador::role('entrenador')->get();
         $centros = \App\Models\Centro::all();
 
         if ($clases->isEmpty() || $entrenadores->isEmpty() || $centros->isEmpty()) {

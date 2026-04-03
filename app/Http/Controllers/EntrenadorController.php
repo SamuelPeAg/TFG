@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\EntrenadorRegistrationMail;
+use App\Models\Entrenador;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +16,7 @@ class EntrenadorController extends Controller
 {
     public function index()
     {
-        $entrenadores = User::role('entrenador')->get();
+        $entrenadores = Entrenador::role('entrenador', 'staff')->get();
         if (request()->wantsJson() || request()->ajax()) {
             return response()->json($entrenadores);
         }
@@ -36,13 +37,13 @@ class EntrenadorController extends Controller
         ]);
         $token = Str::random(60);
         // Crear el usuario entrenador (solo nombre y email)
-        $user = User::create([
+        $user = Entrenador::create([
             'name' => $request->nombre,
             'email' => $request->email,
             'password' => Hash::make(Str::random(24)),
             'activation_token' => $token
         ]);
-        // Crear un token de activación para el entrenador
+        // Asignar rol
         $user->assignRole('entrenador');
 
 
@@ -71,7 +72,7 @@ class EntrenadorController extends Controller
             'iban.min' => 'El IBAN debe tener al menos 8 caracteres.',
         ]);
 
-        $user = User::findOrFail($id);
+        $user = Entrenador::findOrFail($id);
 
         $data = [
             'iban' => $request->iban,
@@ -102,7 +103,7 @@ class EntrenadorController extends Controller
 
     public function destroy($id)
     {
-        $user = User::role('entrenador')->whereKey($id)->firstOrFail();
+        $user = Entrenador::role('entrenador', 'staff')->whereKey($id)->firstOrFail();
 
         $user->delete();
 
@@ -127,7 +128,7 @@ class EntrenadorController extends Controller
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
-        $user = User::findOrFail($id);
+        $user = Entrenador::findOrFail($id);
 
         // Security Check: Verify token matches
         if ($user->activation_token !== $request->token) {
@@ -141,7 +142,7 @@ class EntrenadorController extends Controller
         ]);
 
         // Autologin del usuario tras activar la cuenta
-        Auth::login($user); 
+        Auth::guard('staff')->login($user); 
 
         return redirect()->route('calendario')->with('success', '¡Cuenta activada correctamente! Ya estás dentro de Factomove.');
     }

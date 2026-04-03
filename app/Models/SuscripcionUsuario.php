@@ -41,6 +41,6 @@ class SuscripcionUsuario extends Model
      */
     public function entrenador()
     {
-        return $this->belongsTo(User::class, 'id_entrenador');
+        return $this->belongsTo(Entrenador::class, 'id_entrenador');
     }
 }

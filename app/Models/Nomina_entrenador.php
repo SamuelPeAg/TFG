@@ -12,7 +12,7 @@ class Nomina_entrenador extends Model
     protected $table = 'nominas';
 
     protected $fillable = [
-        'user_id', 
+        'entrenador_id', 
         'mes', 
         'anio', 
         'concepto', 
@@ -30,8 +30,8 @@ class Nomina_entrenador extends Model
         'detalles' => 'array',
     ];
 
-    public function user()
+    public function entrenador()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Entrenador::class, 'entrenador_id');
     }
 }

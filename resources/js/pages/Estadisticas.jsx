@@ -39,7 +39,7 @@ export default function Estadisticas() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get('/api/estadisticas', { headers: { Accept: 'application/json' } });
+      const res = await axios.get('api/estadisticas', { headers: { Accept: 'application/json' } });
       setData(res.data);
     } catch (err) {
       console.error('Error al cargar estadísticas:', err);

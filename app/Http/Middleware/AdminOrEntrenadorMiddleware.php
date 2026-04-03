@@ -6,12 +6,15 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use Illuminate\Support\Facades\Auth;
+
 class AdminOrEntrenadorMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
-        if (! $user || ! method_exists($user, 'hasRole')) {
+        $user = Auth::guard('staff')->user();
+
+        if (! $user) {
             abort(403, 'Acceso prohibido.');
         }
 

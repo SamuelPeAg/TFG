@@ -20,6 +20,7 @@ class SuscripcionSeeder extends Seeder
                 'id_centro' => $centroId,
                 'creditos_por_periodo' => 8,
                 'periodo' => 'mensual',
+                'precio' => 50.00,
                 'limite_acumulacion' => 2,
                 'meses_reset' => 1,
             ]
@@ -32,6 +33,7 @@ class SuscripcionSeeder extends Seeder
                 'id_centro' => $centroId,
                 'creditos_por_periodo' => 2,
                 'periodo' => 'semanal',
+                'precio' => 15.00,
                 'limite_acumulacion' => 0,
                 'meses_reset' => 0,
             ]

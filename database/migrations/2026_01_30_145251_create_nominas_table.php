@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('nominas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('entrenador_id')->constrained('entrenadores')->onDelete('cascade');
             $table->integer('mes');
             $table->integer('anio');
             $table->string('concepto')->default('Nómina Mensual');

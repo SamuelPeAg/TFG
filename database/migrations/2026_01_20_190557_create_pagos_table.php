@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('entrenador_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('entrenador_id')->nullable()->constrained('entrenadores')->nullOnDelete();
 
             $table->string('centro');
             $table->string('nombre_clase');

@@ -22,7 +22,7 @@ export default function Calendario() {
 
   // 1. Fetch initialization data
   useEffect(() => {
-    axios.get('/calendario', { headers: { 'Accept': 'application/json' } })
+    axios.get('calendario', { headers: { 'Accept': 'application/json' } })
       .then(res => {
         setData(res.data);
       })
@@ -42,9 +42,15 @@ export default function Calendario() {
     window.CURRENT_USER_ID = user?.id || null;
     window.IS_ADMIN = user?.role === 'admin';
     window.IS_TRAINER = user?.role === 'entrenador';
+    
+    // Pass baseUrl to vanilla scripts
+    window.BASE_URL = window.AppConfig?.baseUrl || '/';
 
     const loadScript = (src) => new Promise((resolve, reject) => {
-      if (document.querySelector(`script[src="${src}"]`) || document.querySelector(`link[href="${src}"]`)) {
+      // Ensure absolute path with baseUrl if needed
+      const fullSrc = (src.startsWith('http') || src.startsWith('//')) ? src : (window.BASE_URL + src.replace(/^\//, ''));
+      
+      if (document.querySelector(`script[src="${fullSrc}"]`) || document.querySelector(`link[href="${fullSrc}"]`)) {
         resolve(); // already exists
         return;
       }
@@ -52,10 +58,10 @@ export default function Calendario() {
       if (src.endsWith('.css')) {
           element = document.createElement('link');
           element.rel = 'stylesheet';
-          element.href = src;
+          element.href = fullSrc;
       } else {
           element = document.createElement('script');
-          element.src = src;
+          element.src = fullSrc;
       }
       element.onload = resolve;
       element.onerror = reject;

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('pago_entrenador', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pago_id')->constrained('pagos')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('entrenador_id')->constrained('entrenadores')->onDelete('cascade');
             $table->timestamps();
         });
     }

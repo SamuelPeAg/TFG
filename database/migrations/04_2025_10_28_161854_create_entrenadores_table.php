@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('entrenadores', function (Blueprint $table) {
             $table->id();
 
             $table->string('name');
@@ -16,15 +16,15 @@ return new class extends Migration
             $table->string('password');
 
             $table->string('dni')->nullable()->unique();
-            $table->string('direccion')->nullable();
-            $table->string('codigo_postal')->nullable();
-            $table->string('ciudad')->nullable();
-            
-            $table->string('activation_token', 60)->nullable()->unique();
             $table->string('foto_de_perfil')->nullable();
+            
+            // Datos laborales/Staff
             $table->string('iban')->nullable()->unique();
             $table->decimal('precio_hora', 10, 2)->default(0);
-            $table->json('additional_attributes')->nullable();
+
+            // Relaciones consolidadas
+            $table->foreignId('centro_id')->nullable()->constrained('centros')->nullOnDelete();
+            $table->foreignId('empresa_id')->nullable()->constrained('empresas')->nullOnDelete();
 
             $table->timestamps();
             $table->softDeletes();
@@ -33,6 +33,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('entrenadores');
     }
 };

@@ -43,13 +43,26 @@
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/main.jsx'])
 
+    @php
+      $user = null;
+      $role = null;
+      if (Auth::guard('staff')->check()) {
+        $user = Auth::guard('staff')->user();
+        $role = $user->hasRole('admin') ? 'admin' : 'entrenador';
+      } elseif (Auth::guard('web')->check()) {
+        $user = Auth::guard('web')->user();
+        $role = 'cliente';
+      }
+    @endphp
+
     <script>
       window.AppConfig = {
-        user: {!! json_encode(Auth::check() ? [
-          'id' => Auth::id(),
-          'name' => Auth::user()->name,
-          'role' => Auth::user()->hasRole('admin') ? 'admin' : (Auth::user()->hasRole('entrenador') ? 'entrenador' : 'cliente'),
-          'photo' => Auth::user()->foto_de_perfil ? asset('storage/' . Auth::user()->foto_de_perfil) : null
+        baseUrl: '{{ asset("/") }}',
+        user: {!! json_encode($user ? [
+          'id' => $user->id,
+          'name' => $user->name,
+          'role' => $role,
+          'photo' => $user->foto_de_perfil ? asset('storage/' . $user->foto_de_perfil) : null
         ] : null) !!}
       };
     </script>

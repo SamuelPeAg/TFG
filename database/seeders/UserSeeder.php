@@ -14,21 +14,21 @@ class UserSeeder extends Seeder
         // Limpia caché de permisos de Spatie
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Usuario admin fijo (imprescindible para entrar)
-        $admin = User::firstOrCreate(
-            ['email' => 'test@example.com'],
+        // Crear Cliente de prueba
+        $cliente = User::firstOrCreate(
+            ['email' => 'cliente@factomove.com'],
             [
-                'name' => 'Admin',
-                'password' => Hash::make('password'),
-                'foto_de_perfil' => 'perfil_admin.jpg',
-                'iban' => 'ES1234567890123456789012',
-                'firma_digital' => 'firma_admin',
+                'name' => 'Cliente de Prueba',
+                'password' => Hash::make('cliente123'),
+                'dni' => '12345678X',
+                'direccion' => 'Calle Falsa 123',
+                'ciudad' => 'Córdoba',
             ]
         );
 
-        // Asegura el rol admin
-        if (!$admin->hasRole('admin')) {
-            $admin->assignRole('admin');
+        // Asegura el rol cliente (guard web)
+        if (!$cliente->hasRole('cliente')) {
+            $cliente->assignRole('cliente');
         }
     }
 }

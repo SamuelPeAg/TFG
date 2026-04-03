@@ -13,6 +13,8 @@ export default function Register() {
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -34,9 +36,9 @@ export default function Register() {
     setErrors({})
 
     try {
-      const response = await axios.post('/register', formData)
+      const response = await axios.post('register', formData)
       if (response.status === 201 || response.status === 200) {
-        window.location.href = '/login?registered=true'
+        window.location.href = (window.AppConfig?.baseUrl || '/') + 'login?registered=true'
       }
     } catch (err) {
       if (err.response?.data?.errors) {
@@ -63,7 +65,7 @@ export default function Register() {
           {/* ENCABEZADO DE LA TARJETA */}
           <div className="px-8 pt-10 pb-4 text-center">
             <img
-              src="/img/logopng.png"
+              src={`${window.AppConfig?.baseUrl || '/'}img/logopng.png`}
               alt="Factomove Logo"
               className="h-28 w-auto mx-auto mb-6 transform hover:scale-105 transition duration-300"
             />
@@ -149,18 +151,25 @@ export default function Register() {
                     <i className="fa-solid fa-lock text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                   </div>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl outline-none transition duration-200 sm:text-sm font-medium text-gray-800 ${
+                    className={`block w-full pl-10 pr-12 py-3 bg-gray-50 border rounded-xl outline-none transition duration-200 sm:text-sm font-medium text-gray-800 ${
                       errors.password ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-200 focus:ring-2 focus:ring-green-500'
                     }`}
                     placeholder="Mínimo 8 caracteres"
                     required
                     autoComplete="new-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-brandCoral transition"
+                  >
+                    <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                  </button>
                 </div>
                 {errors.password && (
                   <p className="mt-1 text-xs text-red-500 font-bold ml-1">{errors.password[0]}</p>
@@ -177,17 +186,24 @@ export default function Register() {
                     <i className="fa-solid fa-check-double text-brandCoral group-focus-within:text-brandCoral/80 transition text-lg"></i>
                   </div>
                   <input
-                    type="password"
+                    type={showConfirmPassword ? "text" : "password"}
                     id="password_confirmation"
                     name="password_confirmation"
                     value={formData.password_confirmation}
                     onChange={handleChange}
-                    className={`block w-full pl-10 pr-4 py-3 bg-gray-50 border rounded-xl outline-none transition duration-200 sm:text-sm font-medium text-gray-800 ${
+                    className={`block w-full pl-10 pr-12 py-3 bg-gray-50 border rounded-xl outline-none transition duration-200 sm:text-sm font-medium text-gray-800 ${
                       errors.password ? 'border-red-500 ring-2 ring-red-100' : 'border-gray-200 focus:ring-2 focus:ring-green-500'
                     }`}
                     placeholder="Repite tu contraseña"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-brandCoral transition"
+                  >
+                    <i className={`fa-solid ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                  </button>
                 </div>
               </div>
 

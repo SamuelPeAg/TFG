@@ -10,7 +10,11 @@ export default function Header() {
           
           <div className="shrink-0 flex items-center gap-2">
             <Link to="/" className="flex items-center gap-2">
-              <img src="/img/logopng.png" alt="Factomove Logo" className="h-10 w-auto" />
+              <img 
+                src={`${window.AppConfig?.baseUrl || '/'}img/logopng.png`} 
+                alt="Factomove Logo" 
+                className="h-10 w-auto" 
+              />
               <span className="font-bold text-lg text-gray-900 dark:text-white">Factomove</span>
             </Link>
           </div>
@@ -44,9 +48,15 @@ export default function Header() {
                   </Link>
                 </>
               ) : (
-                <Link to="/login" className="text-gray-700 dark:text-gray-200 font-bold hover:text-[#38C1A3] transition">
-                  Iniciar Sesión
-                </Link>
+                <>
+                  <Link to="/login" className="text-gray-700 dark:text-gray-200 font-bold hover:text-[#38C1A3] transition px-3">
+                    Iniciar Sesión
+                  </Link>
+                  <Link to="/register" className="bg-[#38C1A3] hover:bg-teal-500 text-white px-5 py-2.5 rounded-full font-bold transition shadow-md hover:shadow-lg flex items-center gap-2">
+                    <i className="fa-solid fa-user-plus text-sm"></i>
+                    Crear Cuenta
+                  </Link>
+                </>
               )}
             </div>
           </div>

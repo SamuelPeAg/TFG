@@ -12,6 +12,7 @@ export default function Login() {
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -44,15 +45,13 @@ export default function Login() {
     setErrors({})
 
     try {
-      const response = await axios.post('/login', formData, {
-        headers: {
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
+      console.log('Intentando login...');
+      const response = await axios.post('login', formData);
       
+      console.log('Respuesta recibida:', response.data);
+
       if (response.data.success || response.status === 200 || response.status === 204) {
-        window.location.href = response.data.redirect || '/calendario'
+        window.location.href = response.data.redirect;
       }
     } catch (err) {
       console.error('Login error:', err.response?.data)
@@ -120,8 +119,8 @@ export default function Login() {
               <div className="px-8 pt-8 pb-6 text-center bg-gradient-to-br from-white to-gray-50/50">
                 
                 {/* Logo responsive */}
-                <img
-                  src="/img/logopng.png"
+                <img 
+                  src={`${window.AppConfig?.baseUrl || '/'}img/logopng.png`} 
                   alt="Factomove Logo"
                   className="h-12 lg:h-16 w-auto mx-auto mb-4 transition-all duration-300"
                 />
@@ -188,16 +187,23 @@ export default function Login() {
                         <i className="fa-solid fa-lock text-gray-400 group-focus-within:text-brandCoral transition-colors duration-200"></i>
                       </div>
                       <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         id="password"
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        className="block w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brandCoral/20 focus:bg-white focus:border-brandCoral outline-none transition-all duration-200 text-sm font-medium text-gray-800 placeholder-gray-400"
+                        className="block w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brandCoral/20 focus:bg-white focus:border-brandCoral outline-none transition-all duration-200 text-sm font-medium text-gray-800 placeholder-gray-400"
                         placeholder="••••••••"
                         required
                         autoComplete="current-password"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-brandCoral transition-colors"
+                      >
+                        <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                      </button>
                     </div>
                     {errors.password && (
                       <p className="mt-1 text-xs text-red-500 font-semibold flex items-center gap-1">
@@ -207,32 +213,28 @@ export default function Login() {
                     )}
                   </div>
 
-                  {/* Botón Submit */}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full mt-2 group relative flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-brandTeal/30 text-sm font-bold text-white btn-gradient hover:shadow-xl hover:shadow-brandCoral/30 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brandTeal transition-all duration-300 transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                      <i className="fa-solid fa-right-to-bracket text-white/50 group-hover:text-white transition-colors"></i>
-                    </span>
-                    {loading ? 'INICIANDO...' : 'INICIAR SESIÓN'}
-                  </button>
-                </form>
+                  {/* Botones de Acción */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 group relative flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg shadow-brandTeal/30 text-sm font-bold text-white btn-gradient hover:shadow-xl hover:shadow-brandCoral/30 hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brandTeal transition-all duration-300 transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i className="fa-solid fa-right-to-bracket text-white/50 group-hover:text-white transition-colors"></i>
+                      </span>
+                      {loading ? 'INICIANDO...' : 'INICIAR SESIÓN'}
+                    </button>
 
-                {/* Footer Tarjeta */}
-                <div className="mt-8 pt-6 border-t border-gray-50 text-center">
-                  <p className="text-sm text-gray-600">
-                    ¿Aún no eres miembro?{' '}
                     <Link
                       to="/register"
-                      className="font-bold text-brandTeal hover:text-brandCoral transition-colors duration-200 inline-flex items-center gap-1"
+                      className="flex-1 group relative flex justify-center items-center py-3.5 px-4 border-2 border-brandTeal/20 rounded-xl text-sm font-bold text-brandTeal hover:bg-brandTeal/5 hover:border-brandTeal/50 transition-all duration-300 transform active:scale-[0.98]"
                     >
-                      Crea una cuenta gratis
-                      <i className="fa-solid fa-arrow-right text-xs"></i>
+                      <i className="fa-solid fa-user-plus mr-2 text-brandTeal/70 group-hover:text-brandTeal transition-colors"></i>
+                      CREAR CUENTA
                     </Link>
-                  </p>
-                </div>
+                  </div>
+                </form>
               </div>
             </div>
             

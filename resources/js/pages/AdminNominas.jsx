@@ -41,7 +41,7 @@ export default function AdminNominas() {
   const fetchNominas = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/admin/nominas', {
+      const res = await axios.get('admin/nominas', {
         headers: { Accept: 'application/json' },
         params: { mes: filters.mes, anio: filters.anio }
       });
@@ -68,7 +68,7 @@ export default function AdminNominas() {
   // Actions
   const handlePagar = async (id) => {
       try {
-          const res = await axios.post(`/admin/nominas/${id}/pagar`, {}, {
+          const res = await axios.post(`admin/nominas/${id}/pagar`, {}, {
               headers: { Accept: 'application/json' }
           });
           showToast(res.data.message || 'Nómina marcada como PAGADA.');
@@ -81,7 +81,7 @@ export default function AdminNominas() {
   const handleDelete = async (id) => {
       if(!confirm('¿Seguro que deseas eliminar esta nómina?')) return;
       try {
-          const res = await axios.delete(`/admin/nominas/${id}`, {
+          const res = await axios.delete(`admin/nominas/${id}`, {
               headers: { Accept: 'application/json' }
           });
           showToast(res.data.message || 'Nómina eliminada.');

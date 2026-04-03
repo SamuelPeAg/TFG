@@ -23,7 +23,7 @@ export default function Entrenadores() {
   const fetchEntrenadores = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('/entrenadores', {
+      const response = await axios.get('entrenadores', {
         headers: { Accept: 'application/json' }
       });
       setEntrenadores(response.data);
@@ -49,7 +49,7 @@ export default function Entrenadores() {
   const handleDelete = async (entrenador) => {
     if (confirm(`¿Estás seguro de que deseas eliminar a ${entrenador.name}?`)) {
       try {
-        await axios.delete(`/entrenadores/${entrenador.id}`, {
+        await axios.delete(`entrenadores/${entrenador.id}`, {
             headers: { Accept: 'application/json' }
         });
         fetchEntrenadores();
@@ -62,11 +62,11 @@ export default function Entrenadores() {
 
   const handleSave = async (formData, mode, id) => {
     if (mode === 'create') {
-      await axios.post('/entrenadores', formData, {
+      await axios.post('entrenadores', formData, {
         headers: { Accept: 'application/json' }
       });
     } else {
-      await axios.put(`/entrenadores/${id}`, formData, {
+      await axios.put(`entrenadores/${id}`, formData, {
         headers: { Accept: 'application/json' }
       });
     }
