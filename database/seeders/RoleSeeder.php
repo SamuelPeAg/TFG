@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Entrenador;
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -21,17 +23,17 @@ class RoleSeeder extends Seeder
         Role::firstOrCreate(['name' => 'cliente', 'guard_name' => 'web']);
         
         // Crear Staff de prueba (Admins y Entrenadores)
-        $admin = \App\Models\Entrenador::withTrashed()->updateOrCreate(
-            ['email' => 'admin@factomove.com'],
+        $admin = Entrenador::withTrashed()->updateOrCreate(
+            ['email' => 'admin@factomove'],
             [
                 'name' => 'admin',
-                'password' => Hash::make('admin12345'),
+                'password' => Hash::make('password'),
                 'deleted_at' => null,
             ]
         );
         $admin->syncRoles(['admin']);
 
-        $adminjavi = \App\Models\Entrenador::withTrashed()->updateOrCreate(
+        $adminjavi = Entrenador::withTrashed()->updateOrCreate(
             ['email' => 'javier.ruiz@doc.medac.es'],
             [
                 'name' => 'javi',
@@ -41,14 +43,25 @@ class RoleSeeder extends Seeder
         );
         $adminjavi->syncRoles(['admin']);
         
-        $entrenador = \App\Models\Entrenador::withTrashed()->updateOrCreate(
-            ['email' => 'entrenador@factomove.com'],
+        $entrenador = Entrenador::withTrashed()->updateOrCreate(
+            ['email' => 'entrenador@factomove'],
             [
                 'name' => 'entrenador',
-                'password' => Hash::make('entrenador'),
+                'password' => Hash::make('password'),
                 'deleted_at' => null,
             ]
         );
         $entrenador->syncRoles(["entrenador"]);
+
+        $cliente = User::withTrashed()->updateOrCreate(
+            ['email' => 'cliente@factomove'],
+            [
+                'name' => 'cliente',
+                'password' => Hash::make('password'),
+                'deleted_at' => null,
+            ]
+        );
+        $cliente->syncRoles(['cliente']);
+        $cliente->restore();
     }
 }
