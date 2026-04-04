@@ -197,6 +197,7 @@ Route::middleware('auth:web,staff')->group(function () {
 
         Route::post('/users/import', [UserController::class, 'importClients'])->name('users.import');
         Route::post('/users/{user}/send-activation', [UserController::class, 'sendActivation'])->name('users.send-activation');
+        Route::post('/users/bulk-send-activation', [UserController::class, 'bulkSendActivation'])->name('users.bulk-send-activation');
 
         // Ficha de Cliente y Archivos (Historia Clínica / Notas) - Escritura y gestión de archivos solo staff
         Route::prefix('client-profile')->group(function() {

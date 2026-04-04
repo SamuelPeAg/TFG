@@ -24,18 +24,14 @@ class SuscripcionUsuarioController extends Controller
         // Por lo tanto, al asignar inicialmente, el saldo es 0 a menos que se especifique lo contrario (ej: migración manual)
         $saldo = $validated['saldo_actual'] ?? 0;
 
-        $susuario = SuscripcionUsuario::updateOrCreate(
-            [
-                'id_usuario' => $validated['id_usuario'],
-                'id_suscripcion' => $validated['id_suscripcion'],
-            ],
-            [
-                'id_entrenador' => Auth::id(),
-                'saldo_actual' => $saldo,
-                'ultima_recarga' => now(),
-                'estado' => 'activo',
-            ]
-        );
+        $susuario = SuscripcionUsuario::create([
+            'id_usuario' => $validated['id_usuario'],
+            'id_suscripcion' => $validated['id_suscripcion'],
+            'id_entrenador' => Auth::id(),
+            'saldo_actual' => $saldo,
+            'ultima_recarga' => now(),
+            'estado' => 'activo',
+        ]);
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['success' => true, 'suscripcion_usuario' => $susuario]);
