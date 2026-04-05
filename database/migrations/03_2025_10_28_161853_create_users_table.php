@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->boolean('activo')->default(false);
-            $table->string('password');
+            $table->string('password')->nullable();
 
             $table->string('dni')->nullable()->unique();
             $table->string('direccion')->nullable();

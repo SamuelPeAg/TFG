@@ -13,7 +13,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        //
+    ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->render(function (\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Error de conexión con la base de datos.',
+                    'errors' => [
+                        'general' => ['Error de sistema: BD1. Contacta con soporte técnico.']
+                    ]
+                ], 500);
+            }
+        });
     })->create();
 

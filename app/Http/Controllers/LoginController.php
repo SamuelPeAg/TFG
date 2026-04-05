@@ -19,7 +19,7 @@ class LoginController extends Controller
     }
     public function login(Request $request)
     {
-        // Validación de las credenciales
+        // 1. Validación de las credenciales
         try {
             $credentials = $request->validate([
                 'email' => ['required', 'email'],
@@ -29,39 +29,61 @@ class LoginController extends Controller
             return response()->json($e->errors(), 422);
         }
 
-        // 1. Intentar autenticar como Personal (Admin/Entrenador)
-        if (Auth::guard('staff')->attempt($credentials)) {
-            $request->session()->regenerate();
-            $user = Auth::guard('staff')->user();
-            
+        try {
+            // 2. Intentar autenticar como Personal (Admin/Entrenador)
+            // Para el personal (staff), asumimos que siempre están activos o manejamos su estado por separado si es necesario.
+            // Pero añadimos la validación por si acaso.
+            if (Auth::guard('staff')->attempt($credentials)) {
+                $request->session()->regenerate();
+                $user = Auth::guard('staff')->user();
+                
+                return response()->json([
+                    'success' => true,
+                    'redirect' => route('calendario'),
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'role' => $user->hasRole('admin') ? 'admin' : 'entrenador',
+                    ]
+                ]);
+            }
+
+            // 3. Intentar autenticar como Cliente (Solo si está ACTIVO)
+            // Al añadir 'activo' => true, Laravel solo permitirá el login si la columna activo es 1.
+            $clientCredentials = array_merge($credentials, ['activo' => true]);
+            if (Auth::guard('web')->attempt($clientCredentials)) {
+                $request->session()->regenerate();
+                $user = Auth::guard('web')->user();
+
+                return response()->json([
+                    'success' => true,
+                    'redirect' => route('welcome'),
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'role' => 'cliente',
+                    ]
+                ]);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Capturamos errores de base de datos (como tablas faltantes)
             return response()->json([
-                'success' => true,
-                'redirect' => route('calendario'),
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'role' => $user->hasRole('admin') ? 'admin' : 'entrenador',
+                'message' => 'Error de conexión con el servidor.',
+                'errors' => [
+                    'general' => ['Error de sistema: BD1. Contacta con soporte técnico.']
                 ]
-            ]);
+            ], 500);
+        } catch (\Exception $e) {
+            // Error genérico
+            return response()->json([
+                'message' => 'Error inesperado del servidor.',
+                'errors' => [
+                    'general' => ['Hubo un problema procesando tu solicitud.']
+                ]
+            ], 500);
         }
 
-        // 2. Intentar autenticar como Cliente
-        if (Auth::guard('web')->attempt($credentials)) {
-            $request->session()->regenerate();
-            $user = Auth::guard('web')->user();
-
-            return response()->json([
-                'success' => true,
-                'redirect' => route('welcome'),
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'role' => 'cliente',
-                ]
-            ]);
-        }
-
-        // Si falla la autenticación en ambos
+        // Si falla la autenticación en ambos (porque las credenciales no coinciden)
         return response()->json([
             'message' => 'Las credenciales no coinciden.',
             'errors' => [
