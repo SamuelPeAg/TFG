@@ -48,8 +48,13 @@ class EntrenadorController extends Controller
 
 
 
-        // Enviar el email con el enlace de activación
-        Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+        try {
+             // Enviar el email con el enlace de activación
+            Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+        } catch (\Exception $e) {
+            \Log::error('Error sending trainer mail: ' . $e->getMessage());
+            return response()->json(['message' => 'Error al enviar el correo: ' . $e->getMessage()], 500);
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.', 'user' => $user], 201);

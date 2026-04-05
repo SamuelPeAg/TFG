@@ -265,7 +265,9 @@ class UserController extends Controller
             return response()->json(['message' => 'Correo de activación enviado correctamente.']);
         } catch (\Exception $e) {
             \Log::error('Error sending activation mail: ' . $e->getMessage());
-            return response()->json(['message' => 'Error al enviar el correo. Por favor, revisa la configuración de correo.'], 500);
+            return response()->json([
+                'message' => 'Error al enviar el correo: ' . $e->getMessage()
+            ], 500);
         }
     }
 
