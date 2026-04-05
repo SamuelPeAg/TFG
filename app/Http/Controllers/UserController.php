@@ -250,37 +250,70 @@ class UserController extends Controller
 
     public function sendActivation(User $user)
     {
+        // Generar un token único y establecer su expiración (ahora + 24 horas)
         $user->activation_token = \Illuminate\Support\Str::random(60);
+        $user->activation_token_expires_at = now()->addDay();
         $user->save();
+
+        // Generar la URL de activación
         $url = route('activate.show', ['token' => $user->activation_token]);
+
         try {
-            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AccountActivationMail($user, $url));
+            // Usar la mailable ActivationEmail recientemente creada
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ActivationEmail($user, $url));
+            
             return response()->json(['message' => 'Correo de activación enviado correctamente.']);
         } catch (\Exception $e) {
             \Log::error('Error sending activation mail: ' . $e->getMessage());
-            return response()->json(['message' => 'Error al enviar el correo.'], 500);
+            return response()->json(['message' => 'Error al enviar el correo. Por favor, revisa la configuración de correo.'], 500);
         }
     }
 
     public function showActivationForm($token)
     {
-        $user = User::where('activation_token', $token)->first();
-        if (!$user) return redirect('/login')->with('error', 'Token no válido.');
+        // Buscar al usuario por el token y verificar que no haya expirado
+        $user = User::where('activation_token', $token)
+            ->where('activation_token_expires_at', '>', now())
+            ->first();
+
+        if (!$user) {
+            return redirect('/login')->with('error', 'El enlace de activación es inválido o ha expirado.');
+        }
+
+        // Simplemente devolvemos la vista de React (app)
         return view('app');
     }
 
     public function activate(Request $request, $token)
     {
-        $user = User::where('activation_token', $token)->first();
-        if (!$user) return response()->json(['message' => 'Token no válido.'], 422);
-        $request->validate(['password' => 'required|min:6|confirmed']);
+        // Buscar el usuario y validar vigencia del token
+        $user = User::where('activation_token', $token)
+            ->where('activation_token_expires_at', '>', now())
+            ->first();
+
+        if (!$user) {
+            return response()->json(['errors' => ['general' => 'El enlace ha expirado o no es válido.']], 422);
+        }
+
+        // Validación de contraseña
+        $request->validate([
+            'password' => 'required|string|min:6|confirmed'
+        ], [
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 6 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+        ]);
+
+        // Actualizar contraseña, activar cuenta y limpiar token
         $user->update([
-            'password' => Hash::make($request->password),
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             'activo' => true,
             'activation_token' => null,
+            'activation_token_expires_at' => null,
             'email_verified_at' => now(),
         ]);
-        return response()->json(['message' => 'Cuenta activada correctamente.']);
+
+        return response()->json(['message' => 'Cuenta activada correctamente. Ya puedes iniciar sesión.']);
     }
 
 }

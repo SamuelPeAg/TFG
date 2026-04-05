@@ -21,6 +21,8 @@ class User extends Authenticatable
         'codigo_postal',
         'ciudad',
         'activation_token',
+        'activation_token_expires_at',
+        'activo',
         'foto_de_perfil',
         'additional_attributes',
         'centro_id',
@@ -34,7 +36,9 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'activation_token_expires_at' => 'datetime',
         'additional_attributes' => 'array',
+        'activo' => 'boolean',
     ];
 
     public function empresa()

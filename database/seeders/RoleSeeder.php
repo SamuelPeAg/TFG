@@ -63,5 +63,15 @@ class RoleSeeder extends Seeder
         );
         $cliente->syncRoles(['cliente']);
         $cliente->restore();
+
+        $cliente2 = User::withTrashed()->updateOrCreate(
+            ['email' => 'spa0004@alu.medac.es'],
+            [
+                'name' => 'Samuel',
+                'deleted_at' => null,
+            ]
+        );
+        $cliente2->syncRoles(['cliente']);
+        $cliente2->restore();
     }
 }
