@@ -11,6 +11,14 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
 
   // We keep a local copy of extendedProps to do optimistic UI updates easily
   const [localProps, setLocalProps] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  // Edit Form states
+  const [editNombre, setEditNombre] = useState('');
+  const [editCentro, setEditCentro] = useState('');
+  const [editTipo, setEditTipo] = useState('');
+  const [editFecha, setEditFecha] = useState('');
+  const [editSuscripciones, setEditSuscripciones] = useState([]);
 
   useEffect(() => {
     if (isOpen && selectedEvent) {
@@ -18,8 +26,27 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       setSelectedTrainerToAdd('');
       setClientSearchTerm('');
       setShowClientSuggestions(false);
+      setIsEditing(false);
+      
+      // Init edit form from extendedProps
+      const p = selectedEvent.extendedProps;
+      setEditNombre(p.clase_nombre || '');
+      setEditCentro(p.centro || '');
+      setEditTipo(p.tipo_clase || '');
+      
+      // Handle date formatting for datetime-local
+      if (p.session_key && p.session_key.fecha_hora) {
+          setEditFecha(p.session_key.fecha_hora.replace(' ', 'T'));
+      } else if (selectedEvent.start) {
+          const d = selectedEvent.start;
+          const pad = (n) => String(n).padStart(2, '0');
+          setEditFecha(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+      }
+      
+      setEditSuscripciones(p.suscripciones_permitidas || []);
     } else {
       setLocalProps(null);
+      setIsEditing(false);
     }
   }, [isOpen, selectedEvent]);
 
@@ -91,13 +118,10 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       });
       
       if (res.data.success) {
-        // Unfortunately add-client doesn't return the full updated array, so we trigger a refetch
         if (onSuccess) onSuccess();
-        // Optimistic close of the suggestions
         setClientSearchTerm('');
         setShowClientSuggestions(false);
-        // Force the modal to close and reopen or just rely on the background refetch
-        onClose(); // Easier workflow: close and let them click again or assume it's there
+        onClose(); 
       } else {
         alert(res.data.error || "Error al añadir alumno");
       }
@@ -161,9 +185,36 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
     }
   };
 
+  const handleSaveSession = async () => {
+    setIsSubmitting(true);
+    try {
+        const payload = {
+            old_fecha_hora: sessionKey.fecha_hora,
+            old_nombre_clase: sessionKey.nombre_clase,
+            old_centro: sessionKey.centro,
+            new_fecha_hora: editFecha.replace('T', ' '),
+            new_nombre_clase: editNombre,
+            new_centro: editCentro,
+            new_tipo_clase: editTipo,
+            suscripciones_permitidas: editSuscripciones
+        };
+        
+        const res = await axios.post('Pagos/update-session', payload);
+
+        if (res.data.success) {
+            if (onSuccess) onSuccess();
+            onClose();
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Error al actualizar la sesión");
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
 
   // Helper Formatting
-  // Convert fullcalendar 'start' property to the header text
   const rawDate = selectedEvent.start;
   const days = ['DOMINGO','LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO'];
   const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -172,20 +223,18 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   const dayNum = rawDate ? rawDate.getDate() : '...';
   const monthName = rawDate ? months[rawDate.getMonth()] : '...';
 
-  // Extract client matches for search
   const filteredUsers = users.filter(u => 
       u.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) &&
       !(localProps.alumnos || []).find(a => a.id === u.id)
-  ).slice(0, 5); // Limit suggestions
+  ).slice(0, 5);
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-sm"
          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       
-      {/* Modal Container */}
       <div className="w-full max-w-4xl bg-white rounded-[24px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
-        {/* Header - Navy Dark */}
+        {/* Header */}
         <div className="bg-[#0f172a] text-white pt-8 pb-10 text-center relative px-4 rounded-t-[24px]">
            <button 
              onClick={onClose}
@@ -200,57 +249,135 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
            </div>
         </div>
 
-        {/* Two Column Layout Grid */}
         <div className="flex flex-col md:flex-row min-h-[500px]">
            
-           {/* Left Column (Main Details) */}
+           {/* Left Column */}
            <div className="flex-1 p-8 md:pr-10 bg-white">
               
-              <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none mb-5">
-                  {localProps.clase_nombre || "Clase sin Nombre"}
-              </h2>
-
-              {/* Pills */}
-              <div className="flex flex-wrap gap-3 mb-10">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                      <i className="fa-solid fa-clock text-[#4BB7AE] text-sm"></i>
-                      <span className="text-sm font-bold text-slate-600">{localProps.hora || "..."}</span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                      <i className="fa-solid fa-building text-[#4BB7AE] text-sm"></i>
-                      <span className="text-sm font-bold text-slate-600 uppercase">{localProps.centro || "..."}</span>
-                  </div>
-                  {localProps.tipo_clase && (
-                      <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                          <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
-                          <span className="text-sm font-bold text-slate-600 uppercase">{localProps.tipo_clase}</span>
+              {isEditing ? (
+                  <div className="mb-5 space-y-4">
+                      <div>
+                          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 block">Nombre de la Clase</label>
+                          <input 
+                              type="text" 
+                              value={editNombre} 
+                              onChange={(e) => setEditNombre(e.target.value)}
+                              className="w-full text-2xl font-black text-slate-900 border-b-2 border-[#4BB7AE] outline-none pb-1 bg-transparent"
+                              placeholder="Nombre de la clase"
+                          />
                       </div>
+                      <div>
+                          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 block">Fecha y Hora</label>
+                          <input 
+                              type="datetime-local" 
+                              value={editFecha} 
+                              onChange={(e) => setEditFecha(e.target.value)}
+                              className="w-full text-sm font-bold text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 outline-none focus:border-[#4BB7AE]"
+                          />
+                      </div>
+                  </div>
+              ) : (
+                  <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none mb-5">
+                      {localProps.clase_nombre || "Clase sin Nombre"}
+                  </h2>
+              )}
+
+              {/* Pills Area */}
+              <div className="flex flex-wrap gap-3 mb-10">
+                  {isEditing ? (
+                      <>
+                          {/* Centros Selector */}
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
+                              <i className="fa-solid fa-building text-[#4BB7AE] text-sm"></i>
+                              <select 
+                                  value={editCentro} 
+                                  onChange={(e) => setEditCentro(e.target.value)}
+                                  className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 uppercase cursor-pointer"
+                              >
+                                  {centros.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+                              </select>
+                          </div>
+
+                          {/* Tipo Clase Selector */}
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
+                              <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
+                              <select 
+                                  value={editTipo} 
+                                  onChange={(e) => setEditTipo(e.target.value)}
+                                  className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 uppercase cursor-pointer"
+                              >
+                                  <option value="EP">EP (Personal)</option>
+                                  <option value="DUO">DUO</option>
+                                  <option value="TRIO">TRIO</option>
+                                  <option value="GRUPO">GRUPO</option>
+                                  <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
+                              </select>
+                          </div>
+                      </>
+                  ) : (
+                      <>
+                          <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+                              <i className="fa-solid fa-clock text-[#4BB7AE] text-sm"></i>
+                              <span className="text-sm font-bold text-slate-600">{localProps.hora || "..."}</span>
+                          </div>
+                          <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+                              <i className="fa-solid fa-building text-[#4BB7AE] text-sm"></i>
+                              <span className="text-sm font-bold text-slate-600 uppercase">{localProps.centro || "..."}</span>
+                          </div>
+                          {localProps.tipo_clase && (
+                              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+                                  <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
+                                  <span className="text-sm font-bold text-slate-600 uppercase">{localProps.tipo_clase}</span>
+                              </div>
+                          )}
+                      </>
                   )}
               </div>
 
-              {/* Suscripciones Permitidas */}
+              {/* Subscriptions Section */}
               <div className="mb-8 p-5 bg-[#F0FDFB] border border-[#CCFBF1] rounded-[20px]">
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-[#2D7A74] mb-3">
                       SUSCRIPCIONES CANJEABLES
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                      {localProps.suscripciones_detalles && localProps.suscripciones_detalles.length > 0 ? (
-                          localProps.suscripciones_detalles.map(s => (
-                              <span key={s.id} className="inline-flex items-center gap-2 bg-white border border-[#99F6E4] px-3 py-1.5 rounded-xl shadow-sm">
-                                  <div className="w-2 h-2 rounded-full bg-[#4BB7AE]"></div>
-                                  <span className="text-xs font-bold text-slate-700">{s.nombre}</span>
-                              </span>
-                          ))
-                      ) : (
-                          <div className="text-xs text-slate-400 font-bold italic py-1">
-                              <i className="fa-solid fa-circle-exclamation mr-1.5"></i>
-                              No hay filtros de suscripción aplicados (Acceso libre)
+                      {isEditing ? (
+                          <div className="grid grid-cols-2 gap-2 w-full">
+                              {suscripciones.map(s => {
+                                  const isSelected = editSuscripciones.includes(s.id);
+                                  return (
+                                      <button 
+                                          key={s.id}
+                                          onClick={() => {
+                                              if (isSelected) setEditSuscripciones(editSuscripciones.filter(id => id !== s.id));
+                                              else setEditSuscripciones([...editSuscripciones, s.id]);
+                                          }}
+                                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold border transition-all ${isSelected ? 'bg-[#4BB7AE] text-white border-transparent shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4BB7AE]'}`}
+                                      >
+                                          <i className={`fa-solid ${isSelected ? 'fa-check' : 'fa-circle-plus opacity-50'}`}></i>
+                                          <span className="truncate">{s.nombre}</span>
+                                      </button>
+                                  );
+                              })}
                           </div>
+                      ) : (
+                          localProps.suscripciones_detalles && localProps.suscripciones_detalles.length > 0 ? (
+                              localProps.suscripciones_detalles.map(s => (
+                                  <span key={s.id} className="inline-flex items-center gap-2 bg-white border border-[#99F6E4] px-3 py-1.5 rounded-xl shadow-sm">
+                                      <div className="w-2 h-2 rounded-full bg-[#4BB7AE]"></div>
+                                      <span className="text-xs font-bold text-slate-700">{s.nombre}</span>
+                                  </span>
+                              ))
+                          ) : (
+                              <div className="text-xs text-slate-400 font-bold italic py-1">
+                                  <i className="fa-solid fa-circle-exclamation mr-1.5"></i>
+                                  No hay filtros de suscripción aplicados (Acceso libre)
+                              </div>
+                          )
                       )}
                   </div>
               </div>
 
-              {/* Attendees */}
+              {/* Attendees List */}
               <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">
                   ASISTENTES CONFIRMADOS ({(localProps.alumnos || []).length})
               </h4>
@@ -290,7 +417,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                  )}
               </div>
 
-              {/* Add Client Dotted Button */}
+              {/* Search Client */}
               {window.IS_ADMIN && (
                   <div className="relative">
                       <div className="w-full flex items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:border-[#4BB7AE] hover:text-[#4BB7AE] hover:bg-teal-50 transition-colors focus-within:border-[#4BB7AE] focus-within:bg-teal-50 focus-within:text-[#4BB7AE] relative overflow-hidden">
@@ -311,9 +438,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                           />
                       </div>
                       
-                      {/* Suggestions Box */}
                       {showClientSuggestions && clientSearchTerm && (
-                          <div className="absolute top-14 left-0 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-10 overflow-hidden">
+                          <div className="absolute top-14 left-0 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden">
                               {filteredUsers.length === 0 ? (
                                   <div className="p-4 text-xs font-semibold text-slate-400 text-center">No se encontraron clientes</div>
                               ) : (
@@ -339,10 +465,9 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
               )}
            </div>
 
-           {/* Right Column (Trainers & Danger Zone or JOIN Zone) */}
+           {/* Right Column */}
            <div className="w-full md:w-72 border-t md:border-t-0 md:border-l border-slate-100 bg-white flex flex-col pt-8 pb-10 px-8 relative">
                 
-                {/* Equipo Técnico */}
                 <h4 className="text-[11px] font-black uppercase tracking-widest text-[#4BB7AE] mb-4 text-center">
                     EQUIPO TÉCNICO
                 </h4>
@@ -400,13 +525,23 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                         
                         <hr className="my-8 border-slate-100" />
 
-                        <button 
-                           onClick={handleDeleteSession}
-                           disabled={isSubmitting}
-                           className="w-full py-4 text-center text-[11px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
-                        >
-                            <i className="fas fa-trash-can mr-2"></i> ELIMINAR SESIÓN
-                        </button>
+                        {isEditing ? (
+                            <button 
+                               onClick={handleSaveSession}
+                               disabled={isSubmitting}
+                               className="w-full py-4 bg-[#4BB7AE] text-white text-center text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-teal-500/20 transition-all hover:bg-teal-600 disabled:opacity-50"
+                            >
+                                <i className="fas fa-check-circle mr-2"></i> GUARDAR CAMBIOS
+                            </button>
+                        ) : (
+                            <button 
+                               onClick={handleDeleteSession}
+                               disabled={isSubmitting}
+                               className="w-full py-4 text-center text-[11px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
+                            >
+                                <i className="fas fa-trash-can mr-2"></i> ELIMINAR SESIÓN
+                            </button>
+                        )}
                     </>
                 ) : (
                     <div className="mt-auto">
@@ -440,11 +575,20 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
            </div>
         </div>
 
-        {/* Footer actions for closing modal */}
-        <div className="p-6 bg-white border-t border-slate-100 flex justify-center pb-8">
+        {/* Footer actions */}
+        <div className="p-6 bg-white border-t border-slate-100 flex justify-center gap-4 pb-8">
+           {window.IS_ADMIN && (
+               <button 
+                  onClick={() => setIsEditing(!isEditing)}
+                  className={`flex-1 px-10 py-3.5 font-bold text-xs uppercase tracking-widest rounded-full transition-all flex items-center justify-center gap-2 ${isEditing ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+               >
+                  <i className={`fa-solid ${isEditing ? 'fa-xmark' : 'fa-pen-to-square'}`}></i>
+                  {isEditing ? 'CANCELAR EDICIÓN' : 'EDITAR SESIÓN'}
+               </button>
+           )}
            <button 
               onClick={onClose}
-              className="px-10 py-3.5 bg-[#0f172a] text-white font-bold text-xs uppercase tracking-widest rounded-full hover:shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
+              className="flex-1 px-10 py-3.5 bg-[#0f172a] text-white font-bold text-xs uppercase tracking-widest rounded-full hover:shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
            >
               CERRAR PANEL
            </button>

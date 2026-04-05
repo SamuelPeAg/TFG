@@ -78,27 +78,36 @@ export default function Calendario() {
       try {
         await loadScript('/css/calendario.css');
         await loadScript('/css/global.css');
+        // Add FullCalendar main CSS just to be sure if the global bundle doesn't inject it fast enough
         await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js');
-        // El script wizard_clase ya no es necesario para la creacion, se omite o mantiene para compatibilidad parcial si hay otras cosas
         await loadScript('/js/calendario.js');
 
-        // Allow some time for DOM to be ready and scripts to execute
-        setTimeout(() => {
-          if (window.FullCalendar) {
-            if (window.initCalendarioVanilla) window.initCalendarioVanilla();
+        // Robust initialization: wait for both window.FullCalendar AND the DOM element
+        const maxRetries = 15;
+        let retryCount = 0;
+        
+        const tryInit = () => {
+          const calendarEl = document.getElementById('fullCalendarEl');
+          if (window.FullCalendar && window.initCalendarioVanilla && calendarEl) {
+            window.initCalendarioVanilla();
             if (window.initWizardClase) window.initWizardClase();
-          } else {
-            console.warn("FullCalendar not found after script load, retrying...");
-            let retries = 0;
-            const retry = setInterval(() => {
-              if (window.FullCalendar) {
-                if (window.initCalendarioVanilla) window.initCalendarioVanilla();
-                clearInterval(retry);
-              }
-              if (++retries > 10) clearInterval(retry);
-            }, 500);
+            return true;
           }
-        }, 200);
+          return false;
+        };
+
+        // Try direct call after small delay for CSS application
+        setTimeout(() => {
+          if (!tryInit()) {
+            const retryInterval = setInterval(() => {
+              retryCount++;
+              if (tryInit() || retryCount >= maxRetries) {
+                clearInterval(retryInterval);
+              }
+            }, 300);
+          }
+        }, 150);
+
       } catch (e) {
         console.error("Error al cargar scripts del calendario:", e);
       }
@@ -125,6 +134,21 @@ export default function Calendario() {
         window.removeEventListener('openVerClaseReact', handleOpenVerReactModal);
     };
   }, [data, user]);
+
+  // FIX: Force calendar to update size when switching from 'cards' to 'calendar' view
+  useEffect(() => {
+    if (viewMode === 'calendar' && !loading) {
+       // Ensure calendar is initialized. If user was in cards, maybe it was never called or rendered while hidden
+       if (window.calendar) {
+           setTimeout(() => {
+               window.calendar.updateSize();
+           }, 50);
+       } else if (window.initCalendarioVanilla) {
+           // If it wasn't initialized yet, try now
+           window.initCalendarioVanilla();
+       }
+    }
+  }, [viewMode, loading]);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-slate-900">

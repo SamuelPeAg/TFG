@@ -247,6 +247,7 @@ class PagosController extends Controller
         }
 
         foreach ($pagos as $pago) {
+            /** @var \App\Models\Pago $pago */
             // Attach si no existe ya
             if (!$pago->entrenadores()->where('user_id', $request->trainer_id)->exists()) {
                 $pago->entrenadores()->attach($request->trainer_id);
@@ -297,6 +298,7 @@ class PagosController extends Controller
         }
 
         foreach ($pagos as $pago) {
+            /** @var \App\Models\Pago $pago */
             $pago->entrenadores()->detach($request->trainer_id);
 
             // Si quitamos el que estaba en legacy column, ponemos otro o null
@@ -484,6 +486,61 @@ class PagosController extends Controller
                 'total' => number_format($totalImporte, 2)
             ],
             'detalles' => $detalles
+        ]);
+    }
+
+    public function updateSession(Request $request)
+    {
+        $request->validate([
+            'old_fecha_hora' => 'required|date',
+            'old_nombre_clase' => 'required|string',
+            'old_centro' => 'required|string',
+
+            'new_fecha_hora' => 'required|date',
+            'new_nombre_clase' => 'required|string|max:200',
+            'new_centro' => 'required|string',
+            'new_tipo_clase' => 'required|string',
+            'suscripciones_permitidas' => 'nullable|array',
+            'suscripciones_permitidas.*' => 'exists:suscripciones,id',
+        ]);
+
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+        }
+
+        $oldFecha = Carbon::parse($request->old_fecha_hora);
+        $newFecha = Carbon::parse($request->new_fecha_hora);
+
+        // Find all payments that belong to this "session"
+        $pagos = Pago::where('fecha_registro', $oldFecha)
+            ->where('nombre_clase', $request->old_nombre_clase)
+            ->where('centro', $request->old_centro)
+            ->get();
+
+        if ($pagos->isEmpty()) {
+            return response()->json(['error' => 'Sesión no encontrada'], 404);
+        }
+
+        foreach ($pagos as $pago) {
+            /** @var Pago $pago */
+            $pago->update([
+                'fecha_registro' => $newFecha,
+                'nombre_clase' => $request->new_nombre_clase,
+                'centro' => $request->new_centro,
+                'tipo_clase' => $request->new_tipo_clase,
+            ]);
+
+            // Sync allowed subscriptions for this session
+            if ($request->has('suscripciones_permitidas')) {
+                $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+            } else {
+                $pago->suscripciones()->detach();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión actualizada correctamente'
         ]);
     }
 

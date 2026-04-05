@@ -4,8 +4,18 @@
    ========================= */
 
 window.initCalendarioVanilla = () => {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     const calendarEl = document.getElementById('fullCalendarEl');
+    if (!calendarEl) {
+        console.warn("Element #fullCalendarEl not found, skipping init.");
+        return;
+    }
+
+    // Si ya existe una instancia, la destruimos para evitar duplicados
+    if (window.calendar && typeof window.calendar.destroy === 'function') {
+        try { window.calendar.destroy(); } catch(e) { console.error("Error destroying calendar", e); }
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     const summaryEl = document.getElementById('calendar-summary');
 
     // === REFERENCIAS A MODALES ===
@@ -72,6 +82,7 @@ window.initCalendarioVanilla = () => {
         },
 
         dateClick: function (info) {
+            if (window.CURRENT_USER_ROLE === 'cliente') return;
             abrirModalNuevaClase(info.date);
         },
 
@@ -84,6 +95,11 @@ window.initCalendarioVanilla = () => {
     });
 
     calendar.render();
+    
+    // Ensure size is correct (especially if rendered while container was slightly hidden or resizing)
+    setTimeout(() => {
+        if (calendar) calendar.updateSize();
+    }, 100);
 
     // ====== PERSISTENCIA DE CENTRO ======
     const filterCenter = document.getElementById('filter-center');

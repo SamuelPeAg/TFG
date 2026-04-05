@@ -242,6 +242,7 @@ Route::middleware('auth:web,staff')->group(function () {
         // Acciones Avanzadas de Pagos (Solo Admin)
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
         Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
+        Route::post('/Pagos/update-session', [PagosController::class, 'updateSession'])->name('Pagos.updateSession');
 
         // Gestión entrenadores (solo admin)
         // Gestión entrenadores (solo admin)
