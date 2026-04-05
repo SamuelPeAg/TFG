@@ -12,7 +12,8 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error(error);
-      alert('Error al enviar el correo de activación.');
+      const msg = error.response?.data?.message || 'Error al enviar el correo de activación.';
+      alert(msg);
     } finally {
       setSendingId(null);
     }

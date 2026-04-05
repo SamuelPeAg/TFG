@@ -59,7 +59,7 @@ export default function EntrenadorModals({
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
       } else {
-        setErrors({ general: 'Error al procesar la solicitud.' });
+        setErrors({ general: err.response?.data?.message || 'Error al procesar la solicitud.' });
       }
     } finally {
       setLoading(false);
