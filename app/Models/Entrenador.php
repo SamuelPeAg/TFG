@@ -23,6 +23,8 @@ class Entrenador extends Authenticatable
         'foto_de_perfil',
         'iban',
         'precio_hora',
+        'activo',
+        'activation_token',
         'centro_id',
         'empresa_id',
     ];

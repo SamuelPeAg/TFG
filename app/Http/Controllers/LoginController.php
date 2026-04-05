@@ -31,9 +31,8 @@ class LoginController extends Controller
 
         try {
             // 2. Intentar autenticar como Personal (Admin/Entrenador)
-            // Para el personal (staff), asumimos que siempre están activos o manejamos su estado por separado si es necesario.
-            // Pero añadimos la validación por si acaso.
-            if (Auth::guard('staff')->attempt($credentials)) {
+            $staffCredentials = array_merge($credentials, ['activo' => true]);
+            if (Auth::guard('staff')->attempt($staffCredentials)) {
                 $request->session()->regenerate();
                 $user = Auth::guard('staff')->user();
                 

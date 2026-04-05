@@ -28,6 +28,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'admin',
                 'password' => Hash::make('password'),
+                'activo' => true,
                 'deleted_at' => null,
             ]
         );
@@ -38,6 +39,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'javi',
                 'password' => Hash::make('password'),
+                'activo' => true,
                 'deleted_at' => null,
             ]
         );
@@ -48,6 +50,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'entrenador',
                 'password' => Hash::make('password'),
+                'activo' => true,
                 'deleted_at' => null,
             ]
         );
@@ -58,6 +61,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'cliente',
                 'password' => Hash::make('password'),
+                'activo' => true,
                 'deleted_at' => null,
             ]
         );
@@ -68,6 +72,7 @@ class RoleSeeder extends Seeder
             ['email' => 'spa0004@alu.medac.es'],
             [
                 'name' => 'Samuel',
+                'activo' => true,
                 'deleted_at' => null,
             ]
         );
