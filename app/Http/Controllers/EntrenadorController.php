@@ -122,6 +122,17 @@ class EntrenadorController extends Controller
 
 
 
+    public function showActivationForm($token)
+    {
+        $user = Entrenador::where('activation_token', $token)->first();
+
+        if (!$user) {
+            return redirect('/login')->with('error', 'El enlace de activación es inválido o ha expirado.');
+        }
+
+        return view('app');
+    }
+
     public function completeActivation(Request $request, $id)
     {
         $request->validate([

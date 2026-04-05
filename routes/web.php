@@ -78,6 +78,8 @@ Route::post('/contacto/enviar', function (Request $request) {
 
 
 
+Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'showActivationForm'])
+    ->name('entrenadores.activar');
 Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'completeActivation'])
     ->name('entrenadores.complete');
 
