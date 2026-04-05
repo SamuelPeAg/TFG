@@ -54,7 +54,7 @@ export default function ReservaClases() {
     const initScripts = async () => {
       try {
         await loadScript('/css/calendario.css');
-        await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js');
         await loadScript('/js/calendario.js');
 
         const tryInit = () => {

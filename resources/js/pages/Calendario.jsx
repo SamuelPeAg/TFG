@@ -79,7 +79,7 @@ export default function Calendario() {
         await loadScript('/css/calendario.css');
         await loadScript('/css/global.css');
         // Add FullCalendar main CSS just to be sure if the global bundle doesn't inject it fast enough
-        await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js');
         await loadScript('/js/calendario.js');
 
         // Robust initialization: wait for both window.FullCalendar AND the DOM element
