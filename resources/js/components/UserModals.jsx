@@ -136,7 +136,7 @@ export default function UserModals({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Nombre */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 col-span-2 sm:col-span-1">
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Nombre Completo</label>
                 <div className="relative group">
                   <i className="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
@@ -154,7 +154,7 @@ export default function UserModals({
               </div>
 
               {/* Email */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 col-span-2 sm:col-span-1">
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Correo Electrónico</label>
                 <div className="relative group">
                   <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
@@ -172,59 +172,62 @@ export default function UserModals({
               </div>
             </div>
 
-            {/* IBAN */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">IBAN (Cuenta Bancaria)</label>
-              <div className="relative group">
-                <i className="fas fa-credit-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                <input
-                  type="text"
-                  name="iban"
-                  value={formData.iban}
-                  onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 uppercase font-mono text-xs"
-                  placeholder="ES00 0000 0000 0000 0000 0000"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Password */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">
-                  {mode === 'edit' ? 'Nueva Contraseña' : 'Contraseña'}
-                </label>
-                <div className="relative group">
-                  <i className="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E65C9C] transition-colors"></i>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#E65C9C]/10 focus:bg-white focus:border-[#E65C9C] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
-                    placeholder="••••••••"
-                    required={mode === 'create'}
-                  />
+            {mode === 'edit' && (
+              <>
+                {/* IBAN */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">IBAN (Cuenta Bancaria)</label>
+                  <div className="relative group">
+                    <i className="fas fa-credit-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                    <input
+                      type="text"
+                      name="iban"
+                      value={formData.iban}
+                      onChange={handleChange}
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 uppercase font-mono text-xs"
+                      placeholder="ES00 0000 0000 0000 0000 0000"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Precio Hora */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Precio Hora (€)</label>
-                <div className="relative group">
-                  <i className="fas fa-euro-sign absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="precio_hora"
-                    value={formData.precio_hora}
-                    onChange={handleChange}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
-                    placeholder="0.00"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Password */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">
+                      Nueva Contraseña
+                    </label>
+                    <div className="relative group">
+                      <i className="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E65C9C] transition-colors"></i>
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#E65C9C]/10 focus:bg-white focus:border-[#E65C9C] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Precio Hora */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Precio Hora (€)</label>
+                    <div className="relative group">
+                      <i className="fas fa-euro-sign absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="precio_hora"
+                        value={formData.precio_hora}
+                        onChange={handleChange}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
 
             <div className="pt-6">
               <Button
