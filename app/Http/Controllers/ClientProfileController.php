@@ -68,6 +68,11 @@ class ClientProfileController extends Controller
             'codigo_postal' => 'nullable|string|max:10',
             'ciudad' => 'nullable|string|max:100',
             'additional_attributes' => 'nullable|array'
+        ], [
+            'dni.max' => 'El DNI/NIE no puede tener más de 20 caracteres.',
+            'direccion.max' => 'La dirección es demasiado larga (máx. 255).',
+            'codigo_postal.max' => 'El código postal no es válido.',
+            'ciudad.max' => 'El nombre de la ciudad es demasiado largo.',
         ]);
 
         $user->update($validated);

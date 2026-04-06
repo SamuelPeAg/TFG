@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import AlertModal from '../components/AlertModal';
 
 export default function MiFicha() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -13,6 +14,12 @@ export default function MiFicha() {
     const [isEditingContact, setIsEditingContact] = useState(false);
     const [submittingFile, setSubmittingFile] = useState(false);
     const [savingContact, setSavingContact] = useState(false);
+    
+    // Alert Setup
+    const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+    const showAlert = (message, isError = false, title = isError ? "Error" : "Aviso") => {
+        setAlertConfig({ isOpen: true, title, message, isError });
+    };
 
     useEffect(() => {
         if (user) fetchFicha();
@@ -44,7 +51,13 @@ export default function MiFicha() {
             setIsEditingContact(false);
             fetchFicha();
         } catch (error) {
-            alert("Error al actualizar información");
+            console.error("Error updating contact:", error);
+            const serverMsg = error.response?.data?.message || error.response?.data?.errors?.dni?.[0];
+            showAlert(
+                serverMsg || "No se pudo actualizar la información. El texto puede ser demasiado largo o el formato inválido.", 
+                true, 
+                "Error de Validación"
+            );
         } finally {
             setSavingContact(false);
         }
@@ -64,7 +77,7 @@ export default function MiFicha() {
             });
             fetchFicha();
         } catch (error) {
-            alert("Error al subir el archivo");
+            showAlert("Hubo un problema al subir tu archivo. Verifica el tamaño (máx 10MB) y el formato.", true);
         } finally {
             setSubmittingFile(false);
         }
@@ -120,6 +133,7 @@ export default function MiFicha() {
                                                 value={profileData?.dni || ''} 
                                                 onChange={(e) => setProfileData({...profileData, dni: e.target.value})}
                                                 placeholder="DNI / NIE"
+                                                maxLength={20}
                                                 className="w-full text-center mt-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold uppercase focus:border-indigo-400 outline-none"
                                             />
                                         ) : (
@@ -137,6 +151,7 @@ export default function MiFicha() {
                                                         type="text" 
                                                         value={profileData?.direccion || ''} 
                                                         onChange={(e) => setProfileData({...profileData, direccion: e.target.value})}
+                                                        maxLength={200}
                                                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                     />
                                                 </div>
@@ -147,6 +162,7 @@ export default function MiFicha() {
                                                             type="text" 
                                                             value={profileData?.ciudad || ''} 
                                                             onChange={(e) => setProfileData({...profileData, ciudad: e.target.value})}
+                                                            maxLength={100}
                                                             className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                         />
                                                     </div>
@@ -156,6 +172,7 @@ export default function MiFicha() {
                                                             type="text" 
                                                             value={profileData?.codigo_postal || ''} 
                                                             onChange={(e) => setProfileData({...profileData, codigo_postal: e.target.value})}
+                                                            maxLength={10}
                                                             className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                         />
                                                     </div>
@@ -333,6 +350,14 @@ export default function MiFicha() {
                 )}
             </div>
         </main>
+
+        <AlertModal 
+            isOpen={alertConfig.isOpen}
+            onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+            title={alertConfig.title}
+            message={alertConfig.message}
+            isError={alertConfig.isError}
+        />
     </div>
   );
 }

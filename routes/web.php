@@ -261,3 +261,8 @@ Route::middleware('auth:web,staff')->group(function () {
     });
 
 });
+
+// Fallback para React Router (SPA)
+Route::fallback(function () {
+    return view('app');
+});
