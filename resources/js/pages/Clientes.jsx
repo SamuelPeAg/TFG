@@ -96,10 +96,19 @@ export default function Clientes() {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(user => {
+    const search = searchTerm.toLowerCase();
+    const isProvisional = user.email.toLowerCase().includes('factomove.es');
+    
+    // Si busca "provisional", filtramos solo los de factomove
+    if (search === 'provisional') return isProvisional;
+
+    return (
+      user.name.toLowerCase().includes(search) ||
+      user.email.toLowerCase().includes(search) ||
+      (user.dni && user.dni.toLowerCase().includes(search))
+    );
+  });
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const currentUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);

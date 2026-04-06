@@ -37,7 +37,6 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
           <tr className="text-slate-400">
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Cliente</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Contacto</th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Clasificación</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">IBAN / Identificación</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Saldo / Suscripciones</th>
             <th className="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Acciones</th>
@@ -72,30 +71,18 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-5" data-label="Clasificación">
-                  <div className="flex flex-col gap-1">
-                    {user.empresa && (
-                        <div className="flex items-center gap-2">
-                            <span className="bg-indigo-50 text-indigo-700 text-[10px] font-black px-2.5 py-1 rounded-lg border border-indigo-100 uppercase tracking-tighter">
-                                {user.empresa.nombre}
-                            </span>
-                        </div>
-                    )}
-                    {user.centro && (
-                        <div className="flex items-center gap-1.5 text-slate-400">
-                            <i className="fa-solid fa-building text-[9px]"></i>
-                            <span className="text-[10px] font-bold uppercase">{user.centro.nombre}</span>
-                        </div>
-                    )}
-                    {!user.empresa && !user.centro && (
-                        <span className="text-[10px] text-slate-300 font-bold italic">SIN CLASIFICAR</span>
-                    )}
-                  </div>
-                </td>
                 <td className="px-6 py-5" data-label="Contacto">
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900 transition-colors uppercase tracking-tight">{user.email}</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Registrado el {new Date(user.created_at).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold transition-colors uppercase tracking-tight ${user.email && user.email.includes('factomove.es') ? 'text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100 flex items-center gap-1.5' : 'text-slate-600 group-hover:text-slate-900 line-clamp-1 max-w-[15ch]'}`}>
+                            {user.email && user.email.includes('factomove.es') && <i className="fa-solid fa-triangle-exclamation text-[10px] animate-pulse"></i>}
+                            {user.email}
+                        </span>
+                        {user.email && user.email.includes('factomove.es') && (
+                            <span className="text-[8px] font-black bg-amber-500 text-white px-1.5 py-0.5 rounded-md tracking-tighter uppercase">Prov.</span>
+                        )}
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">Registrado {new Date(user.created_at).toLocaleDateString()}</span>
                   </div>
                 </td>
                 <td className="px-6 py-5" data-label="IBAN">
