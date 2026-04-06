@@ -72,11 +72,11 @@ class PagosController extends Controller
                 $title = $first->nombre_clase . ' (' . $count . ')';
             }
 
-            // Recopilar alumnos
-            $alumnos = $grupo->map(function ($p) {
+            // Recopilar alumnos (filtrando placeholders donde user_id es null)
+            $alumnos = $grupo->filter(fn($p) => $p->user_id !== null)->map(function ($p) {
                 return [
                     'id' => $p->user_id,
-                    'nombre' => $p->user->name ?? 'Desconocido',
+                    'nombre' => $p->user->name ?? 'Usuario',
                     'pago' => $p->metodo_pago,
                     'coste' => (float) $p->importe
                 ];
@@ -138,6 +138,7 @@ class PagosController extends Controller
                     'centro' => $first->centro,
                     'clase_nombre' => $first->nombre_clase,
                     'tipo_clase' => $first->tipo_clase,
+                    'capacidad_maxima' => $first->capacidad_maxima,
                     'alumnos' => $alumnos,
                     'entrenadores' => $entrenadoresList,
                     'session_key' => [

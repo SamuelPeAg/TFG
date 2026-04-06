@@ -183,7 +183,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     if (!isOpen) return null;
 
-    const showCapacidad = ['Grupo especial', 'Grupo'].includes(formData.tipo_clase);
+    const showCapacidad = true; // Límite de personas disponible para todos los tipos de sesión
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 md:p-6 animate-in fade-in duration-200">
@@ -324,7 +324,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                     {showCapacidad && (
                                         <div className="space-y-1.5 mt-4">
                                             <label className="text-xs font-bold text-slate-600 pl-1">Límite de Personas</label>
-                                            <input type="number" name="capacidad" value={formData.capacidad} onChange={handleChange} min="1" placeholder="Ej. 10"
+                                            <input type="number" name="capacidad_maxima" value={formData.capacidad_maxima} onChange={handleChange} min="1" placeholder="Ej. 10"
                                                 className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none" />
                                         </div>
                                     )}

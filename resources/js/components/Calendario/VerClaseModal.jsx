@@ -44,6 +44,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       }
       
       setEditSuscripciones(p.suscripciones_permitidas || []);
+      setEditCapacidad(p.capacidad_maxima || '');
     } else {
       setLocalProps(null);
       setIsEditing(false);
@@ -196,6 +197,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
             new_nombre_clase: editNombre,
             new_centro: editCentro,
             new_tipo_clase: editTipo,
+            capacidad_maxima: editCapacidad,
             suscripciones_permitidas: editSuscripciones
         };
         
@@ -379,7 +381,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
 
               {/* Attendees List */}
               <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">
-                  ASISTENTES CONFIRMADOS ({(localProps.alumnos || []).length})
+                  ASISTENTES CONFIRMADOS ({(localProps.alumnos || []).length}{localProps.capacidad_maxima ? ` / ${localProps.capacidad_maxima}` : ''})
               </h4>
               
               <div className="space-y-3 mb-6">
