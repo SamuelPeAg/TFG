@@ -19,7 +19,7 @@ export default function ReservaClases() {
   const [userFiltro, setUserFiltro] = useState('');
 
   useEffect(() => {
-    axios.get('calendario', { headers: { 'Accept': 'application/json' } })
+    axios.get('/calendario', { headers: { 'Accept': 'application/json' } })
       .then(res => {
         setData(res.data);
       })

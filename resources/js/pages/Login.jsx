@@ -46,7 +46,7 @@ export default function Login() {
 
     try {
       console.log('Intentando login...');
-      const response = await axios.post('login', formData);
+      const response = await axios.post('/login', formData);
       
       console.log('Respuesta recibida:', response.data);
 

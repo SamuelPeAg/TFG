@@ -158,7 +158,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 })),
                 tipo_clase: typeMapping[formData.tipo_clase] || formData.tipo_clase.toUpperCase()
             };
-            const response = await axios.post('Pagos', payload);
+            const response = await axios.post('/Pagos', payload);
             if (response.data.success) {
                 onSuccess();
                 onClose();

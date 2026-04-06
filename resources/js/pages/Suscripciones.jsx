@@ -108,7 +108,7 @@ export default function Suscripciones() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await axios.get('suscripciones', { headers: { Accept: 'application/json' } });
+            const res = await axios.get('/suscripciones', { headers: { Accept: 'application/json' } });
             setSuscripciones(res.data.suscripciones || []);
             setCentros(res.data.centros || []);
         } catch (e) {
@@ -163,9 +163,9 @@ export default function Suscripciones() {
         setSaving(true);
         try {
             if (editingId) {
-                await axios.put(`suscripciones/${editingId}`, form);
+                await axios.put(`/suscripciones/${editingId}`, form);
             } else {
-                await axios.post('suscripciones', form);
+                await axios.post('/suscripciones', form);
             }
             closeModal();
             fetchData();
@@ -185,7 +185,7 @@ export default function Suscripciones() {
     const handleDelete = async (id) => {
         if (!window.confirm('¿Eliminar esta suscripción?')) return;
         try {
-            await axios.delete(`suscripciones/${id}`);
+            await axios.delete(`/suscripciones/${id}`);
             fetchData();
         } catch {
             alert('Error al eliminar.');

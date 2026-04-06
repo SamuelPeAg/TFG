@@ -27,7 +27,7 @@ export default function MiFicha() {
 
     const fetchFicha = async () => {
         try {
-            const res = await axios.get(`client-profile/${user.id}`);
+            const res = await axios.get(`/client-profile/${user.id}`);
             setProfileData(res.data.user);
             setFiles(res.data.files);
             setSubscriptions(res.data.subscriptions || []);
@@ -42,7 +42,7 @@ export default function MiFicha() {
         e.preventDefault();
         setSavingContact(true);
         try {
-            await axios.put(`client-profile/${user.id}`, {
+            await axios.put(`/client-profile/${user.id}`, {
                 dni: profileData.dni,
                 direccion: profileData.direccion,
                 codigo_postal: profileData.codigo_postal,
@@ -72,7 +72,7 @@ export default function MiFicha() {
         formData.append('file', file);
 
         try {
-            await axios.post(`client-profile/${user.id}/upload`, formData, {
+            await axios.post(`/client-profile/${user.id}/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             fetchFicha();

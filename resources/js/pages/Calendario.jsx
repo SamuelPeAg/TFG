@@ -28,7 +28,7 @@ export default function Calendario() {
 
   // 1. Fetch initialization data
   useEffect(() => {
-    axios.get('calendario', { headers: { 'Accept': 'application/json' } })
+    axios.get('/calendario', { headers: { 'Accept': 'application/json' } })
       .then(res => {
         setData(res.data);
       })

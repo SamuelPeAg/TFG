@@ -43,7 +43,7 @@ export default function Facturacion() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('facturas', {
+      const response = await axios.get('/facturas', {
         headers: { Accept: 'application/json' },
         params: {
           centro: filters.centro,

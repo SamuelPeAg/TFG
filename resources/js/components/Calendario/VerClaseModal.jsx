@@ -65,7 +65,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       formData.append('nombre_clase', sessionKey.nombre_clase);
       formData.append('centro', sessionKey.centro);
 
-      const res = await axios.post('Pagos/add-trainer', formData, {
+      const res = await axios.post('/Pagos/add-trainer', formData, {
         headers: { 'Accept': 'application/json' }
       });
       if (res.data.success) {
@@ -90,7 +90,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       formData.append('nombre_clase', sessionKey.nombre_clase);
       formData.append('centro', sessionKey.centro);
 
-      const res = await axios.post('Pagos/remove-trainer', formData, {
+      const res = await axios.post('/Pagos/remove-trainer', formData, {
         headers: { 'Accept': 'application/json' }
       });
       if (res.data.success) {
@@ -113,7 +113,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       formData.append('nombre_clase', sessionKey.nombre_clase);
       formData.append('centro', sessionKey.centro);
 
-      const res = await axios.post('Pagos/add-client', formData, {
+      const res = await axios.post('/Pagos/add-client', formData, {
         headers: { 'Accept': 'application/json' }
       });
       
@@ -143,7 +143,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       formData.append('nombre_clase', sessionKey.nombre_clase);
       formData.append('centro', sessionKey.centro);
 
-      const res = await axios.post('Pagos/remove-client', formData, {
+      const res = await axios.post('/Pagos/remove-client', formData, {
         headers: { 'Accept': 'application/json' }
       });
       if (res.data.success) {
@@ -169,7 +169,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       formData.append('nombre_clase', sessionKey.nombre_clase);
       formData.append('centro', sessionKey.centro);
 
-      const res = await axios.post('Pagos/delete-session', formData, {
+      const res = await axios.post('/Pagos/delete-session', formData, {
         headers: { 'Accept': 'application/json' }
       });
       if (res.data.success) {
@@ -199,7 +199,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
             suscripciones_permitidas: editSuscripciones
         };
         
-        const res = await axios.post('Pagos/update-session', payload);
+        const res = await axios.post('/Pagos/update-session', payload);
 
         if (res.data.success) {
             if (onSuccess) onSuccess();
