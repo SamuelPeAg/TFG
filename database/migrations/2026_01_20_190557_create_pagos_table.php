@@ -17,10 +17,11 @@ return new class extends Migration
             $table->string('centro');
             $table->string('nombre_clase');
             $table->string('tipo_clase')->default('EP');
-            $table->string('metodo_pago');
+            $table->unsignedInteger('capacidad_maxima')->nullable(); // Límite de personas para clases de grupo
+            $table->string('metodo_pago')->nullable();
 
             $table->string('iban')->nullable();
-            $table->decimal('importe', 8, 2);
+            $table->decimal('importe', 8, 2)->default(0);
             $table->dateTime('fecha_registro');
 
             $table->timestamps();

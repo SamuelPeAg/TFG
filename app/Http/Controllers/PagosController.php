@@ -158,101 +158,94 @@ class PagosController extends Controller
 
     public function store(Request $request)
     {
+        $tiposGrupo = ['GRUPO', 'GRUPO_PRIVADO'];
+        $isGrupo    = in_array($request->input('tipo_clase'), $tiposGrupo);
+
         $request->validate([
-            'centro'            => ['required', 'string'],
-            'nombre_clase'      => ['required', 'string', 'max:120'],
-            'tipo_clase'        => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
-            'fecha_hora'        => ['required', 'date'],
-            'trainers'          => ['nullable', 'array'],
-            'trainers.*'        => ['exists:entrenadores,id'],  // ← entrenadores, no users
-            'participants'      => ['required', 'array', 'min:1'],
-            'participants.*.user_id'     => ['required', 'exists:users,id'],
-            'participants.*.precio'      => ['required', 'numeric', 'min:0'],
-            'participants.*.metodo_pago' => ['required', 'in:TPV,EF,DD,CC'],
+            'centro'             => ['required', 'string'],
+            'nombre_clase'       => ['required', 'string', 'max:120'],
+            'tipo_clase'         => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
+            'fecha_hora'         => ['required', 'date'],
+            'capacidad_maxima'   => ['nullable', 'integer', 'min:1'],
+            'trainers'           => ['nullable', 'array'],
+            'trainers.*'         => ['exists:entrenadores,id'],
+            'participants'       => ['nullable', 'array'],  // siempre opcional
+            'participants.*.user_id'     => ['required_with:participants', 'exists:users,id'],
+            'participants.*.precio'      => ['required_with:participants', 'numeric', 'min:0'],
+            'participants.*.metodo_pago' => ['required_with:participants', 'in:TPV,EF,DD,CC'],
             'suscripciones_permitidas'   => ['nullable', 'array'],
             'suscripciones_permitidas.*' => ['exists:suscripciones,id'],
         ]);
 
-        $fecha = Carbon::parse($request->input('fecha_hora'));
-        $createdEvents = [];
-
+        $fecha          = Carbon::parse($request->input('fecha_hora'));
         $trainers       = $request->input('trainers', []);
         $firstTrainerId = !empty($trainers) ? $trainers[0] : null;
+        $capacidad      = $request->input('capacidad_maxima');
+        $participants   = $request->input('participants', []);
 
-        try {
-            foreach ($request->input('participants') as $pData) {
-                $userId = $pData['user_id'];
-                $user   = User::findOrFail($userId);
+        $pagoBase = [
+            'entrenador_id'    => $firstTrainerId,
+            'centro'           => $request->input('centro'),
+            'nombre_clase'     => $request->input('nombre_clase'),
+            'tipo_clase'       => $request->input('tipo_clase'),
+            'capacidad_maxima' => $capacidad,
+            'importe'          => 0,
+        ];
 
-                $pago = Pago::create([
-                    'user_id'       => $user->id,
-                    'entrenador_id' => $firstTrainerId,  // legacy FK a entrenadores
-                    'iban'          => $user->iban,
-                    'importe'       => $pData['precio'],
-                    'fecha_registro' => $fecha,
-                    'centro'        => $request->input('centro'),
-                    'nombre_clase'  => $request->input('nombre_clase'),
-                    'tipo_clase'    => $request->input('tipo_clase'),
-                    'metodo_pago'   => $pData['metodo_pago'],
-                ]);
+        // Closure: crea los pagos para una fecha concreta
+        $crearPagos = function (Carbon $slot) use ($participants, $pagoBase, $trainers, $request, $isGrupo) {
+            if (!empty($participants)) {
+                foreach ($participants as $pData) {
+                    $user = User::find($pData['user_id']);
+                    if (!$user) continue;
+
+                    $pago = Pago::create(array_merge($pagoBase, [
+                        'user_id'        => $user->id,
+                        'iban'           => $user->iban,
+                        'importe'        => $pData['precio'] ?? 0,
+                        'metodo_pago'    => $pData['metodo_pago'] ?? 'EF',
+                        'fecha_registro' => $slot,
+                    ]));
+
+                    if ($request->has('suscripciones_permitidas')) {
+                        $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+                    }
+                    if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
+                }
+            } else {
+                // Sin alumnos: placeholder para que la sesión aparezca en el calendario
+                $pago = Pago::create(array_merge($pagoBase, [
+                    'user_id'        => null,
+                    'metodo_pago'    => null,
+                    'fecha_registro' => $slot,
+                ]));
 
                 if ($request->has('suscripciones_permitidas')) {
                     $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
                 }
-
-                if (!empty($trainers)) {
-                    $pago->entrenadores()->sync($trainers);
-                }
-
-                $createdEvents[] = $pago;
+                if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
             }
+        };
 
-            // Generar clases recurrentes si aplica
+        try {
+            $crearPagos($fecha);
+
             if ($request->input('is_recurring') && $request->input('recurrence_end')) {
-                $endDate    = Carbon::parse($request->input('recurrence_end'));
+                $endDate     = Carbon::parse($request->input('recurrence_end'));
                 $currentDate = $fecha->copy()->addWeek();
-
                 while ($currentDate->lte($endDate)) {
-                    foreach ($request->input('participants') as $pData) {
-                        $user = User::find($pData['user_id']);
-                        if (!$user) continue;
-
-                        $pago = Pago::create([
-                            'user_id'        => $user->id,
-                            'entrenador_id'  => $firstTrainerId,
-                            'iban'           => $user->iban,
-                            'importe'        => $pData['precio'],
-                            'fecha_registro' => $currentDate->copy(),
-                            'centro'         => $request->input('centro'),
-                            'nombre_clase'   => $request->input('nombre_clase'),
-                            'tipo_clase'     => $request->input('tipo_clase'),
-                            'metodo_pago'    => $pData['metodo_pago'],
-                        ]);
-
-                        if ($request->has('suscripciones_permitidas')) {
-                            $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
-                        }
-                        if (!empty($trainers)) {
-                            $pago->entrenadores()->sync($trainers);
-                        }
-                    }
+                    $crearPagos($currentDate->copy());
                     $currentDate->addWeek();
                 }
             }
 
         } catch (\Exception $e) {
             \Log::error('PagosController@store error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error interno al guardar la clase: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Error interno: ' . $e->getMessage()], 500);
         }
 
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Clase creada exitosamente'
-            ]);
+            return response()->json(['success' => true, 'message' => 'Clase creada exitosamente']);
         }
 
         return redirect()->route('Pagos')->with('success', 'Clase creada exitosamente.');

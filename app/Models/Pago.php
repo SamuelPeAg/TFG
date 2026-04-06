@@ -17,6 +17,7 @@ class Pago extends Model
         'centro',
         'nombre_clase',
         'tipo_clase',
+        'capacidad_maxima',
         'metodo_pago',
         'iban',
         'importe',
