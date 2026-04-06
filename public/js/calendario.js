@@ -742,7 +742,8 @@ window.initCalendarioVanilla = () => {
         let cantidad = 1;
         if (tipo === 'DUO') cantidad = 2;
         else if (tipo === 'TRIO') cantidad = 3;
-        else if (tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') cantidad = 1;
+        else if (tipo === 'GRUPO_PRIVADO') cantidad = 4;
+        else if (tipo === 'GRUPO') cantidad = 8;
         if (btnAdd) btnAdd.style.display = (tipo === 'GRUPO' || tipo === 'GRUPO_PRIVADO') ? 'block' : 'none';
         container.innerHTML = '';
         for (let i = 0; i < cantidad; i++) agregarInputUsuario(i);
@@ -853,8 +854,8 @@ window.initCalendarioVanilla = () => {
             case 'EP': return 1;
             case 'DUO': return 2;
             case 'TRIO': return 3;
-            case 'GRUPO_PRIVADO':
-            case 'GRUPO': return 6;
+            case 'GRUPO_PRIVADO': return 4;
+            case 'GRUPO': return 8;
             default: return 100;
         }
     }

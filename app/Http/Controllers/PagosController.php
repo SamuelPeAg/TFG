@@ -46,7 +46,10 @@ class PagosController extends Controller
 
         // Agrupar pagos por (fecha, nombre_clase, centro, tipo_clase)
         $grouped = $pagos->groupBy(function ($p) {
-            return $p->fecha_registro->format('Y-m-d H:i:s') . '|' . strtolower(trim($p->nombre_clase)) . '|' . $p->centro;
+            return $p->fecha_registro->format('Y-m-d H:i:s')
+                . '|' . strtoupper(trim($p->tipo_clase ?? ''))
+                . '|' . strtolower(trim($p->nombre_clase))
+                . '|' . $p->centro;
         });
 
         // Extraer roles del request
@@ -112,6 +115,8 @@ class PagosController extends Controller
                 $textColor = '#ffffff';
             }
 
+            $tipoClase = $grupo->pluck('tipo_clase')->filter()->first() ?? $first->tipo_clase;
+            $capacidadMaxima = $grupo->pluck('capacidad_maxima')->filter()->first() ?? $first->capacidad_maxima;
             $classSubIds = $first->suscripciones->pluck('id')->toArray();
 
             // Filtrado del lado del cliente: solo ver clases compatibles con sus bonos activos
@@ -137,8 +142,8 @@ class PagosController extends Controller
                     'hora' => $first->fecha_registro ? $first->fecha_registro->format('H:i') : '',
                     'centro' => $first->centro,
                     'clase_nombre' => $first->nombre_clase,
-                    'tipo_clase' => $first->tipo_clase,
-                    'capacidad_maxima' => $first->capacidad_maxima,
+                    'tipo_clase' => $tipoClase,
+                    'capacidad_maxima' => $capacidadMaxima,
                     'alumnos' => $alumnos,
                     'entrenadores' => $entrenadoresList,
                     'session_key' => [
@@ -364,7 +369,9 @@ class PagosController extends Controller
         ]);
 
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            if ($request->user()->id != $request->user_id) {
+                return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            }
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
@@ -379,7 +386,20 @@ class PagosController extends Controller
             return response()->json(['error' => 'Sesión no encontrada o vacía'], 404);
         }
 
-        // 2. Verificar que el usuario no esté ya en esa sesión
+        // 2. Verificar si el grupo tiene un límite y si ya se alcanzó
+        if (!empty($existingPago->capacidad_maxima) && $existingPago->capacidad_maxima > 0) {
+            $currentCount = Pago::where('fecha_registro', $fecha)
+                ->where('nombre_clase', $request->nombre_clase)
+                ->where('centro', $request->centro)
+                ->whereNotNull('user_id')
+                ->count();
+
+            if ($currentCount >= $existingPago->capacidad_maxima) {
+                return response()->json(['error' => 'Límite de alumnos alcanzado para esta sesión.'], 422);
+            }
+        }
+
+        // 3. Verificar que el usuario no esté ya en esa sesión
         $exists = Pago::where('fecha_registro', $fecha)
             ->where('nombre_clase', $request->nombre_clase)
             ->where('centro', $request->centro)
@@ -392,7 +412,7 @@ class PagosController extends Controller
 
         $newUser = User::find($request->user_id);
 
-        // 3. Crear el nuevo pago
+        // 4. Crear el nuevo pago
         $newPago = Pago::create([
             'user_id' => $newUser->id,
             'entrenador_id' => $existingPago->entrenador_id, // Legacy
@@ -402,6 +422,7 @@ class PagosController extends Controller
             'centro' => $existingPago->centro,
             'nombre_clase' => $existingPago->nombre_clase,
             'tipo_clase' => $existingPago->tipo_clase,
+            'capacidad_maxima' => $existingPago->capacidad_maxima,
             'metodo_pago' => $existingPago->metodo_pago, // Asume mismo método por defecto, o podría pedirse
         ]);
 
@@ -431,7 +452,9 @@ class PagosController extends Controller
         ]);
 
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            if ($request->user()->id != $request->user_id) {
+                return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            }
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
@@ -535,6 +558,7 @@ class PagosController extends Controller
             'new_nombre_clase' => 'required|string|max:200',
             'new_centro' => 'required|string',
             'new_tipo_clase' => 'required|string',
+            'capacidad_maxima' => 'nullable|integer|min:1',
             'suscripciones_permitidas' => 'nullable|array',
             'suscripciones_permitidas.*' => 'exists:suscripciones,id',
         ]);
@@ -563,6 +587,7 @@ class PagosController extends Controller
                 'nombre_clase' => $request->new_nombre_clase,
                 'centro' => $request->new_centro,
                 'tipo_clase' => $request->new_tipo_clase,
+                'capacidad_maxima' => $request->capacidad_maxima,
             ]);
 
             // Sync allowed subscriptions for this session

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Pago;
 use App\Models\ClientFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -37,6 +38,24 @@ class ClientProfileController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $sessions = Pago::with(['entrenadores'])
+            ->where('user_id', $user->id)
+            ->orderBy('fecha_registro', 'asc')
+            ->get()
+            ->map(function ($pago) {
+                return [
+                    'id' => $pago->id,
+                    'fecha_registro' => $pago->fecha_registro?->toDateTimeString(),
+                    'nombre_clase' => $pago->nombre_clase,
+                    'centro' => $pago->centro,
+                    'tipo_clase' => $pago->tipo_clase,
+                    'capacidad_maxima' => $pago->capacidad_maxima,
+                    'entrenadores' => $pago->entrenadores->map(fn($t) => $t->name)->toArray(),
+                    'importe' => $pago->importe,
+                    'metodo_pago' => $pago->metodo_pago,
+                ];
+            });
+
         return response()->json([
             'user' => [
                 'id' => $user->id,
@@ -49,7 +68,8 @@ class ClientProfileController extends Controller
                 'additional_attributes' => $user->additional_attributes ?? [],
             ],
             'files' => $files,
-            'subscriptions' => $user->suscripciones()->with('suscripcion')->get()
+            'subscriptions' => $user->suscripciones()->with('suscripcion')->get(),
+            'sessions' => $sessions,
         ]);
     }
 

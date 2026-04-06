@@ -13,12 +13,23 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   const [localProps, setLocalProps] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   
-  // Edit Form states
+  const sessionTypeLabel = (tipo) => {
+    switch ((tipo || '').toString().toUpperCase()) {
+      case 'EP': return 'EP (Personal)';
+      case 'DUO': return 'DÚO';
+      case 'TRIO': return 'TRÍO';
+      case 'GRUPO_PRIVADO': return 'Privado / Grupo especial';
+      case 'GRUPO': return 'Grupo';
+      default: return tipo || 'Sin Tipo';
+    }
+  };
+
   const [editNombre, setEditNombre] = useState('');
   const [editCentro, setEditCentro] = useState('');
   const [editTipo, setEditTipo] = useState('');
   const [editFecha, setEditFecha] = useState('');
   const [editSuscripciones, setEditSuscripciones] = useState([]);
+  const [editCapacidad, setEditCapacidad] = useState('');
 
   useEffect(() => {
     if (isOpen && selectedEvent) {
@@ -305,16 +316,41 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                               <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
                               <select 
                                   value={editTipo} 
-                                  onChange={(e) => setEditTipo(e.target.value)}
+                                  onChange={(e) => {
+                                      setEditTipo(e.target.value);
+                                      const defaultCaps = { EP: 1, DUO: 2, TRIO: 3, GRUPO_PRIVADO: 4, GRUPO: 8 };
+                                      setEditCapacidad(defaultCaps[e.target.value] || 1);
+                                  }}
                                   className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 uppercase cursor-pointer"
                               >
                                   <option value="EP">EP (Personal)</option>
                                   <option value="DUO">DUO</option>
                                   <option value="TRIO">TRIO</option>
-                                  <option value="GRUPO">GRUPO</option>
                                   <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
+                                  <option value="GRUPO">GRUPO</option>
                               </select>
                           </div>
+
+                          {/* Capacidad Maxima - Conditional */}
+                          {(['GRUPO', 'GRUPO_PRIVADO'].includes(editTipo)) ? (
+                              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
+                                  <i className="fa-solid fa-users text-[#4BB7AE] text-sm"></i>
+                                  <input 
+                                      type="number" 
+                                      value={editCapacidad} 
+                                      onChange={(e) => setEditCapacidad(e.target.value)}
+                                      min="1"
+                                      className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 w-12"
+                                      placeholder="Límite"
+                                  />
+                              </div>
+                          ) : (
+                              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full cursor-not-allowed opacity-70">
+                                  <i className="fa-solid fa-users text-slate-400 text-sm"></i>
+                                  <span className="text-xs font-bold text-slate-500">{editCapacidad} Persona{editCapacidad !== '1' ? 's' : ''}</span>
+                                  <i className="fa-solid fa-lock text-slate-400 text-xs ml-2"></i>
+                              </div>
+                          )}
                       </>
                   ) : (
                       <>
@@ -329,7 +365,10 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                           {localProps.tipo_clase && (
                               <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
                                   <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
-                                  <span className="text-sm font-bold text-slate-600 uppercase">{localProps.tipo_clase}</span>
+                                  <span className="text-sm font-bold text-slate-600 uppercase">{sessionTypeLabel(localProps.tipo_clase)}</span>
+                                  {localProps.capacidad_maxima ? (
+                                      <span className="text-xs font-bold text-slate-500 bg-slate-200 px-2 py-1 rounded-full">Límite: {localProps.capacidad_maxima}</span>
+                                  ) : null}
                               </div>
                           )}
                       </>

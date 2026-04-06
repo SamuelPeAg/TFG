@@ -14,12 +14,31 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     // Búsqueda de suscripciones (Paso 2)
     const [susSearchQuery, setSusSearchQuery] = useState('');
 
+    const defaultCapacityForType = (tipo) => {
+        const type = (tipo || '').toString().toLowerCase();
+        switch (type) {
+            case 'ep':
+                return '1';
+            case 'duo':
+                return '2';
+            case 'trio':
+                return '3';
+            case 'privado':
+            case 'grupo especial':
+                return '4';
+            case 'grupo':
+                return '8';
+            default:
+                return '';
+        }
+    };
+
     const [formData, setFormData] = useState({
         centro: '',
         nombre_clase: '',
         tipo_clase: 'ep',
         capacidad: '',
-        capacidad_maxima: '',  // para clases de grupo
+        capacidad_maxima: defaultCapacityForType('ep'),
         fecha_hora: '',
         precio_base: '0.00',
         is_recurring: false,
@@ -33,7 +52,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         if (isOpen) {
             setFormData(prev => ({
                 ...prev,
-                fecha_hora: initialDate || getCurrentLocalTime()
+                fecha_hora: initialDate || getCurrentLocalTime(),
+                capacidad_maxima: defaultCapacityForType(prev.tipo_clase)
             }));
             setCurrentStep(1);
             setErrors({});
@@ -60,10 +80,20 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({ 
-            ...prev, 
-            [name]: type === 'checkbox' ? checked : value 
-        }));
+        console.log(`[handleChange] name:${name}, value:${value}, type:${type}`);
+        setFormData(prev => {
+            const nextState = {
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            };
+
+            if (name === 'tipo_clase') {
+                nextState.capacidad_maxima = defaultCapacityForType(value);
+                console.log(`[handleChange] Tipo cambió a: ${value}, capacidad ahora: ${nextState.capacidad_maxima}`);
+            }
+
+            return nextState;
+        });
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
     };
 
@@ -111,7 +141,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         });
     };
 
-    const tiposGrupo = ['Grupo especial', 'Grupo', 'privado'];
+    const tiposGrupo = ['grupo especial', 'grupo', 'privado'];
     const isGrupo = tiposGrupo.includes(formData.tipo_clase);
 
     const validateStep = (step) => {
@@ -147,20 +177,23 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 'duo': 'DUO',
                 'trio': 'TRIO',
                 'privado': 'GRUPO_PRIVADO',
-                'Grupo especial': 'GRUPO_PRIVADO',
-                'Grupo': 'GRUPO',
+                'grupo especial': 'GRUPO_PRIVADO',
+                'grupo': 'GRUPO',
             };
+            
+            // Asegurarse de que el tipo se mapea correctamente
+            const mappedType = typeMapping[formData.tipo_clase.toLowerCase()] || formData.tipo_clase.toUpperCase();
             
             const payload = {
                 ...formData,
-                capacidad_maxima: isGrupo && formData.capacidad_maxima ? parseInt(formData.capacidad_maxima) : null,
+                capacidad_maxima: formData.capacidad_maxima ? parseInt(formData.capacidad_maxima) : null,
                 trainers: formData.trainers.map(t => t.id),
                 participants: formData.participants.map(p => ({
                     user_id: p.id,
                     precio: (formData.tipo_clase === 'ep' || formData.tipo_clase === 'EP') ? (p.precio_hora || 0) : 0,
                     metodo_pago: 'EF'
                 })),
-                tipo_clase: typeMapping[formData.tipo_clase] || formData.tipo_clase.toUpperCase()
+                tipo_clase: mappedType
             };
             const response = await axios.post('/Pagos', payload);
             if (response.data.success) {
@@ -183,7 +216,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     if (!isOpen) return null;
 
-    const showCapacidad = true; // Límite de personas disponible para todos los tipos de sesión
+    console.log('[CrearClaseModal] Render - formData.tipo_clase:', formData.tipo_clase, 'capacidad_maxima:', formData.capacidad_maxima, 'currentStep:', currentStep);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 md:p-6 animate-in fade-in duration-200">
@@ -309,25 +342,25 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-bold text-slate-600 pl-1">Tipo de Sesión</label>
-                                                <select name="tipo_clase" value={formData.tipo_clase} onChange={handleChange} 
-                                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none">
+                                                <select 
+                                                    name="tipo_clase" 
+                                                    value={formData.tipo_clase} 
+                                                    onChange={(e) => {
+                                                        console.log('[SELECT onChange] value:', e.target.value);
+                                                        handleChange(e);
+                                                    }}
+                                                    onFocus={() => console.log('[SELECT onFocus] current value:', formData.tipo_clase)}
+                                                    className="select2-ignore w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none">
                                                     <option value="ep">EP (Personal)</option>
                                                     <option value="duo">Dúo</option>
                                                     <option value="trio">Trío</option>
                                                     <option value="privado">Privado</option>
-                                                    <option value="Grupo especial">Grupo especial</option>
-                                                    <option value="Grupo">Grupo</option>
+                                                    <option value="grupo especial">Grupo especial</option>
+                                                    <option value="grupo">Grupo</option>
                                                 </select>
                                             </div>
                                         </div>
                                     </div>
-                                    {showCapacidad && (
-                                        <div className="space-y-1.5 mt-4">
-                                            <label className="text-xs font-bold text-slate-600 pl-1">Límite de Personas</label>
-                                            <input type="number" name="capacidad_maxima" value={formData.capacidad_maxima} onChange={handleChange} min="1" placeholder="Ej. 10"
-                                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none" />
-                                        </div>
-                                    )}
                                 </section>
 
                                 <section>
@@ -361,6 +394,12 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                             <div className="animate-in slide-in-from-right-4 fade-in duration-300 w-full max-w-2xl mx-auto space-y-10">
                                 <section>
                                     <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase mb-6">Agenda y Precios</h3>
+                                    
+                                    {/* Display del tipo seleccionado */}
+                                    <div className="mb-6 p-3 bg-slate-100 rounded-lg">
+                                        <span className="text-xs font-bold text-slate-600">Tipo de Sesión Seleccionado: <strong className="text-[#38C1A3]">{formData.tipo_clase.toUpperCase()}</strong></span>
+                                    </div>
+                                    
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-bold text-slate-600 pl-1">Fecha y Hora</label>
@@ -375,11 +414,11 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                         </div>
                                     </div>
 
-                                    {/* Capacidad máxima — solo para grupos */}
-                                    {isGrupo && (
-                                        <div className="mt-5 space-y-1.5">
+                                    {/* Capacidad máxima — editable para grupos y privado */}
+                                    {(['grupo', 'grupo especial', 'privado'].includes(formData.tipo_clase)) ? (
+                                        <div className="mt-6 space-y-1.5">
                                             <label className="text-xs font-bold text-slate-600 pl-1">
-                                                Límite de personas <span className="text-slate-400 font-medium">(opcional)</span>
+                                                Límite de Personas (Máximo)
                                             </label>
                                             <input
                                                 type="number"
@@ -390,7 +429,16 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                                 placeholder="Ej. 10"
                                                 className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none focus:border-[#38C1A3]"
                                             />
-                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">Máximo de alumnos que pueden apuntarse a este grupo.</p>
+                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">Número máximo de personas que pueden participar.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="mt-6 space-y-1.5">
+                                            <label className="text-xs font-bold text-slate-600 pl-1">Límite de Personas</label>
+                                            <div className="w-full bg-slate-100 border border-slate-300 text-slate-600 text-sm font-bold rounded-xl px-4 py-3.5 outline-none cursor-not-allowed flex items-center justify-between">
+                                                <span>{formData.capacidad_maxima} Persona{formData.capacidad_maxima !== '1' ? 's' : ''}</span>
+                                                <i className="fa-solid fa-lock text-slate-400 text-xs"></i>
+                                            </div>
+                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">El límite es fijo según el tipo de sesión.</p>
                                         </div>
                                     )}
 

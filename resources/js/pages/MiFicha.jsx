@@ -9,9 +9,7 @@ export default function MiFicha() {
   const [profileData, setProfileData] = useState(null);
   const [files, setFiles] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-    const [isEditingContact, setIsEditingContact] = useState(false);
+    const [sessions, setSessions] = useState([]);
     const [submittingFile, setSubmittingFile] = useState(false);
     const [savingContact, setSavingContact] = useState(false);
     
@@ -31,6 +29,7 @@ export default function MiFicha() {
             setProfileData(res.data.user);
             setFiles(res.data.files);
             setSubscriptions(res.data.subscriptions || []);
+            setSessions(res.data.sessions || []);
         } catch (error) {
             console.error("Error fetching ficha:", error);
         } finally {
@@ -268,6 +267,36 @@ export default function MiFicha() {
                                             </div>
                                         )}
                                     </div>
+                                </div>
+
+                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mis Sesiones</h3>
+                                        <span className="text-[9px] uppercase tracking-widest text-slate-500">{sessions.length} sesiones</span>
+                                    </div>
+                                    {sessions.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {sessions.map((session) => (
+                                                <div key={session.id} className="p-4 rounded-3xl border border-slate-100 bg-slate-50">
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-800">{session.nombre_clase}</p>
+                                                            <p className="text-[11px] text-slate-500 mt-1">{new Date(session.fecha_registro).toLocaleString()}</p>
+                                                        </div>
+                                                        <span className="text-[10px] uppercase tracking-widest text-slate-500">{session.tipo_clase}</span>
+                                                    </div>
+                                                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600">
+                                                        <div><strong className="font-bold text-slate-700">Centro:</strong> {session.centro}</div>
+                                                        <div><strong className="font-bold text-slate-700">Entrenador:</strong> {session.entrenadores.join(', ') || 'Pendiente'}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-5 text-center text-slate-400 text-xs font-medium">
+                                            No tienes sesiones reservadas todavía.
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Atributos */}
