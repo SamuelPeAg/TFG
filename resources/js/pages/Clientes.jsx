@@ -217,9 +217,9 @@ export default function Clientes() {
       <ClientsImportModal 
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
-        onImportSuccess={() => {
+        onImportSuccess={(message) => {
             fetchUsers();
-            setToast('Clientes importados correctamente desde el archivo Excel.');
+            setToast(message || 'Clientes importados correctamente.');
             setTimeout(() => setToast(null), 5000);
         }}
       />

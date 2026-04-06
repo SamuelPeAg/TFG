@@ -17,28 +17,34 @@ export default function ClientsImportModal({ isOpen, onClose, onImportSuccess })
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!file) {
-            setErrors({ file: ['Por favor, selecciona un archivo.'] });
-            return;
-        }
+        if (!file) return;
 
         setLoading(true);
+        setErrors({});
+
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            await axios.post('/users/import', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            // Aumentar tiempo de espera de axios para importaciones grandes
+            const response = await axios.post('/users/import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                timeout: 300000 // 5 minutos de espera en frontend
             });
-            onImportSuccess();
-            onClose();
-            setFile(null);
-        } catch (err) {
-            if (err.response?.data?.errors) {
-                setErrors(err.response.data.errors);
-            } else {
-                setErrors({ general: 'Error al importar el archivo. Verifica el formato.' });
+
+            if (onImportSuccess) {
+                onImportSuccess(response.data.message);
+                // Cerrar modal automáticamente tras éxito
+                setTimeout(() => {
+                    onClose();
+                }, 2000);
             }
+        } catch (err) {
+            console.error('Import error:', err);
+            const msg = err.response?.data?.errors?.general 
+                     || err.response?.data?.message 
+                     || 'Error de conexión o tiempo agotado. Revisa si los clientes se han creado de todas formas.';
+            setErrors({ general: msg });
         } finally {
             setLoading(false);
         }
@@ -64,18 +70,19 @@ export default function ClientsImportModal({ isOpen, onClose, onImportSuccess })
 
                     <div className="bg-slate-50 rounded-2xl p-4 mb-6 border border-slate-100">
                         <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Formato de Columnas (Cabeceras)</h4>
-                        <div className="grid grid-cols-3 gap-1 text-[9px] font-bold text-slate-600 uppercase">
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-[#38C1A3]">empresa</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-indigo-400">mes</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-indigo-400">fecha</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-[#38C1A3]">cliente*</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">precio</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">pago</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">centro</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">entrenador</span>
-                            <span className="bg-white p-1 rounded border border-slate-200 text-center">servicio</span>
+                        <div className="grid grid-cols-2 gap-1 text-[9px] font-bold text-slate-600 uppercase">
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-[#38C1A3]">CENTRO</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-indigo-400">NOMBRE COMPLETO*</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">APODO</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">CUMPLEAÑOS</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center text-[#38C1A3]">EMAIL*</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">MV (Móvil)</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">DNI</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">DOMICILIO</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">C.P/CIUDAD</span>
+                            <span className="bg-white p-1 rounded border border-slate-200 text-center">FECHA ALTA</span>
                         </div>
-                        <p className="text-[9px] text-slate-400 mt-3 px-1 italic">El sistema reconocerá automáticamente las columnas. El campo 'cliente' es obligatorio para identificar al alumno.</p>
+                        <p className="text-[9px] text-slate-400 mt-3 px-1 italic">El sistema reconocerá automáticamente estas columnas. Campos obligatorios marcados con *</p>
                     </div>
 
                     {errors?.general && (

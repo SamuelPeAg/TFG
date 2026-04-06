@@ -153,20 +153,148 @@ class UserController extends Controller
 
     public function importClients(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:5120', // Máx 5MB
-        ], [
-            'file.required' => 'Debes seleccionar un archivo Excel o CSV.',
-            'file.mimes'    => 'El archivo debe ser un formato Excel válido (xlsx, xls, csv).',
-            'file.max'      => 'El archivo no puede pesar más de 5MB.',
-        ]);
+        set_time_limit(600);
+        ini_set('memory_limit', '512M');
 
         try {
-            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\ClientImport, $request->file('file'));
-            return response()->json(['message' => 'Clientes importados correctamente.']);
+            $request->validate([
+                'file' => 'required|file'
+            ], [
+                'file.required' => 'Debes seleccionar un archivo.'
+            ]);
+
+            $file = $request->file('file');
+            $path = $file->getRealPath();
+            $content = file_get_contents($path);
+            
+            // Limpiar BOM y caracteres raros
+            $content = str_replace(["\xEF\xBB\xBF", "\x00"], '', $content);
+            
+            // Convertir codificación a UTF-8 si es necesario
+            if (!mb_check_encoding($content, 'UTF-8')) {
+                $content = mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1');
+            }
+            
+            // Separar por líneas
+            $lines = preg_split('/\r\n|\r|\n/', $content);
+            $lines = array_filter($lines, fn($line) => !empty(trim($line)));
+            $lines = array_values($lines);
+
+            if (empty($lines)) {
+                return response()->json(['errors' => ['general' => 'El archivo está vacío.']], 422);
+            }
+
+            // Detectar delimitador y cabeceras
+            $delimiter = null;
+            $headers = [];
+            $headerLineIndex = -1;
+
+            foreach ($lines as $index => $line) {
+                foreach ([',', ';', "\t", '|'] as $d) {
+                    $cols = str_getcsv($line, $d);
+                    $lineClean = mb_strtolower(implode('', $cols));
+                    if (str_contains($lineClean, 'nombre') || str_contains($lineClean, 'centro') || str_contains($lineClean, 'completo')) {
+                        $delimiter = $d;
+                        $headers = array_map(fn($h) => str_replace([' ', '*', '(', ')', '.', ',', '_', '/'], '', mb_strtolower(trim($h))), $cols);
+                        $headerLineIndex = $index;
+                        break 2;
+                    }
+                }
+            }
+
+            if (!$delimiter) {
+                $delimiter = (strpos($lines[0], ';') !== false) ? ';' : ',';
+                $headers = array_map(fn($h) => str_replace([' ', '*', '(', ')', '.', ',', '_', '/'], '', mb_strtolower(trim($h))), str_getcsv($lines[0], $delimiter));
+                $headerLineIndex = 0;
+            }
+
+            $count = 0;
+            $empresa = \App\Models\Empresa::first();
+
+            for ($i = $headerLineIndex + 1; $i < count($lines); $i++) {
+                $data = str_getcsv($lines[$i], $delimiter);
+                $rowData = [];
+                foreach ($headers as $idx => $h) {
+                    if (isset($data[$idx])) $rowData[$h] = trim($data[$idx]);
+                }
+
+                $nombre = null;
+                foreach ($rowData as $key => $val) {
+                    if (str_contains($key, 'nombre') || str_contains($key, 'cliente') || str_contains($key, 'completo')) {
+                        $nombre = $val;
+                        break;
+                    }
+                }
+                
+                if (empty($nombre)) continue;
+
+                $emailRaw = $rowData['email'] ?? $rowData['correo'] ?? null;
+                if (empty($emailRaw) || !filter_var($emailRaw, FILTER_VALIDATE_EMAIL)) {
+                    $email = str_replace(' ', '.', mb_strtolower($nombre)) . '-' . \Illuminate\Support\Str::random(4) . '@factomove.es';
+                } else {
+                    $email = $emailRaw;
+                }
+                
+                $dni = $rowData['dni'] ?? null;
+                if (empty(trim($dni))) $dni = null;
+
+                $centroName = $rowData['centro'] ?? null;
+                $centroId = null;
+                if ($centroName) {
+                    $centro = \App\Models\Centro::firstOrCreate([
+                        'nombre' => $centroName,
+                        'empresa_id' => $empresa ? $empresa->id : null
+                    ]);
+                    $centroId = $centro->id;
+                }
+
+                $userData = [
+                    'name'      => $nombre,
+                    'email'     => $email,
+                    'dni'       => $dni,
+                    'direccion' => $rowData['domicilio'] ?? $rowData['direccion'] ?? $rowData['street'] ?? null,
+                    'centro_id' => $centroId,
+                    'empresa_id' => $empresa ? $empresa->id : null,
+                    'activo'    => false, 
+                    'additional_attributes' => [
+                        'apodo' => $rowData['apodo'] ?? null,
+                        'mv'    => $rowData['mv'] ?? $rowData['movil'] ?? null,
+                        'birthday' => $rowData['cumpleaños'] ?? $rowData['birthday'] ?? null,
+                    ]
+                ];
+
+                $user = User::where('email', $email)->orWhere(function($q) use ($dni) {
+                    if ($dni) $q->where('dni', $dni); else $q->whereRaw('0=1');
+                })->first();
+
+                if ($user) {
+                    $user->update($userData);
+                } else {
+                    $user = User::create($userData + [
+                        'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16))
+                    ]);
+                    $user->assignRole('cliente');
+                }
+                $count++;
+            }
+
+            if (count($lines) > 0 && str_starts_with($lines[0], 'PK')) {
+                return response()->json([
+                    'errors' => ['general' => 'AVISO: Tu archivo es realmente un "Libro de Excel (.xlsx)" aunque la extensión diga .csv. Por favor, ábrelo en Excel y dale a "Guardar como... > CSV (delimitado por comas)" antes de subirlo.']
+                ], 422);
+            }
+
+            if ($count === 0) {
+                return response()->json([
+                    'errors' => ['general' => "DIAGNÓSTICO: 0 filas. Delim: [$delimiter]. Headers: [" . implode(', ', $headers) . "]."]
+                ], 422);
+            }
+
+            return response()->json(['message' => "Se han importado $count clientes con éxito."]);
+
         } catch (\Exception $e) {
-            \Log::error('Error importing clients: ' . $e->getMessage());
-            return response()->json(['errors' => ['file' => ['Hubo un error al procesar el archivo. Asegúrate de que el formato es correcto.']]], 422);
+            \Log::error('Error import: ' . $e->getMessage());
+            return response()->json(['errors' => ['general' => 'Error: ' . $e->getMessage()]], 422);
         }
     }
 
