@@ -412,10 +412,11 @@ class UserController extends Controller
 
         foreach ($users as $user) {
             $user->activation_token = \Illuminate\Support\Str::random(60);
+            $user->activation_token_expires_at = now()->addDay();
             $user->save();
             $url = route('activate.show', ['token' => $user->activation_token]);
             try {
-                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AccountActivationMail($user, $url));
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ActivationEmail($user, $url));
                 $sentCount++;
             } catch (\Exception $e) {
                 \Log::error('Error sending bulk activation mail for user ' . $user->id . ': ' . $e->getMessage());
