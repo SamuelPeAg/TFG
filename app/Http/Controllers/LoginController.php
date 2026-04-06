@@ -69,7 +69,7 @@ class LoginController extends Controller
             return response()->json([
                 'message' => 'Error de conexión con el servidor.',
                 'errors' => [
-                    'general' => ['Error de sistema: BD1. Contacta con soporte técnico.']
+                    'general' => ['No se pudo conectar con la base de datos. Verifica tu conexión o contacta con soporte técnico. (Error: BD1)']
                 ]
             ], 500);
         } catch (\Exception $e) {
@@ -86,7 +86,7 @@ class LoginController extends Controller
         return response()->json([
             'message' => 'Las credenciales no coinciden.',
             'errors' => [
-                'general' => ['Correo electrónico o contraseña incorrectos.']
+                'general' => ['El correo electrónico o la contraseña son incorrectos.']
             ]
         ], 422);
     }
