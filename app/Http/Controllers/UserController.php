@@ -57,21 +57,21 @@ class UserController extends Controller
     {
         // --- 1. VALIDACIONES ROBUSTAS (Mínimo 2 por campo) ---
         $request->validate([
-            // Nombre: Obligatorio + Texto + Mínimo 3 letras + Máximo 255
-            'name'          => 'required|string|min:3|max:50',
+            // Nombre: Obligatorio + Texto + Mínimo 3 letras + Máximo 100
+            'name'          => 'required|string|min:3|max:100',
             
-            // Email: Obligatorio + Formato email + Único en la tabla
-            'email'         => 'required|email|unique:users,email',
+            // Email: Obligatorio + Formato email + Único en la tabla + Máximo 150
+            'email'         => 'required|email|max:150|unique:users,email',
             
-            // Password: Obligatorio + Mínimo 6 caracteres
-            'password'      => 'required|string|min:6',
+            // Password: Solo obligatoria si se envía + max 64
+            'password'      => 'nullable|string|min:6|max:64',
             
             // iban: Opcional + Texto + Único + Mínimo 8 caracteres (validez básica)
             'iban'          => 'nullable|string|unique:users,iban|min:8|max:34',
             
-            // Firma: Opcional + Texto + Máximo 255
-            'firma_digital' => 'nullable|string|max:255',
-            'precio_hora'   => 'nullable|numeric|min:0',
+            // Firma: Opcional + Texto + Máximo 1000
+            'firma_digital' => 'nullable|string|max:1000',
+            'precio_hora'   => 'nullable|numeric|min:0|max:9999',
         ], $this->validationMessages());
 
         $user = User::create([
@@ -97,12 +97,12 @@ class UserController extends Controller
     {
         // --- VALIDACIONES AL ACTUALIZAR ---
         $request->validate([
-            'name'          => 'required|string|min:3|max:50',
+            'name'          => 'required|string|min:3|max:100',
             // Ignoramos el ID del usuario actual para que no falle el "unique"
-            'email'         => 'required|email|unique:users,email,' . $user->id,
+            'email'         => 'required|email|max:150|unique:users,email,' . $user->id,
             'iban'          => 'nullable|string|min:8|max:34|unique:users,iban,' . $user->id,
-            'firma_digital' => 'nullable|string|max:255',
-            'precio_hora'   => 'nullable|numeric|min:0',
+            'firma_digital' => 'nullable|string|max:1000',
+            'precio_hora'   => 'nullable|numeric|min:0|max:9999',
         ], $this->validationMessages());
 
         $data = [
@@ -116,7 +116,7 @@ class UserController extends Controller
         // Solo actualizar contraseña si se ha rellenado
         if ($request->filled('password')) {
             $request->validate([
-                'password' => 'string|min:6', // Validamos también aquí
+                'password' => 'string|min:6|max:64', // Validamos también aquí max
             ], $this->validationMessages());
             
             $data['password'] = Hash::make($request->password);
@@ -312,7 +312,7 @@ class UserController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name'  => ['required', 'string', 'min:3', 'max:50'],
+            'name'  => ['required', 'string', 'min:3', 'max:100'],
 
             'iban' => [
                 'nullable', 
@@ -323,10 +323,10 @@ class UserController extends Controller
                 Rule::unique('users', 'iban')->ignore($user->id)
             ],
             'foto_de_perfil' => ['nullable', 'image', 'max:2048'], // Validar imagen (max 2MB)
-            'firma_digital' => ['nullable', 'string', 'max:255'],
+            'firma_digital' => ['nullable', 'string', 'max:500'],
 
-            'current_password' => ['nullable', 'string'],
-            'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
+            'current_password' => ['nullable', 'string', 'max:64'],
+            'password'         => ['nullable', 'string', 'min:6', 'max:64', 'confirmed'],
         ], $this->validationMessages());
 
         $data = [
@@ -456,10 +456,11 @@ class UserController extends Controller
 
         // Validación de contraseña
         $request->validate([
-            'password' => 'required|string|min:6|confirmed'
+            'password' => 'required|string|min:6|max:64|confirmed'
         ], [
             'password.required' => 'La contraseña es obligatoria.',
             'password.min' => 'La contraseña debe tener al menos 6 caracteres.',
+            'password.max' => 'La contraseña es excesivamente larga.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
         ]);
 

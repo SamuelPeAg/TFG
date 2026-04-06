@@ -119,6 +119,7 @@ export default function EntrenadorModals({
                         name="nombre"
                         value={formData.nombre}
                         onChange={handleChange}
+                        maxLength={50}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
                         placeholder="Ej: Laura Gómez"
                         required
@@ -137,6 +138,7 @@ export default function EntrenadorModals({
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        maxLength={150}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
                         placeholder="correo@ejemplo.com"
                         required
@@ -159,6 +161,7 @@ export default function EntrenadorModals({
                         name="iban"
                         value={formData.iban}
                         onChange={handleChange}
+                        maxLength={34}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300 uppercase font-mono"
                         placeholder="ES00 0000 0000 0000 0000 0000"
                     />
@@ -179,6 +182,7 @@ export default function EntrenadorModals({
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
+                        maxLength={64}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#E65C9C]/10 focus:bg-white focus:border-[#E65C9C] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
                         placeholder="••••••••"
                         />
@@ -197,6 +201,7 @@ export default function EntrenadorModals({
                         name="password_confirmation"
                         value={formData.password_confirmation}
                         onChange={handleChange}
+                        maxLength={64}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#E65C9C]/10 focus:bg-white focus:border-[#E65C9C] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
                         placeholder="••••••••"
                         />

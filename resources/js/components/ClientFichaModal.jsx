@@ -258,6 +258,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             type="text" 
                                             value={profileData[field.key]} 
                                             onChange={(e) => setProfileData({...profileData, [field.key]: e.target.value})}
+                                            maxLength={field.key === 'direccion' ? 200 : field.key === 'dni' ? 20 : field.key === 'codigo_postal' ? 10 : 100}
                                             className="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm outline-none focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/5 text-slate-700 font-medium"
                                         />
                                     </div>
@@ -321,6 +322,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             placeholder="Título (p.ej: Alergias)" 
                                             value={attr.key} 
                                             onChange={(e) => updateAttribute(idx, 'key', e.target.value)}
+                                            maxLength={50}
                                             className="flex-1 px-4 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm outline-none focus:border-[#38C1A3] text-sm font-black text-slate-800"
                                         />
                                         <input 
@@ -328,6 +330,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             placeholder="Valor" 
                                             value={attr.value} 
                                             onChange={(e) => updateAttribute(idx, 'value', e.target.value)}
+                                            maxLength={200}
                                             className="flex-[2] px-4 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm outline-none focus:border-[#38C1A3] text-sm font-medium text-slate-600"
                                         />
                                         <button onClick={() => removeAttribute(idx)} className="w-12 h-12 bg-rose-50 text-rose-400 rounded-2xl hover:bg-rose-100 hover:text-rose-600 transition-colors">

@@ -68,11 +68,12 @@ class EntrenadorController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'password' => 'nullable|confirmed|min:8',
+            'password' => 'nullable|confirmed|min:8|max:64',
             'iban' => 'nullable|string|min:8|max:34',
         ], [
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña de seguridad no debe exceder 64 caracteres.',
             'iban.max' => 'El IBAN no puede tener más de 34 caracteres.',
             'iban.min' => 'El IBAN debe tener al menos 8 caracteres.',
         ]);

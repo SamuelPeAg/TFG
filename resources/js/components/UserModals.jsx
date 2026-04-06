@@ -145,6 +145,7 @@ export default function UserModals({
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
+                    maxLength={50}
                     className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
                     placeholder="Ej: Juan Pérez"
                     required
@@ -163,6 +164,7 @@ export default function UserModals({
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    maxLength={100}
                     className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
                     placeholder="correo@ejemplo.com"
                     required
@@ -184,6 +186,7 @@ export default function UserModals({
                       name="iban"
                       value={formData.iban}
                       onChange={handleChange}
+                      maxLength={34}
                       className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 uppercase font-mono text-xs"
                       placeholder="ES00 0000 0000 0000 0000 0000"
                     />
@@ -203,6 +206,7 @@ export default function UserModals({
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
+                        maxLength={64}
                         className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#E65C9C]/10 focus:bg-white focus:border-[#E65C9C] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
                         placeholder="••••••••"
                       />
@@ -217,6 +221,7 @@ export default function UserModals({
                       <input
                         type="number"
                         step="0.01"
+                        max="9999"
                         name="precio_hora"
                         value={formData.precio_hora}
                         onChange={handleChange}
