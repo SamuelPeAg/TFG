@@ -36,13 +36,18 @@ export default function Estadisticas() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const fetchData = async () => {
+    setLoading(true);
+    setErrorMsg(null);
     try {
-      const res = await axios.get('api/estadisticas', { headers: { Accept: 'application/json' } });
+      const res = await axios.get('/api/estadisticas', { headers: { Accept: 'application/json' } });
       setData(res.data);
     } catch (err) {
       console.error('Error al cargar estadísticas:', err);
+      const msg = err.response?.data?.error || err.response?.data?.message || err.message || 'Error desconocido';
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
@@ -154,6 +159,13 @@ export default function Estadisticas() {
             <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-400">
               <i className="fa-solid fa-spinner fa-spin text-3xl text-[#4BB7AE]"></i>
               <p className="font-medium animate-pulse">Cargando estadísticas...</p>
+            </div>
+          ) : errorMsg ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-3 text-red-500">
+              <i className="fa-solid fa-triangle-exclamation text-3xl"></i>
+              <p className="font-medium text-center max-w-md">No se pudieron cargar las estadísticas.</p>
+              <p className="text-xs text-red-400 font-mono bg-red-50 px-4 py-2 rounded-lg max-w-xl text-center break-all">{errorMsg}</p>
+              <button onClick={fetchData} className="mt-4 px-4 py-2 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">Reintentar</button>
             </div>
           ) : !data ? (
             <div className="flex flex-col items-center justify-center py-24 gap-3 text-red-500">

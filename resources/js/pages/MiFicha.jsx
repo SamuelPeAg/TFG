@@ -191,9 +191,9 @@ export default function MiFicha() {
                                                     <i className="fa-solid fa-envelope text-slate-300 w-5"></i>
                                                     <span className="text-slate-600 font-medium truncate">{user.email}</span>
                                                 </div>
-                                                <div className="flex items-center gap-3 text-sm">
-                                                    <i className="fa-solid fa-location-dot text-slate-300 w-5"></i>
-                                                    <span className="text-slate-600 font-medium leading-tight">{profileData?.direccion || '---'}, {profileData?.ciudad || ''}</span>
+                                                <div className="flex items-start gap-3 text-sm">
+                                                    <i className="fa-solid fa-location-dot text-slate-300 w-5 mt-0.5 shrink-0"></i>
+                                                    <span className="text-slate-600 font-medium leading-tight break-words min-w-0">{profileData?.direccion || '---'}{profileData?.ciudad ? `, ${profileData.ciudad}` : ''}</span>
                                                 </div>
                                                 <div className="flex items-center gap-3 text-sm">
                                                     <i className="fa-solid fa-truck-ramp-box text-slate-300 w-5"></i>
