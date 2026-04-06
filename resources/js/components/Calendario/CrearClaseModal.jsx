@@ -167,7 +167,11 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             }
         } catch (error) {
             console.error('Submit error:', error);
-            alert('Error de conexión o red al guardar.');
+            const serverMsg = error.response?.data?.message 
+                || (error.response?.data?.errors ? JSON.stringify(error.response.data.errors) : null)
+                || error.message 
+                || 'Error desconocido';
+            alert(`Error al guardar la clase:\n${serverMsg}`);
         } finally {
             setLoading(false);
         }

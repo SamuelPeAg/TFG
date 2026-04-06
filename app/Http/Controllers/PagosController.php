@@ -159,52 +159,93 @@ class PagosController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'centro' => ['required', 'string'],
-            'nombre_clase' => ['required', 'string', 'max:120'],
-            'tipo_clase' => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
-            'fecha_hora' => ['required', 'date'],
-            'trainers' => ['nullable', 'array'],
-            'trainers.*' => ['exists:users,id'],
-            // New structure: participants array
-            'participants' => ['required', 'array', 'min:1'],
-            'participants.*.user_id' => ['required', 'exists:users,id'],
-            'participants.*.precio' => ['required', 'numeric', 'min:0'],
+            'centro'            => ['required', 'string'],
+            'nombre_clase'      => ['required', 'string', 'max:120'],
+            'tipo_clase'        => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
+            'fecha_hora'        => ['required', 'date'],
+            'trainers'          => ['nullable', 'array'],
+            'trainers.*'        => ['exists:entrenadores,id'],  // ← entrenadores, no users
+            'participants'      => ['required', 'array', 'min:1'],
+            'participants.*.user_id'     => ['required', 'exists:users,id'],
+            'participants.*.precio'      => ['required', 'numeric', 'min:0'],
             'participants.*.metodo_pago' => ['required', 'in:TPV,EF,DD,CC'],
-            'suscripciones_permitidas' => ['nullable', 'array'],
+            'suscripciones_permitidas'   => ['nullable', 'array'],
             'suscripciones_permitidas.*' => ['exists:suscripciones,id'],
         ]);
 
         $fecha = Carbon::parse($request->input('fecha_hora'));
         $createdEvents = [];
 
-        $trainers = $request->input('trainers', []);
+        $trainers       = $request->input('trainers', []);
         $firstTrainerId = !empty($trainers) ? $trainers[0] : null;
 
-        foreach ($request->input('participants') as $pData) {
-            $userId = $pData['user_id'];
-            $user = User::findOrFail($userId);
+        try {
+            foreach ($request->input('participants') as $pData) {
+                $userId = $pData['user_id'];
+                $user   = User::findOrFail($userId);
 
-            $pago = Pago::create([
-                'user_id' => $user->id,
-                'entrenador_id' => $firstTrainerId,
-                'iban' => $user->iban,
-                'importe' => $pData['precio'],
-                'fecha_registro' => $fecha,
-                'centro' => $request->input('centro'),
-                'nombre_clase' => $request->input('nombre_clase'),
-                'tipo_clase' => $request->input('tipo_clase'),
-                'metodo_pago' => $pData['metodo_pago'],
-            ]);
+                $pago = Pago::create([
+                    'user_id'       => $user->id,
+                    'entrenador_id' => $firstTrainerId,  // legacy FK a entrenadores
+                    'iban'          => $user->iban,
+                    'importe'       => $pData['precio'],
+                    'fecha_registro' => $fecha,
+                    'centro'        => $request->input('centro'),
+                    'nombre_clase'  => $request->input('nombre_clase'),
+                    'tipo_clase'    => $request->input('tipo_clase'),
+                    'metodo_pago'   => $pData['metodo_pago'],
+                ]);
 
-            if ($request->has('suscripciones_permitidas')) {
-                $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+                if ($request->has('suscripciones_permitidas')) {
+                    $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+                }
+
+                if (!empty($trainers)) {
+                    $pago->entrenadores()->sync($trainers);
+                }
+
+                $createdEvents[] = $pago;
             }
 
-            if (!empty($trainers)) {
-                $pago->entrenadores()->sync($trainers);
+            // Generar clases recurrentes si aplica
+            if ($request->input('is_recurring') && $request->input('recurrence_end')) {
+                $endDate    = Carbon::parse($request->input('recurrence_end'));
+                $currentDate = $fecha->copy()->addWeek();
+
+                while ($currentDate->lte($endDate)) {
+                    foreach ($request->input('participants') as $pData) {
+                        $user = User::find($pData['user_id']);
+                        if (!$user) continue;
+
+                        $pago = Pago::create([
+                            'user_id'        => $user->id,
+                            'entrenador_id'  => $firstTrainerId,
+                            'iban'           => $user->iban,
+                            'importe'        => $pData['precio'],
+                            'fecha_registro' => $currentDate->copy(),
+                            'centro'         => $request->input('centro'),
+                            'nombre_clase'   => $request->input('nombre_clase'),
+                            'tipo_clase'     => $request->input('tipo_clase'),
+                            'metodo_pago'    => $pData['metodo_pago'],
+                        ]);
+
+                        if ($request->has('suscripciones_permitidas')) {
+                            $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+                        }
+                        if (!empty($trainers)) {
+                            $pago->entrenadores()->sync($trainers);
+                        }
+                    }
+                    $currentDate->addWeek();
+                }
             }
 
-            $createdEvents[] = $pago;
+        } catch (\Exception $e) {
+            \Log::error('PagosController@store error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno al guardar la clase: ' . $e->getMessage()
+            ], 500);
         }
 
         if ($request->wantsJson()) {
@@ -221,10 +262,10 @@ class PagosController extends Controller
     public function addTrainerToSession(Request $request)
     {
         $request->validate([
-            'trainer_id' => 'required|exists:users,id',
-            'fecha_hora' => 'required|date',
+            'trainer_id'  => 'required|exists:entrenadores,id',
+            'fecha_hora'  => 'required|date',
             'nombre_clase' => 'required|string',
-            'centro' => 'required|string'
+            'centro'      => 'required|string'
         ]);
 
         if (!$request->user()->hasRole('admin')) {
@@ -273,10 +314,10 @@ class PagosController extends Controller
     public function removeTrainerFromSession(Request $request)
     {
         $request->validate([
-            'trainer_id' => 'required|exists:users,id',
-            'fecha_hora' => 'required|date',
+            'trainer_id'  => 'required|exists:entrenadores,id',
+            'fecha_hora'  => 'required|date',
             'nombre_clase' => 'required|string',
-            'centro' => 'required|string'
+            'centro'      => 'required|string'
         ]);
 
         if (!$request->user()->hasRole('admin')) {
