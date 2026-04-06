@@ -56,27 +56,23 @@ class RoleSeeder extends Seeder
         );
         $entrenador->syncRoles(["entrenador"]);
 
-        $cliente = User::withTrashed()->updateOrCreate(
+        $cliente = User::updateOrCreate(
             ['email' => 'cliente@factomove'],
             [
                 'name' => 'cliente',
                 'password' => Hash::make('password'),
                 'activo' => true,
-                'deleted_at' => null,
             ]
         );
         $cliente->syncRoles(['cliente']);
-        $cliente->restore();
 
-        $cliente2 = User::withTrashed()->updateOrCreate(
+        $cliente2 = User::updateOrCreate(
             ['email' => 'spa0004@alu.medac.es'],
             [
                 'name' => 'Samuel',
                 'activo' => true,
-                'deleted_at' => null,
             ]
         );
         $cliente2->syncRoles(['cliente']);
-        $cliente2->restore();
     }
 }
