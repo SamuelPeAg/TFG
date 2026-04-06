@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Button from './Button';
+import ConfirmModal from './ConfirmModal';
+import AlertModal from './AlertModal';
 
 export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [activeTab, setActiveTab] = useState('profile');
@@ -18,6 +20,17 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+
+  const confirmAction = (message, onConfirm, isDestructive = false, title = "Confirmación") => {
+    setConfirmConfig({ isOpen: true, title, message, onConfirm, isDestructive });
+  };
+  
+  const showAlert = (message, isError = false, title = isError ? "Error" : "Aviso") => {
+    setAlertConfig({ isOpen: true, title, message, isError });
+  };
 
   useEffect(() => {
     if (isOpen && user) {
@@ -70,11 +83,11 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             id_usuario: user.id,
             id_suscripcion: selectedSuscripcionId
         });
-        alert('Suscripción asignada correctamente');
+        showAlert('Suscripción asignada correctamente', false, 'Completado');
         fetchFicha(); // Recargar datos
     } catch (error) {
         const msg = error.response?.data?.message || 'Error al asignar suscripción';
-        alert(msg);
+        showAlert(msg, true);
     } finally {
         setSaving(false);
     }
@@ -88,27 +101,28 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         });
         fetchFicha();
     } catch (error) {
-        alert('Error al actualizar saldo');
+        showAlert('Error al actualizar saldo', true);
     }
   };
 
   const handleDeleteSubscription = async (subId) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta suscripción?')) return;
-    try {
-        await axios.delete(`/suscripciones-usuarios/${subId}`);
-        fetchFicha();
-    } catch (error) {
-        alert('Error al eliminar suscripción');
-    }
+    confirmAction('¿Estás seguro de que deseas eliminar esta suscripción?', async () => {
+        try {
+            await axios.delete(`/suscripciones-usuarios/${subId}`);
+            fetchFicha();
+        } catch (error) {
+            showAlert('Error al eliminar suscripción', true);
+        }
+    }, true, 'Eliminar Suscripción');
   };
 
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
         await axios.put(`/client-profile/${user.id}`, profileData);
-        alert('Ficha actualizada correctamente');
+        showAlert('Ficha actualizada correctamente', false, 'Guardado');
     } catch (error) {
-        alert('Error al guardar la ficha');
+        showAlert('Error al guardar la ficha', true);
     } finally {
         setSaving(false);
     }
@@ -129,7 +143,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         });
         setFiles([res.data.file, ...files]);
     } catch (error) {
-        alert('Error al subir el archivo');
+        showAlert('Error al subir el archivo', true);
     } finally {
         setUploading(false);
     }
@@ -140,18 +154,19 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         const res = await axios.post(`/client-profile/file/${fileId}/toggle-privacy`);
         setFiles(files.map(f => f.id === fileId ? { ...f, is_private: res.data.is_private } : f));
     } catch (error) {
-        alert('Error al cambiar privacidad');
+        showAlert('Error al cambiar privacidad', true);
     }
   };
 
   const deleteFile = async (fileId) => {
-    if (!window.confirm('¿Eliminar este archivo definitivamente?')) return;
-    try {
-        await axios.delete(`/client-profile/file/${fileId}`);
-        setFiles(files.filter(f => f.id !== fileId));
-    } catch (error) {
-        alert('Error al eliminar archivo');
-    }
+    confirmAction('¿Eliminar este archivo definitivamente?', async () => {
+        try {
+            await axios.delete(`/client-profile/file/${fileId}`);
+            setFiles(files.filter(f => f.id !== fileId));
+        } catch (error) {
+            showAlert('Error al eliminar archivo', true);
+        }
+    }, true, 'Eliminar Archivo');
   };
 
   const addAttribute = () => {
@@ -429,11 +444,11 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                             <button 
                                 onClick={() => {
                                     if (!selectedSuscripcionId) {
-                                        alert(`Error: No hay suscripción seleccionada. ID actual: "${selectedSuscripcionId}". Disponibles: ${availableSubscriptions.length}`);
+                                        showAlert(`Error: No hay suscripción seleccionada. ID actual: "${selectedSuscripcionId}". Disponibles: ${availableSubscriptions.length}`, true);
                                         return;
                                     }
                                     if (!user || !user.id) {
-                                        alert("Error: El usuario no tiene un ID válido.");
+                                        showAlert("Error: El usuario no tiene un ID válido.", true);
                                         return;
                                     }
                                     console.log("Assign button clicked. selectedSuscripcionId:", selectedSuscripcionId, "for user:", user.id);
@@ -549,6 +564,25 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             )}
         </div>
       </div>
+
+      <ConfirmModal 
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        isDestructive={confirmConfig.isDestructive}
+        onClose={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={() => {
+            if (confirmConfig.onConfirm) confirmConfig.onConfirm();
+        }}
+      />
+
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        isError={alertConfig.isError}
+        onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

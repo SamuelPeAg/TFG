@@ -7,6 +7,8 @@ import ClientFichaModal from '../components/ClientFichaModal';
 import ClientsImportModal from '../components/ClientsImportModal';
 import Pagination from '../components/Pagination';
 import Sidebar from '../components/Sidebar';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 
 export default function Clientes() {
   const [users, setUsers] = useState([]);
@@ -18,6 +20,19 @@ export default function Clientes() {
   const [modalMode, setModalMode] = useState('create');
   const [selectedUser, setSelectedUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [isSendingBulk, setIsSendingBulk] = useState(false);
+
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+
+  const confirmAction = (message, onConfirm, isDestructive = false, title = "Confirmación") => {
+    setConfirmConfig({ isOpen: true, title, message, onConfirm, isDestructive });
+  };
+  
+  const showAlert = (message, isError = false, title = isError ? "Error" : "Aviso") => {
+    setAlertConfig({ isOpen: true, title, message, isError });
+  };
 
   // Removido seleccionado para el modal de suscripciones directo
   const [fichaModalOpen, setFichaModalOpen] = useState(false);
@@ -72,15 +87,15 @@ export default function Clientes() {
   };
 
   const handleDelete = async (user) => {
-    if (confirm(`¿Estás seguro de que deseas eliminar a ${user.name}?`)) {
+    confirmAction(`¿Estás seguro de que deseas eliminar a ${user.name}?`, async () => {
       try {
         await axios.delete(`users/${user.id}`);
         fetchUsers();
       } catch (error) {
         console.error('Error deleting user:', error);
-        alert('No se pudo eliminar al usuario.');
+        showAlert('No se pudo eliminar al usuario.', true, 'Error al Eliminar');
       }
-    }
+    }, true, 'Eliminar Cliente');
   };
 
   const handleSave = async (formData, mode, id) => {
@@ -91,6 +106,34 @@ export default function Clientes() {
     }
     fetchUsers();
   };
+
+  const handleSelectUser = (id) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(userId => userId !== id) : [...prev, id]
+    );
+  };
+
+
+  const handleBulkActivation = async () => {
+    if (selectedIds.length === 0) return;
+    
+    confirmAction(`¿Estás seguro de que deseas enviar el correo a los ${selectedIds.length} clientes seleccionados?`, async () => {
+      setIsSendingBulk(true);
+      try {
+        const response = await axios.post('users/bulk-send-activation', { user_ids: selectedIds });
+        setToast(response.data.message || 'Correos enviados correctamente.');
+        setTimeout(() => setToast(null), 5000);
+        setSelectedIds([]);
+        fetchUsers();
+      } catch (error) {
+        console.error('Error in bulk activation:', error);
+        showAlert('Hubo un error al enviar los correos.', true);
+      } finally {
+        setIsSendingBulk(false);
+      }
+    }, false, 'Envío Múltiple');
+  };
+
 
   useEffect(() => {
     setCurrentPage(1);
@@ -112,6 +155,18 @@ export default function Clientes() {
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const currentUsers = filteredUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      // Select all current displayed users
+      const newIds = new Set([...selectedIds, ...currentUsers.map(u => u.id)]);
+      setSelectedIds(Array.from(newIds));
+    } else {
+      // Deselect current displayed users
+      const currentIds = currentUsers.map(u => u.id);
+      setSelectedIds(selectedIds.filter(id => !currentIds.includes(id)));
+    }
+  };
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
@@ -146,6 +201,17 @@ export default function Clientes() {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
+             {selectedIds.length > 0 && (
+                <button 
+                  onClick={handleBulkActivation}
+                  disabled={isSendingBulk}
+                  className="px-6 py-3 bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 active:scale-95 shrink-0 disabled:opacity-50"
+                  title="Enviar correo de activación/aviso"
+                >
+                  <i className={`fas ${isSendingBulk ? 'fa-spinner fa-spin' : 'fa-paper-plane'}`}></i>
+                  ENVIAR ({selectedIds.length})
+                </button>
+             )}
              {/* Search Box */}
              <div className="relative group flex-1 sm:flex-none">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:translate-x-1">
@@ -193,6 +259,10 @@ export default function Clientes() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onShowFicha={handleShowFicha}
+                selectedIds={selectedIds}
+                onSelectUser={handleSelectUser}
+                onSelectAll={handleSelectAll}
+                onAlert={showAlert}
               />
             </div>
 
@@ -231,6 +301,25 @@ export default function Clientes() {
             setToast(message || 'Clientes importados correctamente.');
             setTimeout(() => setToast(null), 5000);
         }}
+      />
+      
+      <ConfirmModal 
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        isDestructive={confirmConfig.isDestructive}
+        onClose={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={() => {
+            if (confirmConfig.onConfirm) confirmConfig.onConfirm();
+        }}
+      />
+
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        isError={alertConfig.isError}
+        onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

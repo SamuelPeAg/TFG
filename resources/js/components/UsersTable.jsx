@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loading, onUpdate }) {
+export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loading, onUpdate, selectedIds = [], onSelectUser, onSelectAll, onAlert }) {
   const [sendingId, setSendingId] = useState(null);
 
   const handleSendActivation = async (user) => {
     setSendingId(user.id);
     try {
       await axios.post(`/users/${user.id}/send-activation`);
-      alert('Correo de activación enviado correctamente a ' + user.email);
+      if (onAlert) onAlert('Correo de activación enviado correctamente a ' + user.email, false, 'Enviado');
+      else alert('Correo de activación enviado correctamente a ' + user.email);
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error(error);
@@ -35,6 +36,14 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
       <table className="facto-table w-full border-separate border-spacing-y-2 px-4">
         <thead>
           <tr className="text-slate-400">
+            <th className="text-left px-4 py-4 w-12">
+              <input 
+                type="checkbox" 
+                onChange={onSelectAll} 
+                checked={users.length > 0 && users.every(u => selectedIds.includes(u.id))}
+                className="w-4 h-4 text-[#38C1A3] bg-slate-100 border-slate-300 rounded focus:ring-[#38C1A3] focus:ring-2 cursor-pointer"
+              />
+            </th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Cliente</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Contacto</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">IBAN / Identificación</th>
@@ -46,7 +55,15 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
           {users.length > 0 ? (
             users.map((user) => (
               <tr key={user.id} className="bg-white hover:bg-slate-50 transition-all duration-300 group shadow-sm hover:shadow-md rounded-2xl overflow-hidden">
-                <td className="px-6 py-5 first:rounded-l-2xl" data-label="Cliente">
+                <td className="px-4 py-5 first:rounded-l-2xl">
+                  <input 
+                    type="checkbox"
+                    checked={selectedIds.includes(user.id)}
+                    onChange={() => onSelectUser(user.id)}
+                    className="w-4 h-4 text-[#38C1A3] bg-slate-100 border-slate-300 rounded focus:ring-[#38C1A3] focus:ring-2 cursor-pointer"
+                  />
+                </td>
+                <td className="px-6 py-5" data-label="Cliente">
                   <div className="flex items-center gap-4">
                     <div className="relative">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#38C1A3] to-[#2D9B82] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-100 group-hover:scale-110 transition-transform duration-300">

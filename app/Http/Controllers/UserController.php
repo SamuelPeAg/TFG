@@ -399,6 +399,35 @@ class UserController extends Controller
         }
     }
 
+    public function bulkSendActivation(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:users,id',
+        ]);
+
+        $users = User::whereIn('id', $request->user_ids)->get();
+        $sentCount = 0;
+        $errorCount = 0;
+
+        foreach ($users as $user) {
+            $user->activation_token = \Illuminate\Support\Str::random(60);
+            $user->save();
+            $url = route('activate.show', ['token' => $user->activation_token]);
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AccountActivationMail($user, $url));
+                $sentCount++;
+            } catch (\Exception $e) {
+                \Log::error('Error sending bulk activation mail for user ' . $user->id . ': ' . $e->getMessage());
+                $errorCount++;
+            }
+        }
+
+        return response()->json([
+            'message' => "Correos enviados: $sentCount. Errores: $errorCount."
+        ]);
+    }
+
     public function showActivationForm($token)
     {
         // Buscar al usuario por el token y verificar que no haya expirado
