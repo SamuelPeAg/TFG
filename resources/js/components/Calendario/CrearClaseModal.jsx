@@ -463,55 +463,49 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                         Participantes <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">{formData.participants.length}</span>
                                     </h3>
 
-                                    {isGrupo ? (
-                                        /* Grupos: se añaden alumnos desde el calendario/tickar */
-                                        <div className="flex items-start gap-3 bg-teal-50 border border-teal-100 rounded-xl p-4">
-                                            <i className="fa-solid fa-circle-info text-[#38C1A3] mt-0.5 text-sm shrink-0"></i>
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-700">Los alumnos se añaden desde el calendario</p>
-                                                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">Para clases de grupo, los participantes se gestionan directamente desde la vista del calendario una vez creada la clase.</p>
-                                            </div>
+                                    {/* Búsqueda y selección manual para todos los tipos */}
+                                    <>
+                                        <div className="mb-4 p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-2">
+                                            <i className="fa-solid fa-circle-info text-blue-500 mt-0.5 text-sm shrink-0"></i>
+                                            <p className="text-xs text-blue-800 font-medium">Puedes añadir participantes ahora o gestionar el grupo desde el calendario después de crear la clase.</p>
                                         </div>
-                                    ) : (
-                                        /* EP / Dúo / Trío: búsqueda y selección manual */
-                                        <>
-                                            <div className="relative w-full mb-4">
-                                                <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                                <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar alumno por nombre..."
-                                                    className={`w-full bg-white border ${errors.participants ? 'border-rose-400' : 'border-slate-200'} focus:border-[#38C1A3] text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 pl-12 outline-none shadow-sm`} />
-                                                {filteredUsers.length > 0 && (
-                                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 max-h-56 overflow-y-auto z-20">
-                                                        {filteredUsers.map(u => (
-                                                            <button key={u.id} type="button" onClick={() => addParticipant(u)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 text-left">
-                                                                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">{u.name.charAt(0).toUpperCase()}</div>
-                                                                <span className="font-bold text-slate-700 text-sm">{u.name}</span>
-                                                                <i className="fa-solid fa-plus ml-auto text-teal-500"></i>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            {errors.participants && <p className="text-xs text-rose-500 font-bold mb-3">{errors.participants}</p>}
-                                            <div className="flex flex-wrap gap-2">
-                                                {formData.participants.length === 0 ? (
-                                                    <div className="w-full py-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center">
-                                                        <i className="fa-solid fa-users-slash text-slate-300 text-2xl mb-2"></i>
-                                                        <span className="text-slate-500 text-xs font-bold">Busca y selecciona alumnos</span>
-                                                    </div>
-                                                ) : (
-                                                    formData.participants.map(p => (
-                                                        <span key={p.id} className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm pl-2 pr-1 py-1 rounded-full">
-                                                            <div className="w-6 h-6 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-[10px]">{p.name.charAt(0).toUpperCase()}</div>
-                                                            <span className="text-xs font-bold text-slate-700">{p.name}</span>
-                                                            <button type="button" onClick={() => removeParticipant(p.id)} className="w-6 h-6 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center">
-                                                                <i className="fa-solid fa-xmark"></i>
-                                                            </button>
-                                                        </span>
-                                                    ))
-                                                )}
-                                            </div>
-                                        </>
-                                    )}
+
+                                        <div className="relative w-full mb-4">
+                                            <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar alumno por nombre..."
+                                                className={`w-full bg-white border ${errors.participants ? 'border-rose-400' : 'border-slate-200'} focus:border-[#38C1A3] text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 pl-12 outline-none shadow-sm`} />
+                                            {filteredUsers.length > 0 && (
+                                                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 max-h-56 overflow-y-auto z-20">
+                                                    {filteredUsers.map(u => (
+                                                        <button key={u.id} type="button" onClick={() => addParticipant(u)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 text-left">
+                                                            <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">{u.name.charAt(0).toUpperCase()}</div>
+                                                            <span className="font-bold text-slate-700 text-sm">{u.name}</span>
+                                                            <i className="fa-solid fa-plus ml-auto text-teal-500"></i>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {errors.participants && <p className="text-xs text-rose-500 font-bold mb-3">{errors.participants}</p>}
+                                        <div className="flex flex-wrap gap-2">
+                                            {formData.participants.length === 0 ? (
+                                                <div className="w-full py-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center">
+                                                    <i className="fa-solid fa-users-slash text-slate-300 text-2xl mb-2"></i>
+                                                    <span className="text-slate-500 text-xs font-bold">Busca y selecciona alumnos</span>
+                                                </div>
+                                            ) : (
+                                                formData.participants.map(p => (
+                                                    <span key={p.id} className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm pl-2 pr-1 py-1 rounded-full">
+                                                        <div className="w-6 h-6 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-[10px]">{p.name.charAt(0).toUpperCase()}</div>
+                                                        <span className="text-xs font-bold text-slate-700">{p.name}</span>
+                                                        <button type="button" onClick={() => removeParticipant(p.id)} className="w-6 h-6 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center">
+                                                            <i className="fa-solid fa-xmark"></i>
+                                                        </button>
+                                                    </span>
+                                                ))
+                                            )}
+                                        </div>
+                                    </>
                                 </section>
 
                                 {/* Merged Subscription section into Step 2 with Search */}
