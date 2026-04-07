@@ -42,9 +42,10 @@ class ClientProfileController extends Controller
             ->where('user_id', $user->id)
             ->orderBy('fecha_registro', 'asc')
             ->get()
-            ->map(function ($pago) {
+            ->map(function ($pago) use ($user) {
                 return [
                     'id' => $pago->id,
+                    'user_id' => $user->id,
                     'fecha_registro' => $pago->fecha_registro?->toDateTimeString(),
                     'nombre_clase' => $pago->nombre_clase,
                     'centro' => $pago->centro,

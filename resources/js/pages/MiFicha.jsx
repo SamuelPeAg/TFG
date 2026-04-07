@@ -5,13 +5,22 @@ import AlertModal from '../components/AlertModal';
 
 export default function MiFicha() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const user = window.AppConfig?.user;
-  const [profileData, setProfileData] = useState(null);
+  const user = window.AppConfig?.user || null;
+  const [profileData, setProfileData] = useState({
+    dni: '',
+    direccion: '',
+    codigo_postal: '',
+    ciudad: '',
+    additional_attributes: []
+  });
   const [files, setFiles] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
-    const [sessions, setSessions] = useState([]);
-    const [submittingFile, setSubmittingFile] = useState(false);
-    const [savingContact, setSavingContact] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [submittingFile, setSubmittingFile] = useState(false);
+  const [savingContact, setSavingContact] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [leavingSessionId, setLeavingSessionId] = useState(null);
     
     // Alert Setup
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
@@ -20,18 +29,40 @@ export default function MiFicha() {
     };
 
     useEffect(() => {
-        if (user) fetchFicha();
+        if (user && user.id) {
+            fetchFicha();
+        } else {
+            setLoading(false);
+        }
     }, [user]);
 
     const fetchFicha = async () => {
         try {
             const res = await axios.get(`/client-profile/${user.id}`);
-            setProfileData(res.data.user);
-            setFiles(res.data.files);
-            setSubscriptions(res.data.subscriptions || []);
-            setSessions(res.data.sessions || []);
+            const data = res.data || {};
+
+            setProfileData({
+              dni: data.user?.dni || '',
+              direccion: data.user?.direccion || '',
+              codigo_postal: data.user?.codigo_postal || '',
+              ciudad: data.user?.ciudad || '',
+              additional_attributes: Array.isArray(data.user?.additional_attributes) ? data.user.additional_attributes : []
+            });
+            setFiles(Array.isArray(data.files) ? data.files : []);
+            setSubscriptions(Array.isArray(data.subscriptions) ? data.subscriptions : []);
+            setSessions(Array.isArray(data.sessions) ? data.sessions.filter(session => session.user_id === user?.id) : []);
         } catch (error) {
             console.error("Error fetching ficha:", error);
+            setProfileData({
+              dni: '',
+              direccion: '',
+              codigo_postal: '',
+              ciudad: '',
+              additional_attributes: []
+            });
+            setFiles([]);
+            setSubscriptions([]);
+            setSessions([]);
         } finally {
             setLoading(false);
         }
@@ -63,6 +94,11 @@ export default function MiFicha() {
     };
 
     const onFileChange = async (e) => {
+        if (!user?.id) {
+            showAlert('No se ha podido identificar tu usuario. Por favor, recarga la página.', true);
+            return;
+        }
+
         const file = e.target.files[0];
         if (!file) return;
 
@@ -81,6 +117,47 @@ export default function MiFicha() {
             setSubmittingFile(false);
         }
     };
+
+    const handleLeaveSession = async (session) => {
+        if (!user?.id) {
+            showAlert('No se ha podido identificar tu usuario. Por favor, recarga la página.', true);
+            return;
+        }
+
+        if (!window.confirm('¿Estás seguro de que quieres darte de baja de esta clase?')) {
+            return;
+        }
+
+        setLeavingSessionId(session.id);
+
+        try {
+            await axios.post('/Pagos/remove-client', {
+                user_id: user.id,
+                fecha_hora: session.fecha_registro,
+                nombre_clase: session.nombre_clase,
+                centro: session.centro
+            });
+            showAlert('Te has dado de baja de la clase correctamente.');
+            fetchFicha();
+        } catch (error) {
+            console.error('Error abandoning session:', error);
+            const message = error.response?.data?.message || 'No se pudo salir de la clase. Intenta de nuevo.';
+            showAlert(message, true);
+        } finally {
+            setLeavingSessionId(null);
+        }
+    };
+
+    if (!user) {
+        return (
+            <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-700">
+                <div className="bg-white p-10 rounded-3xl shadow-lg border border-slate-200 text-center max-w-md">
+                    <h2 className="text-2xl font-black mb-4">Usuario no identificado</h2>
+                    <p className="text-sm text-slate-500">Por favor, inicia sesión nuevamente o recarga la página para acceder a tu ficha.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
@@ -108,7 +185,7 @@ export default function MiFicha() {
                             <div className="w-10 h-10 border-4 border-[#38C1A3]/20 border-t-[#38C1A3] rounded-full animate-spin"></div>
                         </div>
                     ) : (
-                        <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
                             
                             {/* INFO COL */}
                             <div className="lg:col-span-1 space-y-6">
@@ -123,9 +200,9 @@ export default function MiFicha() {
                                     </div>
                                     <div className="text-center pb-6 border-b border-slate-50">
                                         <div className="w-20 h-20 rounded-full bg-slate-50 mx-auto flex items-center justify-center text-3xl font-black text-[#38C1A3] mb-4 border-2 border-slate-100">
-                                            {user.name.charAt(0).toUpperCase()}
+                                            {user?.name ? user.name.charAt(0).toUpperCase() : '?'}
                                         </div>
-                                        <h2 className="font-black text-slate-800 text-lg">{user.name}</h2>
+                                        <h2 className="font-black text-slate-800 text-lg">{user?.name || 'Cliente'}</h2>
                                         {isEditingContact ? (
                                             <input 
                                                 type="text" 
@@ -188,7 +265,7 @@ export default function MiFicha() {
                                             <div className="space-y-3">
                                                 <div className="flex items-center gap-3 text-sm">
                                                     <i className="fa-solid fa-envelope text-slate-300 w-5"></i>
-                                                    <span className="text-slate-600 font-medium truncate">{user.email}</span>
+                                                    <span className="text-slate-600 font-medium truncate">{user?.email || 'Sin email registrado'}</span>
                                                 </div>
                                                 <div className="flex items-start gap-3 text-sm">
                                                     <i className="fa-solid fa-location-dot text-slate-300 w-5 mt-0.5 shrink-0"></i>
@@ -269,36 +346,6 @@ export default function MiFicha() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mis Sesiones</h3>
-                                        <span className="text-[9px] uppercase tracking-widest text-slate-500">{sessions.length} sesiones</span>
-                                    </div>
-                                    {sessions.length > 0 ? (
-                                        <div className="space-y-3">
-                                            {sessions.map((session) => (
-                                                <div key={session.id} className="p-4 rounded-3xl border border-slate-100 bg-slate-50">
-                                                    <div className="flex items-center justify-between gap-3">
-                                                        <div>
-                                                            <p className="text-sm font-bold text-slate-800">{session.nombre_clase}</p>
-                                                            <p className="text-[11px] text-slate-500 mt-1">{new Date(session.fecha_registro).toLocaleString()}</p>
-                                                        </div>
-                                                        <span className="text-[10px] uppercase tracking-widest text-slate-500">{session.tipo_clase}</span>
-                                                    </div>
-                                                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600">
-                                                        <div><strong className="font-bold text-slate-700">Centro:</strong> {session.centro}</div>
-                                                        <div><strong className="font-bold text-slate-700">Entrenador:</strong> {session.entrenadores.join(', ') || 'Pendiente'}</div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-5 text-center text-slate-400 text-xs font-medium">
-                                            No tienes sesiones reservadas todavía.
-                                        </div>
-                                    )}
-                                </div>
-
                                 {/* Atributos */}
                                 <div className="bg-emerald-50/50 p-8 rounded-[2.5rem] border border-emerald-100/50 space-y-4">
                                     <h3 className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest">Notas Especiales</h3>
@@ -315,16 +362,13 @@ export default function MiFicha() {
                                         )}
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* FILES COL */}
-                            <div className="lg:col-span-2 space-y-6">
-                                <section className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex-1 min-h-[500px]">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h3 className="text-xl font-black text-slate-800 flex items-center gap-3">
-                                            Mis Documentos
-                                            <span className="bg-slate-100 text-slate-400 text-xs px-2 py-0.5 rounded-full">{files.length}</span>
-                                        </h3>
+                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <div>
+                                            <h3 className="text-lg font-black text-slate-800">Mis Documentos</h3>
+                                            <p className="text-sm text-slate-500 mt-1">Sube y descarga archivos asociados a tu ficha.</p>
+                                        </div>
                                         <div className="relative">
                                             <button 
                                                 className="bg-[#38C1A3] hover:bg-teal-500 text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg shadow-teal-500/20 active:scale-95 disabled:grayscale"
@@ -341,38 +385,114 @@ export default function MiFicha() {
                                                 onChange={onFileChange}
                                             />
                                         </div>
-                                </div> 
-                                
-                                {files.length === 0 ? (
-                                    <div className="h-64 flex flex-col items-center justify-center bg-slate-50/50 rounded-3xl border border-slate-50">
-                                        <i className="fa-regular fa-folder-open text-3xl text-slate-200 mb-3"></i>
-                                        <p className="text-slate-400 font-bold text-sm">Aún no se han compartido documentos contigo.</p>
+                                    </div>
+
+                                    {files.length === 0 ? (
+                                        <div className="h-64 flex flex-col items-center justify-center bg-slate-50/50 rounded-3xl border border-slate-50">
+                                            <i className="fa-regular fa-folder-open text-3xl text-slate-200 mb-3"></i>
+                                            <p className="text-slate-400 font-bold text-sm">Aún no se han compartido documentos contigo.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {files.map(file => (
+                                                <div key={file.id} className="p-5 rounded-3xl bg-slate-50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 border border-transparent hover:border-slate-100 transition-all group">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                                                            <i className={file.file_type === 'pdf' ? 'fa-solid fa-file-pdf' : 'fa-solid fa-file-image'}></i>
+                                                        </div>
+                                                        <a 
+                                                           href={`/client-file/${file.id}/download`}
+                                                           className="w-8 h-8 rounded-full bg-white text-slate-400 hover:text-[#38C1A3] shadow-sm flex items-center justify-center transition-colors"
+                                                           title="Descargar"
+                                                        >
+                                                            <i className="fa-solid fa-download text-xs text-info"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div className="mt-4">
+                                                        <h4 className="font-black text-slate-800 text-sm truncate" title={file.file_name}>{file.file_name}</h4>
+                                                        <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase">Subido por: {file.uploader?.name}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                        <div className="lg:col-span-2">
+                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div>
+                                        <h3 className="text-lg font-black text-slate-800">Tus sesiones apuntadas</h3>
+                                        <p className="text-sm text-slate-500 mt-1">Aquí verás solo las clases en las que tú estás inscrito.</p>
+                                    </div>
+                                    <span className="text-[9px] uppercase tracking-widest text-slate-500">{sessions.length} {sessions.length === 1 ? 'sesión' : 'sesiones'}</span>
+                                </div>
+
+                                {sessions.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {sessions.map((session) => {
+                                            const isFuture = new Date(session.fecha_registro) > new Date();
+                                            const tipoLabel = {
+                                                EP: 'Entrenamiento Personal',
+                                                DUO: 'Dúo',
+                                                TRIO: 'Trío',
+                                                GRUPO: 'Grupo',
+                                                GRUPO_PRIVADO: 'Grupo Privado'
+                                            }[session.tipo_clase] || session.tipo_clase || 'N/A';
+
+                                            return (
+                                                <div key={session.id} className="rounded-[2rem] border border-slate-100 bg-slate-50 shadow-sm overflow-hidden">
+                                                    <div className="p-5 sm:p-6 flex flex-col gap-5">
+                                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                                            <div>
+                                                                <p className="text-lg font-black text-slate-800">{session.nombre_clase}</p>
+                                                                <p className="text-sm text-slate-500 mt-2">{new Date(session.fecha_registro).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · {new Date(session.fecha_registro).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+                                                            </div>
+                                                            <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/80 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-700">
+                                                                {tipoLabel}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-600">
+                                                            <div className="rounded-3xl bg-white p-4 border border-slate-100">
+                                                                <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Centro</p>
+                                                                <p className="font-bold text-slate-800">{session.centro}</p>
+                                                            </div>
+                                                            <div className="rounded-3xl bg-white p-4 border border-slate-100">
+                                                                <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Entrenador</p>
+                                                                <p className="font-bold text-slate-800">{session.entrenadores.join(', ') || 'Pendiente'}</p>
+                                                            </div>
+                                                            <div className="rounded-3xl bg-white p-4 border border-slate-100">
+                                                                <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Capacidad</p>
+                                                                <p className="font-bold text-slate-800">{session.capacidad_maxima || 'Sin límite'}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                            <div className="text-sm text-slate-500">
+                                                                <span className="font-bold text-slate-700">Método:</span> {session.metodo_pago || 'No definido'}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                disabled={!isFuture || leavingSessionId === session.id}
+                                                                onClick={() => handleLeaveSession(session)}
+                                                                className={`w-full sm:w-auto py-3 px-5 rounded-2xl font-black uppercase tracking-widest transition-all ${isFuture ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
+                                                            >
+                                                                {leavingSessionId === session.id ? 'SALIENDO…' : isFuture ? 'Salir de esta clase' : 'Sesión cerrada'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {files.map(file => (
-                                            <div key={file.id} className="p-5 rounded-3xl bg-slate-50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 border border-transparent hover:border-slate-100 transition-all group">
-                                                <div className="flex items-start justify-between">
-                                                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
-                                                        <i className={file.file_type === 'pdf' ? 'fa-solid fa-file-pdf' : 'fa-solid fa-file-image'}></i>
-                                                    </div>
-                                                    <a 
-                                                       href={`/client-file/${file.id}/download`}
-                                                       className="w-8 h-8 rounded-full bg-white text-slate-400 hover:text-[#38C1A3] shadow-sm flex items-center justify-center transition-colors"
-                                                       title="Descargar"
-                                                    >
-                                                        <i className="fa-solid fa-download text-xs text-info"></i>
-                                                    </a>
-                                                </div>
-                                                <div className="mt-4">
-                                                    <h4 className="font-black text-slate-800 text-sm truncate" title={file.file_name}>{file.file_name}</h4>
-                                                    <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase">Subido por: {file.uploader?.name}</p>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-8 text-center text-slate-400 text-sm font-medium">
+                                        No estás apuntado a ninguna sesión por ahora.
                                     </div>
                                 )}
-                            </section>
+                            </div>
                         </div>
 
                     </div>
