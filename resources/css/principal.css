@@ -5,17 +5,29 @@
 /* --- HERO SECTION (Cabecera Principal) --- */
 .hero {
     display: flex;
+    flex-direction: column;
+    gap: 40px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 80px 20px;
-    gap: 50px;
+    padding: 40px 16px;
+    min-height: auto;
+}
+
+@media (min-width: 1024px) {
+    .hero {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 80px 20px;
+        gap: 50px;
+    }
 }
 
 .hero__content {
     flex: 1;
     max-width: 600px;
+    width: 100%;
 }
 
 .hero__badge {
@@ -25,40 +37,88 @@
     font-weight: 700;
     padding: 8px 16px;
     border-radius: 30px;
-    font-size: 0.9em;
-    margin-bottom: 20px;
+    font-size: 0.75em;
+    margin-bottom: 15px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
+@media (min-width: 768px) {
+    .hero__badge {
+        font-size: 0.9em;
+        margin-bottom: 20px;
+        padding: 10px 20px;
+    }
+}
+
 .hero__content h1 {
-    font-size: 3.5em;
+    font-size: 2em;
     line-height: 1.1;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     color: var(--color-text-dark);
+    text-align: left;
+}
+
+@media (min-width: 640px) {
+    .hero__content h1 {
+        font-size: 2.5em;
+    }
+}
+
+@media (min-width: 1024px) {
+    .hero__content h1 {
+        font-size: 3.5em;
+        margin-bottom: 20px;
+    }
 }
 
 .hero__subtitle {
-    font-size: 1.2em;
+    font-size: 1em;
     color: var(--color-text-light);
-    margin-bottom: 35px;
+    margin-bottom: 20px;
     line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+    .hero__subtitle {
+        font-size: 1.2em;
+        margin-bottom: 35px;
+    }
 }
 
 .hero__buttons {
     display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+@media (min-width: 640px) {
+    .hero__buttons {
+        flex-direction: row;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
 }
 
 /* Botones específicos del Hero */
 .btn {
-    padding: 12px 35px;
+    padding: 11px 20px;
     border-radius: 30px;
     font-weight: 600;
     text-decoration: none;
     transition: transform 0.2s, box-shadow 0.2s;
-    font-size: 1.05em;
+    font-size: 0.95em;
+    text-align: center;
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .btn {
+        padding: 12px 35px;
+        font-size: 1.05em;
+        width: auto;
+    }
 }
 
 .btn--primary {

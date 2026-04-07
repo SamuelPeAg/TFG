@@ -3,8 +3,11 @@ import React from 'react';
 export default function FacturasMatrixTable({ data, loading, onCellClick }) {
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brandTeal"></div>
+      <div className="flex justify-center items-center py-16 sm:py-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-brandTeal mx-auto mb-3"></div>
+          <p className="text-xs sm:text-sm text-slate-400 font-medium">Cargando datos...</p>
+        </div>
       </div>
     );
   }
@@ -13,32 +16,34 @@ export default function FacturasMatrixTable({ data, loading, onCellClick }) {
 
   if (!clientes || clientes.length === 0) {
     return (
-      <div className="py-20 text-center">
+      <div className="py-16 sm:py-20 text-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center">
-            <i className="fas fa-file-invoice text-slate-200 text-2xl"></i>
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-slate-50 flex items-center justify-center">
+            <i className="fas fa-file-invoice text-slate-200 text-lg sm:text-2xl"></i>
           </div>
-          <p className="text-slate-400 font-medium">No se han encontrado registros para estos filtros.</p>
+          <p className="text-slate-400 font-medium text-xs sm:text-sm">No se han encontrado registros para estos filtros.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-        <h4 className="font-black text-slate-700 tracking-tight">Clases por Entrenador / Cliente</h4>
+    <div className="flex flex-col w-full">
+      <div className="p-3 sm:p-4 border-b border-slate-100 bg-slate-50/50">
+        <h4 className="font-black text-slate-700 tracking-tight text-xs sm:text-sm">Clases por Entrenador / Cliente</h4>
       </div>
-      <div className="overflow-x-auto relative shadow-inner">
+
+      {/* Desktop/Tablet View - Matrix Table */}
+      <div className="hidden sm:block overflow-x-auto relative shadow-inner">
         <table className="w-full border-collapse text-left whitespace-nowrap min-w-max">
           <thead className="bg-white sticky top-0 z-10">
             <tr>
-              <th className="sticky left-0 z-20 bg-white border-b border-r border-slate-200 px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-wider min-w-[150px] sm:min-w-[250px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+              <th className="sticky left-0 z-20 bg-white border-b border-r border-slate-200 px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-400 uppercase tracking-wider min-w-[120px] sm:min-w-[200px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                 Cliente
               </th>
               {entrenadores.map(e => (
-                <th key={e.id} className="border-b border-slate-200 px-6 py-4 text-xs font-black text-slate-500 uppercase tracking-wider text-center">
-                  {e.name}
+                <th key={e.id} className="border-b border-slate-200 px-3 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-500 uppercase tracking-wider text-center">
+                  {e.name.split(' ')[0]}
                 </th>
               ))}
             </tr>
@@ -46,15 +51,15 @@ export default function FacturasMatrixTable({ data, loading, onCellClick }) {
           <tbody className="divide-y divide-slate-100">
             {clientes.map(c => (
               <tr key={c.id} className="hover:bg-slate-50/50 transition-colors">
-                <td className="sticky left-0 z-10 bg-white hover:bg-slate-50 border-r border-slate-100 px-6 py-4 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
-                  <div className="flex justify-between items-center gap-4">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-slate-700 text-sm">{c.name}</span>
-                      <span className="text-xs text-slate-400">{c.email}</span>
+                <td className="sticky left-0 z-10 bg-white hover:bg-slate-50 border-r border-slate-100 px-4 sm:px-6 py-3 sm:py-4 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                  <div className="flex justify-between items-center gap-2 sm:gap-4">
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-bold text-slate-700 text-xs sm:text-sm truncate">{c.name}</span>
+                      <span className="text-xs text-slate-400 truncate">{c.email}</span>
                     </div>
-                    <div className="flex flex-col items-end text-xs">
-                       <span className="font-bold text-slate-500">{clienteTotals[c.id]?.total_clases || 0} clases</span>
-                       <span className="font-black text-[#38C1A3]">{Number(clienteTotals[c.id]?.total_coste || 0).toFixed(2)} €</span>
+                    <div className="flex flex-col items-end text-xs flex-shrink-0">
+                       <span className="font-bold text-slate-500">{clienteTotals[c.id]?.total_clases || 0}</span>
+                       <span className="font-black text-[#38C1A3]">{Number(clienteTotals[c.id]?.total_coste || 0).toFixed(2)}€</span>
                     </div>
                   </div>
                 </td>
@@ -64,19 +69,19 @@ export default function FacturasMatrixTable({ data, loading, onCellClick }) {
                   const amount = cellData?.amount || 0;
                   
                   return (
-                    <td key={e.id} className="px-3 py-3 text-center border-l border-slate-50">
+                    <td key={e.id} className="px-2 sm:px-3 py-2 sm:py-3 text-center border-l border-slate-50">
                       {count > 0 ? (
                         <button 
                           onClick={() => onCellClick(c.id, e.id, c, e)}
-                          className="flex flex-col items-center justify-center p-2 rounded-xl bg-teal-50 hover:bg-[#38C1A3] group transition-all cursor-pointer w-full"
+                          className="flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-teal-50 hover:bg-[#38C1A3] group transition-all cursor-pointer w-full"
                           title="Ver detalles de clases"
                         >
-                          <span className="font-black text-[#38C1A3] group-hover:text-white text-sm transition-colors">{count} clases</span>
-                          <span className="font-bold text-slate-500 group-hover:text-teal-100 text-xs transition-colors">{Number(amount).toFixed(2)} €</span>
+                          <span className="font-black text-[#38C1A3] group-hover:text-white text-xs sm:text-sm transition-colors">{count}</span>
+                          <span className="font-bold text-slate-500 group-hover:text-teal-100 text-[10px] sm:text-xs transition-colors">{Number(amount).toFixed(2)}€</span>
                         </button>
                       ) : (
-                        <div className="flex flex-col items-center justify-center p-2 text-slate-300">
-                          <span className="text-sm font-medium">0</span>
+                        <div className="flex flex-col items-center justify-center p-1.5 sm:p-2 text-slate-300">
+                          <span className="text-xs font-medium">-</span>
                         </div>
                       )}
                     </td>
@@ -86,6 +91,48 @@ export default function FacturasMatrixTable({ data, loading, onCellClick }) {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile View - Card Layout */}
+      <div className="sm:hidden divide-y divide-slate-100">
+        {clientes.map(c => (
+          <div key={c.id} className="p-4 hover:bg-slate-50 transition-colors">
+            <div className="mb-4 pb-4 border-b border-slate-100">
+              <p className="font-bold text-slate-700 truncate text-sm mb-1">{c.name}</p>
+              <p className="text-xs text-slate-400 truncate mb-2">{c.email}</p>
+              <div className="flex items-center gap-1 text-xs">
+                <span className="font-bold text-slate-500">{clienteTotals[c.id]?.total_clases || 0} clases</span>
+                <span className="text-slate-300">•</span>
+                <span className="font-black text-[#38C1A3]">{Number(clienteTotals[c.id]?.total_coste || 0).toFixed(2)}€</span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              {entrenadores.map(e => {
+                const cellData = matrix[c.id]?.[e.id];
+                const count = cellData?.count || 0;
+                const amount = cellData?.amount || 0;
+                
+                return (
+                  <div key={e.id} className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium text-slate-600 truncate">{e.name}</span>
+                    {count > 0 ? (
+                      <button 
+                        onClick={() => onCellClick(c.id, e.id, c, e)}
+                        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-teal-50 hover:bg-[#38C1A3] group transition-all cursor-pointer flex-shrink-0"
+                        title="Ver detalles de clases"
+                      >
+                        <span className="font-bold text-[#38C1A3] group-hover:text-white text-xs transition-colors">{count}</span>
+                        <span className="font-bold text-slate-500 group-hover:text-teal-100 text-xs transition-colors">{Number(amount).toFixed(2)}€</span>
+                      </button>
+                    ) : (
+                      <span className="text-xs text-slate-300 px-2 py-1.5">-</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
