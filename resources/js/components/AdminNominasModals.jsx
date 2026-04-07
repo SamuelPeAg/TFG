@@ -161,7 +161,7 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess }) {
         const formData = new FormData();
         formData.append('_method', 'PUT');
         formData.append('accion', finalAccion);
-        formData.append('user_id', nomina.user_id);
+        formData.append('entrenador_id', nomina.entrenador_id);
         formData.append('importe', totals.neto);
         formData.append('salario_bruto', detalles.salario_bruto || 0);
         formData.append('ss_trabajador', totals.ss_trabajador || 0);
@@ -219,7 +219,7 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess }) {
                             <i className="fas fa-calculator"></i>
                         </div>
                         <h2 className="text-2xl font-black text-slate-800 tracking-tight">Cálculo Detallado</h2>
-                        <p className="text-slate-500 text-sm font-medium mt-1">{nomina.user?.name} - Periodo: {nomina.mes}/{nomina.anio}</p>
+                        <p className="text-slate-500 text-sm font-medium mt-1">{nomina.entrenador?.name} - Periodo: {nomina.mes}/{nomina.anio}</p>
                     </div>
 
                     <div className="p-8">
@@ -338,7 +338,7 @@ export function DetalleNominaModal({ isOpen, onClose, nomina }) {
                     </div>
                     <div>
                         <h2 className="text-xl font-black text-slate-800 tracking-tight">Detalle de Nómina</h2>
-                        <p className="text-slate-500 text-sm font-bold">{nomina.user?.name} · {nomina.mes}/{nomina.anio}</p>
+                        <p className="text-slate-500 text-sm font-bold">{nomina.entrenador?.name} · {nomina.mes}/{nomina.anio}</p>
                     </div>
                 </div>
 
@@ -411,7 +411,7 @@ export function PdfPreviewModal({ isOpen, onClose, nomina }) {
                         <i className="fas fa-file-pdf text-xl"></i>
                     </div>
                     <div>
-                        <h3 className="font-black text-lg tracking-tight">Nómina - {nomina.user?.name}</h3>
+                        <h3 className="font-black text-lg tracking-tight">Nómina - {nomina.entrenador?.name}</h3>
                         <p className="text-xs font-bold text-slate-400">{nomina.mes}/{nomina.anio}</p>
                     </div>
                 </div>

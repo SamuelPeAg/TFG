@@ -39,13 +39,13 @@ export function BorradoresTable({ borradores, onPreview, onRevisar, onDelete }) 
                                 <td className="py-3 px-6" data-label="Entrenador">
                                     <div className="flex items-center gap-3">
                                         <div className="w-9 h-9 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 border border-slate-200">
-                                            {nomina.user?.foto_de_perfil ? (
-                                                <img src={`/storage/${nomina.user.foto_de_perfil}`} alt={nomina.user.name} className="h-full w-full object-cover" />
+                                            {nomina.entrenador?.foto_de_perfil ? (
+                                                <img src={`/storage/${nomina.entrenador.foto_de_perfil}`} alt={nomina.entrenador.name} className="h-full w-full object-cover" />
                                             ) : (
-                                                nomina.user?.name ? nomina.user.name.charAt(0).toUpperCase() : 'U'
+                                                nomina.entrenador?.name ? nomina.entrenador.name.charAt(0).toUpperCase() : 'U'
                                             )}
                                         </div>
-                                        <span className="font-bold text-slate-700 text-sm">{nomina.user?.name}</span>
+                                        <span className="font-bold text-slate-700 text-sm">{nomina.entrenador?.name}</span>
                                     </div>
                                 </td>
                                 <td className="py-3 px-6 text-slate-500 font-medium text-sm" data-label="Periodo">{nomina.mes}/{nomina.anio}</td>
@@ -112,7 +112,7 @@ export function HistorialTable({ historial, onPreview, onVerDetalles, onPagar, o
                             historial.map(nomina => (
                                 <tr key={nomina.id} className="hover:bg-slate-50/50 transition-colors">
                                     <td className="py-3 px-6" data-label="Entrenador">
-                                        <div className="font-bold text-slate-700 text-sm">{nomina.user?.name}</div>
+                                        <div className="font-bold text-slate-700 text-sm">{nomina.entrenador?.name}</div>
                                         <div className="text-[11px] text-slate-400 font-medium mt-0.5">{nomina.concepto}</div>
                                     </td>
                                     <td className="py-3 px-6 text-slate-500 font-medium text-sm" data-label="Periodo">{nomina.mes}/{nomina.anio}</td>

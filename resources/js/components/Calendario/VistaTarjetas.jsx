@@ -14,7 +14,8 @@ export default function VistaTarjetas({ centroFiltro, userFiltro, onClickEvent }
         nextMonth.setDate(today.getDate() + 30);
         const end = nextMonth.toISOString().split('T')[0];
         
-        let url = `usuarios/Pagos?start=${start}&end=${end}`;
+        const baseUrl = window.AppConfig?.baseUrl || '/';
+        let url = `${baseUrl}usuarios/Pagos?start=${start}&end=${end}`;
         if (centroFiltro) url += `&centro=${encodeURIComponent(centroFiltro)}`;
         if (userFiltro) url += `&q=${encodeURIComponent(userFiltro)}`;
 

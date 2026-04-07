@@ -107,11 +107,11 @@ export default function AdminNominas() {
   };
 
   const filteredBorradores = data.borradores.filter(b => 
-      !filters.search || b.user.name.toLowerCase().includes(filters.search.toLowerCase())
+      !filters.search || b.entrenador?.name?.toLowerCase().includes(filters.search.toLowerCase())
   );
   
   const filteredHistorial = data.historial.filter(h => 
-      !filters.search || h.user.name.toLowerCase().includes(filters.search.toLowerCase())
+      !filters.search || h.entrenador?.name?.toLowerCase().includes(filters.search.toLowerCase())
   );
 
   return (

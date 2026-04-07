@@ -13,13 +13,13 @@ class FacturacionController extends Controller
 {
     public function index(Request $request)
     {
-        $desde = $request->query('desde', '');
-        $hasta = $request->query('hasta', '');
-        $centro = $request->query('centro', 'todos');
-        $entrenadorId = $request->query('entrenador_id', '');
-        $clienteId = $request->query('cliente_id', '');
-        $anio = $request->query('anio', date('Y'));
-        $mes = $request->query('mes', '');
+        $desde = $request->input('desde', '');
+        $hasta = $request->input('hasta', '');
+        $centro = $request->input('centro', 'todos');
+        $entrenadorId = $request->input('entrenador_id', '');
+        $clienteId = $request->input('cliente_id', '');
+        $anio = $request->input('anio', date('Y'));
+        $mes = $request->input('mes', '');
 
         // Si se especifica mes y año, calcular desde y hasta
         if ($mes && $anio) {
@@ -38,7 +38,7 @@ class FacturacionController extends Controller
             ->when($entrenadorId, function ($qq) use ($entrenadorId) {
                 $qq->where(function ($sub) use ($entrenadorId) {
                     $sub->where('entrenador_id', $entrenadorId)
-                        ->orWhereHas('entrenadores', fn($h) => $h->where('users.id', $entrenadorId));
+                        ->orWhereHas('entrenadores', fn($h) => $h->where('entrenadores.id', $entrenadorId));
                 });
             });
 
@@ -102,8 +102,9 @@ class FacturacionController extends Controller
         }
 
         // Si se ha seleccionado un cliente, limitar la lista a ese cliente
-        if ($clienteId) {
+        if (!empty($clienteId)) {
             $clientesIdsFromSearch = [$clienteId];
+            $clientes = $clientes->where('id', $clienteId)->values();
         } else {
             $clientesIdsFromSearch = $clientes->pluck('id')->toArray();
         }
@@ -144,7 +145,7 @@ class FacturacionController extends Controller
         if ($entrenadorId) {
             $pagosQuery->where(function ($q) use ($entrenadorId) {
                 $q->where('entrenador_id', $entrenadorId)
-                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenadorId));
+                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenadorId));
             });
         }
         if ($centro !== 'todos') {
@@ -222,9 +223,14 @@ class FacturacionController extends Controller
             ];
         }
 
-        // Filtrar clientes que no tienen datos
-        $clientesConDatos = array_keys($matrix);
-        $clientes = $clientes->whereIn('id', $clientesConDatos)->values();
+        // Filtrar clientes que no tienen datos (si no se filtró ya por clienteId)
+        if (empty($clienteId)) {
+            $clientesConDatos = array_keys($matrix);
+            $clientesFiltered = $clientes->whereIn('id', $clientesConDatos)->values();
+            // Si el usuario quiere ver TODOS los clientes de la matrix original, usamos la filtrada
+            // Pero si el resultado es cero, mostramos vacío o el filtro original.
+            $clientes = $clientesFiltered;
+        }
 
         // Filtrar entrenadores que no tienen datos
         $entrenadoresIdsConDatos = [];
@@ -335,7 +341,7 @@ class FacturacionController extends Controller
                     $entId = $it->horarioClase?->entrenador_id;
                     if ($entId) {
                         $qq->where('entrenador_id', $entId)
-                            ->orWhereHas('entrenadores', fn($h) => $h->where('users.id', $entId));
+                            ->orWhereHas('entrenadores', fn($h) => $h->where('entrenadores.id', $entId));
                     }
                 })
                 ->whereDate('fecha_registro', optional($it->horarioClase?->fecha_hora_inicio)->toDateString())
@@ -367,7 +373,7 @@ class FacturacionController extends Controller
         if ($entrenadorId) {
             $pagoQuery->where(function ($q) use ($entrenadorId) {
                 $q->where('entrenador_id', $entrenadorId)
-                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenadorId));
+                    ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenadorId));
             });
         }
         if ($desde) {
@@ -411,7 +417,7 @@ class FacturacionController extends Controller
                 'importe' => $p->importe,
                 'metodo' => $p->metodo_pago ?? null,
                 'nombre_clase' => $p->nombre_clase ?? null,
-                'centro' => $p->centro ? (Centro::find($p->centro)->nombre ?? $p->centro) : null,
+                'centro' => $p->centro,
             ]);
         }
 
@@ -486,5 +492,50 @@ class FacturacionController extends Controller
             'success' => true,
             'message' => 'Cobro registrado correctamente'
         ]);
+    }
+
+    public function exportXML(Request $request)
+    {
+        $centro = $request->query('centro', 'todos');
+        $anio = $request->query('anio', date('Y'));
+        $mes = $request->query('mes', '');
+
+        $desde = null;
+        $hasta = null;
+        if ($mes && $anio) {
+            $desde = $anio . '-' . $mes . '-01';
+            $hasta = date('Y-m-t', strtotime($desde));
+        } elseif ($anio) {
+            $desde = $anio . '-01-01';
+            $hasta = $anio . '-12-31';
+        }
+
+        $query = Pago::with(['user', 'entrenadores'])
+            ->when($desde, fn($q) => $q->whereDate('fecha_registro', '>=', $desde))
+            ->when($hasta, fn($q) => $q->whereDate('fecha_registro', '<=', $hasta))
+            ->when($centro !== 'todos', fn($q) => $q->where('centro', $centro));
+
+        $pagos = $query->get();
+
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><facturacion/>');
+        $xml->addChild('periodo', ($mes ? "Mes $mes - " : "") . "Año $anio");
+        $xml->addChild('centro', $centro);
+        
+        $total = 0;
+        foreach ($pagos as $pago) {
+            $item = $xml->addChild('pago');
+            $item->addChild('id', $pago->id);
+            $item->addChild('cliente', $pago->user->name ?? 'N/A');
+            $item->addChild('fecha', $pago->fecha_registro->toDateTimeString());
+            $item->addChild('importe', $pago->importe);
+            $item->addChild('metodo', $pago->metodo_pago);
+            $item->addChild('clase', $pago->nombre_clase);
+            $total += (float)$pago->importe;
+        }
+        $xml->addChild('total_acumulado', $total);
+
+        return response($xml->asXML(), 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="facturacion_'.$centro.'_'.$anio.'_'.$mes.'.xml"');
     }
 }

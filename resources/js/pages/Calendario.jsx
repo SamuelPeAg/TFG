@@ -28,7 +28,7 @@ export default function Calendario() {
 
   // 1. Fetch initialization data
   useEffect(() => {
-    axios.get('calendario', { headers: { 'Accept': 'application/json' } })
+    axios.get('/calendario', { headers: { 'Accept': 'application/json' } })
       .then(res => {
         setData(res.data);
       })
@@ -126,6 +126,17 @@ export default function Calendario() {
     };
   }, [data, user]);
 
+  // 3. Sync Filters with Vanilla Calendar
+  useEffect(() => {
+    if (window.calendar && viewMode === 'calendar') {
+        // Usar un pequeño timeout para asegurar que el DOM se ha actualizado con el nuevo value
+        const timer = setTimeout(() => {
+            window.calendar.refetchEvents();
+        }, 100);
+        return () => clearTimeout(timer);
+    }
+  }, [centroFiltro, userFiltro, viewMode]);
+
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-slate-900">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
@@ -171,7 +182,6 @@ export default function Calendario() {
                     value={centroFiltro}
                     onChange={(e) => {
                        setCentroFiltro(e.target.value);
-                       if (window.calendar && viewMode === 'calendar') setTimeout(() => window.calendar.refetchEvents(), 100);
                     }}
                   >
                     <option value="">Todos los centros</option>

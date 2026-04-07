@@ -21,15 +21,15 @@ class NominaAdminController extends Controller
         $borradores = Nomina_entrenador::where('estado_nomina', 'pendiente_revision')
                         ->where('mes', $mes)
                         ->where('anio', $anio)
-                        ->with('user')
-                        ->orderBy('user_id')
+                        ->with('entrenador')
+                        ->orderBy('entrenador_id')
                         ->get();
 
         // Historial (Confirmadas o Pagadas) para el periodo seleccionado
         $historial = Nomina_entrenador::where('estado_nomina', '!=', 'pendiente_revision')
                         ->where('mes', $mes)
                         ->where('anio', $anio)
-                        ->with('user')
+                        ->with('entrenador')
                         ->orderBy('created_at', 'desc')
                         ->get();
 
@@ -56,7 +56,7 @@ class NominaAdminController extends Controller
             : Carbon::create($anio, $mes, 1)->endOfMonth();
 
         // 1. Obtener TODOS los entrenadores
-        $entrenadores = User::role('entrenador')->get();
+        $entrenadores = \App\Models\Entrenador::all();
 
         $generadas = 0;
         $actualizadas = 0;
@@ -65,9 +65,10 @@ class NominaAdminController extends Controller
             // 2. Buscar sus pagos para el rango de fechas seleccionado
             $pagos = Pago::where(function($q) use ($entrenador) {
                             $q->where('entrenador_id', $entrenador->id)
-                              ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $entrenador->id));
+                              ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $entrenador->id));
                         })
                         ->whereBetween('fecha_registro', [$fecha_inicio, $fecha_fin])
+                        ->with('user')
                         ->get();
 
             // Si no hay pagos en este periodo para este entrenador, NO saltamos, queremos que salga a 0
@@ -101,7 +102,7 @@ class NominaAdminController extends Controller
                     'centro' => $centro,
                     'duracion' => $duracion,
                     'alumnos_count' => $grupoPagos->count(),
-                    'alumnos' => $grupoPagos->pluck('nombre_cliente')->unique()->values()->all()
+                    'alumnos' => $grupoPagos->map(fn($gp) => $gp->user->name ?? 'Desconocido')->unique()->values()->all()
                 ];
             }
 
@@ -159,7 +160,7 @@ class NominaAdminController extends Controller
             ];
 
             // 3. Crear o Actualizar Nómina (El importe es el NETO a percibir por el trabajador)
-            $nomina = Nomina_entrenador::where('user_id', $entrenador->id)
+            $nomina = Nomina_entrenador::where('entrenador_id', $entrenador->id)
                         ->where('mes', $mes)
                         ->where('anio', $anio)
                         ->first();
@@ -173,7 +174,7 @@ class NominaAdminController extends Controller
                 }
             } else {
                 Nomina_entrenador::create([
-                    'user_id' => $entrenador->id,
+                    'entrenador_id' => $entrenador->id,
                     'mes' => $mes,
                     'anio' => $anio,
                     'concepto' => 'Nómina ' . $this->getNombreMes($mes),
@@ -205,10 +206,11 @@ class NominaAdminController extends Controller
         // Buscar pagos del usuario para ese mes/año (considerando ambas formas de asociación)
         $pagos = Pago::where(function($q) use ($userId) {
                         $q->where('entrenador_id', $userId)
-                          ->orWhereHas('entrenadores', fn($qq) => $qq->where('users.id', $userId));
+                          ->orWhereHas('entrenadores', fn($qq) => $qq->where('entrenadores.id', $userId));
                     })
                     ->whereMonth('fecha_registro', $mes)
                     ->whereYear('fecha_registro', $anio)
+                    ->with('user')
                     ->get();
         
         // Agrupar sesiones
@@ -235,7 +237,7 @@ class NominaAdminController extends Controller
                 'centro' => $centro,
                 'duracion' => $duracion,
                 'alumnos_count' => $grupoPagos->count(),
-                'alumnos' => $grupoPagos->pluck('nombre_cliente')->unique()->values()->all()
+                'alumnos' => $grupoPagos->map(fn($gp) => $gp->user->name ?? 'Desconocido')->unique()->values()->all()
             ];
         }
 
@@ -294,7 +296,7 @@ class NominaAdminController extends Controller
             'importe' => 'required|numeric',
             'accion' => 'required|in:guardar,confirmar',
             'archivo' => 'nullable|file|mimes:pdf|max:2048',
-            'user_id' => 'required|exists:users,id',
+            'entrenador_id' => 'required|exists:entrenadores,id',
             'salario_bruto' => 'nullable|numeric',
             'ss_trabajador' => 'nullable|numeric',
             'irpf' => 'nullable|numeric',
@@ -306,7 +308,7 @@ class NominaAdminController extends Controller
         ]);
 
         $nomina->importe = $request->importe;
-        $nomina->user_id = $request->user_id;
+        $nomina->entrenador_id = $request->entrenador_id;
 
         // ACTUALIZAR DESGLOSE DETALLADO
         $detalles = $nomina->detalles ?? [];

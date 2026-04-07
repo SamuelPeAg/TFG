@@ -106,12 +106,32 @@ export default function Estadisticas() {
     }
   };
 
-  const centerChartData = {
+  const sesionesChartData = {
     labels: data?.sesionesPorCentro?.map(d => d.centro) || [],
     datasets: [{
       label: 'Sesiones',
       data: data?.sesionesPorCentro?.map(d => d.total) || [],
-      backgroundColor: [colors.turquesa, colors.rosa, colors.verdeClaro, colors.gris],
+      backgroundColor: [colors.turquesa, colors.rosa, colors.verdeClaro],
+      borderRadius: 8
+    }]
+  };
+
+  const clientesChartData = {
+    labels: data?.clientesPorCentro?.map(d => d.centro) || [],
+    datasets: [{
+      label: 'Clientes',
+      data: data?.clientesPorCentro?.map(d => d.total) || [],
+      backgroundColor: [colors.turquesa, colors.rosa, colors.verdeClaro],
+      borderRadius: 8
+    }]
+  };
+
+  const ingresosChartData = {
+    labels: data?.ingresosPorCentro?.map(d => d.centro) || [],
+    datasets: [{
+      label: 'Ingresos (€)',
+      data: data?.ingresosPorCentro?.map(d => d.total) || [],
+      backgroundColor: [colors.turquesa, colors.rosa, colors.verdeClaro],
       borderRadius: 8
     }]
   };
@@ -119,10 +139,18 @@ export default function Estadisticas() {
   const centerChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { bodyFont: { size: 14 } } },
+    plugins: { 
+      legend: { display: false }, 
+      tooltip: { 
+        bodyFont: { size: 12 },
+        callbacks: {
+          label: (context) => ` ${context.dataset.label}: ${context.raw}`
+        }
+      } 
+    },
     scales: {
-      y: { beginAtZero: true, ticks: { font: { size: 12 } } },
-      x: { ticks: { color: colors.gris, font: { size: 12 } } }
+      y: { beginAtZero: true, ticks: { font: { size: 10 }, stepSize: 1 } },
+      x: { ticks: { color: colors.gris, font: { size: 11 } } }
     }
   };
 
@@ -231,22 +259,59 @@ export default function Estadisticas() {
                 </div>
               </div>
 
-              {/* Gráficos 2 */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="bg-white p-4 rounded-2xl shadow-sm h-[350px] flex flex-col">
-                  <h2 className="text-base font-bold text-[#53565A] mb-4 flex items-center gap-2">
-                    <i className="fa-solid fa-house-medical text-[#A5EFE2]"></i> Sesiones por Centro
+              {/* Métricas por Centro */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm space-y-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">
+                      <i className="fa-solid fa-layer-group"></i>
+                    </div>
+                    Rendimiento por Sede
                   </h2>
-                  <div className="flex-1 relative">
-                    <Bar data={centerChartData} options={centerChartOptions} />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {/* Sesiones por Centro */}
+                  <div className="bg-slate-50/50 p-4 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sesiones Totales</h3>
+                      <i className="fa-solid fa-calendar-check text-[#4BB7AE]"></i>
+                    </div>
+                    <div className="h-44 relative">
+                      <Bar data={sesionesChartData} options={centerChartOptions} />
+                    </div>
+                  </div>
+
+                  {/* Clientes por Centro */}
+                  <div className="bg-slate-50/50 p-4 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Clientes Activos</h3>
+                      <i className="fa-solid fa-users text-[#EF5D7A]"></i>
+                    </div>
+                    <div className="h-44 relative">
+                      <Bar data={clientesChartData} options={centerChartOptions} />
+                    </div>
+                  </div>
+
+                  {/* Ingresos por Centro */}
+                  <div className="bg-slate-50/50 p-4 rounded-xl space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingresos Acumulados</h3>
+                      <i className="fa-solid fa-euro-sign text-[#A5EFE2]"></i>
+                    </div>
+                    <div className="h-44 relative">
+                      <Bar data={ingresosChartData} options={centerChartOptions} />
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="bg-white p-4 rounded-2xl shadow-sm h-[350px] flex flex-col overflow-hidden">
-                  <h2 className="text-base font-bold text-[#53565A] mb-4 flex items-center gap-2">
-                    <i className="fa-solid fa-clock-rotate-left text-[#959697]"></i> Últimos Pagos Registrados
-                  </h2>
-                  <div className="overflow-x-auto">
+              {/* Últimos Movimientos */}
+              <div className="bg-white p-4 rounded-2xl shadow-sm h-[350px] flex flex-col overflow-hidden">
+                <h2 className="text-base font-bold text-[#53565A] mb-4 flex items-center gap-2">
+                  <i className="fa-solid fa-clock-rotate-left text-[#959697]"></i> Últimos Pagos Registrados
+                </h2>
+                <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead className="border-b border-slate-100 text-xs text-[#959697] uppercase">
                         <tr>
@@ -278,7 +343,6 @@ export default function Estadisticas() {
                     </table>
                   </div>
                 </div>
-              </div>
 
               {/* Gestión de Empresas y Centros */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-8 border-t border-slate-100">

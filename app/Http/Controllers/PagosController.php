@@ -6,6 +6,7 @@ use App\Models\Pago;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PagosController extends Controller
 {
@@ -37,8 +38,23 @@ class PagosController extends Controller
         }
 
         if ($nombre !== '') {
-            $query->whereHas('user', function ($sub) use ($nombre) {
-                $sub->where('name', 'like', "%{$nombre}%");
+            $query->whereIn(DB::raw("(fecha_registro, nombre_clase, centro)"), function($sub) use ($nombre) {
+                $sub->select('fecha_registro', 'nombre_clase', 'centro')
+                    ->from('pagos')
+                    ->where('nombre_clase', 'like', "%{$nombre}%")
+                    ->orWhereExists(function($sq) use ($nombre) {
+                        $sq->select(DB::raw(1))
+                           ->from('users')
+                           ->whereColumn('users.id', 'pagos.user_id')
+                           ->where('name', 'like', "%{$nombre}%");
+                    })
+                    ->orWhereExists(function($sq) use ($nombre) {
+                        $sq->select(DB::raw(1))
+                           ->from('pago_entrenador')
+                           ->join('entrenadores', 'entrenadores.id', '=', 'pago_entrenador.entrenador_id')
+                           ->whereColumn('pago_entrenador.pago_id', 'pagos.id')
+                           ->where('entrenadores.name', 'like', "%{$nombre}%");
+                    });
             });
         }
 
@@ -164,7 +180,7 @@ class PagosController extends Controller
             'tipo_clase' => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
             'fecha_hora' => ['required', 'date'],
             'trainers' => ['nullable', 'array'],
-            'trainers.*' => ['exists:users,id'],
+            'trainers.*' => ['exists:entrenadores,id'],
             // New structure: participants array
             'participants' => ['required', 'array', 'min:1'],
             'participants.*.user_id' => ['required', 'exists:users,id'],
@@ -248,7 +264,7 @@ class PagosController extends Controller
 
         foreach ($pagos as $pago) {
             // Attach si no existe ya
-            if (!$pago->entrenadores()->where('user_id', $request->trainer_id)->exists()) {
+            if (!$pago->entrenadores()->where('entrenadores.id', $request->trainer_id)->exists()) {
                 $pago->entrenadores()->attach($request->trainer_id);
 
                 // Actualizar legacy column si estaba vacía
@@ -272,7 +288,7 @@ class PagosController extends Controller
     public function removeTrainerFromSession(Request $request)
     {
         $request->validate([
-            'trainer_id' => 'required|exists:users,id',
+            'trainer_id' => 'required|exists:entrenadores,id',
             'fecha_hora' => 'required|date',
             'nombre_clase' => 'required|string',
             'centro' => 'required|string'

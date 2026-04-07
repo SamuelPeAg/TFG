@@ -41,7 +41,7 @@ class EstadisticasController extends Controller
             
             $sesionesMesCount = 0;
             try {
-                $sesionesMesCount = HorarioClase::whereBetween('fecha_hora_inicio', [$startOfMonth, $endOfMonth])->count();
+                $sesionesMesCount = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])->count();
             } catch (\Exception $e) { }
 
             // 2. Gráfico de Ingresos (Últimos 6 meses)
@@ -69,13 +69,31 @@ class EstadisticasController extends Controller
                 ->get();
 
             // 4. Sesiones por Centro (Bar)
-            $sesionesPorCentro = DB::table('horarios_clases')
-                ->leftJoin('centros', 'horarios_clases.centro_id', '=', 'centros.id')
-                ->selectRaw('COALESCE(centros.nombre, "Sin centro") as centro, COUNT(horarios_clases.id) as total')
-                ->groupBy('centro')
-                ->get();
+            $centros = Centro::all();
+            $sesionesPorCentro = $centros->map(function ($centro) {
+                return [
+                    'centro' => $centro->nombre,
+                    'total' => Pago::where('centro', $centro->nombre)->count()
+                ];
+            });
 
-            // 5. Últimos movimientos (Tabla)
+            // 5. Clientes por Centro (Breakdown for new metrics)
+            $clientesPorCentro = $centros->map(function ($centro) {
+                return [
+                    'centro' => $centro->nombre,
+                    'total' => User::role('cliente', 'web')->where('centro_id', $centro->id)->count()
+                ];
+            });
+
+            // 6. Ingresos por Centro (Breakdown for new metrics)
+            $ingresosPorCentro = $centros->map(function ($centro) {
+                return [
+                    'centro' => $centro->nombre,
+                    'total' => Pago::where('centro', $centro->nombre)->sum('importe')
+                ];
+            });
+
+            // 7. Últimos movimientos (Tabla)
             $ultimosPagos = Pago::with('user')
                 ->orderBy('fecha_registro', 'desc')
                 ->take(5)
@@ -100,6 +118,8 @@ class EstadisticasController extends Controller
                 'ingresos6Meses' => $ingresos6Meses,
                 'popularidadClases' => $clasesPopulares,
                 'sesionesPorCentro' => $sesionesPorCentro,
+                'clientesPorCentro' => $clientesPorCentro,
+                'ingresosPorCentro' => $ingresosPorCentro,
                 'ultimosPagos' => $ultimosPagos,
                 'empresas' => Empresa::all(),
                 'centros_list' => Centro::with('empresa')->get()
