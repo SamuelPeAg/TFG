@@ -7,8 +7,8 @@ export default function MainLayout() {
     <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <Header />
 
-      {/* MAIN CONTENT */}
-      <main className="grow pt-20">
+      {/* MAIN CONTENT - Responsive padding for header height */}
+      <main className="grow pt-16 sm:pt-20">
         <Outlet />
       </main>
 

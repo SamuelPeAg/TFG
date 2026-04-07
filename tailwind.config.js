@@ -3,6 +3,8 @@ export default {
   content: [
     "./resources/**/*.blade.php",
     "./resources/**/*.js",
+    "./resources/**/*.jsx",
+    "./resources/**/*.tsx",
     "./resources/**/*.vue",
   ],
   darkMode: 'class',
@@ -35,13 +37,27 @@ export default {
     'bg-brandAqua/20',
     'bg-brandTeal/10',
     'bg-brandCoral/10',
+    // Responsive visibility
+    'sm:hidden',
+    'sm:block',
+    'sm:flex',
+    'md:hidden',
+    'md:table-cell',
+    'lg:hidden',
+    'lg:block',
+    'lg:pl-72',
     // Sticky positioning
     'self-start',
     'sticky',
     'top-24',
+    'top-20',
+    'top-16',
     // Shadows
     'shadow-brandTeal/30',
     'shadow-brandCoral/30',
+    // Transitions
+    'transition-all',
+    'duration-300',
   ],
   theme: {
     extend: {
@@ -53,6 +69,20 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
+      },
+      screens: {
+        xs: '320px',
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
+        '2xl': '1536px',
+      },
+      spacing: {
+        '72': '18rem',
+      },
+      maxWidth: {
+        '8xl': '88rem',
       }
     },
   },

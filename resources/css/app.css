@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './responsive-fixes.css';
 @import '../../node_modules/select2/dist/css/select2.min.css';
 @import './select2-custom.css';
 

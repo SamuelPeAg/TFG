@@ -14,16 +14,29 @@
   --dark-text: #2D3748;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: white;
   color: #1f2937;
   transition: background-color 0.3s, color 0.3s;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html.dark body {
   background-color: #111827;
   color: #f3f4f6;
+}
+
+/* Prevent overflow on mobile */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* --- ANIMATIONS --- */
@@ -36,6 +49,22 @@ html.dark body {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+@keyframes slideIn {
+  from { 
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .reveal {
@@ -122,6 +151,7 @@ html.dark body {
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     padding: 0.5rem 1rem;
     border: 1px solid #f1f5f9;
+    width: 100%;
   }
   .facto-table td {
     display: flex !important;
@@ -130,6 +160,7 @@ html.dark body {
     padding: 0.75rem 0 !important;
     border-bottom: 1px solid #f8fafc;
     text-align: right !important;
+    flex-wrap: wrap;
   }
   .facto-table td:last-child {
     border-bottom: none;
@@ -146,5 +177,43 @@ html.dark body {
     margin-right: 1rem;
     text-align: left;
     flex-shrink: 0;
+  }
+}
+
+/* Fix for container overflow on mobile */
+@media (max-width: 640px) {
+  .table-container {
+    margin: 0 -1rem;
+    width: calc(100% + 2rem);
+    border-radius: 0;
+  }
+  
+  .table-container > div {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 1rem;
+    margin: 1rem;
+  }
+}
+
+/* Responsive form inputs */
+@media (max-width: 640px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevent iOS zoom on input */
+  }
+}
+
+/* Modal responsive fix */
+@media (max-width: 768px) {
+  .modal,
+  [role="dialog"] {
+    width: 90vw !important;
+    max-width: calc(100vw - 2rem) !important;
+    margin: auto !important;
   }
 }

@@ -1,0 +1,208 @@
+/* ===============================================
+   RESPONSIVE FIXES AND MOBILE OPTIMIZATIONS
+   Ensures proper responsive behavior across all devices
+   ============================================== */
+
+/* Prevent horizontal overflow issues */
+* {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Prevent zooming on input focus on mobile */
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* Responsive container with proper padding */
+.responsive-container {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Fix for select dropdowns on mobile */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1.2em;
+  padding-right: 2rem;
+}
+
+/* Safe area for notch devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+  
+  .sidebar {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+}
+
+/* Responsive text sizes */
+@media (max-width: 480px) {
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  body { font-size: 0.875rem; }
+}
+
+/* Responsive grid helpers */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .grid-responsive {
+    gap: 1.5rem;
+  }
+}
+
+/* Responsive spacing */
+.px-responsive {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .px-responsive {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .px-responsive {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Touch-friendly buttons on mobile */
+@media (max-width: 768px) {
+  button, [role="button"], input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Responsive images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Responsive tables fallback */
+table {
+  table-layout: auto;
+  width: 100%;
+}
+
+/* Responsive video/iframe */
+iframe,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+.responsive-iframe-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+}
+
+.responsive-iframe-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fix for button text wrapping */
+button, a.btn {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Responsive scroll behavior */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Mobile keyboard fix */
+@media (max-width: 640px) {
+  body {
+    position: fixed;
+    width: 100%;
+  }
+  
+  .sidebar {
+    z-index: 50;
+  }
+  
+  header {
+    z-index: 40;
+  }
+}
+
+/* Print styles */
+@media print {
+  * {
+    background: transparent;
+    color: black;
+    text-shadow: none;
+    box-shadow: none;
+  }
+  
+  a, a:visited {
+    text-decoration: underline;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+  
+  img {
+    max-width: 100%;
+  }
+}
