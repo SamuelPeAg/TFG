@@ -13,34 +13,31 @@ class SuscripcionUsuarioController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_usuario' => 'required|exists:users,id',
+            'id_usuario'    => 'required|exists:users,id',
             'id_suscripcion' => 'required|exists:suscripciones,id',
-            'saldo_actual' => 'nullable|integer|min:0',
+            'saldo_actual'  => 'nullable|integer|min:0',
         ]);
 
-        $suscripcion = Suscripcion::find($validated['id_suscripcion']);
-        
-        // El cliente solo recibe créditos para clases si el pago está marcado como realizado (via Tickar)
-        // Por lo tanto, al asignar inicialmente, el saldo es 0 a menos que se especifique lo contrario (ej: migración manual)
-        $saldo = $validated['saldo_actual'] ?? 0;
+        $suscripcion = Suscripcion::findOrFail($validated['id_suscripcion']);
 
-        $susuario = SuscripcionUsuario::updateOrCreate(
-            [
-                'id_usuario' => $validated['id_usuario'],
-                'id_suscripcion' => $validated['id_suscripcion'],
-            ],
-            [
-                'id_entrenador' => Auth::id(),
-                'saldo_actual' => $saldo,
-                'ultima_recarga' => now(),
-                'estado' => 'activo',
-            ]
-        );
+        // Al asignar la suscripción, el cliente recibe de inmediato los créditos
+        // del primer ciclo (creditos_por_periodo). Si el admin especifica un
+        // saldo_actual manual (ej: migración), se usa ese en su lugar.
+        $saldo = $validated['saldo_actual'] ?? $suscripcion->creditos_por_periodo;
+
+        $susuario = SuscripcionUsuario::create([
+            'id_usuario'    => $validated['id_usuario'],
+            'id_suscripcion' => $validated['id_suscripcion'],
+            'id_entrenador' => Auth::id(),
+            'saldo_actual'  => $saldo,
+            'ultima_recarga' => now(),   // el próximo ciclo se calcula desde hoy
+            'estado'        => 'activo',
+        ]);
 
         if ($request->wantsJson() || $request->ajax()) {
-            return response()->json(['success' => true, 'suscripcion_usuario' => $susuario]);
+            return response()->json(['success' => true, 'suscripcion_usuario' => $susuario->load('suscripcion')]);
         }
-        return back()->with('success', 'Suscripción asignada correctamente (Pendiente de Pago para añadir créditos)');
+        return back()->with('success', "Suscripción asignada. Créditos iniciales: {$saldo}.");
     }
 
     public function update(Request $request, $id)

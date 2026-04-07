@@ -14,17 +14,37 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     // Búsqueda de suscripciones (Paso 2)
     const [susSearchQuery, setSusSearchQuery] = useState('');
 
+    const defaultCapacityForType = (tipo) => {
+        const type = (tipo || '').toString().toLowerCase();
+        switch (type) {
+            case 'ep':
+                return '1';
+            case 'duo':
+                return '2';
+            case 'trio':
+                return '3';
+            case 'privado':
+            case 'grupo especial':
+                return '4';
+            case 'grupo':
+                return '8';
+            default:
+                return '';
+        }
+    };
+
     const [formData, setFormData] = useState({
-        centro: '', // Now it's an array for multiple centers
+        centro: '',
         nombre_clase: '',
         tipo_clase: 'ep',
         capacidad: '',
+        capacidad_maxima: defaultCapacityForType('ep'),
         fecha_hora: '',
         precio_base: '0.00',
         is_recurring: false,
         recurrence_end: '',
         trainers: [],
-        participants: [], 
+        participants: [],
         suscripciones_permitidas: []
     });
 
@@ -32,7 +52,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         if (isOpen) {
             setFormData(prev => ({
                 ...prev,
-                fecha_hora: initialDate || getCurrentLocalTime()
+                fecha_hora: initialDate || getCurrentLocalTime(),
+                capacidad_maxima: defaultCapacityForType(prev.tipo_clase)
             }));
             setCurrentStep(1);
             setErrors({});
@@ -59,10 +80,20 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({ 
-            ...prev, 
-            [name]: type === 'checkbox' ? checked : value 
-        }));
+        console.log(`[handleChange] name:${name}, value:${value}, type:${type}`);
+        setFormData(prev => {
+            const nextState = {
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            };
+
+            if (name === 'tipo_clase') {
+                nextState.capacidad_maxima = defaultCapacityForType(value);
+                console.log(`[handleChange] Tipo cambió a: ${value}, capacidad ahora: ${nextState.capacidad_maxima}`);
+            }
+
+            return nextState;
+        });
         if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
     };
 
@@ -110,7 +141,9 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         });
     };
 
-    // --- Validación por Pasos ---
+    const tiposGrupo = ['grupo especial', 'grupo', 'privado'];
+    const isGrupo = tiposGrupo.includes(formData.tipo_clase);
+
     const validateStep = (step) => {
         const newErrs = {};
         if (step === 1) {
@@ -121,7 +154,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             if (!formData.fecha_hora) newErrs.fecha_hora = "Obligatorio.";
             if (formData.is_recurring && !formData.recurrence_end) newErrs.recurrence_end = "Obligatorio si hay repetición.";
         }
-        
+
         setErrors(newErrs);
         return Object.keys(newErrs).length === 0;
     };
@@ -144,21 +177,25 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 'duo': 'DUO',
                 'trio': 'TRIO',
                 'privado': 'GRUPO_PRIVADO',
-                'Grupo especial': 'GRUPO_PRIVADO',
-                'Grupo': 'GRUPO',
+                'grupo especial': 'GRUPO_PRIVADO',
+                'grupo': 'GRUPO',
             };
             
-            const payload = { 
-                ...formData, 
-                trainers: formData.trainers.map(t=>t.id), 
+            // Asegurarse de que el tipo se mapea correctamente
+            const mappedType = typeMapping[formData.tipo_clase.toLowerCase()] || formData.tipo_clase.toUpperCase();
+            
+            const payload = {
+                ...formData,
+                capacidad_maxima: formData.capacidad_maxima ? parseInt(formData.capacidad_maxima) : null,
+                trainers: formData.trainers.map(t => t.id),
                 participants: formData.participants.map(p => ({
                     user_id: p.id,
                     precio: (formData.tipo_clase === 'ep' || formData.tipo_clase === 'EP') ? (p.precio_hora || 0) : 0,
-                    metodo_pago: 'EF' // Passing EF as default to satisfy backend validation
+                    metodo_pago: 'EF'
                 })),
-                tipo_clase: typeMapping[formData.tipo_clase] || formData.tipo_clase.toUpperCase()
+                tipo_clase: mappedType
             };
-            const response = await axios.post('Pagos', payload);
+            const response = await axios.post('/Pagos', payload);
             if (response.data.success) {
                 onSuccess();
                 onClose();
@@ -167,7 +204,11 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             }
         } catch (error) {
             console.error('Submit error:', error);
-            alert('Error de conexión o red al guardar.');
+            const serverMsg = error.response?.data?.message 
+                || (error.response?.data?.errors ? JSON.stringify(error.response.data.errors) : null)
+                || error.message 
+                || 'Error desconocido';
+            alert(`Error al guardar la clase:\n${serverMsg}`);
         } finally {
             setLoading(false);
         }
@@ -175,7 +216,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     if (!isOpen) return null;
 
-    const showCapacidad = ['Grupo especial', 'Grupo'].includes(formData.tipo_clase);
+    console.log('[CrearClaseModal] Render - formData.tipo_clase:', formData.tipo_clase, 'capacidad_maxima:', formData.capacidad_maxima, 'currentStep:', currentStep);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 md:p-6 animate-in fade-in duration-200">
@@ -301,25 +342,25 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-bold text-slate-600 pl-1">Tipo de Sesión</label>
-                                                <select name="tipo_clase" value={formData.tipo_clase} onChange={handleChange} 
-                                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none">
+                                                <select 
+                                                    name="tipo_clase" 
+                                                    value={formData.tipo_clase} 
+                                                    onChange={(e) => {
+                                                        console.log('[SELECT onChange] value:', e.target.value);
+                                                        handleChange(e);
+                                                    }}
+                                                    onFocus={() => console.log('[SELECT onFocus] current value:', formData.tipo_clase)}
+                                                    className="select2-ignore w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none">
                                                     <option value="ep">EP (Personal)</option>
                                                     <option value="duo">Dúo</option>
                                                     <option value="trio">Trío</option>
                                                     <option value="privado">Privado</option>
-                                                    <option value="Grupo especial">Grupo especial</option>
-                                                    <option value="Grupo">Grupo</option>
+                                                    <option value="grupo especial">Grupo especial</option>
+                                                    <option value="grupo">Grupo</option>
                                                 </select>
                                             </div>
                                         </div>
                                     </div>
-                                    {showCapacidad && (
-                                        <div className="space-y-1.5 mt-4">
-                                            <label className="text-xs font-bold text-slate-600 pl-1">Límite de Personas</label>
-                                            <input type="number" name="capacidad" value={formData.capacidad} onChange={handleChange} min="1" placeholder="Ej. 10"
-                                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none" />
-                                        </div>
-                                    )}
                                 </section>
 
                                 <section>
@@ -353,6 +394,12 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                             <div className="animate-in slide-in-from-right-4 fade-in duration-300 w-full max-w-2xl mx-auto space-y-10">
                                 <section>
                                     <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase mb-6">Agenda y Precios</h3>
+                                    
+                                    {/* Display del tipo seleccionado */}
+                                    <div className="mb-6 p-3 bg-slate-100 rounded-lg">
+                                        <span className="text-xs font-bold text-slate-600">Tipo de Sesión Seleccionado: <strong className="text-[#38C1A3]">{formData.tipo_clase.toUpperCase()}</strong></span>
+                                    </div>
+                                    
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-bold text-slate-600 pl-1">Fecha y Hora</label>
@@ -366,6 +413,34 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                                 className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none" />
                                         </div>
                                     </div>
+
+                                    {/* Capacidad máxima — editable para grupos y privado */}
+                                    {(['grupo', 'grupo especial', 'privado'].includes(formData.tipo_clase)) ? (
+                                        <div className="mt-6 space-y-1.5">
+                                            <label className="text-xs font-bold text-slate-600 pl-1">
+                                                Límite de Personas (Máximo)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                name="capacidad_maxima"
+                                                min="1"
+                                                value={formData.capacidad_maxima}
+                                                onChange={handleChange}
+                                                placeholder="Ej. 10"
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none focus:border-[#38C1A3]"
+                                            />
+                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">Número máximo de personas que pueden participar.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="mt-6 space-y-1.5">
+                                            <label className="text-xs font-bold text-slate-600 pl-1">Límite de Personas</label>
+                                            <div className="w-full bg-slate-100 border border-slate-300 text-slate-600 text-sm font-bold rounded-xl px-4 py-3.5 outline-none cursor-not-allowed flex items-center justify-between">
+                                                <span>{formData.capacidad_maxima} Persona{formData.capacidad_maxima !== '1' ? 's' : ''}</span>
+                                                <i className="fa-solid fa-lock text-slate-400 text-xs"></i>
+                                            </div>
+                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">El límite es fijo según el tipo de sesión.</p>
+                                        </div>
+                                    )}
 
                                     <div className="mt-6 p-4 bg-teal-50 border border-teal-100 rounded-2xl">
                                         <label className="flex items-center gap-3 cursor-pointer">
@@ -384,41 +459,59 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                 </section>
 
                                 <section>
-                                    <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase mb-6 flex items-center gap-2">Participantes <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">{formData.participants.length}</span></h3>
-                                    <div className="relative w-full mb-6">
-                                        <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar alumno por nombre..."
-                                            className="w-full bg-white border border-slate-200 focus:border-[#38C1A3] text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 pl-12 outline-none shadow-sm" />
-                                        {filteredUsers.length > 0 && (
-                                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 max-h-56 overflow-y-auto z-20">
-                                                {filteredUsers.map(u => (
-                                                    <button key={u.id} type="button" onClick={() => addParticipant(u)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 text-left">
-                                                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">{u.name.charAt(0).toUpperCase()}</div>
-                                                        <span className="font-bold text-slate-700 text-sm">{u.name}</span>
-                                                        <i className="fa-solid fa-plus ml-auto text-teal-500"></i>
-                                                    </button>
-                                                ))}
+                                    <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase mb-4 flex items-center gap-2">
+                                        Participantes <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px]">{formData.participants.length}</span>
+                                    </h3>
+
+                                    {isGrupo ? (
+                                        /* Grupos: se añaden alumnos desde el calendario/tickar */
+                                        <div className="flex items-start gap-3 bg-teal-50 border border-teal-100 rounded-xl p-4">
+                                            <i className="fa-solid fa-circle-info text-[#38C1A3] mt-0.5 text-sm shrink-0"></i>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-700">Los alumnos se añaden desde el calendario</p>
+                                                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">Para clases de grupo, los participantes se gestionan directamente desde la vista del calendario una vez creada la clase.</p>
                                             </div>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {formData.participants.length === 0 ? (
-                                            <div className="w-full py-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center">
-                                                <i className="fa-solid fa-users-slash text-slate-300 text-2xl mb-2"></i>
-                                                <span className="text-slate-500 text-xs font-bold">Busca y selecciona alumnos</span>
+                                        </div>
+                                    ) : (
+                                        /* EP / Dúo / Trío: búsqueda y selección manual */
+                                        <>
+                                            <div className="relative w-full mb-4">
+                                                <i className="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                                                <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar alumno por nombre..."
+                                                    className={`w-full bg-white border ${errors.participants ? 'border-rose-400' : 'border-slate-200'} focus:border-[#38C1A3] text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 pl-12 outline-none shadow-sm`} />
+                                                {filteredUsers.length > 0 && (
+                                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-100 max-h-56 overflow-y-auto z-20">
+                                                        {filteredUsers.map(u => (
+                                                            <button key={u.id} type="button" onClick={() => addParticipant(u)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 text-left">
+                                                                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">{u.name.charAt(0).toUpperCase()}</div>
+                                                                <span className="font-bold text-slate-700 text-sm">{u.name}</span>
+                                                                <i className="fa-solid fa-plus ml-auto text-teal-500"></i>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
-                                        ) : (
-                                            formData.participants.map(p => (
-                                                <span key={p.id} className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm pl-2 pr-1 py-1 rounded-full">
-                                                    <div className="w-6 h-6 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-[10px]">{p.name.charAt(0).toUpperCase()}</div>
-                                                    <span className="text-xs font-bold text-slate-700">{p.name}</span>
-                                                    <button type="button" onClick={() => removeParticipant(p.id)} className="w-6 h-6 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center">
-                                                        <i className="fa-solid fa-xmark"></i>
-                                                    </button>
-                                                </span>
-                                            ))
-                                        )}
-                                    </div>
+                                            {errors.participants && <p className="text-xs text-rose-500 font-bold mb-3">{errors.participants}</p>}
+                                            <div className="flex flex-wrap gap-2">
+                                                {formData.participants.length === 0 ? (
+                                                    <div className="w-full py-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 flex flex-col items-center">
+                                                        <i className="fa-solid fa-users-slash text-slate-300 text-2xl mb-2"></i>
+                                                        <span className="text-slate-500 text-xs font-bold">Busca y selecciona alumnos</span>
+                                                    </div>
+                                                ) : (
+                                                    formData.participants.map(p => (
+                                                        <span key={p.id} className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm pl-2 pr-1 py-1 rounded-full">
+                                                            <div className="w-6 h-6 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-[10px]">{p.name.charAt(0).toUpperCase()}</div>
+                                                            <span className="text-xs font-bold text-slate-700">{p.name}</span>
+                                                            <button type="button" onClick={() => removeParticipant(p.id)} className="w-6 h-6 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center">
+                                                                <i className="fa-solid fa-xmark"></i>
+                                                            </button>
+                                                        </span>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
                                 </section>
 
                                 {/* Merged Subscription section into Step 2 with Search */}

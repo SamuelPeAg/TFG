@@ -62,7 +62,10 @@ class PagosController extends Controller
 
         // Agrupar pagos por (fecha, nombre_clase, centro, tipo_clase)
         $grouped = $pagos->groupBy(function ($p) {
-            return $p->fecha_registro->format('Y-m-d H:i:s') . '|' . strtolower(trim($p->nombre_clase)) . '|' . $p->centro;
+            return $p->fecha_registro->format('Y-m-d H:i:s')
+                . '|' . strtoupper(trim($p->tipo_clase ?? ''))
+                . '|' . strtolower(trim($p->nombre_clase))
+                . '|' . $p->centro;
         });
 
         // Extraer roles del request
@@ -88,11 +91,11 @@ class PagosController extends Controller
                 $title = $first->nombre_clase . ' (' . $count . ')';
             }
 
-            // Recopilar alumnos
-            $alumnos = $grupo->map(function ($p) {
+            // Recopilar alumnos (filtrando placeholders donde user_id es null)
+            $alumnos = $grupo->filter(fn($p) => $p->user_id !== null)->map(function ($p) {
                 return [
                     'id' => $p->user_id,
-                    'nombre' => $p->user->name ?? 'Desconocido',
+                    'nombre' => $p->user->name ?? 'Usuario',
                     'pago' => $p->metodo_pago,
                     'coste' => (float) $p->importe
                 ];
@@ -128,6 +131,8 @@ class PagosController extends Controller
                 $textColor = '#ffffff';
             }
 
+            $tipoClase = $grupo->pluck('tipo_clase')->filter()->first() ?? $first->tipo_clase;
+            $capacidadMaxima = $grupo->pluck('capacidad_maxima')->filter()->first() ?? $first->capacidad_maxima;
             $classSubIds = $first->suscripciones->pluck('id')->toArray();
 
             // Filtrado del lado del cliente: solo ver clases compatibles con sus bonos activos
@@ -153,7 +158,8 @@ class PagosController extends Controller
                     'hora' => $first->fecha_registro ? $first->fecha_registro->format('H:i') : '',
                     'centro' => $first->centro,
                     'clase_nombre' => $first->nombre_clase,
-                    'tipo_clase' => $first->tipo_clase,
+                    'tipo_clase' => $tipoClase,
+                    'capacidad_maxima' => $capacidadMaxima,
                     'alumnos' => $alumnos,
                     'entrenadores' => $entrenadoresList,
                     'session_key' => [
@@ -174,60 +180,94 @@ class PagosController extends Controller
 
     public function store(Request $request)
     {
+        $tiposGrupo = ['GRUPO', 'GRUPO_PRIVADO'];
+        $isGrupo    = in_array($request->input('tipo_clase'), $tiposGrupo);
+
         $request->validate([
-            'centro' => ['required', 'string'],
-            'nombre_clase' => ['required', 'string', 'max:120'],
-            'tipo_clase' => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
-            'fecha_hora' => ['required', 'date'],
-            'trainers' => ['nullable', 'array'],
-            'trainers.*' => ['exists:entrenadores,id'],
-            // New structure: participants array
-            'participants' => ['required', 'array', 'min:1'],
-            'participants.*.user_id' => ['required', 'exists:users,id'],
-            'participants.*.precio' => ['required', 'numeric', 'min:0'],
-            'participants.*.metodo_pago' => ['required', 'in:TPV,EF,DD,CC'],
-            'suscripciones_permitidas' => ['nullable', 'array'],
+            'centro'             => ['required', 'string'],
+            'nombre_clase'       => ['required', 'string', 'max:120'],
+            'tipo_clase'         => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
+            'fecha_hora'         => ['required', 'date'],
+            'capacidad_maxima'   => ['nullable', 'integer', 'min:1'],
+            'trainers'           => ['nullable', 'array'],
+            'trainers.*'         => ['exists:entrenadores,id'],
+            'participants'       => ['nullable', 'array'],
+            'participants.*.user_id'     => ['required_with:participants', 'exists:users,id'],
+            'participants.*.precio'      => ['required_with:participants', 'numeric', 'min:0'],
+            'participants.*.metodo_pago' => ['required_with:participants', 'in:TPV,EF,DD,CC'],
+            'suscripciones_permitidas'   => ['nullable', 'array'],
             'suscripciones_permitidas.*' => ['exists:suscripciones,id'],
         ]);
 
-        $fecha = Carbon::parse($request->input('fecha_hora'));
-        $createdEvents = [];
-
-        $trainers = $request->input('trainers', []);
+        $fecha          = Carbon::parse($request->input('fecha_hora'));
+        $trainers       = $request->input('trainers', []);
         $firstTrainerId = !empty($trainers) ? $trainers[0] : null;
+        $capacidad      = $request->input('capacidad_maxima');
+        $participants   = $request->input('participants', []);
 
-        foreach ($request->input('participants') as $pData) {
-            $userId = $pData['user_id'];
-            $user = User::findOrFail($userId);
+        $pagoBase = [
+            'entrenador_id'    => $firstTrainerId,
+            'centro'           => $request->input('centro'),
+            'nombre_clase'     => $request->input('nombre_clase'),
+            'tipo_clase'       => $request->input('tipo_clase'),
+            'capacidad_maxima' => $capacidad,
+            'importe'          => 0,
+        ];
 
-            $pago = Pago::create([
-                'user_id' => $user->id,
-                'entrenador_id' => $firstTrainerId,
-                'iban' => $user->iban,
-                'importe' => $pData['precio'],
-                'fecha_registro' => $fecha,
-                'centro' => $request->input('centro'),
-                'nombre_clase' => $request->input('nombre_clase'),
-                'tipo_clase' => $request->input('tipo_clase'),
-                'metodo_pago' => $pData['metodo_pago'],
-            ]);
+        // Closure: crea los pagos para una fecha concreta
+        $crearPagos = function (Carbon $slot) use ($participants, $pagoBase, $trainers, $request, $isGrupo) {
+            if (!empty($participants)) {
+                foreach ($participants as $pData) {
+                    $user = User::find($pData['user_id']);
+                    if (!$user) continue;
 
-            if ($request->has('suscripciones_permitidas')) {
-                $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+                    $pago = Pago::create(array_merge($pagoBase, [
+                        'user_id'        => $user->id,
+                        'iban'           => $user->iban,
+                        'importe'        => $pData['precio'] ?? 0,
+                        'metodo_pago'    => $pData['metodo_pago'] ?? 'EF',
+                        'fecha_registro' => $slot,
+                    ]));
+
+                    if ($request->has('suscripciones_permitidas')) {
+                        $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+                    }
+                    if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
+                }
+            } else {
+                // Sin alumnos: placeholder para que la sesión aparezca en el calendario
+                $pago = Pago::create(array_merge($pagoBase, [
+                    'user_id'        => null,
+                    'metodo_pago'    => null,
+                    'fecha_registro' => $slot,
+                ]));
+
+                if ($request->has('suscripciones_permitidas')) {
+                    $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+                }
+                if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
+            }
+        };
+
+        try {
+            $crearPagos($fecha);
+
+            if ($request->input('is_recurring') && $request->input('recurrence_end')) {
+                $endDate     = Carbon::parse($request->input('recurrence_end'));
+                $currentDate = $fecha->copy()->addWeek();
+                while ($currentDate->lte($endDate)) {
+                    $crearPagos($currentDate->copy());
+                    $currentDate->addWeek();
+                }
             }
 
-            if (!empty($trainers)) {
-                $pago->entrenadores()->sync($trainers);
-            }
-
-            $createdEvents[] = $pago;
+        } catch (\Exception $e) {
+            \Log::error('PagosController@store error: ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
+            return response()->json(['success' => false, 'message' => 'Error interno: ' . $e->getMessage()], 500);
         }
 
         if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Clase creada exitosamente'
-            ]);
+            return response()->json(['success' => true, 'message' => 'Clase creada exitosamente']);
         }
 
         return redirect()->route('Pagos')->with('success', 'Clase creada exitosamente.');
@@ -237,10 +277,10 @@ class PagosController extends Controller
     public function addTrainerToSession(Request $request)
     {
         $request->validate([
-            'trainer_id' => 'required|exists:users,id',
-            'fecha_hora' => 'required|date',
+            'trainer_id'  => 'required|exists:entrenadores,id',
+            'fecha_hora'  => 'required|date',
             'nombre_clase' => 'required|string',
-            'centro' => 'required|string'
+            'centro'      => 'required|string'
         ]);
 
         if (!$request->user()->hasRole('admin')) {
@@ -263,6 +303,7 @@ class PagosController extends Controller
         }
 
         foreach ($pagos as $pago) {
+            /** @var \App\Models\Pago $pago */
             // Attach si no existe ya
             if (!$pago->entrenadores()->where('entrenadores.id', $request->trainer_id)->exists()) {
                 $pago->entrenadores()->attach($request->trainer_id);
@@ -288,10 +329,10 @@ class PagosController extends Controller
     public function removeTrainerFromSession(Request $request)
     {
         $request->validate([
-            'trainer_id' => 'required|exists:entrenadores,id',
-            'fecha_hora' => 'required|date',
+            'trainer_id'  => 'required|exists:entrenadores,id',
+            'fecha_hora'  => 'required|date',
             'nombre_clase' => 'required|string',
-            'centro' => 'required|string'
+            'centro'      => 'required|string'
         ]);
 
         if (!$request->user()->hasRole('admin')) {
@@ -313,6 +354,7 @@ class PagosController extends Controller
         }
 
         foreach ($pagos as $pago) {
+            /** @var \App\Models\Pago $pago */
             $pago->entrenadores()->detach($request->trainer_id);
 
             // Si quitamos el que estaba en legacy column, ponemos otro o null
@@ -343,7 +385,9 @@ class PagosController extends Controller
         ]);
 
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            if ($request->user()->id != $request->user_id) {
+                return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            }
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
@@ -358,7 +402,20 @@ class PagosController extends Controller
             return response()->json(['error' => 'Sesión no encontrada o vacía'], 404);
         }
 
-        // 2. Verificar que el usuario no esté ya en esa sesión
+        // 2. Verificar si el grupo tiene un límite y si ya se alcanzó
+        if (!empty($existingPago->capacidad_maxima) && $existingPago->capacidad_maxima > 0) {
+            $currentCount = Pago::where('fecha_registro', $fecha)
+                ->where('nombre_clase', $request->nombre_clase)
+                ->where('centro', $request->centro)
+                ->whereNotNull('user_id')
+                ->count();
+
+            if ($currentCount >= $existingPago->capacidad_maxima) {
+                return response()->json(['error' => 'Límite de alumnos alcanzado para esta sesión.'], 422);
+            }
+        }
+
+        // 3. Verificar que el usuario no esté ya en esa sesión
         $exists = Pago::where('fecha_registro', $fecha)
             ->where('nombre_clase', $request->nombre_clase)
             ->where('centro', $request->centro)
@@ -371,7 +428,7 @@ class PagosController extends Controller
 
         $newUser = User::find($request->user_id);
 
-        // 3. Crear el nuevo pago
+        // 4. Crear el nuevo pago
         $newPago = Pago::create([
             'user_id' => $newUser->id,
             'entrenador_id' => $existingPago->entrenador_id, // Legacy
@@ -381,6 +438,7 @@ class PagosController extends Controller
             'centro' => $existingPago->centro,
             'nombre_clase' => $existingPago->nombre_clase,
             'tipo_clase' => $existingPago->tipo_clase,
+            'capacidad_maxima' => $existingPago->capacidad_maxima,
             'metodo_pago' => $existingPago->metodo_pago, // Asume mismo método por defecto, o podría pedirse
         ]);
 
@@ -410,7 +468,9 @@ class PagosController extends Controller
         ]);
 
         if (!$request->user()->hasRole('admin')) {
-            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            if ($request->user()->id != $request->user_id) {
+                return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+            }
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
@@ -500,6 +560,63 @@ class PagosController extends Controller
                 'total' => number_format($totalImporte, 2)
             ],
             'detalles' => $detalles
+        ]);
+    }
+
+    public function updateSession(Request $request)
+    {
+        $request->validate([
+            'old_fecha_hora' => 'required|date',
+            'old_nombre_clase' => 'required|string',
+            'old_centro' => 'required|string',
+
+            'new_fecha_hora' => 'required|date',
+            'new_nombre_clase' => 'required|string|max:200',
+            'new_centro' => 'required|string',
+            'new_tipo_clase' => 'required|string',
+            'capacidad_maxima' => 'nullable|integer|min:1',
+            'suscripciones_permitidas' => 'nullable|array',
+            'suscripciones_permitidas.*' => 'exists:suscripciones,id',
+        ]);
+
+        if (!$request->user()->hasRole('admin')) {
+            return response()->json(['error' => 'No tienes permiso para realizar esta acción.'], 403);
+        }
+
+        $oldFecha = Carbon::parse($request->old_fecha_hora);
+        $newFecha = Carbon::parse($request->new_fecha_hora);
+
+        // Find all payments that belong to this "session"
+        $pagos = Pago::where('fecha_registro', $oldFecha)
+            ->where('nombre_clase', $request->old_nombre_clase)
+            ->where('centro', $request->old_centro)
+            ->get();
+
+        if ($pagos->isEmpty()) {
+            return response()->json(['error' => 'Sesión no encontrada'], 404);
+        }
+
+        foreach ($pagos as $pago) {
+            /** @var Pago $pago */
+            $pago->update([
+                'fecha_registro' => $newFecha,
+                'nombre_clase' => $request->new_nombre_clase,
+                'centro' => $request->new_centro,
+                'tipo_clase' => $request->new_tipo_clase,
+                'capacidad_maxima' => $request->capacidad_maxima,
+            ]);
+
+            // Sync allowed subscriptions for this session
+            if ($request->has('suscripciones_permitidas')) {
+                $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
+            } else {
+                $pago->suscripciones()->detach();
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión actualizada correctamente'
         ]);
     }
 

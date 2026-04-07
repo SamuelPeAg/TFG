@@ -20,8 +20,12 @@ import Configuracion from './pages/Configuracion'
 import Suscripciones from './pages/Suscripciones'
 import Estadisticas from './pages/Estadisticas'
 import MiFicha from './pages/MiFicha'
+import ReservaClases from './pages/ReservaClases'
 
 function App() {
+  const user = window.AppConfig?.user;
+  const isClient = user?.role === 'cliente';
+
   return (
     <Routes>
       {/* Rutas con MainLayout (navbar y footer) */}
@@ -41,7 +45,8 @@ function App() {
       <Route path="/activate-account/:token" element={<ActivateAccount />} />
       
       {/* Ruta Calendario (Asegurada por auth middleware en backend) */}
-      <Route path="/calendario" element={<Calendario />} />
+      <Route path="/calendario" element={isClient ? <ReservaClases /> : <Calendario />} />
+      <Route path="/reserva-clases" element={<ReservaClases />} />
       <Route path="/clientes" element={<Clientes />} />
       <Route path="/users" element={<Clientes />} />
       <Route path="/entrenadores" element={<Entrenadores />} />

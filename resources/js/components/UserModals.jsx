@@ -15,9 +15,30 @@ export default function UserModals({
     password_confirmation: '',
     iban: '',
     precio_hora: '',
+    centro_id: '',
+    empresa_id: '',
   });
+  const [centros, setCentros] = useState([]);
+  const [empresas, setEmpresas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    fetchLists();
+  }, []);
+
+  const fetchLists = async () => {
+    try {
+      const [resC, resE] = await Promise.all([
+        axios.get('/api/centros-list'),
+        axios.get('/api/empresas-list')
+      ]);
+      setCentros(resC.data);
+      setEmpresas(resE.data);
+    } catch (err) {
+      console.error('Error fetching lists:', err);
+    }
+  };
 
   useEffect(() => {
     if (user && mode === 'edit') {
@@ -26,6 +47,8 @@ export default function UserModals({
         email: user.email || '',
         iban: user.iban || '',
         precio_hora: user.precio_hora || '',
+        centro_id: user.centro_id || '',
+        empresa_id: user.empresa_id || '',
         password: '',
         password_confirmation: '',
       });
@@ -37,6 +60,8 @@ export default function UserModals({
         password_confirmation: '',
         iban: '',
         precio_hora: '',
+        centro_id: '',
+        empresa_id: '',
       });
     }
     setErrors({});
@@ -72,7 +97,7 @@ export default function UserModals({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Overlay */}
       <div 
         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
@@ -88,7 +113,7 @@ export default function UserModals({
           <i className="fas fa-times"></i>
         </button>
 
-        <div className="p-8">
+        <div className="p-8 max-h-[90vh] overflow-y-auto scrollbar-hide">
           <div className="text-center mb-8">
             <div className={`w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 ${mode === 'edit' ? 'bg-teal-50 text-[#38C1A3]' : 'bg-rose-50 text-[#E65C9C]'}`}>
               <i className={`fas ${mode === 'edit' ? 'fa-user-edit' : 'fa-user-plus'} text-2xl`}></i>
@@ -111,7 +136,7 @@ export default function UserModals({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Nombre */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 col-span-2 sm:col-span-1">
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Nombre Completo</label>
                 <div className="relative group">
                   <i className="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
@@ -120,7 +145,8 @@ export default function UserModals({
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
+                    maxLength={50}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
                     placeholder="Ej: Juan Pérez"
                     required
                   />
@@ -129,7 +155,7 @@ export default function UserModals({
               </div>
 
               {/* Email */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 col-span-2 sm:col-span-1">
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Correo Electrónico</label>
                 <div className="relative group">
                   <i className="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
@@ -138,7 +164,8 @@ export default function UserModals({
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
+                    maxLength={100}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
                     placeholder="correo@ejemplo.com"
                     required
                   />
@@ -147,79 +174,80 @@ export default function UserModals({
               </div>
             </div>
 
-            {/* IBAN */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">IBAN (Cuenta Bancaria)</label>
-              <div className="relative group">
-                <i className="fas fa-credit-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                <input
-                  type="text"
-                  name="iban"
-                  value={formData.iban}
-                  onChange={handleChange}
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300 uppercase font-mono"
-                  placeholder="ES00 0000 0000 0000 0000 0000"
-                />
-              </div>
-              {errors.iban && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1">{errors.iban[0]}</p>}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Password */}
-              <div className="space-y-1.5 col-span-1">
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">
-                  {mode === 'edit' ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}
-                </label>
-                <div className="relative group">
-                  <i className="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E65C9C] transition-colors"></i>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#E65C9C]/10 focus:bg-white focus:border-[#E65C9C] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
-                    placeholder="••••••••"
-                    required={mode === 'create'}
-                  />
+            {mode === 'edit' && (
+              <>
+                {/* IBAN */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">IBAN (Cuenta Bancaria)</label>
+                  <div className="relative group">
+                    <i className="fas fa-credit-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                    <input
+                      type="text"
+                      name="iban"
+                      value={formData.iban}
+                      onChange={handleChange}
+                      maxLength={34}
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 uppercase font-mono text-xs"
+                      placeholder="ES00 0000 0000 0000 0000 0000"
+                    />
+                  </div>
                 </div>
-                {errors.password && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1">{errors.password[0]}</p>}
-              </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Password */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">
+                      Nueva Contraseña
+                    </label>
+                    <div className="relative group">
+                      <i className="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#E65C9C] transition-colors"></i>
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        maxLength={64}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#E65C9C]/10 focus:bg-white focus:border-[#E65C9C] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </div>
 
-
-              {/* Precio Hora */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Precio Hora (€)</label>
-                <div className="relative group">
-                  <i className="fas fa-euro-sign absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                  <input
-                    type="number"
-                    step="0.01"
-                    name="precio_hora"
-                    value={formData.precio_hora}
-                    onChange={handleChange}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700 placeholder:text-slate-300"
-                    placeholder="0.00"
-                  />
+                  {/* Precio Hora */}
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Precio Hora (€)</label>
+                    <div className="relative group">
+                      <i className="fas fa-euro-sign absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                      <input
+                        type="number"
+                        step="0.01"
+                        max="9999"
+                        name="precio_hora"
+                        value={formData.precio_hora}
+                        onChange={handleChange}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
                 </div>
-                {errors.precio_hora && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1">{errors.precio_hora[0]}</p>}
-              </div>
-            </div>
+              </>
+            )}
 
             <div className="pt-6">
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full py-4 text-sm tracking-widest"
+                className="w-full py-4 text-xs font-black uppercase tracking-widest"
                 disabled={loading}
               >
                 {loading ? (
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center justify-center gap-2">
                     <i className="fas fa-circle-notch animate-spin"></i>
                     PROCESANDO...
                   </span>
                 ) : (
-                  <span>{mode === 'edit' ? 'ACTUALIZAR DATOS' : 'REGISTRAR CLIENTE'}</span>
+                  <span>{mode === 'edit' ? 'ACTUALIZAR PERFIL' : 'REGISTRAR ALUMNO'}</span>
                 )}
               </Button>
             </div>

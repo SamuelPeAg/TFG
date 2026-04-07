@@ -17,9 +17,35 @@ export default function Contact() {
     const loadCentros = async () => {
       try {
         const res = await axios.get('/api/centros', { timeout: 5000 });
-        if (res.data && res.data.length > 0) {
-          setCentros(res.data);
-        }
+        const returned = res.data;
+        const centroList = Array.isArray(returned)
+          ? returned
+          : Array.isArray(returned?.centros)
+            ? returned.centros
+            : Array.isArray(returned?.data)
+              ? returned.data
+              : [];
+
+        setCentros(centroList.length > 0 ? centroList : [
+          {
+            id: 1,
+            nombre: 'Aira Fitness Club',
+            direccion: 'Av. de Rabanales, s/n, Levante, 14007 Córdoba',
+            google_maps_link: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1765324.3289938641!2d-7.2000453!3d37.8926499!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6cdf852e981d07%3A0xf6367ab1c976d7fb!2sAira%20Fitness%20Club!5e1!3m2!1ses!2ses!4v1774127157355!5m2!1ses!2ses'
+          },
+          {
+            id: 2,
+            nombre: 'Open Arena',
+            direccion: 'C. Escritora Maria Goyri, s/n, 14005 Córdoba',
+            google_maps_link: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d110352.01090579458!2d-4.802398!3d37.87981!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6d21986110736b%3A0xd2b686fab1dd9bb5!2sMoverte%20da%20Vida%20-%20Open%20Arena!5e1!3m2!1ses!2ses!4v1774126909735!5m2!1ses!2ses'
+          },
+          {
+            id: 3,
+            nombre: 'Centro de Salud',
+            direccion: 'C. José Dámaso "Pepete", Poniente Sur, 14005 Córdoba',
+            google_maps_link: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d110356.86810429477!2d-4.797538!3d37.876568!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6d210ee12d99e3%3A0x2e64896407139591!2sMoverte%20da%20vida%20-%20centro%20de%20salud%20y%20ejercicio!5e1!3m2!1ses!2ses!4v1774126923529!5m2!1ses!2ses'
+          }
+        ]);
       } catch (err) {
         console.error('Error fetching centros, loading fallback:', err.message);
         // Fallback data if API fails or is not available
@@ -234,7 +260,7 @@ export default function Contact() {
                            <div className="h-56 relative overflow-hidden bg-slate-100">
                                <iframe
                                  className="absolute inset-0 w-full h-[150%] -top-1/4 pointer-events-none grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
-                                 src={centro.google_maps_link}
+                                 src={centro.google_maps_link?.trim() || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${centro.nombre} ${centro.direccion}`)}`}
                                  style={{border: '0'}}
                                  allowFullScreen=""
                                  loading="lazy"

@@ -13,7 +13,8 @@ return new class extends Migration
 
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('password');
+            $table->boolean('activo')->default(false);
+            $table->string('password')->nullable();
 
             $table->string('dni')->nullable()->unique();
             $table->string('direccion')->nullable();
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->string('ciudad')->nullable();
             
             $table->string('activation_token', 60)->nullable()->unique();
+            $table->timestamp('activation_token_expires_at')->nullable();
             $table->string('foto_de_perfil')->nullable();
             
             // Relaciones consolidadas

@@ -78,27 +78,36 @@ export default function Calendario() {
       try {
         await loadScript('/css/calendario.css');
         await loadScript('/css/global.css');
-        await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js');
-        // El script wizard_clase ya no es necesario para la creacion, se omite o mantiene para compatibilidad parcial si hay otras cosas
+        // Add FullCalendar main CSS just to be sure if the global bundle doesn't inject it fast enough
+        await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js');
         await loadScript('/js/calendario.js');
 
-        // Allow some time for DOM to be ready and scripts to execute
-        setTimeout(() => {
-          if (window.FullCalendar) {
-            if (window.initCalendarioVanilla) window.initCalendarioVanilla();
+        // Robust initialization: wait for both window.FullCalendar AND the DOM element
+        const maxRetries = 15;
+        let retryCount = 0;
+        
+        const tryInit = () => {
+          const calendarEl = document.getElementById('fullCalendarEl');
+          if (window.FullCalendar && window.initCalendarioVanilla && calendarEl) {
+            window.initCalendarioVanilla();
             if (window.initWizardClase) window.initWizardClase();
-          } else {
-            console.warn("FullCalendar not found after script load, retrying...");
-            let retries = 0;
-            const retry = setInterval(() => {
-              if (window.FullCalendar) {
-                if (window.initCalendarioVanilla) window.initCalendarioVanilla();
-                clearInterval(retry);
-              }
-              if (++retries > 10) clearInterval(retry);
-            }, 500);
+            return true;
           }
-        }, 200);
+          return false;
+        };
+
+        // Try direct call after small delay for CSS application
+        setTimeout(() => {
+          if (!tryInit()) {
+            const retryInterval = setInterval(() => {
+              retryCount++;
+              if (tryInit() || retryCount >= maxRetries) {
+                clearInterval(retryInterval);
+              }
+            }, 300);
+          }
+        }, 150);
+
       } catch (e) {
         console.error("Error al cargar scripts del calendario:", e);
       }
@@ -129,13 +138,25 @@ export default function Calendario() {
   // 3. Sync Filters with Vanilla Calendar
   useEffect(() => {
     if (window.calendar && viewMode === 'calendar') {
-        // Usar un pequeño timeout para asegurar que el DOM se ha actualizado con el nuevo value
         const timer = setTimeout(() => {
             window.calendar.refetchEvents();
         }, 100);
         return () => clearTimeout(timer);
     }
   }, [centroFiltro, userFiltro, viewMode]);
+
+  // FIX: Force calendar to update size when switching from 'cards' to 'calendar' view
+  useEffect(() => {
+    if (viewMode === 'calendar' && !loading) {
+       if (window.calendar) {
+           setTimeout(() => {
+               window.calendar.updateSize();
+           }, 50);
+       } else if (window.initCalendarioVanilla) {
+           window.initCalendarioVanilla();
+       }
+    }
+  }, [viewMode, loading]);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-slate-900">

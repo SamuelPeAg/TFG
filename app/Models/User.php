@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, SoftDeletes, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
@@ -21,6 +20,8 @@ class User extends Authenticatable
         'codigo_postal',
         'ciudad',
         'activation_token',
+        'activation_token_expires_at',
+        'activo',
         'foto_de_perfil',
         'additional_attributes',
         'centro_id',
@@ -34,7 +35,9 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'activation_token_expires_at' => 'datetime',
         'additional_attributes' => 'array',
+        'activo' => 'boolean',
     ];
 
     public function empresa()

@@ -57,21 +57,21 @@ class UserController extends Controller
     {
         // --- 1. VALIDACIONES ROBUSTAS (Mínimo 2 por campo) ---
         $request->validate([
-            // Nombre: Obligatorio + Texto + Mínimo 3 letras + Máximo 255
-            'name'          => 'required|string|min:3|max:50',
+            // Nombre: Obligatorio + Texto + Mínimo 3 letras + Máximo 100
+            'name'          => 'required|string|min:3|max:100',
             
-            // Email: Obligatorio + Formato email + Único en la tabla
-            'email'         => 'required|email|unique:users,email',
+            // Email: Obligatorio + Formato email + Único en la tabla + Máximo 150
+            'email'         => 'required|email|max:150|unique:users,email',
             
-            // Password: Obligatorio + Mínimo 6 caracteres
-            'password'      => 'required|string|min:6',
+            // Password: Solo obligatoria si se envía + max 64
+            'password'      => 'nullable|string|min:6|max:64',
             
             // iban: Opcional + Texto + Único + Mínimo 8 caracteres (validez básica)
             'iban'          => 'nullable|string|unique:users,iban|min:8|max:34',
             
-            // Firma: Opcional + Texto + Máximo 255
-            'firma_digital' => 'nullable|string|max:255',
-            'precio_hora'   => 'nullable|numeric|min:0',
+            // Firma: Opcional + Texto + Máximo 1000
+            'firma_digital' => 'nullable|string|max:1000',
+            'precio_hora'   => 'nullable|numeric|min:0|max:9999',
         ], $this->validationMessages());
 
         $user = User::create([
@@ -97,12 +97,12 @@ class UserController extends Controller
     {
         // --- VALIDACIONES AL ACTUALIZAR ---
         $request->validate([
-            'name'          => 'required|string|min:3|max:50',
+            'name'          => 'required|string|min:3|max:100',
             // Ignoramos el ID del usuario actual para que no falle el "unique"
-            'email'         => 'required|email|unique:users,email,' . $user->id,
+            'email'         => 'required|email|max:150|unique:users,email,' . $user->id,
             'iban'          => 'nullable|string|min:8|max:34|unique:users,iban,' . $user->id,
-            'firma_digital' => 'nullable|string|max:255',
-            'precio_hora'   => 'nullable|numeric|min:0',
+            'firma_digital' => 'nullable|string|max:1000',
+            'precio_hora'   => 'nullable|numeric|min:0|max:9999',
         ], $this->validationMessages());
 
         $data = [
@@ -116,7 +116,7 @@ class UserController extends Controller
         // Solo actualizar contraseña si se ha rellenado
         if ($request->filled('password')) {
             $request->validate([
-                'password' => 'string|min:6', // Validamos también aquí
+                'password' => 'string|min:6|max:64', // Validamos también aquí max
             ], $this->validationMessages());
             
             $data['password'] = Hash::make($request->password);
@@ -153,20 +153,148 @@ class UserController extends Controller
 
     public function importClients(Request $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv|max:5120', // Máx 5MB
-        ], [
-            'file.required' => 'Debes seleccionar un archivo Excel o CSV.',
-            'file.mimes'    => 'El archivo debe ser un formato Excel válido (xlsx, xls, csv).',
-            'file.max'      => 'El archivo no puede pesar más de 5MB.',
-        ]);
+        set_time_limit(600);
+        ini_set('memory_limit', '512M');
 
         try {
-            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\ClientImport, $request->file('file'));
-            return response()->json(['message' => 'Clientes importados correctamente.']);
+            $request->validate([
+                'file' => 'required|file'
+            ], [
+                'file.required' => 'Debes seleccionar un archivo.'
+            ]);
+
+            $file = $request->file('file');
+            $path = $file->getRealPath();
+            $content = file_get_contents($path);
+            
+            // Limpiar BOM y caracteres raros
+            $content = str_replace(["\xEF\xBB\xBF", "\x00"], '', $content);
+            
+            // Convertir codificación a UTF-8 si es necesario
+            if (!mb_check_encoding($content, 'UTF-8')) {
+                $content = mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1');
+            }
+            
+            // Separar por líneas
+            $lines = preg_split('/\r\n|\r|\n/', $content);
+            $lines = array_filter($lines, fn($line) => !empty(trim($line)));
+            $lines = array_values($lines);
+
+            if (empty($lines)) {
+                return response()->json(['errors' => ['general' => 'El archivo está vacío.']], 422);
+            }
+
+            // Detectar delimitador y cabeceras
+            $delimiter = null;
+            $headers = [];
+            $headerLineIndex = -1;
+
+            foreach ($lines as $index => $line) {
+                foreach ([',', ';', "\t", '|'] as $d) {
+                    $cols = str_getcsv($line, $d);
+                    $lineClean = mb_strtolower(implode('', $cols));
+                    if (str_contains($lineClean, 'nombre') || str_contains($lineClean, 'centro') || str_contains($lineClean, 'completo')) {
+                        $delimiter = $d;
+                        $headers = array_map(fn($h) => str_replace([' ', '*', '(', ')', '.', ',', '_', '/'], '', mb_strtolower(trim($h))), $cols);
+                        $headerLineIndex = $index;
+                        break 2;
+                    }
+                }
+            }
+
+            if (!$delimiter) {
+                $delimiter = (strpos($lines[0], ';') !== false) ? ';' : ',';
+                $headers = array_map(fn($h) => str_replace([' ', '*', '(', ')', '.', ',', '_', '/'], '', mb_strtolower(trim($h))), str_getcsv($lines[0], $delimiter));
+                $headerLineIndex = 0;
+            }
+
+            $count = 0;
+            $empresa = \App\Models\Empresa::first();
+
+            for ($i = $headerLineIndex + 1; $i < count($lines); $i++) {
+                $data = str_getcsv($lines[$i], $delimiter);
+                $rowData = [];
+                foreach ($headers as $idx => $h) {
+                    if (isset($data[$idx])) $rowData[$h] = trim($data[$idx]);
+                }
+
+                $nombre = null;
+                foreach ($rowData as $key => $val) {
+                    if (str_contains($key, 'nombre') || str_contains($key, 'cliente') || str_contains($key, 'completo')) {
+                        $nombre = $val;
+                        break;
+                    }
+                }
+                
+                if (empty($nombre)) continue;
+
+                $emailRaw = $rowData['email'] ?? $rowData['correo'] ?? null;
+                if (empty($emailRaw) || !filter_var($emailRaw, FILTER_VALIDATE_EMAIL)) {
+                    $email = str_replace(' ', '.', mb_strtolower($nombre)) . '-' . \Illuminate\Support\Str::random(4) . '@factomove.es';
+                } else {
+                    $email = $emailRaw;
+                }
+                
+                $dni = $rowData['dni'] ?? null;
+                if (empty(trim($dni))) $dni = null;
+
+                $centroName = $rowData['centro'] ?? null;
+                $centroId = null;
+                if ($centroName) {
+                    $centro = \App\Models\Centro::firstOrCreate([
+                        'nombre' => $centroName,
+                        'empresa_id' => $empresa ? $empresa->id : null
+                    ]);
+                    $centroId = $centro->id;
+                }
+
+                $userData = [
+                    'name'      => $nombre,
+                    'email'     => $email,
+                    'dni'       => $dni,
+                    'direccion' => $rowData['domicilio'] ?? $rowData['direccion'] ?? $rowData['street'] ?? null,
+                    'centro_id' => $centroId,
+                    'empresa_id' => $empresa ? $empresa->id : null,
+                    'activo'    => false, 
+                    'additional_attributes' => [
+                        'apodo' => $rowData['apodo'] ?? null,
+                        'mv'    => $rowData['mv'] ?? $rowData['movil'] ?? null,
+                        'birthday' => $rowData['cumpleaños'] ?? $rowData['birthday'] ?? null,
+                    ]
+                ];
+
+                $user = User::where('email', $email)->orWhere(function($q) use ($dni) {
+                    if ($dni) $q->where('dni', $dni); else $q->whereRaw('0=1');
+                })->first();
+
+                if ($user) {
+                    $user->update($userData);
+                } else {
+                    $user = User::create($userData + [
+                        'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16))
+                    ]);
+                    $user->assignRole('cliente');
+                }
+                $count++;
+            }
+
+            if (count($lines) > 0 && str_starts_with($lines[0], 'PK')) {
+                return response()->json([
+                    'errors' => ['general' => 'AVISO: Tu archivo es realmente un "Libro de Excel (.xlsx)" aunque la extensión diga .csv. Por favor, ábrelo en Excel y dale a "Guardar como... > CSV (delimitado por comas)" antes de subirlo.']
+                ], 422);
+            }
+
+            if ($count === 0) {
+                return response()->json([
+                    'errors' => ['general' => "DIAGNÓSTICO: 0 filas. Delim: [$delimiter]. Headers: [" . implode(', ', $headers) . "]."]
+                ], 422);
+            }
+
+            return response()->json(['message' => "Se han importado $count clientes con éxito."]);
+
         } catch (\Exception $e) {
-            \Log::error('Error importing clients: ' . $e->getMessage());
-            return response()->json(['errors' => ['file' => ['Hubo un error al procesar el archivo. Asegúrate de que el formato es correcto.']]], 422);
+            \Log::error('Error import: ' . $e->getMessage());
+            return response()->json(['errors' => ['general' => 'Error: ' . $e->getMessage()]], 422);
         }
     }
 
@@ -184,7 +312,7 @@ class UserController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name'  => ['required', 'string', 'min:3', 'max:50'],
+            'name'  => ['required', 'string', 'min:3', 'max:100'],
 
             'iban' => [
                 'nullable', 
@@ -195,10 +323,10 @@ class UserController extends Controller
                 Rule::unique('users', 'iban')->ignore($user->id)
             ],
             'foto_de_perfil' => ['nullable', 'image', 'max:2048'], // Validar imagen (max 2MB)
-            'firma_digital' => ['nullable', 'string', 'max:255'],
+            'firma_digital' => ['nullable', 'string', 'max:500'],
 
-            'current_password' => ['nullable', 'string'],
-            'password'         => ['nullable', 'string', 'min:6', 'confirmed'],
+            'current_password' => ['nullable', 'string', 'max:64'],
+            'password'         => ['nullable', 'string', 'min:6', 'max:64', 'confirmed'],
         ], $this->validationMessages());
 
         $data = [
@@ -250,37 +378,103 @@ class UserController extends Controller
 
     public function sendActivation(User $user)
     {
+        // Generar un token único y establecer su expiración (ahora + 24 horas)
         $user->activation_token = \Illuminate\Support\Str::random(60);
+        $user->activation_token_expires_at = now()->addDay();
         $user->save();
+
+        // Generar la URL de activación
         $url = route('activate.show', ['token' => $user->activation_token]);
+
         try {
-            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\AccountActivationMail($user, $url));
+            // Usar la mailable ActivationEmail recientemente creada
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ActivationEmail($user, $url));
+            
             return response()->json(['message' => 'Correo de activación enviado correctamente.']);
         } catch (\Exception $e) {
             \Log::error('Error sending activation mail: ' . $e->getMessage());
-            return response()->json(['message' => 'Error al enviar el correo.'], 500);
+            return response()->json([
+                'message' => 'Error al enviar el correo: ' . $e->getMessage()
+            ], 500);
         }
+    }
+
+    public function bulkSendActivation(Request $request)
+    {
+        $request->validate([
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:users,id',
+        ]);
+
+        $users = User::whereIn('id', $request->user_ids)->get();
+        $sentCount = 0;
+        $errorCount = 0;
+
+        foreach ($users as $user) {
+            $user->activation_token = \Illuminate\Support\Str::random(60);
+            $user->activation_token_expires_at = now()->addDay();
+            $user->save();
+            $url = route('activate.show', ['token' => $user->activation_token]);
+            try {
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\ActivationEmail($user, $url));
+                $sentCount++;
+            } catch (\Exception $e) {
+                \Log::error('Error sending bulk activation mail for user ' . $user->id . ': ' . $e->getMessage());
+                $errorCount++;
+            }
+        }
+
+        return response()->json([
+            'message' => "Correos enviados: $sentCount. Errores: $errorCount."
+        ]);
     }
 
     public function showActivationForm($token)
     {
-        $user = User::where('activation_token', $token)->first();
-        if (!$user) return redirect('/login')->with('error', 'Token no válido.');
+        // Buscar al usuario por el token y verificar que no haya expirado
+        $user = User::where('activation_token', $token)
+            ->where('activation_token_expires_at', '>', now())
+            ->first();
+
+        if (!$user) {
+            return redirect('/login')->with('error', 'El enlace de activación es inválido o ha expirado.');
+        }
+
+        // Simplemente devolvemos la vista de React (app)
         return view('app');
     }
 
     public function activate(Request $request, $token)
     {
-        $user = User::where('activation_token', $token)->first();
-        if (!$user) return response()->json(['message' => 'Token no válido.'], 422);
-        $request->validate(['password' => 'required|min:6|confirmed']);
+        // Buscar el usuario y validar vigencia del token
+        $user = User::where('activation_token', $token)
+            ->where('activation_token_expires_at', '>', now())
+            ->first();
+
+        if (!$user) {
+            return response()->json(['errors' => ['general' => 'El enlace ha expirado o no es válido.']], 422);
+        }
+
+        // Validación de contraseña
+        $request->validate([
+            'password' => 'required|string|min:6|max:64|confirmed'
+        ], [
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 6 caracteres.',
+            'password.max' => 'La contraseña es excesivamente larga.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+        ]);
+
+        // Actualizar contraseña, activar cuenta y limpiar token
         $user->update([
-            'password' => Hash::make($request->password),
+            'password' => \Illuminate\Support\Facades\Hash::make($request->password),
             'activo' => true,
             'activation_token' => null,
+            'activation_token_expires_at' => null,
             'email_verified_at' => now(),
         ]);
-        return response()->json(['message' => 'Cuenta activada correctamente.']);
+
+        return response()->json(['message' => 'Cuenta activada correctamente. Ya puedes iniciar sesión.']);
     }
 
 }

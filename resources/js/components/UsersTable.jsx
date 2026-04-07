@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loading, onUpdate }) {
+export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loading, onUpdate, selectedIds = [], onSelectUser, onSelectAll, onAlert }) {
   const [sendingId, setSendingId] = useState(null);
 
   const handleSendActivation = async (user) => {
     setSendingId(user.id);
     try {
       await axios.post(`/users/${user.id}/send-activation`);
-      alert('Correo de activación enviado correctamente a ' + user.email);
+      if (onAlert) onAlert('Correo de activación enviado correctamente a ' + user.email, false, 'Enviado');
+      else alert('Correo de activación enviado correctamente a ' + user.email);
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error(error);
-      alert('Error al enviar el correo de activación.');
+      const msg = error.response?.data?.message || 'Error al enviar el correo de activación.';
+      alert(msg);
     } finally {
       setSendingId(null);
     }
@@ -34,9 +36,16 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
       <table className="facto-table w-full border-separate border-spacing-y-2 px-4">
         <thead>
           <tr className="text-slate-400">
+            <th className="text-left px-4 py-4 w-12">
+              <input 
+                type="checkbox" 
+                onChange={onSelectAll} 
+                checked={users.length > 0 && users.every(u => selectedIds.includes(u.id))}
+                className="w-4 h-4 text-[#38C1A3] bg-slate-100 border-slate-300 rounded focus:ring-[#38C1A3] focus:ring-2 cursor-pointer"
+              />
+            </th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Cliente</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Contacto</th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Clasificación</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">IBAN / Identificación</th>
             <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Saldo / Suscripciones</th>
             <th className="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Acciones</th>
@@ -46,7 +55,15 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
           {users.length > 0 ? (
             users.map((user) => (
               <tr key={user.id} className="bg-white hover:bg-slate-50 transition-all duration-300 group shadow-sm hover:shadow-md rounded-2xl overflow-hidden">
-                <td className="px-6 py-5 first:rounded-l-2xl" data-label="Cliente">
+                <td className="px-4 py-5 first:rounded-l-2xl">
+                  <input 
+                    type="checkbox"
+                    checked={selectedIds.includes(user.id)}
+                    onChange={() => onSelectUser(user.id)}
+                    className="w-4 h-4 text-[#38C1A3] bg-slate-100 border-slate-300 rounded focus:ring-[#38C1A3] focus:ring-2 cursor-pointer"
+                  />
+                </td>
+                <td className="px-6 py-5" data-label="Cliente">
                   <div className="flex items-center gap-4">
                     <div className="relative">
                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#38C1A3] to-[#2D9B82] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-100 group-hover:scale-110 transition-transform duration-300">
@@ -71,30 +88,18 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-5" data-label="Clasificación">
-                  <div className="flex flex-col gap-1">
-                    {user.empresa && (
-                        <div className="flex items-center gap-2">
-                            <span className="bg-indigo-50 text-indigo-700 text-[10px] font-black px-2.5 py-1 rounded-lg border border-indigo-100 uppercase tracking-tighter">
-                                {user.empresa.nombre}
-                            </span>
-                        </div>
-                    )}
-                    {user.centro && (
-                        <div className="flex items-center gap-1.5 text-slate-400">
-                            <i className="fa-solid fa-building text-[9px]"></i>
-                            <span className="text-[10px] font-bold uppercase">{user.centro.nombre}</span>
-                        </div>
-                    )}
-                    {!user.empresa && !user.centro && (
-                        <span className="text-[10px] text-slate-300 font-bold italic">SIN CLASIFICAR</span>
-                    )}
-                  </div>
-                </td>
                 <td className="px-6 py-5" data-label="Contacto">
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-slate-600 group-hover:text-slate-900 transition-colors uppercase tracking-tight">{user.email}</span>
-                    <span className="text-[10px] text-slate-400 font-medium">Registrado el {new Date(user.created_at).toLocaleDateString()}</span>
+                    <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold transition-colors uppercase tracking-tight ${user.email && user.email.includes('factomove.es') ? 'text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100 flex items-center gap-1.5' : 'text-slate-600 group-hover:text-slate-900 line-clamp-1 max-w-[15ch]'}`}>
+                            {user.email && user.email.includes('factomove.es') && <i className="fa-solid fa-triangle-exclamation text-[10px] animate-pulse"></i>}
+                            {user.email}
+                        </span>
+                        {user.email && user.email.includes('factomove.es') && (
+                            <span className="text-[8px] font-black bg-amber-500 text-white px-1.5 py-0.5 rounded-md tracking-tighter uppercase">Prov.</span>
+                        )}
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">Registrado {new Date(user.created_at).toLocaleDateString()}</span>
                   </div>
                 </td>
                 <td className="px-6 py-5" data-label="IBAN">

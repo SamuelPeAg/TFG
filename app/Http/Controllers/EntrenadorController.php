@@ -27,7 +27,7 @@ class EntrenadorController extends Controller
     {
         $request->validate([
             'nombre' => ['required', 'string', 'min:3', 'max:50'],
-            'email' => ['required', 'email', 'max:191', 'unique:users,email'],
+            'email' => ['required', 'email', 'max:191', 'unique:entrenadores,email'],
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'nombre.min' => 'El nombre debe tener al menos 3 caracteres.',
@@ -48,8 +48,13 @@ class EntrenadorController extends Controller
 
 
 
-        // Enviar el email con el enlace de activación
-        Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+        try {
+             // Enviar el email con el enlace de activación
+            Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
+        } catch (\Exception $e) {
+            \Log::error('Error sending trainer mail: ' . $e->getMessage());
+            return response()->json(['message' => 'Error al enviar el correo: ' . $e->getMessage()], 500);
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['message' => 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.', 'user' => $user], 201);
@@ -63,11 +68,12 @@ class EntrenadorController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'password' => 'nullable|confirmed|min:8',
+            'password' => 'nullable|confirmed|min:8|max:64',
             'iban' => 'nullable|string|min:8|max:34',
         ], [
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña de seguridad no debe exceder 64 caracteres.',
             'iban.max' => 'El IBAN no puede tener más de 34 caracteres.',
             'iban.min' => 'El IBAN debe tener al menos 8 caracteres.',
         ]);
@@ -116,6 +122,17 @@ class EntrenadorController extends Controller
 
 
 
+
+    public function showActivationForm($token)
+    {
+        $user = Entrenador::where('activation_token', $token)->first();
+
+        if (!$user) {
+            return redirect('/login')->with('error', 'El enlace de activación es inválido o ha expirado.');
+        }
+
+        return view('app');
+    }
 
     public function completeActivation(Request $request, $id)
     {

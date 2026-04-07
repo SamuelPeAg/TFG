@@ -18,6 +18,10 @@ return new class extends Migration
             $table->string('dni')->nullable()->unique();
             $table->string('foto_de_perfil')->nullable();
             
+            // Estado / Activación
+            $table->boolean('activo')->default(false);
+            $table->string('activation_token')->nullable()->unique();
+
             // Datos laborales/Staff
             $table->string('iban')->nullable()->unique();
             $table->decimal('precio_hora', 10, 2)->default(0);

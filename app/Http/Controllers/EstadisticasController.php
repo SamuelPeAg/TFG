@@ -20,6 +20,7 @@ class EstadisticasController extends Controller
 
     public function data(Request $request)
     {
+        try {
         // 1. KPIs Generales
             $totalClientes = 0;
             try {
@@ -46,30 +47,37 @@ class EstadisticasController extends Controller
 
             // 2. Gráfico de Ingresos (Últimos 6 meses)
             $ingresos6Meses = [];
+            $mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             for ($i = 5; $i >= 0; $i--) {
                 $mes = Carbon::now()->subMonths($i);
-                $total = Pago::whereYear('fecha_registro', $mes->year)
-                            ->whereMonth('fecha_registro', $mes->month)
-                            ->sum('importe');
-                
-                $mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];    
+                $total = 0;
+                try {
+                    $total = Pago::whereYear('fecha_registro', $mes->year)
+                                ->whereMonth('fecha_registro', $mes->month)
+                                ->sum('importe');
+                } catch (\Exception $e) { \Log::error("Error ingresos mes: " . $e->getMessage()); }
                 $ingresos6Meses[] = [
-                    'mes' => $mesesNombres[$mes->month - 1] . " " . $mes->format('y'),
+                    'mes'   => $mesesNombres[$mes->month - 1] . ' ' . $mes->format('y'),
                     'total' => $total
                 ];
             }
 
             // 3. Clases populares (Doughnut)
-            $clasesPopulares = DB::table('horarios_clases')
-                ->join('clases', 'horarios_clases.clase_id', '=', 'clases.id')
-                ->selectRaw('clases.nombre as nombre_clase, COUNT(horarios_clases.id) as total')
-                ->groupBy('clases.nombre')
-                ->orderByDesc('total')
-                ->limit(5)
-                ->get();
+            $clasesPopulares = collect();
+            try {
+                $clasesPopulares = DB::table('horarios_clases')
+                    ->join('clases', 'horarios_clases.clase_id', '=', 'clases.id')
+                    ->selectRaw('clases.nombre as nombre_clase, COUNT(horarios_clases.id) as total')
+                    ->groupBy('clases.nombre')
+                    ->orderByDesc('total')
+                    ->limit(5)
+                    ->get();
+            } catch (\Exception $e) { \Log::error("Error clasesPopulares: " . $e->getMessage()); }
 
             // 4. Sesiones por Centro (Bar)
             $centros = Centro::all();
+            
+            // 4. Sesiones por Centro (Bar)
             $sesionesPorCentro = $centros->map(function ($centro) {
                 return [
                     'centro' => $centro->nombre,
@@ -77,7 +85,7 @@ class EstadisticasController extends Controller
                 ];
             });
 
-            // 5. Clientes por Centro (Breakdown for new metrics)
+            // 5. Clientes por Centro
             $clientesPorCentro = $centros->map(function ($centro) {
                 return [
                     'centro' => $centro->nombre,
@@ -85,7 +93,7 @@ class EstadisticasController extends Controller
                 ];
             });
 
-            // 6. Ingresos por Centro (Breakdown for new metrics)
+            // 6. Ingresos por Centro
             $ingresosPorCentro = $centros->map(function ($centro) {
                 return [
                     'centro' => $centro->nombre,
@@ -108,22 +116,33 @@ class EstadisticasController extends Controller
                     ];
                 });
 
+            $empresas = collect();
+            try { $empresas = Empresa::all(); } catch (\Exception $e) { \Log::error("Error empresas: " . $e->getMessage()); }
+
+            $centrosList = collect();
+            try { $centrosList = Centro::with('empresa')->get(); } catch (\Exception $e) { \Log::error("Error centrosList: " . $e->getMessage()); }
+
             return response()->json([
                 'kpis' => [
-                    'totalClientes' => $totalClientes,
+                    'totalClientes'     => $totalClientes,
                     'totalEntrenadores' => $totalEntrenadores,
-                    'ingresosMes' => $ingresosMes,
-                    'sesionesMes' => $sesionesMesCount
+                    'ingresosMes'       => $ingresosMes,
+                    'sesionesMes'       => $sesionesMesCount
                 ],
-                'ingresos6Meses' => $ingresos6Meses,
+                'ingresos6Meses'    => $ingresos6Meses,
                 'popularidadClases' => $clasesPopulares,
                 'sesionesPorCentro' => $sesionesPorCentro,
                 'clientesPorCentro' => $clientesPorCentro,
                 'ingresosPorCentro' => $ingresosPorCentro,
-                'ultimosPagos' => $ultimosPagos,
-                'empresas' => Empresa::all(),
-                'centros_list' => Centro::with('empresa')->get()
+                'ultimosPagos'      => $ultimosPagos,
+                'empresas'          => $empresas,
+                'centros_list'      => $centrosList
             ]);
+
+        } catch (\Exception $e) {
+            \Log::error('EstadisticasController@data FATAL: ' . $e->getMessage() . ' en ' . $e->getFile() . ':' . $e->getLine());
+            return response()->json(['error' => 'Error interno al cargar estadísticas.'], 500);
+        }
     }
 
     // Gestion de Empresas

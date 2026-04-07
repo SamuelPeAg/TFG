@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import AlertModal from '../components/AlertModal';
 
 export default function MiFicha() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -8,11 +9,15 @@ export default function MiFicha() {
   const [profileData, setProfileData] = useState(null);
   const [files, setFiles] = useState([]);
   const [subscriptions, setSubscriptions] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-    const [isEditingContact, setIsEditingContact] = useState(false);
+    const [sessions, setSessions] = useState([]);
     const [submittingFile, setSubmittingFile] = useState(false);
     const [savingContact, setSavingContact] = useState(false);
+    
+    // Alert Setup
+    const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+    const showAlert = (message, isError = false, title = isError ? "Error" : "Aviso") => {
+        setAlertConfig({ isOpen: true, title, message, isError });
+    };
 
     useEffect(() => {
         if (user) fetchFicha();
@@ -20,10 +25,11 @@ export default function MiFicha() {
 
     const fetchFicha = async () => {
         try {
-            const res = await axios.get(`client-profile/${user.id}`);
+            const res = await axios.get(`/client-profile/${user.id}`);
             setProfileData(res.data.user);
             setFiles(res.data.files);
             setSubscriptions(res.data.subscriptions || []);
+            setSessions(res.data.sessions || []);
         } catch (error) {
             console.error("Error fetching ficha:", error);
         } finally {
@@ -35,7 +41,7 @@ export default function MiFicha() {
         e.preventDefault();
         setSavingContact(true);
         try {
-            await axios.put(`client-profile/${user.id}`, {
+            await axios.put(`/client-profile/${user.id}`, {
                 dni: profileData.dni,
                 direccion: profileData.direccion,
                 codigo_postal: profileData.codigo_postal,
@@ -44,7 +50,13 @@ export default function MiFicha() {
             setIsEditingContact(false);
             fetchFicha();
         } catch (error) {
-            alert("Error al actualizar información");
+            console.error("Error updating contact:", error);
+            const serverMsg = error.response?.data?.message || error.response?.data?.errors?.dni?.[0];
+            showAlert(
+                serverMsg || "No se pudo actualizar la información. El texto puede ser demasiado largo o el formato inválido.", 
+                true, 
+                "Error de Validación"
+            );
         } finally {
             setSavingContact(false);
         }
@@ -59,12 +71,12 @@ export default function MiFicha() {
         formData.append('file', file);
 
         try {
-            await axios.post(`client-profile/${user.id}/upload`, formData, {
+            await axios.post(`/client-profile/${user.id}/upload`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             fetchFicha();
         } catch (error) {
-            alert("Error al subir el archivo");
+            showAlert("Hubo un problema al subir tu archivo. Verifica el tamaño (máx 10MB) y el formato.", true);
         } finally {
             setSubmittingFile(false);
         }
@@ -120,6 +132,7 @@ export default function MiFicha() {
                                                 value={profileData?.dni || ''} 
                                                 onChange={(e) => setProfileData({...profileData, dni: e.target.value})}
                                                 placeholder="DNI / NIE"
+                                                maxLength={20}
                                                 className="w-full text-center mt-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold uppercase focus:border-indigo-400 outline-none"
                                             />
                                         ) : (
@@ -137,6 +150,7 @@ export default function MiFicha() {
                                                         type="text" 
                                                         value={profileData?.direccion || ''} 
                                                         onChange={(e) => setProfileData({...profileData, direccion: e.target.value})}
+                                                        maxLength={200}
                                                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                     />
                                                 </div>
@@ -147,6 +161,7 @@ export default function MiFicha() {
                                                             type="text" 
                                                             value={profileData?.ciudad || ''} 
                                                             onChange={(e) => setProfileData({...profileData, ciudad: e.target.value})}
+                                                            maxLength={100}
                                                             className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                         />
                                                     </div>
@@ -156,6 +171,7 @@ export default function MiFicha() {
                                                             type="text" 
                                                             value={profileData?.codigo_postal || ''} 
                                                             onChange={(e) => setProfileData({...profileData, codigo_postal: e.target.value})}
+                                                            maxLength={10}
                                                             className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                         />
                                                     </div>
@@ -174,9 +190,9 @@ export default function MiFicha() {
                                                     <i className="fa-solid fa-envelope text-slate-300 w-5"></i>
                                                     <span className="text-slate-600 font-medium truncate">{user.email}</span>
                                                 </div>
-                                                <div className="flex items-center gap-3 text-sm">
-                                                    <i className="fa-solid fa-location-dot text-slate-300 w-5"></i>
-                                                    <span className="text-slate-600 font-medium leading-tight">{profileData?.direccion || '---'}, {profileData?.ciudad || ''}</span>
+                                                <div className="flex items-start gap-3 text-sm">
+                                                    <i className="fa-solid fa-location-dot text-slate-300 w-5 mt-0.5 shrink-0"></i>
+                                                    <span className="text-slate-600 font-medium leading-tight break-words min-w-0">{profileData?.direccion || '---'}{profileData?.ciudad ? `, ${profileData.ciudad}` : ''}</span>
                                                 </div>
                                                 <div className="flex items-center gap-3 text-sm">
                                                     <i className="fa-solid fa-truck-ramp-box text-slate-300 w-5"></i>
@@ -251,6 +267,36 @@ export default function MiFicha() {
                                             </div>
                                         )}
                                     </div>
+                                </div>
+
+                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mis Sesiones</h3>
+                                        <span className="text-[9px] uppercase tracking-widest text-slate-500">{sessions.length} sesiones</span>
+                                    </div>
+                                    {sessions.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {sessions.map((session) => (
+                                                <div key={session.id} className="p-4 rounded-3xl border border-slate-100 bg-slate-50">
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-800">{session.nombre_clase}</p>
+                                                            <p className="text-[11px] text-slate-500 mt-1">{new Date(session.fecha_registro).toLocaleString()}</p>
+                                                        </div>
+                                                        <span className="text-[10px] uppercase tracking-widest text-slate-500">{session.tipo_clase}</span>
+                                                    </div>
+                                                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-600">
+                                                        <div><strong className="font-bold text-slate-700">Centro:</strong> {session.centro}</div>
+                                                        <div><strong className="font-bold text-slate-700">Entrenador:</strong> {session.entrenadores.join(', ') || 'Pendiente'}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-5 text-center text-slate-400 text-xs font-medium">
+                                            No tienes sesiones reservadas todavía.
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Atributos */}
@@ -333,6 +379,14 @@ export default function MiFicha() {
                 )}
             </div>
         </main>
+
+        <AlertModal 
+            isOpen={alertConfig.isOpen}
+            onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+            title={alertConfig.title}
+            message={alertConfig.message}
+            isError={alertConfig.isError}
+        />
     </div>
   );
 }

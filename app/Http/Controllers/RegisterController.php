@@ -38,6 +38,7 @@ class RegisterController extends Controller
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
+            'activo'   => true, // Marcamos como activo porque se registra el mismo con contraseña
         ]);
 
         // Asegurar que el usuario se registra como 'cliente'

@@ -78,6 +78,8 @@ Route::post('/contacto/enviar', function (Request $request) {
 
 
 
+Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'showActivationForm'])
+    ->name('entrenadores.activar');
 Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'completeActivation'])
     ->name('entrenadores.complete');
 
@@ -197,6 +199,7 @@ Route::middleware('auth:web,staff')->group(function () {
 
         Route::post('/users/import', [UserController::class, 'importClients'])->name('users.import');
         Route::post('/users/{user}/send-activation', [UserController::class, 'sendActivation'])->name('users.send-activation');
+        Route::post('/users/bulk-send-activation', [UserController::class, 'bulkSendActivation'])->name('users.bulk-send-activation');
 
         // Ficha de Cliente y Archivos (Historia Clínica / Notas) - Escritura y gestión de archivos solo staff
         Route::prefix('client-profile')->group(function() {
@@ -242,6 +245,7 @@ Route::middleware('auth:web,staff')->group(function () {
         // Acciones Avanzadas de Pagos (Solo Admin)
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
         Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
+        Route::post('/Pagos/update-session', [PagosController::class, 'updateSession'])->name('Pagos.updateSession');
 
         // Gestión entrenadores (solo admin)
         // Gestión entrenadores (solo admin)
@@ -256,4 +260,9 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::get('/admin/nominas/calcular/{user_id}', [NominaAdminController::class, 'calcularNomina'])->name('admin.nominas.calcular');
     });
 
+});
+
+// Fallback para React Router (SPA)
+Route::fallback(function () {
+    return view('app');
 });

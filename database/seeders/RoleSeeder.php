@@ -28,6 +28,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'admin',
                 'password' => Hash::make('password'),
+                'activo' => true,
                 'deleted_at' => null,
             ]
         );
@@ -38,6 +39,7 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'javi',
                 'password' => Hash::make('password'),
+                'activo' => true,
                 'deleted_at' => null,
             ]
         );
@@ -48,20 +50,29 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'entrenador',
                 'password' => Hash::make('password'),
+                'activo' => true,
                 'deleted_at' => null,
             ]
         );
         $entrenador->syncRoles(["entrenador"]);
 
-        $cliente = User::withTrashed()->updateOrCreate(
+        $cliente = User::updateOrCreate(
             ['email' => 'cliente@factomove'],
             [
                 'name' => 'cliente',
                 'password' => Hash::make('password'),
-                'deleted_at' => null,
+                'activo' => true,
             ]
         );
         $cliente->syncRoles(['cliente']);
-        $cliente->restore();
+
+        $cliente2 = User::updateOrCreate(
+            ['email' => 'spa0004@alu.medac.es'],
+            [
+                'name' => 'Samuel',
+                'activo' => true,
+            ]
+        );
+        $cliente2->syncRoles(['cliente']);
     }
 }
