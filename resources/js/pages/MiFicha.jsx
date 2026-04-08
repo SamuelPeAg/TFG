@@ -294,7 +294,9 @@ export default function MiFicha() {
                                                     if (subUser.suscripcion?.periodo === 'semanal') {
                                                         last.setDate(last.getDate() + 7);
                                                     } else {
-                                                        last.setMonth(last.getMonth() + (subUser.suscripcion?.meses_reset || 1));
+                                                        const mReset = subUser.suscripcion?.meses_reset;
+                                                        const monthsToAdd = mReset === 15 ? 1 : (mReset || 1);
+                                                        last.setMonth(last.getMonth() + monthsToAdd);
                                                     }
                                                     return last.toLocaleDateString();
                                                 };

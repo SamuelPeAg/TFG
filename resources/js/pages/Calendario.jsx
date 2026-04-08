@@ -196,92 +196,96 @@ export default function Calendario() {
             </div>
           </div>
 
-          {!loading && data && (
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-              {/* Filtro Centro */}
-              <div className="search-box">
-                <i className="fa-solid fa-house-medical"></i>
-                <div className="search-anchor">
-                  <select 
-                    id="filter-center" 
-                    className="modern-select-no-border" 
-                    style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', cursor: 'pointer', color: '#374151', fontSize: '14px', appearance: 'none' }}
-                    value={centroFiltro}
-                    onChange={(e) => {
-                       setCentroFiltro(e.target.value);
-                    }}
-                  >
-                    <option value="">Todos los centros</option>
-                    {data.centros?.map(centro => (
-                      <option key={centro.id} value={centro.nombre}>{centro.nombre}</option>
-                    ))}
-                  </select>
-                  <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
-                </div>
-              </div>
-
-              {/* Búsqueda Cliente */}
-              <div className="search-box">
-                <i className="fa-solid fa-magnifying-glass"></i>
-                <div className="search-anchor">
-                  <input 
-                    type="text" 
-                    id="search-user" 
-                    placeholder="Buscar usuario..." 
-                    autoComplete="off" 
-                    value={userFiltro}
-                    onChange={(e) => setUserFiltro(e.target.value)}
-                  />
-                  <div id="search_user_suggestions" className="suggestions" hidden></div>
-                </div>
-              </div>
-
-              {/* Botón TOGGLE */}
-              <div className="flex bg-slate-100 p-1 rounded-xl">
-                <button
-                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-white shadow text-[#4BB7AE]' : 'text-slate-500 hover:text-slate-700'}`}
-                  onClick={() => setViewMode('calendar')}
-                >
-                  <i className="fa-solid fa-calendar-days"></i><span className="hidden sm:inline">Calendario</span>
-                </button>
-                <button
-                  className={`px-3 py-2 text-xs font-bold rounded-lg transition-colors flex items-center gap-2 ${viewMode === 'cards' ? 'bg-white shadow text-[#4BB7AE]' : 'text-slate-500 hover:text-slate-700'}`}
-                  onClick={() => setViewMode('cards')}
-                >
-                  <i className="fa-solid fa-table-cells-large"></i><span className="hidden sm:inline">Tarjetas</span>
-                </button>
-              </div>
-
-              {(user?.role === 'admin' || (user?.role === 'entrenador' && user?.permissions?.includes('crear_clases'))) && (
-                  <Button 
-                    variant="primary"
-                    icon="fa-solid fa-plus"
-                    className="btn-design"
-                    onClick={() => {
-                       setSelectedDateForNewClass(null);
-                       setIsCrearModalOpen(true);
-                    }}
-                  >
-                    NUEVA CLASE
-                  </Button>
-              )}
-            </div>
+          {!loading && data && (user?.role === 'admin' || (user?.role === 'entrenador' && user?.permissions?.includes('crear_clases'))) && (
+              <Button 
+                variant="primary"
+                icon="fa-solid fa-plus"
+                className="btn-design"
+                onClick={() => {
+                   setSelectedDateForNewClass(null);
+                   setIsCrearModalOpen(true);
+                }}
+              >
+                NUEVA CLASE
+              </Button>
           )}
         </header>
 
         {/* Calendar Body */}
-        <section className={`flex-1 overflow-auto p-4 sm:p-6 ${viewMode === 'calendar' ? 'bg-slate-50/50' : 'bg-transparent'}`}>
-         <div className={`${viewMode === 'calendar' ? 'bg-white rounded-2xl shadow-sm border border-slate-100 p-2 sm:p-4 min-h-[500px] flex flex-col' : 'hidden'}`}>
+        <section className={`flex-1 overflow-auto p-4 sm:p-6 pb-10 ${viewMode === 'calendar' ? 'bg-slate-50/50' : 'bg-transparent'}`}>
+         
+         {!loading && data && (
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                {/* Filtro Centro */}
+                <div className="search-box !bg-white !shadow-sm !border-slate-100">
+                  <i className="fa-solid fa-house-medical"></i>
+                  <div className="search-anchor">
+                    <select 
+                      id="filter-center" 
+                      className="modern-select-no-border" 
+                      style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', cursor: 'pointer', color: '#374151', fontSize: '14px', appearance: 'none' }}
+                      value={centroFiltro}
+                      onChange={(e) => {
+                         setCentroFiltro(e.target.value);
+                      }}
+                    >
+                      <option value="">Todos los centros</option>
+                      {data.centros?.map(centro => (
+                        <option key={centro.id} value={centro.nombre}>{centro.nombre}</option>
+                      ))}
+                    </select>
+                    <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
+                  </div>
+                </div>
+
+                {/* Búsqueda Cliente */}
+                <div className="search-box !bg-white !shadow-sm !border-slate-100">
+                  <i className="fa-solid fa-magnifying-glass"></i>
+                  <div className="search-anchor">
+                    <input 
+                      type="text" 
+                      id="search-user" 
+                      placeholder="Buscar usuario..." 
+                      autoComplete="off" 
+                      value={userFiltro}
+                      onChange={(e) => setUserFiltro(e.target.value)}
+                    />
+                    <div id="search_user_suggestions" className="suggestions" hidden></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón TOGGLE */}
+              <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-100">
+                <button
+                  className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                  onClick={() => setViewMode('calendar')}
+                >
+                  <i className="fa-solid fa-calendar-days"></i><span>Calendario</span>
+                </button>
+                <button
+                  className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 ${viewMode === 'cards' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                  onClick={() => setViewMode('cards')}
+                >
+                  <i className="fa-solid fa-table-cells-large"></i><span>Tarjetas</span>
+                </button>
+              </div>
+            </div>
+         )}
+
+         <div className={`${viewMode === 'calendar' ? 'bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100/50 p-4 sm:p-8 min-h-[600px] flex flex-col' : 'hidden'}`}>
             {loading ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-3">
-                <i className="fa-solid fa-spinner fa-spin text-3xl text-teal-500"></i>
-                <p className="font-medium animate-pulse">Cargando calendario...</p>
+              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-4">
+                <div className="w-12 h-12 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin"></div>
+                <p className="font-bold text-xs uppercase tracking-[0.2em] animate-pulse text-slate-400">Cargando planificación...</p>
               </div>
             ) : (
               <>
                 <div id="fullCalendarEl" className="flex-1"></div>
-                <div id="calendar-summary" className="mt-4 p-4 rounded-xl bg-teal-50 text-teal-800 text-sm font-medium flex items-center justify-center gap-2 border border-teal-100">
-                  <i className="fa-solid fa-circle-info text-teal-500"></i> Haz clic en el calendario para añadir una clase o selecciona una existente.
+                <div id="calendar-summary" className="mt-8 p-5 rounded-2xl bg-slate-50 text-slate-600 text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-3 border border-slate-100">
+                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-pulse"></div>
+                  Haz clic en el calendario para añadir una clase o selecciona una existente para gestionar.
                 </div>
               </>
             )}

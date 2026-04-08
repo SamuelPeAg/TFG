@@ -45,11 +45,11 @@ export default function Header() {
                       <img src={user.photo} alt="Avatar" className="w-7 h-7 lg:w-8 lg:h-8 rounded-full object-cover border border-gray-200" />
                     ) : (
                       <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-xs lg:text-sm">
-                        {user.name.charAt(0).toUpperCase()}
+                        {user.name.trim().charAt(0).toUpperCase()}
                       </div>
                     )}
                     <span className="text-xs lg:text-sm font-bold text-gray-700 dark:text-gray-200 hidden lg:block">
-                      Hola, {user.name.split(' ')[0]}
+                      Hola, {user.name.trim().split(' ')[0]}
                     </span>
                   </div>
                   <Link to="/calendario" className="bg-[#38C1A3] hover:bg-teal-500 text-white px-3 lg:px-5 py-2 lg:py-2.5 rounded-full font-bold text-sm transition shadow-md hover:shadow-lg whitespace-nowrap">
@@ -109,11 +109,11 @@ export default function Header() {
                       <img src={user.photo} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
                     ) : (
                       <div className="w-8 h-8 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-sm">
-                        {user.name.charAt(0).toUpperCase()}
+                        {user.name.trim().charAt(0).toUpperCase()}
                       </div>
                     )}
                     <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
-                      Hola, {user.name.split(' ')[0]}
+                      Hola, {user.name.trim().split(' ')[0]}
                     </span>
                   </div>
                   <Link 

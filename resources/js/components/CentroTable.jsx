@@ -48,7 +48,7 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
 
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                    <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                    <thead className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-50">
                         <tr>
                             <th className="pb-3 px-2">Centro</th>
                             <th className="pb-3 px-2">CIF/NIF</th>

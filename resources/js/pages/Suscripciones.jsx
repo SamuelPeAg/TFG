@@ -6,6 +6,7 @@ import Button from '../components/Button';
 const TIPOS_PERMITIDOS = ['ep', 'duo', 'trio', 'privado', 'grupo especial', 'grupo'];
 const METROS_RESET = [
     { value: 1, label: '1 Mes (Solo el mes actual)' },
+    { value: 15, label: '1 Mes desde que se entregan los créditos' },
     { value: 2, label: '2 Meses' },
     { value: 3, label: '3 Meses' },
     { value: 6, label: '6 Meses' },
@@ -269,7 +270,7 @@ export default function Suscripciones() {
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left facto-table">
-                                    <thead className="bg-slate-50 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                                    <thead className="bg-slate-50 text-[11px] font-black uppercase tracking-widest text-slate-900 border-b border-slate-100">
                                         <tr>
                                             <th className="px-6 py-4">Nombre</th>
                                             <th className="px-6 py-4">Tipo Clase</th>

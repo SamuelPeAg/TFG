@@ -52,7 +52,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
     { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice' },
-    { name: 'NOMINAS-ADMIN', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice' },
+    { name: 'NOMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt' },
   ];
 
@@ -60,7 +60,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
     { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_facturacion' },
-    { name: 'NOMINAS-ADMIN', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_nominas_admin' },
+    { name: 'NOMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_nominas_admin' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt', permission: 'acceder_suscripciones' },
     { name: 'MIS NOMINAS', path: '/mis-nominas', icon: 'fa-solid fa-file-invoice' },
   ];
@@ -109,7 +109,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                 }}
               />
             ) : (
-              <span className="text-[#38C1A3]">{user.name.charAt(0).toUpperCase()}</span>
+              <span className="text-[#38C1A3]">{user.name.trim().charAt(0).toUpperCase()}</span>
             )}
           </div>
           <div className="flex flex-col overflow-hidden min-w-0">

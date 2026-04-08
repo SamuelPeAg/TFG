@@ -35,7 +35,7 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
     <div className="table-container bg-transparent overflow-hidden">
       <table className="facto-table w-full border-separate border-spacing-y-2 px-4">
         <thead>
-          <tr className="text-slate-400">
+          <tr className="text-slate-900">
             <th className="text-left px-4 py-4 w-12">
               <input 
                 type="checkbox" 
@@ -44,11 +44,11 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                 className="w-4 h-4 text-[#38C1A3] bg-slate-100 border-slate-300 rounded focus:ring-[#38C1A3] focus:ring-2 cursor-pointer"
               />
             </th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Cliente</th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Contacto</th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">IBAN / Identificación</th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Saldo / Suscripciones</th>
-            <th className="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest opacity-50">Acciones</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest">Cliente</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest">Contacto</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest">IBAN / Identificación</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest">Saldo / Suscripciones</th>
+            <th className="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest">Acciones</th>
           </tr>
         </thead>
         <tbody className="space-y-2">
@@ -66,19 +66,25 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                 <td className="px-6 py-5" data-label="Cliente">
                   <div className="flex items-center gap-4">
                     <div className="relative">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#38C1A3] to-[#2D9B82] flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-100 group-hover:scale-110 transition-transform duration-300">
-                        {user.foto_de_perfil ? (
+                        <div 
+                          className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-teal-100/50 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 overflow-hidden relative"
+                          style={{ background: 'linear-gradient(135deg, #38C1A3, #2D9B82)', minWidth: '3rem' }}
+                        >
+                          {user.foto_de_perfil ? (
                             <img 
-                            src={`/storage/${user.foto_de_perfil}`} 
-                            alt={user.name}
-                            className="w-full h-full object-cover rounded-2xl"
-                            onError={(e) => e.target.style.display = 'none'}
+                              src={`/storage/${user.foto_de_perfil}`} 
+                              alt={user.name}
+                              className="w-full h-full object-cover absolute inset-0 z-10"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
                             />
-                        ) : (
-                            <span>{user.name.charAt(0).toUpperCase()}</span>
-                        )}
+                          ) : null}
+                          <span className="relative z-0 pointer-events-none">
+                            {user.name ? user.name.trim().charAt(0).toUpperCase() : 'U'}
+                          </span>
                         </div>
-                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full ${user.activo ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-rose-400'}`} title={user.activo ? 'Activado' : 'Pendiente'}></div>
+                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full ${user.activo ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' : 'bg-rose-400'} z-20`} title={user.activo ? 'Activado' : 'Pendiente'}></div>
                     </div>
                     <div>
                         <span className="font-black text-slate-800 text-sm block tracking-tight">{user.name}</span>

@@ -168,27 +168,39 @@ export default function Facturacion() {
                   </select>
                 </div>
 
-                <div className="col-span-1 md:col-span-2 lg:col-span-6 flex flex-wrap lg:flex-nowrap gap-2 mt-2">
-                  <Button type="submit" variant="primary" icon="fas fa-filter" className="flex-1 py-2.5">
+                <div className="flex">
+                  <button type="submit" className="w-full px-5 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-slate-200">
+                    <i className="fas fa-filter text-[9px]"></i>
                     Filtros
-                  </Button>
-                  <Button type="button" onClick={() => setPosModalOpen(true)} className="flex-1 py-2.5 bg-[#38C1A3] hover:bg-teal-500 text-white rounded-xl shadow-md border-transparent flex justify-center items-center gap-2">
-                    <i className="fa-solid fa-receipt"></i> Tickar
-                  </Button>
-                  <Button type="button" onClick={() => setExportModalOpen(true)} className="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-md border-transparent flex justify-center items-center gap-2">
-                    <i className="fa-solid fa-file-code"></i> Exportar XML
-                  </Button>
+                  </button>
                 </div>
               </form>
             </div>
 
             {/* Matrix Table */}
-            <div className="bg-white p-1 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-               <FacturasMatrixTable 
-                  data={data} 
-                  loading={loading} 
-                  onCellClick={openModal} 
-               />
+            <div className="space-y-3">
+              <div className="flex justify-end items-center gap-3">
+                 <button 
+                  onClick={() => setPosModalOpen(true)} 
+                  className="px-5 py-2.5 bg-[#38C1A3] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-teal-500 transition-all shadow-md shadow-teal-100 flex items-center gap-2 active:scale-95"
+                 >
+                    <i className="fa-solid fa-receipt"></i> Tickar
+                 </button>
+                 <button 
+                  onClick={() => setExportModalOpen(true)} 
+                  className="px-5 py-2.5 bg-blue-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-600 transition-all shadow-md shadow-blue-100 flex items-center gap-2 active:scale-95"
+                 >
+                    <i className="fa-solid fa-file-code"></i> Exportar XML
+                 </button>
+              </div>
+
+              <div className="bg-white p-1 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <FacturasMatrixTable 
+                    data={data} 
+                    loading={loading} 
+                    onCellClick={openModal} 
+                />
+              </div>
             </div>
 
           </div>

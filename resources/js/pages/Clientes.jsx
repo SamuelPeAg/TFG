@@ -227,18 +227,18 @@ export default function Clientes() {
               </div>
 
               <button 
-                onClick={handleCreate}
-                className="px-8 py-3 bg-[#38C1A3] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#2eaa8f] transition-all shadow-lg shadow-teal-100 flex items-center gap-2 active:scale-95 shrink-0"
-              >
-                <i className="fas fa-plus"></i>
-                NUEVO ALUMNO
-              </button>
-              <button 
                 onClick={() => setImportModalOpen(true)}
                 className="px-8 py-3 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-100 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2 active:scale-95 shrink-0"
               >
                 <i className="fas fa-file-excel"></i>
                 IMPORTAR
+              </button>
+              <button 
+                onClick={handleCreate}
+                className="px-8 py-3 bg-[#38C1A3] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#2eaa8f] transition-all shadow-lg shadow-teal-100 flex items-center gap-2 active:scale-95 shrink-0"
+              >
+                <i className="fas fa-plus"></i>
+                NUEVO ALUMNO
               </button>
           </div>
         </header>

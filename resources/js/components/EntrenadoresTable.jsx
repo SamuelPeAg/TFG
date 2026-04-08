@@ -19,10 +19,10 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
         <table className="facto-table w-full border-collapse">
           <thead className="bg-slate-50/50">
             <tr>
-              <th className="text-left px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Entrenador</th>
-              <th className="text-left px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Email</th>
-              <th className="text-left px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-400 uppercase tracking-wider hidden md:table-cell">IBAN</th>
-              <th className="text-center px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-400 uppercase tracking-wider">Acciones</th>
+              <th className="text-left px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-900 uppercase tracking-wider">Entrenador</th>
+              <th className="text-left px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-900 uppercase tracking-wider">Email</th>
+              <th className="text-left px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-900 uppercase tracking-wider hidden md:table-cell">IBAN</th>
+              <th className="text-center px-4 sm:px-6 py-3 sm:py-4 text-xs font-black text-slate-900 uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -46,7 +46,7 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                           />
                         ) : null}
                         <span className={entrenador.foto_de_perfil ? 'hidden' : ''}>
-                          {entrenador.name.charAt(0).toUpperCase()}
+                          {entrenador.name ? entrenador.name.trim().charAt(0).toUpperCase() : '?'}
                         </span>
                       </div>
                       <span className="font-bold text-slate-700 text-xs sm:text-sm truncate">{entrenador.name}</span>
@@ -126,7 +126,7 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                         />
                       ) : null}
                       <span className={entrenador.foto_de_perfil ? 'hidden' : ''}>
-                        {entrenador.name.charAt(0).toUpperCase()}
+                        {entrenador.name ? entrenador.name.trim().charAt(0).toUpperCase() : '?'}
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">

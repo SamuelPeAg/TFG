@@ -53,12 +53,18 @@ class CreditService
     private function calculateNextExpiry(SuscripcionUsuario $subUser)
     {
         $suscripcion = $subUser->suscripcion;
-        $periodo = $suscripcion->periodo; // 'Semanas' o 'Mensual' (asumo estos valores)
+        $periodo = $suscripcion->periodo; // 'semanal' o 'mensual'
         $diaRecarga = $subUser->dia_recarga;
+        $mesesReset = $suscripcion->meses_reset;
+
+        // Caso especial: 1 Mes desde que se entregan (ignora día de recarga fijo)
+        if ($mesesReset == 15) {
+            return now()->addMonth()->startOfDay();
+        }
 
         if (!$diaRecarga) {
             // Si no hay día definido, caduca en 1 semana/mes desde hoy por defecto
-            return $periodo === 'semanal' ? now()->addWeek() : now()->addMonth();
+            return $periodo === 'semanal' ? now()->addWeek()->startOfDay() : now()->addMonth()->startOfDay();
         }
 
         $now = now();

@@ -62,20 +62,20 @@ export default function PermissionsModal({ isOpen, onClose, entrenador }) {
       {/* Modal */}
       <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         {/* Header */}
-        <div className="px-8 pt-8 pb-6 bg-gradient-to-br from-indigo-500 to-indigo-600">
+        <div className="px-8 pt-8 pb-6 bg-white border-b border-slate-100">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0">
+              <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0 shadow-sm">
                 <i className="fas fa-shield-alt text-2xl"></i>
               </div>
               <div>
-                <h3 className="text-xl font-black text-white leading-none">Permisos de Acceso</h3>
-                <p className="text-indigo-100 text-sm mt-1.5 font-bold">Configurando a {entrenador?.name}</p>
+                <h3 className="text-xl font-black text-slate-900 leading-none tracking-tight">Permisos de Acceso</h3>
+                <p className="text-slate-500 font-bold text-[11px] mt-1.5 uppercase tracking-widest">Configurando a {entrenador?.name}</p>
               </div>
             </div>
             <button 
               onClick={onClose}
-              className="p-2 text-white/50 hover:text-white transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
             >
               <i className="fas fa-times text-xl"></i>
             </button>
@@ -87,36 +87,34 @@ export default function PermissionsModal({ isOpen, onClose, entrenador }) {
           {loading ? (
             <div className="flex flex-col items-center py-12">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500 mb-4"></div>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Cargando permisos...</p>
+              <p className="text-slate-900 font-bold text-xs uppercase tracking-widest">Cargando permisos...</p>
             </div>
           ) : (
             <div className="space-y-4">
               {permissions.map((perm) => (
                 <div 
                   key={perm.id}
-                  className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
+                  className={`flex items-center justify-between p-5 rounded-[22px] border transition-all duration-300 ${
                     assigned.includes(perm.id) 
-                      ? 'bg-indigo-50/50 border-indigo-100 shadow-sm' 
-                      : 'bg-slate-50 border-slate-100'
+                      ? 'bg-indigo-50/40 border-indigo-100 shadow-sm' 
+                      : 'bg-slate-50 border-slate-100 font-medium'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-                      assigned.includes(perm.id) ? 'bg-indigo-500 text-white' : 'bg-white text-slate-300'
+                  <div className="flex items-center gap-4">
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all ${
+                      assigned.includes(perm.id) ? 'bg-indigo-500 text-white shadow-md shadow-indigo-100' : 'bg-white text-slate-300 border border-slate-100'
                     }`}>
                       <i className={`fas ${
                         perm.id === 'acceder_nominas_admin' ? 'fa-file-invoice-dollar' :
                         perm.id === 'acceder_facturacion' ? 'fa-money-bill-wave' :
                         perm.id === 'crear_clases' ? 'fa-calendar-plus' : 'fa-ticket-alt'
-                      } text-sm`}></i>
+                      } text-base`}></i>
                     </div>
                     <div>
-                      <p className={`font-black text-xs uppercase tracking-wider ${
-                        assigned.includes(perm.id) ? 'text-indigo-900' : 'text-slate-500'
-                      }`}>
+                      <p className="font-black text-sm uppercase tracking-wider text-slate-900">
                         {perm.label}
                       </p>
-                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                      <p className="text-[12px] text-slate-900 font-bold mt-1 opacity-70">
                         {perm.id === 'acceder_nominas_admin' && 'Permite ver y gestionar nóminas de todo el equipo.'}
                         {perm.id === 'acceder_facturacion' && 'Acceso total a la sección de facturación y tickets.'}
                         {perm.id === 'crear_clases' && 'Habilita la creación de nuevas sesiones en el calendario.'}
@@ -127,13 +125,13 @@ export default function PermissionsModal({ isOpen, onClose, entrenador }) {
 
                   <button 
                     onClick={() => handleToggle(perm.id)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                      assigned.includes(perm.id) ? 'bg-indigo-500' : 'bg-slate-200'
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${
+                      assigned.includes(perm.id) ? 'bg-indigo-500 shadow-inner' : 'bg-slate-200 shadow-inner'
                     }`}
                   >
                     <span 
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        assigned.includes(perm.id) ? 'translate-x-5' : 'translate-x-1'
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${
+                        assigned.includes(perm.id) ? 'translate-x-6' : 'translate-x-1'
                       }`}
                     />
                   </button>
@@ -147,7 +145,7 @@ export default function PermissionsModal({ isOpen, onClose, entrenador }) {
         <div className="px-8 pb-8 flex gap-3">
           <button 
             onClick={onClose}
-            className="flex-1 px-6 py-3.5 bg-slate-50 text-slate-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95"
+            className="flex-1 px-6 py-3.5 bg-slate-50 text-slate-700 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95"
           >
             CANCELAR
           </button>
