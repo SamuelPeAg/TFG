@@ -250,6 +250,8 @@ Route::middleware('auth:web,staff')->group(function () {
         // Gestión entrenadores (solo admin)
         // Gestión entrenadores (solo admin)
         Route::resource('entrenadores', EntrenadorController::class);
+        Route::get('/entrenadores/{id}/permissions', [EntrenadorController::class, 'getPermissions']);
+        Route::post('/entrenadores/{id}/permissions', [EntrenadorController::class, 'syncPermissions']);
 
         // --- NÓMINAS (Admin) ---
         Route::get('/admin/nominas', [NominaAdminController::class, 'index'])->name('admin.nominas');

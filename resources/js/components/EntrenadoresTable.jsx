@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, loading }) {
+export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPermissions, loading }) {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-16 sm:py-20">
@@ -62,6 +62,13 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, load
                   </td>
                   <td className="px-4 sm:px-6 py-3 sm:py-4" data-label="Acciones">
                     <div className="flex justify-center gap-1.5 sm:gap-2">
+                      <button
+                        onClick={() => onPermissions(entrenador)}
+                        className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded-xl bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all duration-300 flex-shrink-0"
+                        title="Gestionar permisos"
+                      >
+                        <i className="fas fa-shield-alt text-xs sm:text-sm"></i>
+                      </button>
                       <button
                         onClick={() => onEdit(entrenador)}
                         className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded-xl bg-teal-50 text-[#38C1A3] hover:bg-[#38C1A3] hover:text-white transition-all duration-300 flex-shrink-0"
@@ -128,6 +135,13 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, load
                     </div>
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={() => onPermissions(entrenador)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all duration-300"
+                      title="Gestionar permisos"
+                    >
+                      <i className="fas fa-shield-alt text-xs"></i>
+                    </button>
                     <button
                       onClick={() => onEdit(entrenador)}
                       className="w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-[#38C1A3] hover:bg-[#38C1A3] hover:text-white transition-all duration-300"

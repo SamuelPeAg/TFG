@@ -43,6 +43,7 @@ class LoginController extends Controller
                         'id' => $user->id,
                         'name' => $user->name,
                         'role' => $user->hasRole('admin') ? 'admin' : 'entrenador',
+                        'permissions' => ($user->hasRole('admin')) ? ['*'] : $user->getAllPermissions()->pluck('name')->toArray()
                     ]
                 ]);
             }

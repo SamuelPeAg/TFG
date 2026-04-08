@@ -19,9 +19,29 @@ class AdminMiddleware
     {
         $user = Auth::guard('staff')->user();
         
-        if (! $user || ! $user->hasRole('admin')) {
-            abort(403, 'Acceso prohibido: se requiere rol admin.');
+        if (! $user) {
+            abort(403, 'Acceso prohibido.');
         }
+
+        // Si es admin, pasa siempre
+        if ($user->hasRole('admin')) {
+            return $next($request);
+        }
+
+        // Si es entrenador, verificar permisos específicos según la ruta
+        if ($user->hasRole('entrenador')) {
+            $path = $request->path();
+            
+            if (str_contains($path, 'admin/nominas') && $user->can('acceder_nominas_admin')) {
+                return $next($request);
+            }
+            
+            if (str_contains($path, 'estadisticas') && $user->can('acceder_estadisticas')) {
+                return $next($request);
+            }
+        }
+
+        abort(403, 'Acceso prohibido: se requiere rol admin o permisos específicos.');
 
         return $next($request);
     }

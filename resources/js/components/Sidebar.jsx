@@ -25,6 +25,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const isAdmin = user.role === 'admin';
   const isTrainer = user.role === 'entrenador';
 
+  const hasPermission = (perm) => {
+    if (isAdmin) return true;
+    if (!user.permissions) return false;
+    return user.permissions.includes(perm);
+  };
+
   // Helper para verificar ruta activa
   const isActive = (path) => location.pathname.startsWith(path);
 
@@ -53,6 +59,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const trainerLinks = [
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
+    { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_facturacion' },
+    { name: 'NOMINAS-ADMIN', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_nominas_admin' },
+    { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt', permission: 'acceder_suscripciones' },
     { name: 'MIS NOMINAS', path: '/mis-nominas', icon: 'fa-solid fa-file-invoice' },
   ];
 
@@ -61,7 +70,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
   ];
 
-  const linksToShow = isAdmin ? adminLinks : (isTrainer ? trainerLinks : clientLinks);
+  const linksToShow = isAdmin 
+    ? adminLinks 
+    : (isTrainer 
+        ? trainerLinks.filter(link => !link.permission || hasPermission(link.permission)) 
+        : clientLinks);
 
   return (
     <>

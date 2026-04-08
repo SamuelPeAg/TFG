@@ -117,6 +117,12 @@ export default function Calendario() {
 
     // Event Listener for Vanilla FullCalendar triggering React Modal
     const handleOpenReactModal = (e) => {
+        const canCreate = user?.role === 'admin' || user?.permissions?.includes('crear_clases');
+        if (!canCreate) {
+            // Opcional: Mostrar un aviso sutil o simplemente ignorar
+            console.warn("No tienes permiso para crear clases.");
+            return;
+        }
         setSelectedDateForNewClass(e.detail?.date || null);
         setIsCrearModalOpen(true);
     };
@@ -246,7 +252,7 @@ export default function Calendario() {
                 </button>
               </div>
 
-              {user?.role !== 'cliente' && (
+              {(user?.role === 'admin' || (user?.role === 'entrenador' && user?.permissions?.includes('crear_clases'))) && (
                   <Button 
                     variant="primary"
                     icon="fa-solid fa-plus"

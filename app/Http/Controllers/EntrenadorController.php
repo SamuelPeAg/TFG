@@ -164,4 +164,87 @@ class EntrenadorController extends Controller
         return redirect()->route('calendario')->with('success', '¡Cuenta activada correctamente! Ya estás dentro de Factomove.');
     }
 
+    public function getPermissions($id)
+    {
+        $this->ensurePermissionsExist();
+        $entrenador = Entrenador::findOrFail($id);
+        
+        // Permisos fijos para este guard
+        $allPermissions = [
+            ['id' => 'acceder_nominas_admin', 'label' => 'Acceso Nóminas Admin'],
+            ['id' => 'acceder_facturacion', 'label' => 'Acceso Facturación'],
+            ['id' => 'crear_clases', 'label' => 'Crear Clases'],
+            ['id' => 'acceder_suscripciones', 'label' => 'Acceso Suscripciones'],
+        ];
+
+        // Obtener nombres de permisos asignados
+        $assignedPermissions = $entrenador->getAllPermissions()->pluck('name')->toArray();
+
+        return response()->json([
+            'all' => $allPermissions,
+            'assigned' => $assignedPermissions
+        ]);
+    }
+
+    public function syncPermissions(Request $request, $id)
+    {
+        $this->ensurePermissionsExist();
+        try {
+            $entrenador = Entrenador::findOrFail($id);
+            $permissions = $request->input('permissions', []);
+            
+            // Validar que los permisos existan para el guard staff
+            $exists = \Spatie\Permission\Models\Permission::whereIn('name', $permissions)
+                ->where('guard_name', 'staff')
+                ->count();
+                
+            if (count($permissions) > 0 && $exists !== count($permissions)) {
+                return response()->json(['message' => 'Uno o más permisos no son válidos o no existen.'], 422);
+            }
+
+            // Spatie: sincronizar los permisos indicados
+            $entrenador->syncPermissions($permissions);
+
+            return response()->json(['message' => 'Permisos actualizados correctamente.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Entrenador no encontrado.'], 404);
+        } catch (\Exception $e) {
+            \Log::error('Error syncPermissions: ' . $e->getMessage());
+            return response()->json(['message' => 'Error interno al sincronizar permisos: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Asegura que los permisos requeridos existan en la base de datos para el guard 'staff'.
+     */
+    private function ensurePermissionsExist()
+    {
+        $permissions = [
+            'acceder_nominas_admin',
+            'acceder_facturacion',
+            'crear_clases',
+            'acceder_suscripciones',
+            'acceder_estadisticas'
+        ];
+
+        foreach ($permissions as $name) {
+            \Spatie\Permission\Models\Permission::firstOrCreate([
+                'name' => $name,
+                'guard_name' => 'staff'
+            ]);
+        }
+
+        // Asegurar que el rol admin los tenga todos
+        $adminRole = \Spatie\Permission\Models\Role::where('name', 'admin')
+            ->where('guard_name', 'staff')
+            ->first();
+            
+        if ($adminRole) {
+            foreach ($permissions as $p) {
+                if (!$adminRole->hasPermissionTo($p, 'staff')) {
+                    $adminRole->givePermissionTo($p);
+                }
+            }
+        }
+    }
 }

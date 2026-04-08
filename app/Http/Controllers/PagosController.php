@@ -199,6 +199,12 @@ class PagosController extends Controller
             'suscripciones_permitidas.*' => ['exists:suscripciones,id'],
         ]);
 
+        $user = auth()->user();
+        // Si es entrenador, verificar permiso de creación
+        if ($user->hasRole('entrenador') && !$user->can('crear_clases')) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para crear clases.'], 403);
+        }
+
         $fecha          = Carbon::parse($request->input('fecha_hora'));
         $trainers       = $request->input('trainers', []);
         $firstTrainerId = !empty($trainers) ? $trainers[0] : null;

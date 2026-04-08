@@ -4,6 +4,7 @@ import EntrenadoresTable from '../components/EntrenadoresTable';
 import EntrenadorModals from '../components/EntrenadorModals';
 import Pagination from '../components/Pagination';
 import Sidebar from '../components/Sidebar';
+import PermissionsModal from '../components/PermissionsModal';
 
 export default function Entrenadores() {
   const [entrenadores, setEntrenadores] = useState([]);
@@ -15,6 +16,7 @@ export default function Entrenadores() {
   const [modalMode, setModalMode] = useState('create');
   const [selectedEntrenador, setSelectedEntrenador] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [permissionsModalOpen, setPermissionsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchEntrenadores();
@@ -44,6 +46,11 @@ export default function Entrenadores() {
     setModalMode('edit');
     setSelectedEntrenador(entrenador);
     setModalOpen(true);
+  };
+
+  const handlePermissions = (entrenador) => {
+    setSelectedEntrenador(entrenador);
+    setPermissionsModalOpen(true);
   };
 
   const handleDelete = async (entrenador) => {
@@ -150,6 +157,7 @@ export default function Entrenadores() {
                 loading={loading} 
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onPermissions={handlePermissions}
               />
             </div>
 
@@ -172,6 +180,12 @@ export default function Entrenadores() {
         onSave={handleSave}
         entrenador={selectedEntrenador}
         mode={modalMode}
+      />
+
+      <PermissionsModal 
+        isOpen={permissionsModalOpen}
+        onClose={() => setPermissionsModalOpen(false)}
+        entrenador={selectedEntrenador}
       />
     </div>
   );

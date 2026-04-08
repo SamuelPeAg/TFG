@@ -62,7 +62,8 @@
           'id' => $user->id,
           'name' => $user->name,
           'role' => $role,
-          'photo' => $user->foto_de_perfil ? asset('storage/' . $user->foto_de_perfil) : null
+          'photo' => $user->foto_de_perfil ? asset('storage/' . $user->foto_de_perfil) : null,
+          'permissions' => ($user->hasRole('admin')) ? ['*'] : $user->getAllPermissions()->pluck('name')->toArray()
         ] : null) !!}
       };
     </script>
