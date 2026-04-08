@@ -133,7 +133,7 @@ export default function PermissionsModal({ isOpen, onClose, entrenador }) {
                   >
                     <span 
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        assigned.includes(perm.id) ? 'translate-x-6' : 'translate-x-1'
+                        assigned.includes(perm.id) ? 'translate-x-5' : 'translate-x-1'
                       }`}
                     />
                   </button>
