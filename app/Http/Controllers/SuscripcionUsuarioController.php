@@ -8,8 +8,17 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\Pago;
+use App\Services\CreditService;
+
 class SuscripcionUsuarioController extends Controller
 {
+    protected $creditService;
+
+    public function __construct(CreditService $creditService)
+    {
+        $this->creditService = $creditService;
+    }
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -29,10 +38,18 @@ class SuscripcionUsuarioController extends Controller
             'id_usuario'    => $validated['id_usuario'],
             'id_suscripcion' => $validated['id_suscripcion'],
             'id_entrenador' => Auth::id(),
-            'saldo_actual'  => $saldo,
-            'ultima_recarga' => now(),   // el próximo ciclo se calcula desde hoy
+            'saldo_actual'  => $saldo, // Mantenemos legacy por ahora para compatibilidad UI simple
+            'ultima_recarga' => now(),
             'estado'        => 'activo',
+            'dia_recarga'   => $request->input('dia_recarga'),
+            'fecha_vencimiento_suscripcion' => $request->input('fecha_vencimiento_suscripcion'),
+            'pago_adelantado' => $request->boolean('pago_adelantado'),
         ]);
+
+        // Si se especificó saldo manual o por defecto, lo metemos como el primer lote
+        if ($saldo > 0) {
+            $this->creditService->allocate($susuario, $saldo);
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['success' => true, 'suscripcion_usuario' => $susuario->load('suscripcion')]);
@@ -75,9 +92,9 @@ class SuscripcionUsuarioController extends Controller
         $cantidad = $request->input('cantidad', 1);
 
         if ($accion === 'inc') {
-            $susuario->increment('saldo_actual', $cantidad);
-        } elseif ($accion === 'dec' && $susuario->saldo_actual > 0) {
-            $susuario->decrement('saldo_actual', $cantidad);
+            $this->creditService->allocate($susuario, $cantidad);
+        } elseif ($accion === 'dec') {
+            $this->creditService->consume($susuario, $cantidad);
         }
 
         $susuario->refresh();
@@ -90,5 +107,38 @@ class SuscripcionUsuarioController extends Controller
         }
 
         return back()->with('success', 'Saldo actualizado correctamente');
+    }
+
+    public function confirmarPago(Request $request, $id)
+    {
+        $susuario = SuscripcionUsuario::findOrFail($id);
+        $suscripcion = $susuario->suscripcion;
+
+        // 1. Crear el registro del pago
+        $pago = Pago::create([
+            'user_id' => $susuario->id_usuario,
+            'entrenador_id' => Auth::id(),
+            'centro' => $suscripcion->centro->nombre ?? 'Centro',
+            'nombre_clase' => 'Abono: ' . $suscripcion->nombre,
+            'tipo_clase' => 'Suscripción',
+            'importe' => $suscripcion->precio,
+            'metodo_pago' => $request->input('metodo_pago', 'Efectivo'),
+            'fecha_registro' => now(),
+        ]);
+
+        // 2. Liberar los créditos
+        $this->creditService->allocate($susuario, $suscripcion->creditos_por_periodo, $pago->id);
+
+        // 3. Resetear flag de pago adelantado si lo tenía
+        $susuario->update([
+            'pago_adelantado' => false,
+            'ultima_recarga' => now()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pago confirmado y créditos entregados.',
+            'nuevo_saldo' => $susuario->saldo_actual_calculado
+        ]);
     }
 }

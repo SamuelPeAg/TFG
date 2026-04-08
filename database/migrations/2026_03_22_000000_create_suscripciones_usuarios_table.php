@@ -15,6 +15,9 @@ return new class extends Migration
             $table->foreignId('id_entrenador')->nullable()->constrained('users')->onDelete('set null');
             $table->integer('saldo_actual')->default(0);
             $table->timestamp('ultima_recarga')->nullable();
+            $table->integer('dia_recarga')->nullable();
+            $table->dateTime('fecha_vencimiento_suscripcion')->nullable();
+            $table->boolean('pago_adelantado')->default(false);
             $table->enum('estado', ['activo', 'cancelado'])->default('activo');
             $table->timestamps();
         });

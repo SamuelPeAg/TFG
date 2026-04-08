@@ -282,7 +282,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                     return (
                                         <div key={su.id} className="bg-white px-5 py-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
                                             <div className={`${badgeColor} w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md`}>
-                                                {su.saldo_actual}
+                                                {su.saldo_actual_calculado ?? 0}
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter leading-none mb-1">
@@ -363,8 +363,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                     <div key={sub.id} className="bg-white p-7 rounded-[3rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 group hover:shadow-2xl hover:shadow-slate-200/40 transition-all duration-700">
                                         <div className="flex items-center gap-6">
                                             <div className="relative group/badge">
-                                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-xl font-black shadow-lg transition-all duration-500 group-hover/badge:rotate-6 group-hover/badge:scale-110 ${sub.saldo_actual > 0 ? 'bg-gradient-to-br from-[#38C1A3] to-[#2D9B82] text-white shadow-teal-100' : 'bg-slate-100 text-slate-400 shadow-slate-100'}`}>
-                                                    {sub.saldo_actual}
+                                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-xl font-black shadow-lg transition-all duration-500 group-hover/badge:rotate-6 group-hover/badge:scale-110 ${su.saldo_actual_calculado > 0 ? 'bg-gradient-to-br from-[#38C1A3] to-[#2D9B82] text-white shadow-teal-100' : 'bg-slate-100 text-slate-400 shadow-slate-100'}`}>
+                                                    {su.saldo_actual_calculado ?? 0}
                                                 </div>
                                                 <div className="absolute -top-2 -right-2 bg-white w-6 h-6 rounded-xl flex items-center justify-center text-[10px] text-slate-300 font-black shadow-sm border border-slate-50">
                                                     #{sub.id}
@@ -376,10 +376,11 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                     <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl border transition-colors ${sub.suscripcion?.periodo === 'mensual' ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 'border-amber-100 bg-amber-50 text-amber-600'}`}>
                                                         {sub.suscripcion?.periodo?.toUpperCase() || 'PERSONALIZADO'}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-slate-400 flex items-center gap-2">
-                                                        <i className="fa-solid fa-calendar text-slate-200"></i>
-                                                        Alta: {new Date(sub.created_at).toLocaleDateString()}
-                                                    </span>
+                                                    {sub.dia_recarga && (
+                                                        <span className="text-[10px] font-bold text-slate-500 bg-slate-50 px-2 py-1.5 rounded-xl">
+                                                            Día Recarga: {sub.dia_recarga}
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -395,7 +396,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                     <i className="fa-solid fa-minus text-xs"></i>
                                                 </button>
                                                 <div className="w-16 text-center select-none">
-                                                    <span className="text-sm font-black text-slate-800 block leading-none">{sub.saldo_actual}</span>
+                                                    <span className="text-sm font-black text-slate-800 block leading-none">{sub.saldo_actual_calculado ?? 0}</span>
                                                     <span className="text-[8px] font-black text-slate-300 uppercase tracking-tighter mt-1 block">CLASES</span>
                                                 </div>
                                                 <button 
@@ -408,6 +409,23 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             </div>
 
                                             <div className="w-[1px] h-10 bg-slate-100 hidden sm:block mx-1"></div>
+
+                                            <button 
+                                                onClick={() => {
+                                                    confirmAction('¿Confirmar pago y entregar créditos de este periodo?', async () => {
+                                                        try {
+                                                            await axios.post(`/suscripciones-usuarios/${sub.id}/confirmar-pago`);
+                                                            fetchFicha();
+                                                        } catch (err) {
+                                                            showAlert('Error al confirmar pago', true);
+                                                        }
+                                                    });
+                                                }}
+                                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-teal-50 text-teal-600 hover:bg-teal-500 hover:text-white transition-all shadow-sm active:scale-95"
+                                                title="Confirmar Pago / Recargar"
+                                            >
+                                                <i className="fa-solid fa-check-double"></i>
+                                            </button>
 
                                             <button 
                                                 onClick={() => handleDeleteSubscription(sub.id)}

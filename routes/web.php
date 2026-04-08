@@ -192,6 +192,7 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::put('/suscripciones-usuarios/{id}', [\App\Http\Controllers\SuscripcionUsuarioController::class, 'update'])->name('suscripciones_usuarios.update');
         Route::delete('/suscripciones-usuarios/{id}', [\App\Http\Controllers\SuscripcionUsuarioController::class, 'destroy'])->name('suscripciones_usuarios.destroy');
         Route::post('/suscripciones-usuarios/{id}/ajustar-saldo', [\App\Http\Controllers\SuscripcionUsuarioController::class, 'ajustarSaldo'])->name('suscripciones_usuarios.ajustar_saldo');
+        Route::post('/suscripciones-usuarios/{id}/confirmar-pago', [\App\Http\Controllers\SuscripcionUsuarioController::class, 'confirmarPago'])->name('suscripciones_usuarios.confirmar_pago');
 
         // Usuarios (Resource & React view)
         Route::get('/clientes', [UserController::class, 'index'])->name('clientes.index');

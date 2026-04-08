@@ -11,14 +11,35 @@ class SuscripcionUsuario extends Model
 
     protected $table = 'suscripciones_usuarios';
 
+    protected $appends = ['saldo_actual_calculado'];
+
     protected $fillable = [
         'id_usuario',
         'id_suscripcion',
         'id_entrenador',
         'saldo_actual',
         'ultima_recarga',
-        'estado'
+        'estado',
+        'dia_recarga',
+        'fecha_vencimiento_suscripcion',
+        'pago_adelantado'
     ];
+
+    /**
+     * Relación con los lotes de créditos individuales.
+     */
+    public function lotes()
+    {
+        return $this->hasMany(CreditoLote::class, 'suscripcion_usuario_id');
+    }
+
+    /**
+     * Calcula el saldo real sumando solo los lotes que no han caducado.
+     */
+    public function getSaldoActualCalculadoAttribute()
+    {
+        return $this->lotes()->validos()->sum('cantidad_actual');
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
