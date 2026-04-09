@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-export default function CrearClaseModal({ isOpen, onClose, centros = [], entrenadores = [], users = [], suscripciones = [], initialDate, onSuccess }) {
+export default function CrearClaseModal({ isOpen, onClose, centros = [], entrenadores = [], users = [], suscripciones = [], tiposSesion = [], initialDate, onSuccess }) {
     const [currentStep, setCurrentStep] = useState(1);
+    const select2Ref = useRef(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const [showCentrosDropdown, setShowCentrosDropdown] = useState(false);
@@ -14,31 +15,21 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     // Búsqueda de suscripciones (Paso 2)
     const [susSearchQuery, setSusSearchQuery] = useState('');
 
-    const defaultCapacityForType = (tipo) => {
-        const type = (tipo || '').toString().toLowerCase();
-        switch (type) {
-            case 'ep':
-                return '1';
-            case 'duo':
-                return '2';
-            case 'trio':
-                return '3';
-            case 'privado':
-            case 'grupo especial':
-                return '4';
-            case 'grupo':
-                return '8';
-            default:
-                return '';
-        }
+    const getDefaultConfigForType = (slug) => {
+        return tiposSesion.find(t => t.slug === slug) || null;
+    };
+
+    const defaultCapacityForType = (slug) => {
+        const config = getDefaultConfigForType(slug);
+        return config ? config.capacidad_personas.toString() : '1';
     };
 
     const [formData, setFormData] = useState({
         centro: '',
         nombre_clase: '',
-        tipo_clase: 'ep',
+        tipo_clase: '', // Will be set in useEffect
         capacidad: '',
-        capacidad_maxima: defaultCapacityForType('ep'),
+        capacidad_maxima: '1',
         fecha_hora: '',
         precio_base: '0.00',
         is_recurring: false,
@@ -47,6 +38,37 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         participants: [],
         suscripciones_permitidas: []
     });
+
+    // Set initial session type from dynamic list
+    useEffect(() => {
+        if (tiposSesion.length > 0 && !formData.tipo_clase) {
+            const firstType = tiposSesion[0];
+            setFormData(prev => ({
+                ...prev,
+                tipo_clase: firstType.slug,
+                capacidad_maxima: firstType.capacidad_personas.toString()
+            }));
+        }
+    }, [tiposSesion, isOpen]);
+
+    // Select2 Integration Sync
+    useEffect(() => {
+        if (window.$ && select2Ref.current && isOpen) {
+            const $select = window.$(select2Ref.current);
+            const handleChangeS2 = (e) => {
+                const value = e.target.value;
+                const config = getDefaultConfigForType(value);
+                setFormData(prev => ({ 
+                    ...prev, 
+                    tipo_clase: value,
+                    capacidad_maxima: config ? config.capacidad_personas.toString() : prev.capacidad_maxima
+                }));
+            };
+            $select.on('change', handleChangeS2);
+            $select.val(formData.tipo_clase).trigger('change.select2');
+            return () => $select.off('change', handleChangeS2);
+        }
+    }, [isOpen, formData.tipo_clase]);
 
     useEffect(() => {
         if (isOpen) {
@@ -60,6 +82,26 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             setSearchQuery('');
         }
     }, [isOpen, initialDate]);
+
+    // Filtrar tipos de sesión por centro seleccionado
+    const selectedCentroObj = centros.find(c => c.nombre === formData.centro);
+    const selectedCentroId = selectedCentroObj ? selectedCentroObj.id : null;
+    const filteredTipos = tiposSesion.filter(t => t.centro_id === null || t.centro_id === selectedCentroId);
+
+    // Auto-corregir tipo de clase si queda fuera del filtro al cambiar de centro
+    useEffect(() => {
+        if (isOpen && formData.centro && filteredTipos.length > 0) {
+            const isCurrentTypeValid = filteredTipos.some(t => t.slug === formData.tipo_clase);
+            if (!isCurrentTypeValid) {
+                const firstValid = filteredTipos[0];
+                setFormData(prev => ({
+                    ...prev,
+                    tipo_clase: firstValid.slug,
+                    capacidad_maxima: firstValid.capacidad_personas.toString()
+                }));
+            }
+        }
+    }, [formData.centro, filteredTipos, isOpen]);
 
     // Lógica para filtrar usuarios en tiempo real
     useEffect(() => {
@@ -141,8 +183,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         });
     };
 
-    const tiposGrupo = ['grupo especial', 'grupo', 'privado'];
-    const isGrupo = tiposGrupo.includes(formData.tipo_clase);
+    const selectedTypeConfig = getDefaultConfigForType(formData.tipo_clase);
+    const isFixedCapacity = selectedTypeConfig ? selectedTypeConfig.capacidad_fija : false;
 
     const validateStep = (step) => {
         const newErrs = {};
@@ -172,17 +214,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         
         setLoading(true);
         try {
-            const typeMapping = {
-                'ep': 'EP',
-                'duo': 'DUO',
-                'trio': 'TRIO',
-                'privado': 'GRUPO_PRIVADO',
-                'grupo especial': 'GRUPO_PRIVADO',
-                'grupo': 'GRUPO',
-            };
-            
-            // Asegurarse de que el tipo se mapea correctamente
-            const mappedType = typeMapping[formData.tipo_clase.toLowerCase()] || formData.tipo_clase.toUpperCase();
+            const mappedType = formData.tipo_clase.toUpperCase();
             
             const payload = {
                 ...formData,
@@ -343,20 +375,15 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-bold text-slate-600 pl-1">Tipo de Sesión</label>
                                                 <select 
+                                                    ref={select2Ref}
                                                     name="tipo_clase" 
                                                     value={formData.tipo_clase} 
-                                                    onChange={(e) => {
-                                                        console.log('[SELECT onChange] value:', e.target.value);
-                                                        handleChange(e);
-                                                    }}
-                                                    onFocus={() => console.log('[SELECT onFocus] current value:', formData.tipo_clase)}
-                                                    className="select2-ignore w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none">
-                                                    <option value="ep">EP (Personal)</option>
-                                                    <option value="duo">Dúo</option>
-                                                    <option value="trio">Trío</option>
-                                                    <option value="privado">Privado</option>
-                                                    <option value="grupo especial">Grupo especial</option>
-                                                    <option value="grupo">Grupo</option>
+                                                    onChange={handleChange}
+                                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none">
+                                                    <option value="">Selecciona un tipo...</option>
+                                                    {filteredTipos.map(t => (
+                                                        <option key={t.id} value={t.slug}>{t.nombre}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>
@@ -415,7 +442,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                     </div>
 
                                     {/* Capacidad máxima — editable para grupos y privado */}
-                                    {(['grupo', 'grupo especial', 'privado'].includes(formData.tipo_clase)) ? (
+                                    {!isFixedCapacity ? (
                                         <div className="mt-6 space-y-1.5">
                                             <label className="text-xs font-bold text-slate-600 pl-1">
                                                 Límite de Personas (Máximo)
@@ -429,16 +456,16 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                                 placeholder="Ej. 10"
                                                 className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none focus:border-[#38C1A3]"
                                             />
-                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">Número máximo de personas que pueden participar.</p>
+                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">Puedes ajustar el límite para este grupo específico.</p>
                                         </div>
                                     ) : (
                                         <div className="mt-6 space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-600 pl-1">Límite de Personas</label>
+                                            <label className="text-xs font-bold text-slate-600 pl-1">Límite de Personas (Fijo)</label>
                                             <div className="w-full bg-slate-100 border border-slate-300 text-slate-600 text-sm font-bold rounded-xl px-4 py-3.5 outline-none cursor-not-allowed flex items-center justify-between">
                                                 <span>{formData.capacidad_maxima} Persona{formData.capacidad_maxima !== '1' ? 's' : ''}</span>
                                                 <i className="fa-solid fa-lock text-slate-400 text-xs"></i>
                                             </div>
-                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">El límite es fijo según el tipo de sesión.</p>
+                                            <p className="text-[11px] text-slate-400 pl-1 font-medium">El límite es fijo según el tipo de sesión configurado.</p>
                                         </div>
                                     )}
 

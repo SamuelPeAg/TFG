@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros, entrenadores, users, suscripciones, onSuccess }) {
+export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros, entrenadores, users, suscripciones, tiposSesion = [], onSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // State for selectors
@@ -14,14 +14,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   const [isEditing, setIsEditing] = useState(false);
   
   const sessionTypeLabel = (tipo) => {
-    switch ((tipo || '').toString().toUpperCase()) {
-      case 'EP': return 'EP (Personal)';
-      case 'DUO': return 'DÚO';
-      case 'TRIO': return 'TRÍO';
-      case 'GRUPO_PRIVADO': return 'Privado / Grupo especial';
-      case 'GRUPO': return 'Grupo';
-      default: return tipo || 'Sin Tipo';
-    }
+    const config = tiposSesion.find(t => t.slug.toUpperCase() === (tipo || '').toString().toUpperCase());
+    return config ? config.nombre : (tipo || 'Sin Tipo');
   };
 
   const [editNombre, setEditNombre] = useState('');
@@ -323,34 +317,69 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                   }}
                                   className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 uppercase cursor-pointer"
                               >
-                                  <option value="EP">EP (Personal)</option>
-                                  <option value="DUO">DUO</option>
-                                  <option value="TRIO">TRIO</option>
-                                  <option value="GRUPO_PRIVADO">GRUPO PRIVADO</option>
-                                  <option value="GRUPO">GRUPO</option>
+                                  {tiposSesion.map(t => (
+                                      <option key={t.id} value={t.slug}>{t.nombre}</option>
+                                  ))}
                               </select>
                           </div>
+                           {/* Filtrado dinámico de tipos por centro */}
+                           {(() => {
+                               const selectedCentroObj = centros.find(c => c.nombre === editCentro);
+                               const selectedCentroId = selectedCentroObj ? selectedCentroObj.id : null;
+                               const filteredTipos = tiposSesion.filter(t => t.centro_id === null || t.centro_id === selectedCentroId);
+                               
+                               return (
+                                   <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
+                                       <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
+                                       <select 
+                                           value={editTipo} 
+                                           onChange={(e) => {
+                                               const val = e.target.value;
+                                               setEditTipo(val);
+                                               const config = tiposSesion.find(t => t.slug === val);
+                                               if (config) setEditCapacidad(config.capacidad_personas);
+                                           }}
+                                           className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 uppercase cursor-pointer"
+                                       >
+                                           {filteredTipos.length > 0 ? (
+                                               filteredTipos.map(t => (
+                                                   <option key={t.id} value={t.slug}>{t.nombre}</option>
+                                               ))
+                                           ) : (
+                                               <option value="">Sin tipos disponibles</option>
+                                           )}
+                                       </select>
+                                   </div>
+                               );
+                           })()}
 
-                          {/* Capacidad Maxima - Conditional */}
-                          {(['GRUPO', 'GRUPO_PRIVADO'].includes(editTipo)) ? (
-                              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
-                                  <i className="fa-solid fa-users text-[#4BB7AE] text-sm"></i>
-                                  <input 
-                                      type="number" 
-                                      value={editCapacidad} 
-                                      onChange={(e) => setEditCapacidad(e.target.value)}
-                                      min="1"
-                                      className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 w-12"
-                                      placeholder="Límite"
-                                  />
-                              </div>
-                          ) : (
-                              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full cursor-not-allowed opacity-70">
-                                  <i className="fa-solid fa-users text-slate-400 text-sm"></i>
-                                  <span className="text-xs font-bold text-slate-500">{editCapacidad} Persona{editCapacidad !== '1' ? 's' : ''}</span>
-                                  <i className="fa-solid fa-lock text-slate-400 text-xs ml-2"></i>
-                              </div>
-                          )}
+                          {(() => {
+                               const config = tiposSesion.find(t => t.slug === editTipo);
+                               const isFixed = config ? config.capacidad_fija : false;
+                               if (!isFixed) {
+                                   return (
+                                       <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
+                                           <i className="fa-solid fa-users text-[#4BB7AE] text-sm"></i>
+                                           <input 
+                                               type="number" 
+                                               value={editCapacidad} 
+                                               onChange={(e) => setEditCapacidad(e.target.value)}
+                                               min="1"
+                                               className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 w-12"
+                                               placeholder="Límite"
+                                           />
+                                       </div>
+                                   );
+                               } else {
+                                   return (
+                                       <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full cursor-not-allowed opacity-70">
+                                           <i className="fa-solid fa-users text-slate-400 text-sm"></i>
+                                           <span className="text-xs font-bold text-slate-500">{editCapacidad} Persona{editCapacidad !== '1' ? 's' : ''}</span>
+                                           <i className="fa-solid fa-lock text-slate-400 text-xs ml-2"></i>
+                                       </div>
+                                   );
+                               }
+                           })()}
                       </>
                   ) : (
                       <>

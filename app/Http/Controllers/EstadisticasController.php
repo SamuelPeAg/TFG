@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Empresa;
 use App\Models\Centro;
+use App\Models\TipoSesion;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class EstadisticasController extends Controller
 {
@@ -122,6 +125,31 @@ class EstadisticasController extends Controller
             $centrosList = collect();
             try { $centrosList = Centro::with('empresa')->get(); } catch (\Exception $e) { \Log::error("Error centrosList: " . $e->getMessage()); }
 
+            // 8. Tipos de Sesión (agrupados por centro)
+            $tiposSesion = collect();
+            try {
+                $tiposSesion = TipoSesion::with('centro')
+                    ->withTrashed(false)
+                    ->orderBy('centro_id')
+                    ->orderBy('orden')
+                    ->orderBy('nombre')
+                    ->get()
+                    ->map(fn($t) => [
+                        'id'                 => $t->id,
+                        'nombre'             => $t->nombre,
+                        'slug'               => $t->slug,
+                        'capacidad_personas' => $t->capacidad_personas,
+                        'capacidad_fija'     => $t->capacidad_fija,
+                        'precio_base'        => $t->precio_base,
+                        'color_hex'          => $t->color_hex,
+                        'activo'             => $t->activo,
+                        'orden'              => $t->orden,
+                        'descripcion'        => $t->descripcion,
+                        'centro_id'          => $t->centro_id,
+                        'centro_nombre'      => $t->centro?->nombre ?? 'Global (todos los centros)',
+                    ]);
+            } catch (\Exception $e) { \Log::error('Error tiposSesion: ' . $e->getMessage()); }
+
             return response()->json([
                 'kpis' => [
                     'totalClientes'     => $totalClientes,
@@ -136,7 +164,8 @@ class EstadisticasController extends Controller
                 'ingresosPorCentro' => $ingresosPorCentro,
                 'ultimosPagos'      => $ultimosPagos,
                 'empresas'          => $empresas,
-                'centros_list'      => $centrosList
+                'centros_list'      => $centrosList,
+                'tipos_sesion'      => $tiposSesion,
             ]);
 
         } catch (\Exception $e) {
@@ -209,5 +238,83 @@ class EstadisticasController extends Controller
     public function destroyCentro(Centro $centro) {
         $centro->delete();
         return response()->json(['message' => 'Centro eliminado']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Gestión de Tipos de Sesión
+    // -------------------------------------------------------------------------
+
+    public function indexTiposSesion()
+    {
+        $tipos = TipoSesion::with('centro')
+            ->orderBy('centro_id')
+            ->orderBy('orden')
+            ->orderBy('nombre')
+            ->get();
+        return response()->json($tipos);
+    }
+
+    public function storeTipoSesion(Request $request)
+    {
+        // Generar slug si no viene en el request
+        if (!$request->filled('slug') && $request->filled('nombre')) {
+            $request->merge(['slug' => Str::slug($request->nombre)]);
+        }
+
+        $data = $request->validate([
+            'nombre'             => 'required|string|max:100',
+            'slug'               => [
+                'required', 'string', 'max:100',
+                Rule::unique('tipos_sesion')->where(function ($query) use ($request) {
+                    return $query->where('centro_id', $request->centro_id);
+                })
+            ],
+            'capacidad_personas' => 'required|integer|min:1|max:100',
+            'capacidad_fija'     => 'required|boolean',
+            'precio_base'        => 'nullable|numeric|min:0',
+            'color_hex'          => 'nullable|string|max:7',
+            'activo'             => 'nullable|boolean',
+            'orden'              => 'nullable|integer|min:0',
+            'descripcion'        => 'nullable|string|max:500',
+            'centro_id'          => 'nullable|exists:centros,id',
+        ]);
+        $tipo = TipoSesion::create($data);
+        return response()->json($tipo->load('centro'), 201);
+    }
+
+    public function updateTipoSesion(Request $request, TipoSesion $tipoSesion)
+    {
+        // Asegurar slug
+        if (!$request->filled('slug') && $request->filled('nombre')) {
+            $request->merge(['slug' => Str::slug($request->nombre)]);
+        }
+
+        $data = $request->validate([
+            'nombre'             => 'required|string|max:100',
+            'slug'               => [
+                'required', 'string', 'max:100',
+                Rule::unique('tipos_sesion')
+                    ->where(function ($query) use ($request) {
+                        return $query->where('centro_id', $request->centro_id);
+                    })
+                    ->ignore($tipoSesion->id)
+            ],
+            'capacidad_personas' => 'required|integer|min:1|max:100',
+            'capacidad_fija'     => 'required|boolean',
+            'precio_base'        => 'nullable|numeric|min:0',
+            'color_hex'          => 'nullable|string|max:7',
+            'activo'             => 'nullable|boolean',
+            'orden'              => 'nullable|integer|min:0',
+            'descripcion'        => 'nullable|string|max:500',
+            'centro_id'          => 'nullable|exists:centros,id',
+        ]);
+        $tipoSesion->update($data);
+        return response()->json($tipoSesion->load('centro'));
+    }
+
+    public function destroyTipoSesion(TipoSesion $tipoSesion)
+    {
+        $tipoSesion->delete();
+        return response()->json(['message' => 'Tipo de sesión eliminado']);
     }
 }

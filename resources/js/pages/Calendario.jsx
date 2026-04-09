@@ -323,6 +323,7 @@ export default function Calendario() {
               entrenadores={data.entrenadores}
               users={data.users}
               suscripciones={data.suscripciones}
+              tiposSesion={data.tipos_sesion}
               onSuccess={() => {
                   if (window.calendar && viewMode === 'calendar') window.calendar.refetchEvents();
                   const summaryEl = document.getElementById('calendar-summary');
@@ -337,6 +338,7 @@ export default function Calendario() {
               entrenadores={data.entrenadores}
               users={data.users}
               suscripciones={data.suscripciones}
+              tiposSesion={data.tipos_sesion}
               onSuccess={() => {
                   if (window.calendar && viewMode === 'calendar') window.calendar.refetchEvents();
               }}

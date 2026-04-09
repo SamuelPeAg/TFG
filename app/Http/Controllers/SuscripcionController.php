@@ -18,7 +18,8 @@ class SuscripcionController extends Controller
             $suscripciones = Suscripcion::with('centro')->orderBy('nombre')->get();
             $centros = Centro::orderBy('nombre')->get();
 
-            return response()->json(compact('suscripciones', 'centros'));
+            $tipos_sesion = \App\Models\TipoSesion::where('activo', true)->orderBy('orden')->get();
+            return response()->json(compact('suscripciones', 'centros', 'tipos_sesion'));
         }
         
 

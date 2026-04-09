@@ -3,7 +3,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 
-const TIPOS_PERMITIDOS = ['ep', 'duo', 'trio', 'privado', 'grupo especial', 'grupo'];
+
 const METROS_RESET = [
     { value: 1, label: '1 Mes (Solo el mes actual)' },
     { value: 15, label: '1 Mes desde que se entregan los créditos' },
@@ -29,6 +29,7 @@ export default function Suscripciones() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [suscripciones, setSuscripciones] = useState([]);
     const [centros, setCentros] = useState([]);
+    const [tiposSesion, setTiposSesion] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
@@ -112,6 +113,7 @@ export default function Suscripciones() {
             const res = await axios.get('/suscripciones', { headers: { Accept: 'application/json' } });
             setSuscripciones(res.data.suscripciones || []);
             setCentros(res.data.centros || []);
+            setTiposSesion(res.data.tipos_sesion || []);
         } catch (e) {
             console.error('Error cargando suscripciones:', e);
         } finally {
@@ -199,12 +201,15 @@ export default function Suscripciones() {
     });
 
     const getBadgeColor = (tipo) => {
+        const config = tiposSesion.find(t => t.slug === tipo);
+        const label = config ? config.nombre : tipo;
         const t = (tipo || '').toLowerCase();
-        if (t.includes('ep')) return { bg: 'bg-rose-500', label: 'EP' };
-        if (t.includes('duo')) return { bg: 'bg-violet-500', label: 'Dúo' };
-        if (t.includes('trio')) return { bg: 'bg-amber-500', label: 'Trío' };
-        if (t.includes('privado')) return { bg: 'bg-blue-500', label: 'Privado' };
-        return { bg: 'bg-teal-500', label: tipo };
+        
+        if (t.includes('ep')) return { bg: 'bg-rose-500', label };
+        if (t.includes('duo')) return { bg: 'bg-violet-500', label };
+        if (t.includes('trio')) return { bg: 'bg-amber-500', label };
+        if (t.includes('privado')) return { bg: 'bg-blue-500', label };
+        return { bg: 'bg-teal-500', label };
     };
 
     return (
@@ -387,7 +392,11 @@ export default function Suscripciones() {
                                                 <select ref={tipoRef} name="tipo_credito" value={form.tipo_credito} onChange={handleFormChange}
                                                     className={`w-full bg-slate-50 select2-ignore border ${formErrors.tipo_credito ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`}>
                                                     <option value="">-- Selecciona Tipo --</option>
-                                                    {TIPOS_PERMITIDOS.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                                                    {tiposSesion
+                                                        .filter(t => !form.id_centro || t.centro_id === null || t.centro_id == form.id_centro)
+                                                        .map(t => (
+                                                            <option key={t.id} value={t.slug}>{t.nombre}</option>
+                                                        ))}
                                                 </select>
                                                 {formErrors.tipo_credito && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.tipo_credito}</p>}
                                                 <p className="text-[9px] text-slate-400 font-medium pl-1">Jerarquía: EP › Privado › Dúo › Trío › Especial › Grupo</p>

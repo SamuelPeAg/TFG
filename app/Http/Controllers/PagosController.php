@@ -186,7 +186,7 @@ class PagosController extends Controller
         $request->validate([
             'centro'             => ['required', 'string'],
             'nombre_clase'       => ['required', 'string', 'max:120'],
-            'tipo_clase'         => ['required', 'string', 'in:EP,DUO,TRIO,GRUPO,GRUPO_PRIVADO'],
+            'tipo_clase'         => ['required', 'string'],
             'fecha_hora'         => ['required', 'date'],
             'capacidad_maxima'   => ['nullable', 'integer', 'min:1'],
             'trainers'           => ['nullable', 'array'],

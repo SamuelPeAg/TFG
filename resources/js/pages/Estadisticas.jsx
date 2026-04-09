@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import EmpresaTable from '../components/EmpresaTable';
 import CentroTable from '../components/CentroTable';
+import TiposSesionTable from '../components/TiposSesionTable';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -366,6 +367,11 @@ export default function Estadisticas() {
                   centros={data.centros_list || []} 
                   empresas={data.empresas || []}
                   onUpdate={fetchData} 
+                />
+                <TiposSesionTable 
+                  tipos={data.tipos_sesion || []} 
+                  centros={data.centros_list || []}
+                  onUpdate={fetchData}
                 />
               </div>
 

@@ -238,6 +238,12 @@ Route::middleware('auth:web,staff')->group(function () {
             Route::post('/admin/centros', [\App\Http\Controllers\EstadisticasController::class, 'storeCentro']);
             Route::put('/admin/centros/{centro}', [\App\Http\Controllers\EstadisticasController::class, 'updateCentro']);
             Route::delete('/admin/centros/{centro}', [\App\Http\Controllers\EstadisticasController::class, 'destroyCentro']);
+
+            // Gestión de Tipos de Sesión
+            Route::get('/admin/tipos-sesion', [\App\Http\Controllers\EstadisticasController::class, 'indexTiposSesion']);
+            Route::post('/admin/tipos-sesion', [\App\Http\Controllers\EstadisticasController::class, 'storeTipoSesion']);
+            Route::put('/admin/tipos-sesion/{tipoSesion}', [\App\Http\Controllers\EstadisticasController::class, 'updateTipoSesion']);
+            Route::delete('/admin/tipos-sesion/{tipoSesion}', [\App\Http\Controllers\EstadisticasController::class, 'destroyTipoSesion']);
         });
 
         // Gestión de Entrenadores
