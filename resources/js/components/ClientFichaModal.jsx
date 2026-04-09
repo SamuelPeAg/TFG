@@ -20,6 +20,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null);
 
   const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
@@ -127,12 +128,16 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
     }
   };
 
-  const handleFileUpload = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (file) setPendingFile(file);
+  };
+
+  const handleFileUpload = async () => {
+    if (!pendingFile) return;
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', pendingFile);
     formData.append('is_private', 0);
 
     setUploading(true);
@@ -141,6 +146,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         setFiles([res.data.file, ...files]);
+        setPendingFile(null);
+        showAlert('Archivo guardado correctamente', false, 'Subida Exitosa');
     } catch (error) {
         showAlert('Error al subir el archivo', true);
     } finally {
@@ -168,7 +175,19 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
 
   const updateAttribute = (idx, field, val) => {
     const newAttrs = [...profileData.additional_attributes];
-    newAttrs[idx][field] = val;
+    const item = newAttrs[idx];
+
+    // Si cambiamos el tipo, reseteamos el valor para evitar inconsistencias de formato
+    if (field === 'type' && item.type !== val) {
+        item.value = '';
+    }
+
+    // Sanitización extra si el tipo es número (independientemente del input type)
+    if (field === 'value' && item.type === 'number') {
+        val = val.replace(/[^0-9.,-]/g, '').replace(',', '.');
+    }
+
+    item[field] = val;
     setProfileData({ ...profileData, additional_attributes: newAttrs });
   };
 
@@ -230,7 +249,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             </div>
             <button 
                 onClick={onClose} 
-                className="absolute top-8 right-8 w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all hover:rotate-90 shadow-sm border border-slate-100"
+                className="absolute top-8 right-8 w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all hover:rotate-90 shadow-sm border border-slate-100 z-50"
             >
                 <i className="fa-solid fa-times text-xl"></i>
             </button>
@@ -402,10 +421,18 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                 </div>
                                             ) : (
                                                 <input 
-                                                    type={attr.type === 'date' ? 'date' : attr.type === 'number' ? 'number' : 'text'} 
-                                                    placeholder="Valor del campo..." 
+                                                    key={`attr-val-${idx}-${attr.type}`}
+                                                    type={attr.type === 'date' ? 'date' : (attr.type === 'number' ? 'number' : 'text')} 
+                                                    inputMode={attr.type === 'number' ? 'decimal' : 'text'}
+                                                    placeholder={attr.type === 'date' ? '' : "Valor del campo..."} 
                                                     value={attr.value} 
-                                                    onChange={(e) => updateAttribute(idx, 'value', e.target.value)}
+                                                    onChange={(e) => {
+                                                        let v = e.target.value;
+                                                        if (attr.type === 'number') {
+                                                            v = v.replace(/[^0-9.,-]/g, '');
+                                                        }
+                                                        updateAttribute(idx, 'value', v);
+                                                    }}
                                                     className="w-full px-4 py-3 bg-slate-50 border-transparent rounded-[1.1rem] outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all h-full"
                                                 />
                                             )}
@@ -555,7 +582,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                     <div className="relative group">
                         <input 
                             type="file" 
-                            onChange={handleFileUpload} 
+                            onChange={handleFileSelect} 
                             className="absolute inset-0 opacity-0 cursor-pointer z-10" 
                         />
                         <div className={`p-16 border-2 border-dashed rounded-[3rem] text-center transition-all duration-500 ${uploading ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-100 group-hover:border-teal-400 group-hover:bg-teal-50/30'}`}>
@@ -577,6 +604,36 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                             )}
                         </div>
                     </div>
+
+                    {pendingFile && (
+                        <div className="bg-white p-6 rounded-[2rem] border border-teal-100 shadow-xl shadow-teal-500/5 flex items-center justify-between animate-in zoom-in-95 duration-300">
+                             <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-500 flex items-center justify-center text-xl">
+                                    <i className="fa-solid fa-file-circle-check"></i>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-black text-slate-800 uppercase tracking-tight">{pendingFile.name}</p>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Listo para guardar en expediente</p>
+                                </div>
+                             </div>
+                             <div className="flex items-center gap-3">
+                                <button 
+                                    onClick={() => setPendingFile(null)}
+                                    className="px-4 py-3 text-slate-400 hover:text-rose-500 text-[10px] font-black uppercase tracking-widest transition-colors"
+                                >
+                                    CANCELAR
+                                </button>
+                                <button 
+                                    onClick={handleFileUpload}
+                                    disabled={uploading}
+                                    className="px-8 py-4 bg-[#38C1A3] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#2eaa8f] transition-all shadow-lg shadow-teal-100 flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                                >
+                                    {uploading ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-cloud-arrow-up"></i>}
+                                    GUARDAR ARCHIVO
+                                </button>
+                             </div>
+                        </div>
+                    )}
 
                     <div className="space-y-4 px-2">
                         <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-6">
