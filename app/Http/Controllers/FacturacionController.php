@@ -269,8 +269,14 @@ class FacturacionController extends Controller
             }
         }
 
-        $todosLosClientes = User::role('cliente', 'web')->orderBy('name')->get(['id', 'name', 'email']);
+        $todosLosClientes = User::role('cliente', 'web')
+            ->with(['suscripciones' => function($q) {
+                $q->where('estado', 'activo')->select('id_usuario', 'id_suscripcion');
+            }])
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
         $todosLosEntrenadores = \App\Models\Entrenador::orderBy('name')->get(['id', 'name']);
+        $suscripciones = \App\Models\Suscripcion::orderBy('nombre')->get(['id', 'nombre', 'precio']);
 
         $data = [
             'centros' => $centros,
@@ -278,6 +284,7 @@ class FacturacionController extends Controller
             'clientes' => $clientes,
             'todosLosClientes' => $todosLosClientes,
             'todosLosEntrenadores' => $todosLosEntrenadores,
+            'suscripciones' => $suscripciones,
             'matrix' => $matrix,
             'resumen' => $resumen,
             'clienteTotals' => $clienteTotals,
@@ -391,10 +398,12 @@ class FacturacionController extends Controller
                 $importe = $pago->importe;
                 $metodo = $pago->metodo_pago ?? null;
                 $nombreClase = $pago->nombre_clase ?? $nombreClase;
+                $pagoId = $pago->id;
             }
 
             $result->push([
                 'source' => 'reserva',
+                'pago_id' => $pagoId ?? null,
                 'cliente' => $cliente,
                 'entrenador' => $entrenador,
                 'fecha' => $fecha,
@@ -451,6 +460,7 @@ class FacturacionController extends Controller
 
             $result->push([
                 'source' => 'pago',
+                'pago_id' => $p->id,
                 'cliente' => $p->user?->name ?? null,
                 'entrenador' => $trainerString,
                 'fecha' => $pFecha,
@@ -539,6 +549,9 @@ class FacturacionController extends Controller
         $centro = $request->query('centro', 'todos');
         $anio = $request->query('anio', date('Y'));
         $mes = $request->query('mes', '');
+        
+        $suscripcionesIds = $request->query('suscripciones', []);
+        $clientesIds = $request->query('clientes', []);
 
         $desde = null;
         $hasta = null;
@@ -548,6 +561,57 @@ class FacturacionController extends Controller
         } elseif ($anio) {
             $desde = $anio . '-01-01';
             $hasta = $anio . '-12-31';
+        }
+
+        // Si se han seleccionado suscripciones, generamos un XML de Remesa (Domiciliaciones)
+        if (!empty($suscripcionesIds)) {
+            $query = \App\Models\SuscripcionUsuario::with(['usuario', 'suscripcion'])
+                ->whereIn('id_suscripcion', $suscripcionesIds)
+                ->where('estado', 'activo');
+
+            if (!empty($clientesIds)) {
+                $query->whereIn('id_usuario', $clientesIds);
+            }
+
+            if ($centro !== 'todos') {
+                $query->whereHas('usuario.centro', function($q) use ($centro) {
+                    $q->where('nombre', $centro);
+                });
+            }
+
+            $suscripcionesUsuarios = $query->get();
+
+            $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><remesa_bancaria/>');
+            $xml->addChild('periodo', ($mes ? "Mes $mes - " : "") . "Año $anio");
+            $xml->addChild('centro', htmlspecialchars($centro));
+            $xml->addChild('tipo', 'Domiciliaciones - Suscripciones');
+            
+            $total = 0;
+            foreach ($suscripcionesUsuarios as $su) {
+                $item = $xml->addChild('cargo');
+                $item->addChild('id_suscripcion_usuario', $su->id);
+                $item->addChild('cliente', htmlspecialchars($su->usuario->name ?? 'N/A'));
+                
+                $iban = $su->usuario->iban ?? '';
+                if (!$iban && $su->usuario->additional_attributes) {
+                    $attrs = is_array($su->usuario->additional_attributes) 
+                                ? $su->usuario->additional_attributes 
+                                : json_decode($su->usuario->additional_attributes, true);
+                    $iban = $attrs['iban'] ?? '';
+                }
+                $item->addChild('iban', htmlspecialchars($iban));
+                
+                $item->addChild('fecha_emision', now()->toDateString());
+                $precio = (float)($su->suscripcion->precio ?? 0);
+                $item->addChild('importe', $precio);
+                $item->addChild('concepto', htmlspecialchars($su->suscripcion->nombre ?? 'Suscripción'));
+                $total += $precio;
+            }
+            $xml->addChild('total_remesa', $total);
+
+            return response($xml->asXML(), 200)
+                ->header('Content-Type', 'application/xml')
+                ->header('Content-Disposition', 'attachment; filename="remesa_sepa_'.$centro.'_'.$anio.'_'.$mes.'.xml"');
         }
 
         $query = Pago::with(['user', 'entrenadores'])
@@ -565,11 +629,11 @@ class FacturacionController extends Controller
         foreach ($pagos as $pago) {
             $item = $xml->addChild('pago');
             $item->addChild('id', $pago->id);
-            $item->addChild('cliente', $pago->user->name ?? 'N/A');
+            $item->addChild('cliente', htmlspecialchars($pago->user->name ?? 'N/A'));
             $item->addChild('fecha', $pago->fecha_registro->toDateTimeString());
             $item->addChild('importe', $pago->importe);
-            $item->addChild('metodo', $pago->metodo_pago);
-            $item->addChild('clase', $pago->nombre_clase);
+            $item->addChild('metodo', htmlspecialchars($pago->metodo_pago ?? ''));
+            $item->addChild('clase', htmlspecialchars($pago->nombre_clase ?? ''));
             $total += (float)$pago->importe;
         }
         $xml->addChild('total_acumulado', $total);
@@ -577,5 +641,14 @@ class FacturacionController extends Controller
         return response($xml->asXML(), 200)
             ->header('Content-Type', 'application/xml')
             ->header('Content-Disposition', 'attachment; filename="facturacion_'.$centro.'_'.$anio.'_'.$mes.'.xml"');
+    }
+
+    public function downloadFacturaPdf($id)
+    {
+        $pago = Pago::with(['user', 'entrenadores'])->findOrFail($id);
+        
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.factura', compact('pago'));
+        
+        return $pdf->download('factura-' . str_pad($pago->id, 5, '0', STR_PAD_LEFT) . '.pdf');
     }
 }

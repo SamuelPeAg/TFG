@@ -81,6 +81,7 @@ export default function FacturacionModal({ isOpen, onClose, cellData }) {
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs">Centro</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-right">Importe</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Estado</th>
+                            <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
@@ -103,6 +104,21 @@ export default function FacturacionModal({ isOpen, onClose, cellData }) {
                                         <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase rounded-lg tracking-wider">Pagado</span>
                                     ) : (
                                         <span className="px-2 py-1 bg-rose-100 text-rose-600 text-[10px] font-black uppercase rounded-lg tracking-wider">Pendiente</span>
+                                    )}
+                                </td>
+                                <td className="px-4 py-3 text-center" data-label="Acciones">
+                                    {clase.pago_id ? (
+                                        <a 
+                                            href={`/facturas/${clase.pago_id}/pdf`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 hover:bg-blue-100 text-slate-500 hover:text-blue-600 transition-colors"
+                                            title="Descargar Factura PDF"
+                                        >
+                                            <i className="fa-solid fa-file-pdf"></i>
+                                        </a>
+                                    ) : (
+                                        <span className="text-slate-300">-</span>
                                     )}
                                 </td>
                             </tr>

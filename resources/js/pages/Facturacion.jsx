@@ -257,6 +257,8 @@ export default function Facturacion() {
         isOpen={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
         centros={data.centros}
+        suscripciones={data.suscripciones || []}
+        clientes={data.todosLosClientes || []}
         filtros={filters}
       />
     </div>

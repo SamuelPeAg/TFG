@@ -180,6 +180,7 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::get('/facturas/clases', [FacturacionController::class, 'clases'])->name('facturas.clases');
         Route::get('/facturas/export-xml', [FacturacionController::class, 'exportXML'])->name('facturas.export_xml');
         Route::post('/facturas/tickar', [FacturacionController::class, 'tickar'])->name('facturas.tickar');
+        Route::get('/facturas/{id}/pdf', [FacturacionController::class, 'downloadFacturaPdf'])->name('facturas.pdf');
 
         // Suscripciones
         Route::get('/suscripciones', [\App\Http\Controllers\SuscripcionController::class, 'index'])->name('suscripciones.index');
