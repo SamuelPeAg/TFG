@@ -35,24 +35,29 @@ export default function Facturacion() {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [selectedCell, setSelectedCell] = useState(null); // { clienteId, entrenadorId }
 
+  // Se llama a fetchData cuando los filtros cambian o al pulsar el botón
   useEffect(() => {
     fetchData();
-  }, [filters]); // Re-fetch when filters change? No, let's use an Apply button to match the old design.
+  }, []); // Solo al montar, luego usaremos el botón de Filtros para evitar peticiones excesivas
   
-  // Actually, we'll fetch on mount, and then when they click "Apply"
   const fetchData = async () => {
+    if (loading && data.clientes.length > 0) return; // Evitar peticiones paralelas
+    
     setLoading(true);
     try {
+      // Limpiar filtros para no enviar cadenas vacías que puedan confundir al backend
+      const params = {};
+      if (filters.centro && filters.centro !== 'todos') params.centro = filters.centro;
+      if (filters.anio) params.anio = filters.anio;
+      if (filters.mes) params.mes = filters.mes;
+      if (filters.entrenador_id) params.entrenador_id = filters.entrenador_id;
+      if (filters.cliente_id) params.cliente_id = filters.cliente_id;
+
       const response = await axios.get('/facturas', {
         headers: { Accept: 'application/json' },
-        params: {
-          centro: filters.centro,
-          anio: filters.anio,
-          mes: filters.mes,
-          entrenador_id: filters.entrenador_id,
-          cliente_id: filters.cliente_id
-        }
+        params: params
       });
+      
       setData(response.data);
     } catch (error) {
       console.error('Error fetching facturación:', error);
@@ -67,7 +72,7 @@ export default function Facturacion() {
   };
 
   const handleApplyFilters = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     fetchData();
   };
 
@@ -128,49 +133,75 @@ export default function Facturacion() {
             
             {/* Control Panel (Filters) */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 overflow-visible">
-              <form onSubmit={handleApplyFilters} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+              <form onSubmit={handleApplyFilters} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Centro</label>
-                  <select name="centro" value={filters.centro} onChange={handleFilterChange} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-medium text-slate-700">
-                    <option value="todos">Todos</option>
-                    {data.centros?.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
-                  </select>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Año</label>
+                    <div className="relative group">
+                      <select name="anio" value={filters.anio || ''} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
+                        {years.map(y => <option key={y} value={y}>{y}</option>)}
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                        <i className="fas fa-chevron-down text-[10px]"></i>
+                      </div>
+                    </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Año</label>
-                  <select name="anio" value={filters.anio} onChange={handleFilterChange} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-medium text-slate-700">
-                    {years.map(y => <option key={y} value={y}>{y}</option>)}
-                  </select>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Mes</label>
+                    <div className="relative group">
+                      <select name="mes" value={filters.mes || ''} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
+                        <option value="">Todos</option>
+                        {meses.map(m => <option key={m.num} value={m.num}>{m.nombre}</option>)}
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                        <i className="fas fa-chevron-down text-[10px]"></i>
+                      </div>
+                    </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Mes</label>
-                  <select name="mes" value={filters.mes} onChange={handleFilterChange} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-medium text-slate-700">
-                    <option value="">Todos</option>
-                    {meses.map(m => <option key={m.num} value={m.num}>{m.nombre}</option>)}
-                  </select>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Centro</label>
+                  <div className="relative group">
+                    <select name="centro" value={filters.centro || 'todos'} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
+                      <option value="todos">Todos los centros</option>
+                      {data.centros?.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <i className="fas fa-building text-[10px]"></i>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Entrenador</label>
-                  <select name="entrenador_id" value={filters.entrenador_id} onChange={handleFilterChange} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-medium text-slate-700">
-                    <option value="">Todos</option>
-                    {data.entrenadores?.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                  </select>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Entrenador</label>
+                  <div className="relative group">
+                    <select name="entrenador_id" value={filters.entrenador_id || ''} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
+                      <option value="">Cualquier entrenador</option>
+                      {data.todosLosEntrenadores?.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <i className="fas fa-user-tie text-[10px]"></i>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">Cliente</label>
-                  <select name="cliente_id" value={filters.cliente_id} onChange={handleFilterChange} className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-medium text-slate-700">
-                    <option value="">Todos</option>
-                    {data.todosLosClientes?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Cliente</label>
+                  <div className="relative group">
+                    <select name="cliente_id" id="cliente_id_select" value={filters.cliente_id || ''} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
+                      <option value="">Todos los clientes</option>
+                      {data.todosLosClientes?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                      <i className="fas fa-users text-[10px]"></i>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex">
-                  <button type="submit" className="w-full px-5 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-slate-200">
-                    <i className="fas fa-filter text-[9px]"></i>
+                <div className="flex-shrink-0">
+                  <button type="submit" disabled={loading} className="w-full px-8 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-slate-200 hover:shadow-slate-300 border border-transparent disabled:opacity-50 disabled:cursor-not-allowed">
+                    {loading ? <i className="fas fa-spinner fa-spin text-[10px]"></i> : <i className="fas fa-filter text-[10px]"></i>}
                     Filtros
                   </button>
                 </div>

@@ -126,7 +126,8 @@ export default function AdminNominas() {
       )}
 
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:ml-72 w-full">
-        <header className="px-6 sm:px-8 py-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+        <header className="px-6 sm:px-8 pt-8 pb-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div className="flex items-center gap-3">
                     <button 
                         className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3] rounded-lg hover:bg-slate-100 transition-colors"
@@ -142,38 +143,39 @@ export default function AdminNominas() {
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-                    {/* Periodo Filter */}
-                    <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-200">
-                        <div className="pl-3 text-slate-400"><i className="fas fa-calendar-alt"></i></div>
-                        <select name="mes" value={filters.mes} onChange={handleFilterChange} className="bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 outline-none cursor-pointer py-1.5 px-2">
-                             {[
-                                 {v:'1',n:'Enero'}, {v:'2',n:'Febrero'}, {v:'3',n:'Marzo'}, {v:'4',n:'Abril'},
-                                 {v:'5',n:'Mayo'}, {v:'6',n:'Junio'}, {v:'7',n:'Julio'}, {v:'8',n:'Agosto'},
-                                 {v:'9',n:'Septiembre'}, {v:'10',n:'Octubre'}, {v:'11',n:'Noviembre'}, {v:'12',n:'Diciembre'}
-                             ].map(m => <option key={m.v} value={m.v}>{m.n}</option>)}
-                        </select>
-                        <div className="w-px h-4 bg-slate-200"></div>
-                        <select name="anio" value={filters.anio} onChange={handleFilterChange} className="bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 outline-none cursor-pointer py-1.5 px-2">
-                            {Array.from({length: 5}, (_, i) => currentYear - i).map(y => <option key={y} value={y}>{y}</option>)}
-                        </select>
-                    </div>
+                <button onClick={() => openModal('generar')}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#38C1A3] hover:bg-teal-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-teal-100 hover:shadow-teal-200 transition-all active:scale-95">
+                    <i className="fas fa-bolt"></i> 
+                    <span className="whitespace-nowrap uppercase tracking-wider text-xs">Generar Nóminas</span>
+                </button>
+            </div>
 
-                    {/* Search */}
-                    <div className="relative w-full sm:w-64 group">
-                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                             <i className="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-[#38C1A3] text-sm transition-colors"></i>
-                         </div>
-                         <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Buscar entrenador..." 
-                               className="pl-10 pr-4 py-2 w-full bg-white border border-slate-200 rounded-full focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-600 placeholder:text-slate-400 text-sm shadow-sm" />
-                    </div>
-
-                    <button onClick={() => openModal('generar')}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#38C1A3] hover:bg-teal-500 text-white px-5 py-2.5 rounded-2xl font-bold shadow-md hover:shadow-lg transition-all">
-                        <i className="fas fa-bolt"></i> 
-                        <span className="whitespace-nowrap">Generar Nóminas</span>
-                    </button>
+            <div className="flex flex-col md:flex-row items-center gap-4 bg-white/50 p-4 rounded-3xl border border-slate-100 shadow-sm">
+                {/* Periodo Filter */}
+                <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-200 w-full md:w-auto">
+                    <div className="pl-3 text-slate-400"><i className="fas fa-calendar-alt text-xs"></i></div>
+                    <select name="mes" value={filters.mes} onChange={handleFilterChange} className="select2-ignore bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 outline-none cursor-pointer py-1.5 px-2 pr-6 appearance-none">
+                            {[
+                                {v:'1',n:'Enero'}, {v:'2',n:'Febrero'}, {v:'3',n:'Marzo'}, {v:'4',n:'Abril'},
+                                {v:'5',n:'Mayo'}, {v:'6',n:'Junio'}, {v:'7',n:'Julio'}, {v:'8',n:'Agosto'},
+                                {v:'9',n:'Septiembre'}, {v:'10',n:'Octubre'}, {v:'11',n:'Noviembre'}, {v:'12',n:'Diciembre'}
+                            ].map(m => <option key={m.v} value={m.v}>{m.n}</option>)}
+                    </select>
+                    <div className="w-px h-4 bg-slate-200"></div>
+                    <select name="anio" value={filters.anio} onChange={handleFilterChange} className="select2-ignore bg-transparent border-none text-sm font-bold text-slate-700 focus:ring-0 outline-none cursor-pointer py-1.5 px-4 pr-8 appearance-none">
+                        {Array.from({length: 5}, (_, i) => currentYear - i).map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
                 </div>
+
+                {/* Search */}
+                <div className="relative w-full md:flex-1 group">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i className="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-[#38C1A3] text-sm transition-colors"></i>
+                        </div>
+                        <input type="text" name="search" value={filters.search} onChange={handleFilterChange} placeholder="Buscar por nombre de entrenador..." 
+                            className="pl-10 pr-4 py-3 w-full bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-600 placeholder:text-slate-400 text-sm shadow-sm" />
+                </div>
+            </div>
         </header>
 
         <div className="flex-1 overflow-auto p-4 sm:p-8">

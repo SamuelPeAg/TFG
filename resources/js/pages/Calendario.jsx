@@ -218,25 +218,37 @@ export default function Calendario() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                 {/* Filtro Centro */}
-                <div className="search-box !bg-white !shadow-sm !border-slate-100">
-                  <i className="fa-solid fa-house-medical"></i>
-                  <div className="search-anchor">
-                    <select 
-                      id="filter-center" 
-                      className="modern-select-no-border" 
-                      style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', cursor: 'pointer', color: '#374151', fontSize: '14px', appearance: 'none' }}
-                      value={centroFiltro}
-                      onChange={(e) => {
-                         setCentroFiltro(e.target.value);
-                      }}
-                    >
-                      <option value="">Todos los centros</option>
-                      {data.centros?.map(centro => (
-                        <option key={centro.id} value={centro.nombre}>{centro.nombre}</option>
-                      ))}
-                    </select>
-                    <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
+                <div className="flex items-center gap-2">
+                  <div className="search-box !bg-white !shadow-sm !border-slate-100 flex-1">
+                    <i className="fa-solid fa-house-medical"></i>
+                    <div className="search-anchor">
+                      <select 
+                        id="filter-center" 
+                        className="select2-ignore modern-select-no-border" 
+                        style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent', cursor: 'pointer', color: '#374151', fontSize: '14px', appearance: 'none' }}
+                        value={centroFiltro}
+                        onChange={(e) => {
+                           setCentroFiltro(e.target.value);
+                        }}
+                      >
+                        <option value="">Todos los centros</option>
+                        {data.centros?.map(centro => (
+                          <option key={centro.id} value={centro.nombre}>{centro.nombre}</option>
+                        ))}
+                      </select>
+                      <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
+                    </div>
                   </div>
+                  
+                  <button 
+                    onClick={() => {
+                        if (window.calendar) window.calendar.refetchEvents();
+                    }}
+                    className="p-3 bg-white border border-slate-100 shadow-sm rounded-2xl text-slate-400 hover:text-[#38C1A3] hover:border-[#38C1A3]/30 transition-all active:scale-90 group"
+                    title="Aplicar filtro de centro"
+                  >
+                    <i className="fa-solid fa-filter text-sm"></i>
+                  </button>
                 </div>
 
                 {/* Búsqueda Cliente */}

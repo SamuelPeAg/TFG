@@ -13,13 +13,19 @@ class FacturacionController extends Controller
 {
     public function index(Request $request)
     {
-        $desde = $request->input('desde', '');
-        $hasta = $request->input('hasta', '');
+        $desde = $request->input('desde');
+        $hasta = $request->input('hasta');
         $centro = $request->input('centro', 'todos');
-        $entrenadorId = $request->input('entrenador_id', '');
-        $clienteId = $request->input('cliente_id', '');
+        $entrenadorId = $request->input('entrenador_id');
+        $clienteId = $request->input('cliente_id');
         $anio = $request->input('anio', date('Y'));
-        $mes = $request->input('mes', '');
+        $mes = $request->input('mes');
+
+        // Limpiar parámetros para evitar vacíos accidentales o espacios
+        $clienteId = ($clienteId && $clienteId !== '') ? $clienteId : null;
+        $entrenadorId = ($entrenadorId && $entrenadorId !== '') ? $entrenadorId : null;
+        $mes = ($mes && $mes !== '') ? $mes : null;
+        $centro = ($centro && $centro !== 'todos') ? $centro : 'todos';
 
         // Si se especifica mes y año, calcular desde y hasta
         if ($mes && $anio) {
@@ -35,6 +41,7 @@ class FacturacionController extends Controller
             ->when($desde, fn($qq) => $qq->whereDate('fecha_registro', '>=', $desde))
             ->when($hasta, fn($qq) => $qq->whereDate('fecha_registro', '<=', $hasta))
             ->when($centro !== 'todos', fn($qq) => $qq->where('centro', $centro))
+            ->when($clienteId, fn($qq) => $qq->where('user_id', $clienteId))
             ->when($entrenadorId, function ($qq) use ($entrenadorId) {
                 $qq->where(function ($sub) use ($entrenadorId) {
                     $sub->where('entrenador_id', $entrenadorId)
@@ -101,10 +108,12 @@ class FacturacionController extends Controller
             $entrenadoresIdsFromSearch = $entrenadores->pluck('id')->toArray();
         }
 
-        // Si se ha seleccionado un cliente, limitar la lista a ese cliente
-        if (!empty($clienteId)) {
+        // Si se ha seleccionado un cliente, limitar la lista a ese cliente únicamente
+        if ($clienteId) {
+            $clientes = User::where('id', $clienteId)
+                ->role('cliente', 'web')
+                ->get(['id', 'name', 'email']);
             $clientesIdsFromSearch = [$clienteId];
-            $clientes = $clientes->where('id', $clienteId)->values();
         } else {
             $clientesIdsFromSearch = $clientes->pluck('id')->toArray();
         }
@@ -118,14 +127,23 @@ class FacturacionController extends Controller
             $entCol = null;
         }
 
+        $centroRecord = null;
+        if ($centro !== 'todos') {
+            $centroRecord = \App\Models\Centro::where('nombre', $centro)->first();
+        }
+
         if (Schema::hasColumn('horarios_clases', 'centro_id')) {
             $centroCol = 'horarios_clases.centro_id';
+            $centroVal = $centroRecord?->id;
         } elseif (Schema::hasColumn('horarios_clases', 'id_centro')) {
             $centroCol = 'horarios_clases.id_centro';
+            $centroVal = $centroRecord?->id;
         } elseif (Schema::hasColumn('horarios_clases', 'centro')) {
             $centroCol = 'horarios_clases.centro';
+            $centroVal = $centro;
         } else {
             $centroCol = null;
+            $centroVal = null;
         }
 
         // Matriz inicial vacía
@@ -183,7 +201,7 @@ class FacturacionController extends Controller
                 ->groupByRaw("reservas.id_usuario, {$entCol}")
                 ->when($desde, fn($q) => $q->whereDate('horarios_clases.fecha_hora_inicio', '>=', $desde))
                 ->when($hasta, fn($q) => $q->whereDate('horarios_clases.fecha_hora_inicio', '<=', $hasta))
-                ->when($centro !== 'todos' && $centroCol, fn($q) => $q->where($centroCol, $centro))
+                ->when($centro !== 'todos' && $centroCol && $centroVal, fn($q) => $q->where($centroCol, $centroVal))
                 ->when($entrenadorId, fn($q) => $q->whereRaw("{$entCol} = ?", [$entrenadorId]))
                 ->when($clienteId, fn($q) => $q->where('reservas.id_usuario', $clienteId));
 
@@ -223,24 +241,33 @@ class FacturacionController extends Controller
             ];
         }
 
-        // Filtrar clientes que no tienen datos (si no se filtró ya por clienteId)
-        if (empty($clienteId)) {
+        // Filtrar clientes que no tienen datos (solo si no se ha filtrado por un cliente específico)
+        if (!$clienteId) {
             $clientesConDatos = array_keys($matrix);
-            $clientesFiltered = $clientes->whereIn('id', $clientesConDatos)->values();
-            // Si el usuario quiere ver TODOS los clientes de la matrix original, usamos la filtrada
-            // Pero si el resultado es cero, mostramos vacío o el filtro original.
-            $clientes = $clientesFiltered;
+            $clientes = $clientes->whereIn('id', $clientesConDatos)->values();
         }
 
-        // Filtrar entrenadores que no tienen datos
-        $entrenadoresIdsConDatos = [];
-        foreach ($matrix as $clienteIdKey => $trainerData) {
-            foreach ($trainerData as $tidKey => $val) {
-                $entrenadoresIdsConDatos[] = $tidKey;
+        // Determinar qué entrenadores mostrar en las columnas
+        if ($entrenadorId) {
+            // Si hay un entrenador seleccionado, solo mostramos ese
+            $entrenadores = \App\Models\Entrenador::where('id', $entrenadorId)->get(['id', 'name']);
+        } else {
+            // Filtrar entrenadores que tienen datos en la matriz
+            $entrenadoresIdsConDatos = [];
+            foreach ($matrix as $clienteIdKey => $trainerData) {
+                foreach ($trainerData as $tidKey => $val) {
+                    $entrenadoresIdsConDatos[] = $tidKey;
+                }
+            }
+            $entrenadoresIdsConDatos = array_unique($entrenadoresIdsConDatos);
+            
+            if (empty($entrenadoresIdsConDatos) && !empty($clienteId)) {
+                // Si no hay datos pero hay un cliente seleccionado, podemos mostrar todos para indicar que no hay actividad
+                $entrenadores = \App\Models\Entrenador::orderBy('name')->get(['id', 'name']);
+            } else {
+                $entrenadores = \App\Models\Entrenador::whereIn('id', $entrenadoresIdsConDatos)->orderBy('name')->get(['id', 'name']);
             }
         }
-        $entrenadoresIdsConDatos = array_unique($entrenadoresIdsConDatos);
-        $entrenadores = \App\Models\Entrenador::whereIn('id', $entrenadoresIdsConDatos)->orderBy('name')->get(['id', 'name']);
 
         $todosLosClientes = User::role('cliente', 'web')->orderBy('name')->get(['id', 'name', 'email']);
         $todosLosEntrenadores = \App\Models\Entrenador::orderBy('name')->get(['id', 'name']);
@@ -261,6 +288,11 @@ class FacturacionController extends Controller
             'clienteId' => $clienteId,
             'anio' => $anio,
             'mes' => $mes,
+            'debug' => [
+                'request_cliente_id' => $request->input('cliente_id'),
+                'processed_cliente_id' => $clienteId,
+                'clientes_count' => count($clientes)
+            ]
         ];
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -293,12 +325,20 @@ class FacturacionController extends Controller
         $horarioEntCol = Schema::hasColumn('horarios_clases', 'entrenador_id') ? 'horarios_clases.entrenador_id' : (Schema::hasColumn('horarios_clases', 'id_entrenador') ? 'horarios_clases.id_entrenador' : null);
 
         $horarioCentroCol = null;
+        $centroVal = null;
         if (Schema::hasColumn('horarios_clases', 'centro_id')) {
             $horarioCentroCol = 'horarios_clases.centro_id';
+            if ($centro !== 'todos') {
+                $centroVal = \App\Models\Centro::where('nombre', $centro)->value('id');
+            }
         } elseif (Schema::hasColumn('horarios_clases', 'id_centro')) {
             $horarioCentroCol = 'horarios_clases.id_centro';
+            if ($centro !== 'todos') {
+                $centroVal = \App\Models\Centro::where('nombre', $centro)->value('id');
+            }
         } elseif (Schema::hasColumn('horarios_clases', 'centro')) {
             $horarioCentroCol = 'horarios_clases.centro';
+            $centroVal = $centro;
         }
 
         $q = \App\Models\Reserva::query()
@@ -311,8 +351,8 @@ class FacturacionController extends Controller
         if ($entrenadorId && $horarioEntCol) {
             $q->whereRaw("{$horarioEntCol} = ?", [$entrenadorId]);
         }
-        if ($centro !== 'todos' && $horarioCentroCol) {
-            $q->where($horarioCentroCol, $centro);
+        if ($centro !== 'todos' && $horarioCentroCol && $centroVal) {
+            $q->where($horarioCentroCol, $centroVal);
         }
         if ($desde) {
             $q->whereDate('horarios_clases.fecha_hora_inicio', '>=', $desde);
