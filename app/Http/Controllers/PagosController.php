@@ -197,6 +197,7 @@ class PagosController extends Controller
             'participants.*.metodo_pago' => ['required_with:participants', 'in:TPV,EF,DD,CC'],
             'suscripciones_permitidas'   => ['nullable', 'array'],
             'suscripciones_permitidas.*' => ['exists:suscripciones,id'],
+            'horas_cancelacion'          => ['nullable', 'integer'],
         ]);
 
         $user = auth()->user();
@@ -211,12 +212,16 @@ class PagosController extends Controller
         $capacidad      = $request->input('capacidad_maxima');
         $participants   = $request->input('participants', []);
 
+        $tipoInfo = \App\Models\TipoSesion::where('nombre', $request->input('tipo_clase'))->first();
+        $horasCancelacion = $request->input('horas_cancelacion') !== null ? $request->input('horas_cancelacion') : ($tipoInfo->horas_cancelacion_default ?? 0);
+
         $pagoBase = [
             'entrenador_id'    => $firstTrainerId,
             'centro'           => $request->input('centro'),
             'nombre_clase'     => $request->input('nombre_clase'),
             'tipo_clase'       => $request->input('tipo_clase'),
             'capacidad_maxima' => $capacidad,
+            'horas_cancelacion' => $horasCancelacion,
             'importe'          => 0,
         ];
 
@@ -434,10 +439,34 @@ class PagosController extends Controller
 
         $newUser = User::find($request->user_id);
 
-        // 4. Crear el nuevo pago
+        // 5. Verificar CRÉDITOS (ESTRICTO: Incluso Admin)
+        $allowedSubIds = $existingPago->suscripciones->pluck('id')->toArray();
+        $userSubs = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
+            ->whereIn('id_suscripcion', $allowedSubIds)
+            ->where('estado', 'activo')
+            ->get();
+            
+        $hasCredits = false;
+        $activeSub = null;
+        foreach ($userSubs as $sub) {
+            if ($sub->saldo_actual_calculado > 0) {
+                $hasCredits = true;
+                $activeSub = $sub;
+                break;
+            }
+        }
+
+        if (!$hasCredits) {
+            return response()->json(['error' => 'No tienes créditos suficientes para esta clase.'], 422);
+        }
+
+        // 6. Consumir Crédito
+        app(\App\Services\CreditService::class)->consume($activeSub, 1);
+
+        // 7. Crear el nuevo pago
         $newPago = Pago::create([
             'user_id' => $newUser->id,
-            'entrenador_id' => $existingPago->entrenador_id, // Legacy
+            'entrenador_id' => $existingPago->entrenador_id,
             'iban' => $newUser->iban,
             'importe' => $existingPago->importe,
             'fecha_registro' => $fecha,
@@ -445,22 +474,18 @@ class PagosController extends Controller
             'nombre_clase' => $existingPago->nombre_clase,
             'tipo_clase' => $existingPago->tipo_clase,
             'capacidad_maxima' => $existingPago->capacidad_maxima,
-            'metodo_pago' => $existingPago->metodo_pago, // Asume mismo método por defecto, o podría pedirse
+            'horas_cancelacion' => $existingPago->horas_cancelacion,
+            'metodo_pago' => 'Bono',
         ]);
 
-        // Copiar suscripciones
+        // Copiar suscripciones y entrenadores
         $subs = $existingPago->suscripciones->pluck('id')->toArray();
-        if (!empty($subs)) {
-            $newPago->suscripciones()->sync($subs);
-        }
+        if (!empty($subs)) $newPago->suscripciones()->sync($subs);
 
-        // 4. Copiar relaciones de entrenadores
         $trainers = $existingPago->entrenadores->pluck('id')->toArray();
-        if (!empty($trainers)) {
-            $newPago->entrenadores()->sync($trainers);
-        }
+        if (!empty($trainers)) $newPago->entrenadores()->sync($trainers);
 
-        return response()->json(['success' => true, 'message' => 'Cliente añadido correctamente']);
+        return response()->json(['success' => true, 'message' => 'Cliente añadido y crédito consumido correctamente.']);
     }
 
     // Método para ELIMINAR CLIENTE de una sesión
@@ -481,14 +506,35 @@ class PagosController extends Controller
 
         $fecha = Carbon::parse($request->fecha_hora);
 
-        $deleted = Pago::where('fecha_registro', $fecha)
+        $pago = Pago::where('fecha_registro', $fecha)
             ->where('nombre_clase', $request->nombre_clase)
             ->where('centro', $request->centro)
             ->where('user_id', $request->user_id)
-            ->delete();
+            ->first();
 
-        if ($deleted) {
-            return response()->json(['success' => true, 'message' => 'Cliente eliminado correctamente']);
+        if ($pago) {
+            // 3. LOGICA RE-ABONO (CRÉDITOS)
+            $diffHours = now()->diffInHours($fecha, false); 
+            $horasCancelacion = $pago->horas_cancelacion ?? 0;
+            
+            $messageSuffix = '';
+            if ($diffHours >= $horasCancelacion) {
+                $allowedSubIds = $pago->suscripciones->pluck('id')->toArray();
+                $userSub = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
+                    ->whereIn('id_suscripcion', $allowedSubIds)
+                    ->where('estado', 'activo')
+                    ->first();
+                
+                if ($userSub) {
+                    app(\App\Services\CreditService::class)->refund($userSub, 1);
+                    $messageSuffix = ' El crédito ha sido devuelto a tu cuenta.';
+                }
+            } else {
+                $messageSuffix = ' Cancelación fuera de plazo: no se ha devuelto el crédito.';
+            }
+
+            $pago->delete();
+            return response()->json(['success' => true, 'message' => 'Te has dado de baja de la clase.' . $messageSuffix]);
         } else {
             return response()->json(['error' => 'No se encontró el registro para eliminar'], 404);
         }

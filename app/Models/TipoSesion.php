@@ -23,6 +23,7 @@ class TipoSesion extends Model
         'orden',
         'descripcion',
         'centro_id',
+        'horas_cancelacion_default',
     ];
 
     protected $casts = [
@@ -31,6 +32,7 @@ class TipoSesion extends Model
         'precio_base'        => 'decimal:2',
         'activo'             => 'boolean',
         'orden'              => 'integer',
+        'horas_cancelacion_default' => 'integer',
     ];
 
     /**

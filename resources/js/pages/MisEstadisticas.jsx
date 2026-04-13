@@ -14,7 +14,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -130,6 +130,52 @@ export default function MisEstadisticas() {
         }
     };
 
+    // Datos Peso e IMC (Evolución)
+    const measurementsX = stats?.measurements?.map(m => new Date(m.measured_at).toLocaleDateString()) || [];
+    const healthChartData = {
+        labels: measurementsX,
+        datasets: [
+            {
+                label: 'Peso (kg)',
+                data: stats?.measurements?.map(m => m.peso) || [],
+                borderColor: '#6366F1',
+                backgroundColor: '#6366F120',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                yAxisID: 'y',
+            },
+            {
+                label: 'IMC',
+                data: stats?.measurements?.map(m => m.imc) || [],
+                borderColor: '#F43F5E',
+                backgroundColor: '#F43F5E',
+                fill: false,
+                tension: 0.4,
+                pointRadius: 4,
+                yAxisID: 'y1',
+            }
+        ]
+    };
+
+    const healthChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { font: { weight: 'bold', size: 10 } } },
+            tooltip: { mode: 'index', intersect: false },
+        },
+        scales: {
+            y: { type: 'linear', display: true, position: 'left', grid: { display: false } },
+            y1: { type: 'linear', display: true, position: 'right', grid: { display: false } },
+            x: { grid: { display: false } }
+        }
+    };
+
+    // Calcular si el último IMC es bajo
+    const lastMeasurement = stats?.measurements?.[stats.measurements.length - 1];
+    const isLowBMI = lastMeasurement && lastMeasurement.imc < 18.5;
+
     return (
         <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans text-slate-900">
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
@@ -231,6 +277,91 @@ export default function MisEstadisticas() {
                                     </div>
                                 </div>
 
+                                {/* Weight & IMC Evolution Chart */}
+                                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-[450px] flex flex-col xl:col-span-2">
+                                    <div className="flex items-center justify-between mb-10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">
+                                                <i className="fa-solid fa-weight-scale text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-black text-slate-800 tracking-tight">Evolución de Peso e IMC</h3>
+                                                <p className="text-sm text-slate-400 font-bold italic">Tus registros físicos a lo largo del tiempo</p>
+                                            </div>
+                                        </div>
+                                        {isLowBMI && (
+                                            <div className="bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl flex items-center gap-2 animate-pulse">
+                                                <i className="fa-solid fa-circle-exclamation text-rose-500"></i>
+                                                <span className="text-[10px] font-black text-rose-600 uppercase">IMC por debajo del rango ideal</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-h-[300px]">
+                                        {stats?.measurements?.length > 1 ? (
+                                            <Line data={healthChartData} options={healthChartOptions} />
+                                        ) : (
+                                            <div className="h-full flex flex-col items-center justify-center text-slate-300">
+                                                <i className="fa-solid fa-chart-line text-4xl mb-2 opacity-20"></i>
+                                                <p className="text-xs font-bold uppercase tracking-widest">Registra más pesos en "Mi Ficha" para ver la gráfica</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* Trajectory & Subscription History */}
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                                <div className="lg:col-span-4 bg-[#6366F1] p-10 rounded-[3rem] text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                                    <i className="fa-solid fa-history absolute -bottom-10 -right-10 text-[15rem] opacity-10"></i>
+                                    <h3 className="text-xl font-black mb-2 relative z-10">Mi Trayectoria</h3>
+                                    <p className="text-indigo-100 text-sm font-bold mb-8 relative z-10 opacity-80">Desde que te uniste a nosotros</p>
+                                    
+                                    <div className="space-y-6 relative z-10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+                                                <i className="fa-solid fa-star"></i>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-indigo-100/60 uppercase">Día de Alta</p>
+                                                <p className="font-black text-lg">{stats?.kpis?.primerDia || '---'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg">
+                                                <i className="fa-solid fa-trophy"></i>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-indigo-100/60 uppercase">Tiempo con nosotros</p>
+                                                <p className="font-black text-lg">{stats?.kpis?.mesesTotales || 0} Meses</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-8 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                                    <h3 className="text-lg font-black text-slate-800 tracking-tight mb-8">Historial de Planes</h3>
+                                    <div className="space-y-4">
+                                        {stats?.subscriptionHistory?.map((h, i) => (
+                                            <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center font-black">
+                                                        {h.nombre.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-black text-slate-800 text-sm">{h.nombre}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400">Iniciado el {h.fecha_inicio}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-[10px] font-black text-slate-500 bg-slate-200/50 px-2 py-1 rounded-lg uppercase">
+                                                        {h.meses} Meses
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Credit Batches Detail (linked to DB) */}

@@ -11,6 +11,8 @@ export default function MiFicha() {
     direccion: '',
     codigo_postal: '',
     ciudad: '',
+    peso: '',
+    altura: '',
     additional_attributes: []
   });
   const [files, setFiles] = useState([]);
@@ -27,6 +29,30 @@ export default function MiFicha() {
     const showAlert = (message, isError = false, title = isError ? "Error" : "Aviso") => {
         setAlertConfig({ isOpen: true, title, message, isError });
     };
+
+    const [savingStatus, setSavingStatus] = useState(false);
+    const handleSaveStatus = async (e) => {
+        e.preventDefault();
+        setSavingStatus(true);
+        try {
+            await axios.post(`/client-profile/${user.id}/progress`, {
+                peso: profileData.peso,
+                altura: profileData.altura
+            });
+            showAlert('Estado físico guardado. Podrás ver tu avance en estadísticas.');
+            // Opcional: refrescar ficha
+            fetchFicha();
+        } catch (error) {
+            showAlert('Error al guardar: ' + (error.response?.data?.message || error.message), true);
+        } finally {
+            setSavingStatus(false);
+        }
+    };
+
+    // Calcular IMC dinámico
+    const weightVal = parseFloat(profileData.peso);
+    const heightVal = parseFloat(profileData.altura);
+    const currentIMC = (weightVal > 0 && heightVal > 0) ? (weightVal / (heightVal * heightVal)).toFixed(2) : null;
 
     useEffect(() => {
         if (user && user.id) {
@@ -46,6 +72,8 @@ export default function MiFicha() {
               direccion: data.user?.direccion || '',
               codigo_postal: data.user?.codigo_postal || '',
               ciudad: data.user?.ciudad || '',
+              peso: data.user?.peso || '',
+              altura: data.user?.altura || '',
               additional_attributes: Array.isArray(data.user?.additional_attributes) ? data.user.additional_attributes : []
             });
             setFiles(Array.isArray(data.files) ? data.files : []);
@@ -72,19 +100,9 @@ export default function MiFicha() {
         e.preventDefault();
         setSavingContact(true);
         try {
-            await axios.put(`/client-profile/${user.id}`, {
-                dni: profileData.dni,
-                direccion: profileData.direccion,
-                codigo_postal: profileData.codigo_postal,
-                ciudad: profileData.ciudad
-            });
+            await axios.put(`/client-profile/${user.id}`, profileData);
+            showAlert('Datos de contacto actualizados correctamente');
             setIsEditingContact(false);
-            fetchFicha();
-        } catch (error) {
-            console.error("Error updating contact:", error);
-            const serverMsg = error.response?.data?.message || error.response?.data?.errors?.dni?.[0];
-            showAlert(
-                serverMsg || "No se pudo actualizar la información. El texto puede ser demasiado largo o el formato inválido.", 
                 true, 
                 "Error de Validación"
             );
@@ -278,6 +296,55 @@ export default function MiFicha() {
                                             </div>
                                         )}
                                     </div>
+                                </div>
+
+                                {/* Nueva Sección de Salud e IMC */}
+                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                                            <i className="fa-solid fa-heart-pulse text-rose-400"></i> Estado Físico
+                                        </h3>
+                                        {currentIMC && (
+                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${currentIMC < 18.5 ? 'bg-rose-50 text-rose-500' : (currentIMC > 25 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-500')}`}>
+                                                IMC: {currentIMC}
+                                            </span>
+                                        )}
+                                    </div>
+                                    
+                                    <form onSubmit={handleSaveStatus} className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Peso (kg)</label>
+                                                <input 
+                                                    type="number" 
+                                                    step="0.1"
+                                                    value={profileData.peso} 
+                                                    onChange={(e) => setProfileData({...profileData, peso: e.target.value})}
+                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-[#38C1A3] outline-none"
+                                                    placeholder="75.5"
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Altura (m)</label>
+                                                <input 
+                                                    type="number" 
+                                                    step="0.01"
+                                                    value={profileData.altura} 
+                                                    onChange={(e) => setProfileData({...profileData, altura: e.target.value})}
+                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-[#38C1A3] outline-none"
+                                                    placeholder="1.80"
+                                                />
+                                            </div>
+                                        </div>
+                                        <button 
+                                            type="submit" 
+                                            disabled={savingStatus}
+                                            className="w-full py-3 bg-[#38C1A3] text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#2da98d] shadow-lg shadow-teal-100 flex items-center justify-center gap-2 transition-all active:scale-95"
+                                        >
+                                            {savingStatus ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-floppy-disk"></i> Guardar Avance</>}
+                                        </button>
+                                        <p className="text-[9px] text-slate-400 font-medium text-center italic">Calculamos tu IMC automáticamente para tu gráfico de estadísticas.</p>
+                                    </form>
                                 </div>
 
                                 {/* Atributos / Notas (Compartido) */}

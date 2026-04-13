@@ -36,7 +36,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         recurrence_end: '',
         trainers: [],
         participants: [],
-        suscripciones_permitidas: []
+        suscripciones_permitidas: [],
+        horas_cancelacion: '0'
     });
 
     // Set initial session type from dynamic list
@@ -63,7 +64,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                     return { 
                         ...prev, 
                         tipo_clase: value,
-                        capacidad_maxima: config ? config.capacidad_personas.toString() : prev.capacidad_maxima
+                        capacidad_maxima: config ? config.capacidad_personas.toString() : prev.capacidad_maxima,
+                        horas_cancelacion: config ? config.horas_cancelacion_default.toString() : prev.horas_cancelacion
                     };
                 });
             };
@@ -85,7 +87,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             setFormData(prev => ({
                 ...prev,
                 fecha_hora: initialDate || getCurrentLocalTime(),
-                capacidad_maxima: defaultCapacityForType(prev.tipo_clase)
+                capacidad_maxima: defaultCapacityForType(prev.tipo_clase),
+                horas_cancelacion: getDefaultConfigForType(prev.tipo_clase)?.horas_cancelacion_default?.toString() || '24'
             }));
             setCurrentStep(1);
             setErrors({});
@@ -495,6 +498,25 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                                 {errors.recurrence_end && <p className="text-xs text-rose-500 font-bold mt-1">{errors.recurrence_end}</p>}
                                             </div>
                                         )}
+                                    </div>
+
+                                    {/* Nueva Ventana de Cancelación */}
+                                    <div className="mt-6 space-y-1.5">
+                                        <label className="text-xs font-bold text-slate-600 pl-1 flex items-center gap-2">
+                                            <i className="fa-solid fa-clock-rotate-left text-[#38C1A3]"></i>
+                                            Ventana de Cancelación (Horas antes)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="horas_cancelacion"
+                                            min="0"
+                                            value={formData.horas_cancelacion}
+                                            onChange={handleChange}
+                                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none focus:border-[#38C1A3]"
+                                        />
+                                        <p className="text-[11px] text-slate-400 pl-1 font-medium italic">
+                                            Si el cliente se desapunta con menos de {formData.horas_cancelacion}h de antelación, perderá el crédito.
+                                        </p>
                                     </div>
                                 </section>
 

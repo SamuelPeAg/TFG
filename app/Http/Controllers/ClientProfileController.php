@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Pago;
 use App\Models\ClientFile;
 use Illuminate\Http\Request;
+use App\Models\UserMeasurement;
+use App\Models\SuscripcionUsuario;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 
@@ -124,17 +126,38 @@ class ClientProfileController extends Controller
 
         $totalCredits = $creditBatches->sum('cantidad_actual');
         
-        // Próximo vencimiento
         $nextExpiration = $creditBatches->first() ? $creditBatches->first()->fecha_vencimiento->toDateString() : 'N/A';
+
+        // 5. Historial de Suscripciones (Trayectoria)
+        $subscriptionHistory = SuscripcionUsuario::where('id_usuario', $user->id)
+            ->with('suscripcion')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function($su) {
+                return [
+                    'nombre' => $su->suscripcion->nombre ?? 'Plan Externo',
+                    'fecha_inicio' => $su->created_at->toDateString(),
+                    'meses' => $su->created_at->diffInMonths(now()),
+                ];
+            });
+
+        // 6. Historial Físico (Peso/IMC)
+        $measurements = UserMeasurement::where('user_id', $user->id)
+            ->orderBy('measured_at', 'asc')
+            ->get();
 
         return response()->json([
             'attendance' => $attendance,
             'sessionTypes' => $sessionTypes,
             'creditBatches' => $creditBatches,
+            'subscriptionHistory' => $subscriptionHistory,
+            'measurements' => $measurements,
             'kpis' => [
                 'clasesMes' => $clasesMes,
                 'totalCredits' => $totalCredits,
                 'nextExpiration' => $nextExpiration,
+                'primerDia' => $subscriptionHistory->first() ? $subscriptionHistory->first()['fecha_inicio'] : null,
+                'mesesTotales' => $subscriptionHistory->first() ? $user->created_at->diffInMonths(now()) : 0,
             ]
         ]);
     }
@@ -216,5 +239,44 @@ class ClientProfileController extends Controller
         }
         
         return Storage::disk('public')->download($file->file_path, $file->file_name);
+    }
+
+    public function saveProgress(Request $request, User $user)
+    {
+        if (Auth::user()->hasRole('cliente') && Auth::id() !== $user->id) {
+            return abort(403);
+        }
+
+        $validated = $request->validate([
+            'peso' => 'required|numeric|min:20',
+            'altura' => 'required|numeric|min:0.5',
+            'date' => 'nullable|date',
+        ]);
+
+        $peso = $validated['peso'];
+        $altura = $validated['altura'];
+        // Calcular IMC
+        $imc = $peso / ($altura * $altura);
+
+        // Actualizar datos actuales en User
+        $user->update([
+            'peso' => $peso,
+            'altura' => $altura,
+        ]);
+
+        // Crear registro en el historial
+        $measurement = UserMeasurement::create([
+            'user_id' => $user->id,
+            'peso' => $peso,
+            'altura' => $altura,
+            'imc' => round($imc, 2),
+            'measured_at' => $validated['date'] ?? now()->toDateString(),
+        ]);
+
+        return response()->json([
+            'success' => true, 
+            'message' => 'Progreso guardado correctamente',
+            'measurement' => $measurement
+        ]);
     }
 }

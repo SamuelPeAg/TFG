@@ -48,6 +48,26 @@ class CreditService
     }
 
     /**
+     * Devuelve créditos a los lotes disponibles (el que más tarde caduca primero, o cualquiera válido).
+     */
+    public function refund(SuscripcionUsuario $subUser, float $amount = 1)
+    {
+        // Buscamos el lote que aún no haya caducado para devolverle el crédito
+        // No usamos 'validos()' porque ese scope filtra por cantidad_actual > 0
+        $lote = $subUser->lotes()
+            ->where('fecha_vencimiento', '>=', now())
+            ->orderBy('fecha_vencimiento', 'desc')
+            ->first();
+
+        if ($lote) {
+            $lote->increment('cantidad_actual', $amount);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Calcula la fecha de vencimiento del próximo lote basado en el día de recarga.
      */
     private function calculateNextExpiry(SuscripcionUsuario $subUser)

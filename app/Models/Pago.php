@@ -21,12 +21,14 @@ class Pago extends Model
         'metodo_pago',
         'iban',
         'importe',
+        'horas_cancelacion',
         'fecha_registro',
     ];
 
     protected $casts = [
         'fecha_registro' => 'datetime',
         'importe' => 'float',
+        'horas_cancelacion' => 'integer',
     ];
 
     public function user()

@@ -46,6 +46,9 @@ return new class extends Migration
                 ->constrained('centros')
                 ->onDelete('cascade');
 
+            // Horas mínimas para cancelar y recibir re-abono de crédito
+            $table->unsignedInteger('horas_cancelacion_default')->default(0);
+
             $table->timestamps();
             $table->softDeletes();
         });

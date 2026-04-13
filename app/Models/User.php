@@ -23,6 +23,8 @@ class User extends Authenticatable
         'activation_token_expires_at',
         'activo',
         'foto_de_perfil',
+        'altura',
+        'peso',
         'additional_attributes',
         'centro_id',
         'empresa_id',
@@ -60,5 +62,10 @@ class User extends Authenticatable
     public function clientFiles()
     {
         return $this->hasMany(ClientFile::class);
+    }
+
+    public function measurements()
+    {
+        return $this->hasMany(UserMeasurement::class);
     }
 }

@@ -29,15 +29,27 @@ return new class extends Migration
             $table->foreignId('centro_id')->nullable()->constrained('centros')->nullOnDelete();
             $table->foreignId('empresa_id')->nullable()->constrained('empresas')->nullOnDelete();
 
-            $table->json('additional_attributes')->nullable();
+            $table->decimal('altura', 5, 2)->nullable();
+            $table->decimal('peso', 5, 2)->nullable();
 
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        Schema::create('user_measurements', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->decimal('peso', 5, 2);
+            $table->decimal('altura', 5, 2);
+            $table->decimal('imc', 5, 2);
+            $table->date('measured_at');
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('user_measurements');
         Schema::dropIfExists('users');
     }
 };

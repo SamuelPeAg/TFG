@@ -22,6 +22,7 @@ return new class extends Migration
 
             $table->string('iban')->nullable();
             $table->decimal('importe', 8, 2)->default(0);
+            $table->unsignedInteger('horas_cancelacion')->default(0);
             $table->dateTime('fecha_registro');
 
             $table->timestamps();
