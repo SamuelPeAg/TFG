@@ -5,7 +5,9 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // State for selectors
-  const [selectedTrainerToAdd, setSelectedTrainerToAdd] = useState('');
+  const [trainerSearchTerm, setTrainerSearchTerm] = useState('');
+  const [showTrainerSuggestions, setShowTrainerSuggestions] = useState(false);
+  
   const [clientSearchTerm, setClientSearchTerm] = useState('');
   const [showClientSuggestions, setShowClientSuggestions] = useState(false);
 
@@ -28,9 +30,10 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   useEffect(() => {
     if (isOpen && selectedEvent) {
       setLocalProps(JSON.parse(JSON.stringify(selectedEvent.extendedProps)));
-      setSelectedTrainerToAdd('');
+      setTrainerSearchTerm('');
       setClientSearchTerm('');
       setShowClientSuggestions(false);
+      setShowTrainerSuggestions(false);
       setIsEditing(false);
       
       // Init edit form from extendedProps
@@ -61,12 +64,11 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   const sessionKey = localProps.session_key;
   
   // Handlers for interacting with Laravel
-  const handleAddTrainer = async () => {
-    if (!selectedTrainerToAdd) return;
+  const handleAddTrainer = async (trainer) => {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append('trainer_id', selectedTrainerToAdd);
+      formData.append('trainer_id', trainer.id);
       formData.append('fecha_hora', sessionKey.fecha_hora);
       formData.append('nombre_clase', sessionKey.nombre_clase);
       formData.append('centro', sessionKey.centro);
@@ -76,13 +78,15 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       });
       if (res.data.success) {
         setLocalProps({ ...localProps, entrenadores: res.data.trainers });
+        setTrainerSearchTerm('');
+        setShowTrainerSuggestions(false);
         if (onSuccess) onSuccess();
       }
     } catch (err) {
+      console.error(err);
       alert("Error al añadir entrenador");
     } finally {
       setIsSubmitting(false);
-      setSelectedTrainerToAdd('');
     }
   };
 
@@ -124,10 +128,23 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       });
       
       if (res.data.success) {
+        // Optimistic update
+        const newStudent = {
+            id: user.id,
+            nombre: user.name,
+            pago: 'Pendiente',
+            coste: 0,
+            foto: user.photo || null
+        };
+        setLocalProps({
+            ...localProps,
+            alumnos: [...(localProps.alumnos || []), newStudent],
+            alumnos_count: (localProps.alumnos_count || 0) + 1
+        });
+
         if (onSuccess) onSuccess();
         setClientSearchTerm('');
         setShowClientSuggestions(false);
-        onClose(); 
       } else {
         alert(res.data.error || "Error al añadir alumno");
       }
@@ -210,7 +227,28 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
 
         if (res.data.success) {
             if (onSuccess) onSuccess();
-            onClose();
+            setIsEditing(false);
+            
+            // Re-map suscripciones_detalles for local state
+            const selectedSubs = suscripciones.filter(s => editSuscripciones.includes(s.id))
+                                             .map(s => ({ id: s.id, nombre: s.nombre }));
+
+            setLocalProps({
+                ...localProps,
+                clase_nombre: editNombre,
+                centro: editCentro,
+                tipo_clase: editTipo,
+                capacidad_maxima: editCapacidad,
+                suscripciones_detalles: selectedSubs,
+                suscripciones_permitidas: editSuscripciones,
+                hora: editFecha.split('T')[1].substring(0, 5),
+                session_key: {
+                    ...sessionKey,
+                    fecha_hora: editFecha.replace('T', ' '),
+                    nombre_clase: editNombre,
+                    centro: editCentro
+                }
+            });
         }
     } catch (err) {
         console.error(err);
@@ -229,189 +267,124 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   const dayName = rawDate ? days[rawDate.getDay()] : '...';
   const dayNum = rawDate ? rawDate.getDate() : '...';
   const monthName = rawDate ? months[rawDate.getMonth()] : '...';
+  const horaFormat = localProps.hora || (rawDate ? `${rawDate.getHours().toString().padStart(2,'0')}:${rawDate.getMinutes().toString().padStart(2,'0')}` : '...');
 
   const filteredUsers = users.filter(u => 
-      u.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) &&
+      (u.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) || (u.dni && u.dni.toLowerCase().includes(clientSearchTerm.toLowerCase()))) &&
       !(localProps.alumnos || []).find(a => a.id === u.id)
   ).slice(0, 5);
 
+  const filteredTrainersList = entrenadores.filter(t => 
+      t.name.toLowerCase().includes(trainerSearchTerm.toLowerCase()) &&
+      !(localProps.entrenadores || []).find(e => e.id === t.id)
+  ).slice(0, 5);
+
   return (
-    <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 sm:p-6 backdrop-blur-sm"
+    <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center p-2 sm:p-6 backdrop-blur-md"
          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       
-      <div className="w-full max-w-4xl bg-white rounded-[24px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="w-full max-w-4xl bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[95vh]">
         
-        {/* Header */}
-        <div className="bg-[#0f172a] text-white pt-8 pb-10 text-center relative px-4 rounded-t-[24px]">
+        {/* Header Premium with Gradient */}
+        <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white pt-8 pb-10 text-center relative px-4 shrink-0 shadow-lg">
            <button 
              onClick={onClose}
-             className="absolute top-4 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+             className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 hover:scale-110 transition-all border border-white/5"
            >
-             <i className="fa-solid fa-xmark"></i>
+             <i className="fa-solid fa-xmark text-lg"></i>
            </button>
-           <h3 className="text-[11px] font-black tracking-[0.2em] text-slate-400 mb-1 leading-none">{dayName}</h3>
-           <div className="flex items-baseline justify-center gap-2">
-               <span className="text-5xl font-black tracking-tight">{dayNum}</span>
-               <span className="text-2xl font-semibold text-slate-300">de {monthName}</span>
+           <h3 className="text-[12px] font-black tracking-[0.3em] text-[#38b2ac] mb-2 leading-none uppercase">{dayName}</h3>
+           <div className="flex items-baseline justify-center gap-3">
+               <span className="text-6xl font-black tracking-tighter drop-shadow-md">{dayNum}</span>
+               <span className="text-3xl font-medium text-slate-400">de {monthName}</span>
            </div>
         </div>
 
-        <div className="flex flex-col md:flex-row min-h-[500px]">
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
            
-           {/* Left Column */}
-           <div className="flex-1 p-8 md:pr-10 bg-white">
+           {/* Left Column (Main Info & Attendees) */}
+           <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-white scrollbar-hide">
               
-              {isEditing ? (
-                  <div className="mb-5 space-y-4">
-                      <div>
-                          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 block">Nombre de la Clase</label>
-                          <input 
-                              type="text" 
-                              value={editNombre} 
-                              onChange={(e) => setEditNombre(e.target.value)}
-                              className="w-full text-2xl font-black text-slate-900 border-b-2 border-[#4BB7AE] outline-none pb-1 bg-transparent"
-                              placeholder="Nombre de la clase"
-                          />
-                      </div>
-                      <div>
-                          <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 block">Fecha y Hora</label>
-                          <input 
-                              type="datetime-local" 
-                              value={editFecha} 
-                              onChange={(e) => setEditFecha(e.target.value)}
-                              className="w-full text-sm font-bold text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200 outline-none focus:border-[#4BB7AE]"
-                          />
-                      </div>
-                  </div>
-              ) : (
-                  <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none mb-5">
-                      {localProps.clase_nombre || "Clase sin Nombre"}
-                  </h2>
-              )}
-
-              {/* Pills Area */}
-              <div className="flex flex-wrap gap-3 mb-10">
+              <div className="mb-8">
                   {isEditing ? (
-                      <>
-                          {/* Centros Selector */}
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
-                              <i className="fa-solid fa-building text-[#4BB7AE] text-sm"></i>
-                              <select 
-                                  value={editCentro} 
-                                  onChange={(e) => setEditCentro(e.target.value)}
-                                  className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 uppercase cursor-pointer"
-                              >
-                                  {centros.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
-                              </select>
-                          </div>
-
-                          {/* Tipo Clase Selector */}
-                          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
-                              <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
-                              <select 
-                                  value={editTipo} 
-                                  onChange={(e) => {
-                                      setEditTipo(e.target.value);
-                                      const defaultCaps = { EP: 1, DUO: 2, TRIO: 3, GRUPO_PRIVADO: 4, GRUPO: 8 };
-                                      setEditCapacidad(defaultCaps[e.target.value] || 1);
-                                  }}
-                                  className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 uppercase cursor-pointer"
-                              >
-                                  {tiposSesion.map(t => (
-                                      <option key={t.id} value={t.slug}>{t.nombre}</option>
-                                  ))}
-                              </select>
-                          </div>
-                           {/* Filtrado dinámico de tipos por centro */}
-                           {(() => {
-                               const selectedCentroObj = centros.find(c => c.nombre === editCentro);
-                               const selectedCentroId = selectedCentroObj ? selectedCentroObj.id : null;
-                               const filteredTipos = tiposSesion.filter(t => t.centro_id === null || t.centro_id === selectedCentroId);
-                               
-                               return (
-                                   <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
-                                       <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
-                                       <select 
-                                           value={editTipo} 
-                                           onChange={(e) => {
-                                               const val = e.target.value;
-                                               setEditTipo(val);
-                                               const config = tiposSesion.find(t => t.slug === val);
-                                               if (config) setEditCapacidad(config.capacidad_personas);
-                                           }}
-                                           className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 uppercase cursor-pointer"
-                                       >
-                                           {filteredTipos.length > 0 ? (
-                                               filteredTipos.map(t => (
-                                                   <option key={t.id} value={t.slug}>{t.nombre}</option>
-                                               ))
-                                           ) : (
-                                               <option value="">Sin tipos disponibles</option>
-                                           )}
-                                       </select>
-                                   </div>
-                               );
-                           })()}
-
-                          {(() => {
-                               const config = tiposSesion.find(t => t.slug === editTipo);
-                               const isFixed = config ? config.capacidad_fija : false;
-                               if (!isFixed) {
-                                   return (
-                                       <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-xl border border-transparent focus-within:border-[#4BB7AE] transition-all">
-                                           <i className="fa-solid fa-users text-[#4BB7AE] text-sm"></i>
-                                           <input 
-                                               type="number" 
-                                               value={editCapacidad} 
-                                               onChange={(e) => setEditCapacidad(e.target.value)}
-                                               min="1"
-                                               className="bg-transparent border-none outline-none text-xs font-bold text-slate-600 w-12"
-                                               placeholder="Límite"
-                                           />
-                                       </div>
-                                   );
-                               } else {
-                                   return (
-                                       <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full cursor-not-allowed opacity-70">
-                                           <i className="fa-solid fa-users text-slate-400 text-sm"></i>
-                                           <span className="text-xs font-bold text-slate-500">{editCapacidad} Persona{editCapacidad !== '1' ? 's' : ''}</span>
-                                           <i className="fa-solid fa-lock text-slate-400 text-xs ml-2"></i>
-                                       </div>
-                                   );
-                               }
-                           })()}
-                      </>
-                  ) : (
-                      <>
-                          <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                              <i className="fa-solid fa-clock text-[#4BB7AE] text-sm"></i>
-                              <span className="text-sm font-bold text-slate-600">{localProps.hora || "..."}</span>
-                          </div>
-                          <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                              <i className="fa-solid fa-building text-[#4BB7AE] text-sm"></i>
-                              <span className="text-sm font-bold text-slate-600 uppercase">{localProps.centro || "..."}</span>
-                          </div>
-                          {localProps.tipo_clase && (
-                              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-                                  <i className="fa-solid fa-layer-group text-[#4BB7AE] text-sm"></i>
-                                  <span className="text-sm font-bold text-slate-600 uppercase">{sessionTypeLabel(localProps.tipo_clase)}</span>
-                                  {localProps.capacidad_maxima ? (
-                                      <span className="text-xs font-bold text-slate-500 bg-slate-200 px-2 py-1 rounded-full">Límite: {localProps.capacidad_maxima}</span>
-                                  ) : null}
+                      <div className="space-y-6 animate-in fade-in slide-in-from-left-4">
+                          <div>
+                              <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest mb-2 block">Nombre de la Clase</label>
+                              <div className="relative group">
+                                  <input 
+                                      type="text" 
+                                      value={editNombre} 
+                                      onChange={(e) => setEditNombre(e.target.value)}
+                                      className="w-full text-3xl font-black text-[#0f172a] border-b-2 border-slate-100 focus:border-[#38b2ac] outline-none pb-2 bg-transparent transition-all"
+                                      placeholder="Nombre de la clase"
+                                  />
                               </div>
-                          )}
-                      </>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                  <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest mb-2 block">Fecha y Hora</label>
+                                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 focus-within:border-[#38b2ac] transition-all">
+                                      <i className="fa-solid fa-calendar-day text-[#38b2ac]"></i>
+                                      <input 
+                                          type="datetime-local" 
+                                          value={editFecha} 
+                                          onChange={(e) => setEditFecha(e.target.value)}
+                                          className="w-full bg-transparent outline-none font-bold text-slate-700 text-sm"
+                                      />
+                                  </div>
+                              </div>
+                              <div>
+                                  <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest mb-2 block">Centro</label>
+                                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 focus-within:border-[#38b2ac] transition-all">
+                                      <i className="fa-solid fa-building text-[#38b2ac]"></i>
+                                      <select 
+                                          value={editCentro} 
+                                          onChange={(e) => setEditCentro(e.target.value)}
+                                          className="w-full bg-transparent outline-none font-bold text-slate-700 text-sm uppercase"
+                                      >
+                                          {centros.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+                                      </select>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  ) : (
+                      <div className="animate-in fade-in duration-500">
+                          <h2 className="text-4xl font-black text-[#0f172a] tracking-tight leading-[1.1] mb-6">
+                              {localProps.clase_nombre || "Clase sin Nombre"}
+                          </h2>
+                          <div className="flex flex-wrap gap-3">
+                              <div className="flex items-center gap-2.5 px-5 py-2.5 bg-[#f1f5f9] rounded-2xl border border-slate-100 shadow-sm">
+                                  <i className="fa-solid fa-clock text-[#38b2ac] text-sm"></i>
+                                  <span className="text-[13px] font-black text-[#1e293b]">{horaFormat}</span>
+                              </div>
+                              <div className="flex items-center gap-2.5 px-5 py-2.5 bg-[#f1f5f9] rounded-2xl border border-slate-100 shadow-sm transition-all">
+                                  <i className="fa-solid fa-location-dot text-[#38b2ac] text-sm"></i>
+                                  <span className="text-[13px] font-black text-[#1e293b] uppercase tracking-wide">{localProps.centro}</span>
+                              </div>
+                              {localProps.tipo_clase && (
+                                  <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border shadow-sm transition-all" 
+                                       style={{ backgroundColor: localProps.tipo_color ? localProps.tipo_color + '15' : '#f1f5f9', borderColor: localProps.tipo_color || '#e2e8f0' }}>
+                                      <i className="fa-solid fa-layer-group text-sm" style={{ color: localProps.tipo_color || '#64748b' }}></i>
+                                      <span className="text-[13px] font-black uppercase tracking-wide" style={{ color: localProps.tipo_color || '#475569' }}>
+                                          {sessionTypeLabel(localProps.tipo_clase)}
+                                      </span>
+                                  </div>
+                              )}
+                          </div>
+                      </div>
                   )}
               </div>
 
-              {/* Subscriptions Section */}
-              <div className="mb-8 p-5 bg-[#F0FDFB] border border-[#CCFBF1] rounded-[20px]">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-[#2D7A74] mb-3">
+              {/* Subscriptions Area with Premium Visuals */}
+              <div className="mb-10">
+                   <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 px-1">
                       SUSCRIPCIONES CANJEABLES
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
+                   </h4>
+                   <div className={`p-6 rounded-[24px] border transition-all ${isEditing ? 'bg-white border-[#38b2ac] shadow-xl' : 'bg-slate-50/50 border-slate-100'}`}>
                       {isEditing ? (
-                          <div className="grid grid-cols-2 gap-2 w-full">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
                               {suscripciones.map(s => {
                                   const isSelected = editSuscripciones.includes(s.id);
                                   return (
@@ -421,158 +394,195 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                               if (isSelected) setEditSuscripciones(editSuscripciones.filter(id => id !== s.id));
                                               else setEditSuscripciones([...editSuscripciones, s.id]);
                                           }}
-                                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold border transition-all ${isSelected ? 'bg-[#4BB7AE] text-white border-transparent shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4BB7AE]'}`}
+                                          className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black transition-all border-2 ${isSelected ? 'bg-[#38b2ac] text-white border-[#38b2ac] shadow-md scale-[1.02]' : 'bg-white text-slate-500 border-slate-100 hover:border-[#38b2ac]/30'}`}
                                       >
-                                          <i className={`fa-solid ${isSelected ? 'fa-check' : 'fa-circle-plus opacity-50'}`}></i>
+                                          <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-white text-[#38b2ac]' : 'bg-slate-100 text-slate-300'}`}>
+                                              <i className={`fa-solid ${isSelected ? 'fa-check text-[10px]' : 'fa-plus text-[10px]'}`}></i>
+                                          </div>
                                           <span className="truncate">{s.nombre}</span>
                                       </button>
                                   );
                               })}
                           </div>
                       ) : (
-                          localProps.suscripciones_detalles && localProps.suscripciones_detalles.length > 0 ? (
-                              localProps.suscripciones_detalles.map(s => (
-                                  <span key={s.id} className="inline-flex items-center gap-2 bg-white border border-[#99F6E4] px-3 py-1.5 rounded-xl shadow-sm">
-                                      <div className="w-2 h-2 rounded-full bg-[#4BB7AE]"></div>
-                                      <span className="text-xs font-bold text-slate-700">{s.nombre}</span>
-                                  </span>
-                              ))
-                          ) : (
-                              <div className="text-xs text-slate-400 font-bold italic py-1">
-                                  <i className="fa-solid fa-circle-exclamation mr-1.5"></i>
-                                  No hay filtros de suscripción aplicados (Acceso libre)
-                              </div>
-                          )
-                      )}
-                  </div>
-              </div>
-
-              {/* Attendees List */}
-              <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">
-                  ASISTENTES CONFIRMADOS ({(localProps.alumnos || []).length}{localProps.capacidad_maxima ? ` / ${localProps.capacidad_maxima}` : ''})
-              </h4>
-              
-              <div className="space-y-3 mb-6">
-                 {(localProps.alumnos || []).length === 0 ? (
-                     <div className="text-sm text-slate-400 font-medium italic mb-6">No hay asistentes apuntados.</div>
-                 ) : (
-                     localProps.alumnos.map((alum) => (
-                         <div key={alum.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 shadow-sm rounded-2xl group hover:border-[#4BB7AE]/30 hover:shadow-md transition-all">
-                             <div className="flex items-center gap-4">
-                                 <div className="w-12 h-12 bg-teal-100/60 rounded-xl flex items-center justify-center text-[#4BB7AE] font-black text-lg">
-                                     {alum.nombre.charAt(0).toUpperCase()}
-                                 </div>
-                                 <div>
-                                     <div className="font-bold text-slate-800 text-sm leading-tight">{alum.nombre}</div>
-                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{alum.pago || "Suscripción"}</div>
-                                 </div>
-                             </div>
-                             <div className="flex items-center gap-5">
-                                 <div className="font-black text-slate-900 text-sm">
-                                     {window.IS_ADMIN ? `€${Number(alum.coste || 0).toFixed(2)}` : ''}
-                                 </div>
-                                 {window.IS_ADMIN && (
-                                     <button 
-                                         onClick={() => handleRemoveClient(alum.id)}
-                                         disabled={isSubmitting}
-                                         className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors disabled:opacity-50"
-                                         title="Eliminar Alumno"
-                                     >
-                                        <i className="fa-solid fa-trash-can"></i>
-                                     </button>
-                                 )}
-                             </div>
-                         </div>
-                     ))
-                 )}
-              </div>
-
-              {/* Search Client */}
-              {window.IS_ADMIN && (
-                  <div className="relative mt-2">
-                       <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#38C1A3] mb-3 px-1">
-                           <i className="fa-solid fa-plus-circle mr-2"></i>Añadir Alumno a la Sesión
-                       </h4>
-                       <div className="search-box !bg-slate-50 !shadow-none !border-slate-200 focus-within:!border-[#38C1A3] focus-within:!bg-white transition-all group overflow-visible">
-                          <i className="fa-solid fa-magnifying-glass text-slate-300 group-focus-within:text-[#38C1A3]"></i>
-                          <div className="search-anchor w-full">
-                              <input 
-                                  type="text" 
-                                  placeholder="Buscar por nombre, email o DNI..." 
-                                  className="w-full py-3 bg-transparent outline-none font-bold text-xs text-slate-700 placeholder:text-slate-300"
-                                  value={clientSearchTerm}
-                                  onChange={(e) => {
-                                      setClientSearchTerm(e.target.value);
-                                      setShowClientSuggestions(true);
-                                  }}
-                                  onFocus={() => setShowClientSuggestions(true)}
-                                  onBlur={() => setTimeout(() => setShowClientSuggestions(false), 250)}
-                              />
-                          </div>
-                      </div>
-                      
-                      {showClientSuggestions && clientSearchTerm && (
-                          <div className="absolute top-full left-0 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] mt-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                              <div className="bg-slate-50 px-4 py-2 border-b border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                  Resultados de búsqueda
-                              </div>
-                              {filteredUsers.length === 0 ? (
-                                  <div className="p-6 text-xs font-bold text-slate-400 text-center italic">
-                                      <i className="fa-solid fa-face-frown mr-2"></i>No se encontraron clientes
-                                  </div>
+                          <div className="flex flex-wrap gap-2.5">
+                              {localProps.suscripciones_detalles && localProps.suscripciones_detalles.length > 0 ? (
+                                  localProps.suscripciones_detalles.map(s => (
+                                      <span key={s.id} className="inline-flex items-center gap-3 bg-white border border-slate-100 px-4 py-2 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                                          <div className="w-2.5 h-2.5 rounded-full bg-[#38b2ac]"></div>
+                                          <span className="text-xs font-black text-[#334155]">{s.nombre}</span>
+                                      </span>
+                                  ))
                               ) : (
-                                  <div className="max-h-[280px] overflow-y-auto">
-                                      {filteredUsers.map(u => (
-                                          <div 
-                                             key={u.id} 
-                                             className="px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 cursor-pointer flex items-center gap-3 transition-all hover:pl-6 group"
-                                             onClick={() => handleAddClient(u)}
-                                          >
-                                              <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#38C1A3] flex items-center justify-center font-black text-sm border border-teal-100/50 overflow-hidden shrink-0">
-                                                  {u.photo ? (
-                                                      <img src={u.photo} alt="" className="w-full h-full object-cover" />
-                                                  ) : (
-                                                      <span>{u.name.charAt(0).toUpperCase()}</span>
-                                                  )}
-                                              </div>
-                                              <div className="flex-1 min-w-0">
-                                                  <div className="text-sm font-black text-slate-700 truncate">{u.name}</div>
-                                                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight truncate">
-                                                      {u.email} {u.dni ? `• ${u.dni}` : ''}
-                                                  </div>
-                                              </div>
-                                              <i className="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:text-[#38C1A3] transition-transform group-hover:translate-x-1"></i>
-                                          </div>
-                                      ))}
+                                  <div className="flex items-center gap-3 text-[13px] text-slate-400 font-bold italic py-2">
+                                      <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 shrink-0">
+                                          <i className="fa-solid fa-unlock-keyhole"></i>
+                                      </div>
+                                      Acceso libre - Sin filtros aplicados
                                   </div>
                               )}
                           </div>
                       )}
+                   </div>
+              </div>
+
+              {/* Attendees List Section */}
+              <div className="mb-6">
+                   <div className="flex items-center justify-between mb-5 px-1">
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                           Asistentes Confirmados
+                        </h4>
+                        <div className="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-black text-slate-500">
+                             {localProps.alumnos_count || 0} / {localProps.capacidad_maxima || '∞'}
+                        </div>
+                   </div>
+
+                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {(localProps.alumnos || []).length === 0 ? (
+                          <div className="col-span-full py-10 text-center bg-slate-50/50 rounded-[24px] border border-slate-100">
+                               <p className="text-sm font-bold text-slate-400 italic">No hay asistentes inscritos aún.</p>
+                          </div>
+                      ) : (
+                          localProps.alumnos.map((alum) => (
+                              <div key={alum.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 shadow-sm rounded-2xl group hover:border-[#38b2ac]/30 hover:shadow-lg transition-all">
+                                  <div className="flex items-center gap-3">
+                                      <div className="w-11 h-11 shrink-0 rounded-2xl overflow-hidden bg-slate-100 ring-2 ring-white shadow-sm">
+                                          {alum.foto ? (
+                                              <img src={alum.foto} className="w-full h-full object-cover" />
+                                          ) : (
+                                              <div className="w-full h-full flex items-center justify-center bg-teal-50 text-[#38b2ac] font-black text-xs">
+                                                  {alum.nombre.charAt(0).toUpperCase()}
+                                              </div>
+                                          )}
+                                      </div>
+                                      <div className="min-w-0">
+                                          <div className="font-black text-[#1e293b] text-[13px] leading-tight truncate">{alum.nombre}</div>
+                                          <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{alum.pago || "Bono"}</div>
+                                      </div>
+                                  </div>
+                                  <div className="flex items-center gap-4 shrink-0">
+                                      <div className="font-black text-[#0f172a] text-[13px]">
+                                          {window.IS_ADMIN ? `€${Number(alum.coste || 0).toFixed(2)}` : ''}
+                                      </div>
+                                      {window.IS_ADMIN && (
+                                          <button 
+                                              onClick={() => handleRemoveClient(alum.id)}
+                                              disabled={isSubmitting}
+                                              className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-200 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100"
+                                          >
+                                             <i className="fa-solid fa-circle-xmark text-lg"></i>
+                                          </button>
+                                      )}
+                                  </div>
+                              </div>
+                          ))
+                      )}
+                   </div>
+              </div>
+
+              {/* Integrated Search Tool */}
+              {window.IS_ADMIN && (
+                  <div className="relative mt-8 pt-6 border-t border-slate-50">
+                       <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#38b2ac] mb-4 px-1">
+                           <i className="fa-solid fa-plus-circle mr-2"></i> Inscribir Alumno
+                       </h4>
+                       <div className="relative group">
+                           <i className="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38b2ac] transition-colors"></i>
+                           <input 
+                               type="text" 
+                               placeholder="Buscar por nombre, email o DNI para añadir rápido..." 
+                               className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-transparent focus:border-[#38b2ac]/20 focus:bg-white outline-none rounded-2xl font-bold text-sm text-slate-700 placeholder:text-slate-300 transition-all shadow-sm"
+                               value={clientSearchTerm}
+                               onChange={(e) => {
+                                   setClientSearchTerm(e.target.value);
+                                   setShowClientSuggestions(true);
+                               }}
+                               onFocus={() => setShowClientSuggestions(true)}
+                               onBlur={() => setTimeout(() => setShowClientSuggestions(false), 300)}
+                           />
+
+                           {showClientSuggestions && clientSearchTerm && (
+                               <div className="absolute bottom-full left-0 w-full mb-3 bg-white border border-slate-100 rounded-[24px] shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                   <div className="bg-slate-50/50 px-5 py-3 border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                       Sugerencias de Clientes
+                                   </div>
+                                   {filteredUsers.length === 0 ? (
+                                       <div className="p-8 text-sm font-bold text-slate-400 text-center italic">
+                                           No hemos encontrado clientes para añadir.
+                                       </div>
+                                   ) : (
+                                       <div className="max-h-[300px] overflow-y-auto p-2 scrollbar-hide flex flex-col gap-1">
+                                           {filteredUsers.map(u => (
+                                               <div 
+                                                  key={u.id} 
+                                                  className="p-3 rounded-2xl hover:bg-[#38b2ac]/5 cursor-pointer flex items-center justify-between transition-all group/res border border-transparent hover:border-[#38b2ac]/10"
+                                                  onClick={() => handleAddClient(u)}
+                                               >
+                                                   <div className="flex items-center gap-3">
+                                                       <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-slate-100 shadow-sm bg-slate-100">
+                                                           {u.foto ? (
+                                                               <img src={u.foto} className="w-full h-full object-cover" />
+                                                           ) : (
+                                                               <div className="w-full h-full flex items-center justify-center text-slate-400 font-black text-xs">
+                                                                   {u.name.charAt(0).toUpperCase()}
+                                                               </div>
+                                                           )}
+                                                       </div>
+                                                       <div className="min-w-0">
+                                                           <div className="text-[13px] font-black text-slate-800 group-hover/res:text-[#38b2ac] transition-colors">{u.name}</div>
+                                                           <div className="text-[10px] text-slate-400 font-bold uppercase truncate">{u.email} {u.dni ? `• ${u.dni}` : ''}</div>
+                                                       </div>
+                                                   </div>
+                                                   <i className="fa-solid fa-plus-circle text-lg text-slate-200 group-hover/res:text-[#38b2ac] transition-all"></i>
+                                               </div>
+                                           ))}
+                                       </div>
+                                   )}
+                               </div>
+                           )}
+                       </div>
                   </div>
               )}
            </div>
 
-           {/* Right Column */}
-           <div className="w-full md:w-72 border-t md:border-t-0 md:border-l border-slate-100 bg-white flex flex-col pt-8 pb-10 px-8 relative">
+           {/* Right Column (Staff) */}
+           <div className="w-full md:w-[300px] border-t md:border-t-0 md:border-l border-slate-100 bg-[#f8fafc]/50 flex flex-col p-6 md:p-8 shrink-0 relative overflow-y-auto scrollbar-hide">
                 
-                <h4 className="text-[11px] font-black uppercase tracking-widest text-[#4BB7AE] mb-4 text-center">
-                    EQUIPO TÉCNICO
-                </h4>
+                <div className="flex items-center gap-3 mb-6 px-1">
+                    <div className="w-8 h-8 rounded-xl bg-[#38b2ac] flex items-center justify-center text-white shadow-lg">
+                         <i className="fa-solid fa-user-tie text-xs"></i>
+                    </div>
+                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#0f172a]">
+                        Equipo Técnico
+                    </h4>
+                </div>
                 
-                <div className="mb-10 w-full flex flex-col gap-3">
+                <div className="space-y-3 mb-10">
                     {(localProps.entrenadores || []).length === 0 ? (
-                        <div className="border border-dashed border-slate-200 rounded-xl py-3 px-4 text-center text-xs font-bold text-slate-400 tracking-wide uppercase">
-                            SIN ASIGNACIÓN
+                        <div className="bg-white/60 border-2 border-dashed border-slate-100 rounded-[20px] p-8 text-center">
+                            <i className="fa-solid fa-user-ninja text-slate-200 text-2xl mb-3 block"></i>
+                            <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">Sin Asignación</span>
                         </div>
                     ) : (
                         localProps.entrenadores.map(t => (
-                            <div key={t.id} className="flex items-center justify-between p-3 border border-slate-100 rounded-xl group/trainer bg-slate-50">
-                                <div className="text-sm font-bold text-slate-700">{t.name || 'Personal'}</div>
+                            <div key={t.id} className="flex items-center justify-between p-3.5 bg-white border border-slate-100 rounded-2xl shadow-sm group/trainer hover:border-[#38b2ac]/30 transition-all duration-300">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-100 shadow-sm shrink-0">
+                                        {t.foto ? (
+                                            <img src={t.foto} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full bg-[#f1f5f9] text-[#64748b] flex items-center justify-center font-black text-xs">
+                                                {t.initial || t.name.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="text-[13px] font-black text-slate-700 truncate">{t.name}</div>
+                                </div>
                                 {window.IS_ADMIN && (
                                     <button 
                                         onClick={() => handleRemoveTrainer(t.id)}
                                         disabled={isSubmitting}
-                                        className="text-slate-300 hover:text-rose-500 transition-colors hidden group-hover/trainer:block disabled:opacity-50"
+                                        className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-200 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/trainer:opacity-100"
                                     >
                                         <i className="fa-solid fa-xmark"></i>
                                     </button>
@@ -582,103 +592,128 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                     )}
                 </div>
 
-                {window.IS_ADMIN ? (
-                    <>
-                        <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4 text-center">
-                            ASIGNAR PERSONAL
-                        </h4>
-                        <div className="flex gap-2 mb-auto">
-                            <div className="relative flex-1">
-                                <select 
-                                    value={selectedTrainerToAdd}
-                                    onChange={(e) => setSelectedTrainerToAdd(e.target.value)}
-                                    className="w-full h-10 appearance-none bg-white border border-slate-200 rounded-xl px-4 py-0 text-xs font-bold text-slate-700 outline-none focus:border-[#0f172a] transition-colors shadow-sm"
-                                >
-                                    <option value="">Elegir...</option>
-                                    {entrenadores.map(t => (
-                                        <option key={t.id} value={t.id}>{t.name}</option>
-                                    ))}
-                                </select>
-                                <i className="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none"></i>
-                            </div>
-                            <button 
-                                onClick={handleAddTrainer}
-                                disabled={!selectedTrainerToAdd || isSubmitting}
-                                className="w-10 h-10 shrink-0 bg-[#0f172a] text-white rounded-xl flex items-center justify-center hover:bg-[#1e293b] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <i className="fas fa-plus text-sm"></i>
-                            </button>
-                        </div>
-                        
-                        <hr className="my-8 border-slate-100" />
+                {window.IS_ADMIN && (
+                    <div className="relative mb-auto pb-8">
+                        <div className="relative group">
+                            <i className="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38b2ac] transition-colors"></i>
+                            <input 
+                                type="text"
+                                placeholder="Añadir profesor..."
+                                className="w-full pl-11 pr-4 py-3 bg-white border border-slate-100 rounded-xl outline-none focus:border-[#38b2ac] font-bold text-xs shadow-sm"
+                                value={trainerSearchTerm}
+                                onChange={(e) => {
+                                    setTrainerSearchTerm(e.target.value);
+                                    setShowTrainerSuggestions(true);
+                                }}
+                                onFocus={() => setShowTrainerSuggestions(true)}
+                                onBlur={() => setTimeout(() => setShowTrainerSuggestions(false), 250)}
+                            />
 
-                        {isEditing ? (
-                            <button 
-                               onClick={handleSaveSession}
-                               disabled={isSubmitting}
-                               className="w-full py-4 bg-[#4BB7AE] text-white text-center text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-teal-500/20 transition-all hover:bg-teal-600 disabled:opacity-50"
-                            >
-                                <i className="fas fa-check-circle mr-2"></i> GUARDAR CAMBIOS
-                            </button>
-                        ) : (
-                            <button 
-                               onClick={handleDeleteSession}
-                               disabled={isSubmitting}
-                               className="w-full py-4 text-center text-[11px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
-                            >
-                                <i className="fas fa-trash-can mr-2"></i> ELIMINAR SESIÓN
-                            </button>
-                        )}
-                    </>
-                ) : (
-                    <div className="mt-auto">
-                        <hr className="my-8 border-slate-100" />
-                        {(() => {
-                           const isJoined = (localProps.alumnos || []).some(a => String(a.id) === String(window.AppConfig?.user?.id));
-                           if (isJoined) {
-                               return (
-                                   <button 
-                                      onClick={() => handleRemoveClient(window.AppConfig?.user?.id)}
-                                      disabled={isSubmitting}
-                                      className="w-full py-4 text-center text-sm font-black uppercase tracking-widest text-white bg-rose-500 hover:bg-rose-600 rounded-xl shadow-lg shadow-rose-500/20 transition-all disabled:opacity-50"
-                                   >
-                                       <i className="fa-solid fa-user-xmark mr-2"></i> CANCELAR CLASE
-                                   </button>
-                               );
-                           } else {
-                               return (
-                                   <button 
-                                      onClick={() => handleAddClient(window.AppConfig?.user)}
-                                      disabled={isSubmitting}
-                                      className="w-full py-4 text-center text-sm font-black uppercase tracking-widest text-white bg-[#0f172a] hover:bg-[#1e293b] rounded-xl shadow-lg shadow-slate-900/20 transition-all disabled:opacity-50"
-                                   >
-                                       <i className="fa-solid fa-check mr-2"></i> INSCRIBIRME
-                                   </button>
-                               );
-                           }
-                        })()}
+                            {showTrainerSuggestions && trainerSearchTerm && (
+                                <div className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-2xl shadow-2xl border border-slate-100 z-[100] overflow-hidden p-1 flex flex-col gap-1 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                    {filteredTrainersList.length === 0 ? (
+                                        <div className="p-4 text-[11px] font-bold text-slate-400 text-center uppercase tracking-widest">Sin resultados</div>
+                                    ) : (
+                                        filteredTrainersList.map(t => (
+                                            <div 
+                                                key={t.id}
+                                                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-[#38b2ac]/5 cursor-pointer transition-all group/p"
+                                                onClick={() => handleAddTrainer(t)}
+                                            >
+                                                <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-100 shadow-sm shrink-0">
+                                                    {t.foto_de_perfil ? (
+                                                        <img src={t.foto_de_perfil} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-[#f1f5f9] text-[#64748b] flex items-center justify-center font-black text-[10px]">
+                                                            {t.name.charAt(0).toUpperCase()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="text-[12px] font-black text-slate-700 group-hover/p:text-[#38b2ac]">{t.name}</div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
+                
+                {/* Actions Area */}
+                <div className="mt-8 pt-8 border-t border-slate-100 space-y-3">
+                    {window.IS_ADMIN ? (
+                         <>
+                            {isEditing ? (
+                                <div className="space-y-4">
+                                    <button 
+                                       onClick={handleSaveSession}
+                                       disabled={isSubmitting}
+                                       className="w-full py-4 bg-[#38b2ac] text-white text-center text-[11px] font-black uppercase tracking-[0.25em] rounded-2xl shadow-xl shadow-teal-500/30 transition-all hover:bg-teal-600 active:scale-95 disabled:opacity-50"
+                                    >
+                                        <i className="fas fa-check-circle mr-3"></i> Guardar Todo
+                                    </button>
+                                </div>
+                            ) : (
+                                <button 
+                                   onClick={handleDeleteSession}
+                                   disabled={isSubmitting}
+                                   className="w-full py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    <i className="fas fa-trash-can mr-2"></i> Eliminar Sesión
+                                </button>
+                            )}
+                         </>
+                    ) : (
+                        <div className="animate-in fade-in duration-700">
+                             {(() => {
+                               const isJoined = (localProps.alumnos || []).some(a => String(a.id) === String(window.AppConfig?.user?.id));
+                               if (isJoined) {
+                                   return (
+                                       <button 
+                                          onClick={() => handleRemoveClient(window.AppConfig?.user?.id)}
+                                          disabled={isSubmitting}
+                                          className="w-full py-4 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white bg-rose-500 hover:bg-rose-600 rounded-2xl shadow-xl shadow-rose-500/20 transition-all active:scale-95 disabled:opacity-50"
+                                       >
+                                           <i className="fa-solid fa-user-xmark mr-2"></i> CANCELAR CLASE
+                                       </button>
+                                   );
+                               } else {
+                                   return (
+                                       <button 
+                                          onClick={() => handleAddClient(window.AppConfig?.user)}
+                                          disabled={isSubmitting}
+                                          className="w-full py-4 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white bg-[#0f172a] hover:bg-slate-800 rounded-2xl shadow-xl shadow-slate-900/20 transition-all active:scale-95 disabled:opacity-50"
+                                       >
+                                           <i className="fa-solid fa-check mr-2"></i> INSCRIBIRME
+                                       </button>
+                                   );
+                               }
+                            })()}
+                        </div>
+                    )}
+                </div>
            </div>
         </div>
 
-        {/* Footer actions */}
-        <div className="p-6 bg-white border-t border-slate-100 flex justify-center gap-4 pb-8">
-           {window.IS_ADMIN && (
+        {/* Global Modal Bottom Actions */}
+        <div className="px-6 py-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between shrink-0">
+           <div className="flex-1 flex gap-4">
+               {window.IS_ADMIN && (
+                   <button 
+                      onClick={() => setIsEditing(!isEditing)}
+                      className={`flex-1 max-w-[200px] px-6 py-3.5 font-black text-[10px] uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-3 ${isEditing ? 'bg-white border-2 border-slate-100 text-slate-400' : 'bg-[#f1f5f9] text-[#334155] border-2 border-transparent hover:border-[#38b2ac] shadow-sm'}`}
+                   >
+                      <i className={`fa-solid ${isEditing ? 'fa-xmark' : 'fa-pen-to-square'}`}></i>
+                      {isEditing ? 'CANCELAR' : 'EDITAR'}
+                   </button>
+               )}
                <button 
-                  onClick={() => setIsEditing(!isEditing)}
-                  className={`flex-1 px-10 py-3.5 font-bold text-xs uppercase tracking-widest rounded-full transition-all flex items-center justify-center gap-2 ${isEditing ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                  onClick={onClose}
+                  className="flex-1 px-8 py-3.5 bg-[#0f172a] text-white font-black text-[10px] uppercase tracking-[0.3em] rounded-2xl hover:bg-slate-800 shadow-xl shadow-slate-900/20 transition-all flex items-center justify-center gap-3"
                >
-                  <i className={`fa-solid ${isEditing ? 'fa-xmark' : 'fa-pen-to-square'}`}></i>
-                  {isEditing ? 'CANCELAR EDICIÓN' : 'EDITAR SESIÓN'}
+                  CERRAR PANEL
                </button>
-           )}
-           <button 
-              onClick={onClose}
-              className="flex-1 px-10 py-3.5 bg-[#0f172a] text-white font-bold text-xs uppercase tracking-widest rounded-full hover:shadow-lg hover:-translate-y-0.5 transition-all w-full sm:w-auto"
-           >
-              CERRAR PANEL
-           </button>
+           </div>
         </div>
 
       </div>
