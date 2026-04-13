@@ -77,7 +77,9 @@ class ClientProfileController extends Controller
                 'codigo_postal' => $user->codigo_postal,
                 'ciudad' => $user->ciudad,
                 'foto_de_perfil' => $user->foto_de_perfil ? \Illuminate\Support\Facades\Storage::url($user->foto_de_perfil) : null,
-                'additional_attributes' => $user->additional_attributes ?? [],
+                'additional_attributes' => (Auth::user()->hasRole('cliente') && !Auth::user()->hasRole('admin') && !Auth::user()->hasRole('entrenador'))
+                    ? collect($user->additional_attributes ?? [])->filter(fn($attr) => ($attr['visibility'] ?? 'public') !== 'private')->values()->toArray()
+                    : ($user->additional_attributes ?? []),
                 'peso' => $user->peso,
                 'altura' => $user->altura,
             ],
@@ -144,7 +146,7 @@ class ClientProfileController extends Controller
                 return [
                     'nombre' => $su->suscripcion->nombre ?? 'Plan Externo',
                     'fecha_inicio' => $su->created_at->toDateString(),
-                    'meses' => $su->created_at->diffInMonths(now()),
+                    'meses' => (int) $su->created_at->diffInMonths(now()),
                 ];
             });
 
@@ -153,20 +155,15 @@ class ClientProfileController extends Controller
             ->orderBy('measured_at', 'asc')
             ->get();
 
-        return response()->json([
-            'attendance' => $attendance,
-            'sessionTypes' => $sessionTypes,
-            'creditBatches' => $creditBatches,
-            'subscriptionHistory' => $subscriptionHistory,
             'measurements' => $measurements,
             'kpis' => [
                 'clasesMes' => $clasesMes,
                 'totalCredits' => $totalCredits,
                 'nextExpiration' => $nextExpiration,
                 'primerDia' => $subscriptionHistory->first() ? $subscriptionHistory->first()['fecha_inicio'] : null,
-                'mesesTotales' => $subscriptionHistory->first() ? $user->created_at->diffInMonths(now()) : 0,
-            ]
-        ]);
+                'mesesTotales' => $subscriptionHistory->first() ? (int) $user->created_at->diffInMonths(now()) : 0,
+            ],
+            'additional_attributes' => collect($user->additional_attributes ?? [])->filter(fn($attr) => ($attr['visibility'] ?? 'public') !== 'private')->values()->toArray()
     }
 
     public function update(Request $request, User $user)

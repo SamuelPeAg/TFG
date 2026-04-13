@@ -119,6 +119,17 @@ export default function MiFicha() {
         }
     }, [user]);
 
+    const getAttrIcon = (type) => {
+        switch(type) {
+            case 'number': return 'fa-hashtag';
+            case 'date': return 'fa-calendar-day';
+            case 'boolean': return 'fa-toggle-check';
+            case 'note': return 'fa-file-lines';
+            case 'image': return 'fa-image';
+            default: return 'fa-font';
+        }
+    };
+
     const fetchFicha = async () => {
         try {
             const res = await axios.get(`/client-profile/${user.id}`);
@@ -241,21 +252,6 @@ export default function MiFicha() {
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-                <header className="px-10 py-8 flex items-center justify-between bg-white border-b border-slate-100 shrink-0">
-                    <div className="flex items-center gap-6">
-                        <button className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3]" onClick={() => setIsSidebarOpen(true)}>
-                            <i className="fa-solid fa-bars text-xl"></i>
-                        </button>
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#38C1A3] to-[#2D9B82] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-teal-100">
-                            <i className="fa-solid fa-address-card"></i>
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Mi Ficha y Salud</h1>
-                            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-0.5">Consulta tu historial y documentos</p>
-                        </div>
-                    </div>
-                </header>
-
                 <div className="flex-1 overflow-auto p-10 space-y-10">
                     {loading ? (
                         <div className="h-full flex items-center justify-center">
@@ -535,17 +531,33 @@ export default function MiFicha() {
                                         <i className="fa-solid fa-notes-medical"></i> Notas del Expediente
                                     </h3>
                                     <div className="space-y-4">
-                                        {profileData?.additional_attributes?.length > 0 ? (
-                                            profileData.additional_attributes.map((attr, i) => (
-                                                <div key={i} className="flex flex-col bg-white p-4 rounded-2xl border border-emerald-50 shadow-sm">
-                                                    <span className="text-[10px] font-black text-emerald-700/60 uppercase">{attr.key}</span>
-                                                    <span className="text-sm font-bold text-slate-800 mt-1">{attr.value}</span>
+                                        {profileData?.additional_attributes?.filter(a => (a.visibility || 'private') !== 'private').length > 0 ? (
+                                            profileData.additional_attributes.filter(a => (a.visibility || 'private') !== 'private').map((attr, i) => (
+                                                <div key={i} className="flex flex-col bg-white p-6 rounded-[2rem] border border-emerald-50 shadow-sm transition-all hover:shadow-md">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <i className={`fa-solid ${getAttrIcon(attr.type)} text-[10px] text-emerald-400`}></i>
+                                                        <span className="text-[10px] font-black text-emerald-700/60 uppercase tracking-widest leading-none">{attr.key}</span>
+                                                    </div>
+                                                    
+                                                    {attr.type === 'image' ? (
+                                                        <div className="mt-2 rounded-2xl overflow-hidden border border-slate-100 shadow-inner">
+                                                            <img 
+                                                                src={`/client-file/${attr.value}/download`} 
+                                                                alt={attr.key}
+                                                                className="w-full h-auto max-h-64 object-cover hover:scale-105 transition-transform duration-700"
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-sm font-bold text-slate-800 mt-1 whitespace-pre-line leading-relaxed">{attr.value}</span>
+                                                    )}
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="text-center py-6">
-                                                <i className="fa-solid fa-comment-slash text-emerald-100 text-3xl mb-3"></i>
-                                                <p className="text-xs text-slate-400 italic">No hay notas compartidas en este expediente.</p>
+                                            <div className="text-center py-10 bg-white/40 rounded-[2rem] border border-dashed border-emerald-100">
+                                                <i className="fa-solid fa-notes-medical text-emerald-100 text-3xl mb-3"></i>
+                                                <p className="text-[10px] font-black text-emerald-700/40 uppercase tracking-widest">Sin notas compartidas</p>
+                                                <p className="text-[9px] text-slate-400 mt-1">Tu entrenador aún no ha compartido notas públicas.</p>
                                             </div>
                                         )}
                                     </div>

@@ -237,7 +237,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   const addAttribute = () => {
     setProfileData({
         ...profileData,
-        additional_attributes: [...profileData.additional_attributes, { key: '', value: '', type: 'text' }]
+        additional_attributes: [...profileData.additional_attributes, { key: '', value: '', type: 'text', visibility: 'private' }]
     });
   };
 
@@ -269,6 +269,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         case 'number': return 'fa-hashtag';
         case 'date': return 'fa-calendar-day';
         case 'boolean': return 'fa-toggle-on';
+        case 'note': return 'fa-file-lines';
+        case 'image': return 'fa-image';
         default: return 'fa-font';
     }
   };
@@ -417,90 +419,145 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                     </section>
 
                     <section className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm shadow-sm">
-                                    <i className="fa-solid fa-list-check"></i>
+                        <div className="flex items-center justify-between px-2 mb-8">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center text-[#38C1A3] border border-teal-100/50 shadow-inner">
+                                    <i className="fa-solid fa-notes-medical"></i>
                                 </div>
-                                <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">ATRIBUTOS MÉDICOS Y NOTAS</h3>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">EXPEDIENTE INTERNO</h3>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Notas, observaciones y registros privados</p>
+                                </div>
                             </div>
                             <button 
                                 onClick={addAttribute} 
-                                className="px-5 py-2.5 bg-white text-[#38C1A3] border border-teal-100 rounded-2xl text-[10px] font-black hover:bg-teal-50 transition-all flex items-center gap-2 active:scale-95 shadow-sm"
+                                className="px-6 py-3 bg-[#38C1A3] text-white rounded-[1.25rem] text-[10px] font-black hover:bg-teal-500 transition-all flex items-center gap-3 active:scale-95 shadow-xl shadow-teal-500/20"
                             >
-                                <i className="fa-solid fa-plus-circle"></i> NUEVO CAMPO
+                                <i className="fa-solid fa-plus-circle"></i> NUEVO REGISTRO
                             </button>
                         </div>
                         
-                        <div className="space-y-4 px-2">
+                        <div className="space-y-6 px-2">
                             {profileData.additional_attributes.length === 0 ? (
-                                <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-slate-100/60 shadow-inner group">
-                                    <i className="fa-solid fa-notes-medical text-3xl text-slate-100 mb-6 group-hover:scale-125 transition-transform group-hover:text-teal-100 duration-500"></i>
-                                    <p className="text-slate-300 text-sm font-bold uppercase tracking-widest">Añade información relevante (Alergias, Objetivos, etc.)</p>
+                                <div className="bg-slate-50/50 rounded-[3rem] p-16 text-center border-2 border-dashed border-slate-200/60 group">
+                                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm group-hover:scale-110 transition-transform duration-500">
+                                        <i className="fa-solid fa-clipboard-list text-3xl text-slate-200 group-hover:text-teal-400 transition-colors"></i>
+                                    </div>
+                                    <p className="text-slate-400 text-sm font-black uppercase tracking-widest">El expediente interno está vacío</p>
+                                    <p className="text-xs text-slate-300 mt-2 font-bold italic">Añade observaciones sobre lesiones, objetivos o nutrición.</p>
                                 </div>
                             ) : (
                                 profileData.additional_attributes.map((attr, idx) => (
-                                    <div key={idx} className="bg-white p-2.5 rounded-[1.75rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow animate-in slide-in-from-right-4 duration-300 flex items-stretch gap-3">
-                                        <div className="relative shrink-0 flex items-center pl-4 pr-1 min-w-[110px]">
-                                            <i className={`fa-solid ${getAttrIcon(attr.type)} absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 text-xs pointer-events-none`}></i>
-                                            <select 
-                                                value={attr.type || 'text'} 
-                                                onChange={(e) => updateAttribute(idx, 'type', e.target.value)}
-                                                className="w-full pl-6 bg-transparent text-[10px] font-black text-slate-500 uppercase tracking-tighter outline-none appearance-none cursor-pointer hover:text-teal-600 transition-colors"
-                                            >
-                                                <option value="text">Texto</option>
-                                                <option value="number">Número</option>
-                                                <option value="date">Fecha</option>
-                                                <option value="boolean">Check</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="w-px bg-slate-100 my-2"></div>
-
-                                        <input 
-                                            type="text" 
-                                            placeholder="Nombre (p.ej: Alergia)" 
-                                            value={attr.key} 
-                                            onChange={(e) => updateAttribute(idx, 'key', e.target.value)}
-                                            className="w-1/3 px-4 py-3 bg-slate-50 border-transparent rounded-[1.1rem] outline-none focus:bg-white focus:border-teal-200 text-xs font-black text-slate-800 transition-all"
-                                        />
-
-                                        <div className="flex-1">
-                                            {attr.type === 'boolean' ? (
-                                                <div className="h-full flex items-center px-4">
+                                    <div key={idx} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/40 transition-all duration-500 group relative">
+                                        <div className="flex flex-col gap-5">
+                                            {/* Cabeza de la Tarjeta: Tipo y Visibilidad */}
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="relative">
+                                                        <select 
+                                                            value={attr.type || 'text'} 
+                                                            onChange={(e) => updateAttribute(idx, 'type', e.target.value)}
+                                                            className="pl-9 pr-6 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-tighter outline-none appearance-none cursor-pointer transition-all border border-transparent focus:border-teal-200"
+                                                        >
+                                                            <option value="text">Dato Corto</option>
+                                                            <option value="note">Nota / Observación</option>
+                                                            <option value="image">Imagen / Foto</option>
+                                                            <option value="number">Cifra / Valor</option>
+                                                            <option value="date">Fecha</option>
+                                                            <option value="boolean">Interruptor (SÍ/NO)</option>
+                                                        </select>
+                                                        <i className={`fa-solid ${getAttrIcon(attr.type)} absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-400 text-[10px] pointer-events-none`}></i>
+                                                    </div>
+                                                    
                                                     <button 
-                                                        onClick={() => updateAttribute(idx, 'value', attr.value === 'true' || attr.value === true ? 'false' : 'true')}
-                                                        className={`w-14 h-7 rounded-full relative transition-all shadow-inner ${attr.value === 'true' || attr.value === true ? 'bg-teal-500' : 'bg-slate-200'}`}
+                                                        onClick={() => updateAttribute(idx, 'visibility', (attr.visibility || 'private') === 'private' ? 'public' : 'private')}
+                                                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border ${
+                                                            (attr.visibility || 'private') === 'private' 
+                                                            ? 'bg-rose-50 text-rose-500 border-rose-100/50' 
+                                                            : 'bg-emerald-50 text-emerald-600 border-emerald-100/50'
+                                                        }`}
+                                                        title={(attr.visibility || 'private') === 'private' ? "Solo visible para staff" : "Visible para el cliente"}
                                                     >
-                                                        <div className={`absolute top-1 bottom-1 w-5 bg-white rounded-full transition-all shadow-sm ${attr.value === 'true' || attr.value === true ? 'right-1' : 'left-1'}`}></div>
+                                                        <i className={`fa-solid ${(attr.visibility || 'private') === 'private' ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                                        <span>{(attr.visibility || 'private') === 'private' ? 'Privado' : 'Público'}</span>
                                                     </button>
-                                                    <span className="ml-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">{attr.value === 'true' || attr.value === true ? 'SÍ' : 'NO'}</span>
                                                 </div>
-                                            ) : (
-                                                <input 
-                                                    key={`attr-val-${idx}-${attr.type}`}
-                                                    type={attr.type === 'date' ? 'date' : (attr.type === 'number' ? 'number' : 'text')} 
-                                                    inputMode={attr.type === 'number' ? 'decimal' : 'text'}
-                                                    placeholder={attr.type === 'date' ? '' : "Valor del campo..."} 
-                                                    value={attr.value} 
-                                                    onChange={(e) => {
-                                                        let v = e.target.value;
-                                                        if (attr.type === 'number') {
-                                                            v = v.replace(/[^0-9.,-]/g, '');
-                                                        }
-                                                        updateAttribute(idx, 'value', v);
-                                                    }}
-                                                    className="w-full px-4 py-3 bg-slate-50 border-transparent rounded-[1.1rem] outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all h-full"
-                                                />
-                                            )}
-                                        </div>
 
-                                        <button 
-                                            onClick={() => removeAttribute(idx)} 
-                                            className="w-12 h-12 flex items-center justify-center text-slate-300 hover:text-rose-500 transition-colors group/del"
-                                        >
-                                            <i className="fa-solid fa-times-circle group-hover/del:scale-125 transition-transform"></i>
-                                        </button>
+                                                <button 
+                                                    onClick={() => removeAttribute(idx)} 
+                                                    className="w-10 h-10 flex items-center justify-center text-slate-200 hover:text-rose-500 transition-all hover:bg-rose-50 rounded-xl active:scale-90"
+                                                >
+                                                    <i className="fa-solid fa-trash-can text-sm"></i>
+                                                </button>
+                                            </div>
+
+                                            {/* Cuerpo: Título y Contenido */}
+                                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                                <div className="md:col-span-4">
+                                                    <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest ml-1 mb-1.5 block">Título del Registro</label>
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Ej: Lesión de Hombro..." 
+                                                        value={attr.key} 
+                                                        onChange={(e) => updateAttribute(idx, 'key', e.target.value)}
+                                                        className="w-full px-4 py-3 bg-slate-50 border-transparent rounded-2xl outline-none focus:bg-white focus:border-teal-200 text-xs font-black text-slate-800 transition-all border"
+                                                    />
+                                                </div>
+
+                                                <div className="md:col-span-8">
+                                                    <label className="text-[9px] font-black text-slate-300 uppercase tracking-widest ml-1 mb-1.5 block">Contenido / Valor</label>
+                                                    {attr.type === 'boolean' ? (
+                                                        <div className="h-[46px] flex items-center px-4 bg-slate-50 rounded-2xl border border-transparent">
+                                                            <button 
+                                                                onClick={() => updateAttribute(idx, 'value', attr.value === 'true' || attr.value === true ? 'false' : 'true')}
+                                                                className={`w-14 h-7 rounded-full relative transition-all shadow-inner ${attr.value === 'true' || attr.value === true ? 'bg-teal-500' : 'bg-slate-200'}`}
+                                                            >
+                                                                <div className={`absolute top-1 bottom-1 w-5 bg-white rounded-full transition-all shadow-sm ${attr.value === 'true' || attr.value === true ? 'right-1' : 'left-1'}`}></div>
+                                                            </button>
+                                                            <span className="ml-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">{attr.value === 'true' || attr.value === true ? 'SÍ' : 'NO'}</span>
+                                                        </div>
+                                                    ) : attr.type === 'note' ? (
+                                                        <textarea 
+                                                            placeholder="Escribe aquí las observaciones detalladas..." 
+                                                            value={attr.value} 
+                                                            onChange={(e) => updateAttribute(idx, 'value', e.target.value)}
+                                                            rows={3}
+                                                            className="w-full px-5 py-4 bg-slate-50 border-transparent rounded-[1.5rem] outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all border leading-relaxed resize-none"
+                                                        ></textarea>
+                                                    ) : attr.type === 'image' ? (
+                                                        <div className="relative">
+                                                            <select 
+                                                                value={attr.value} 
+                                                                onChange={(e) => updateAttribute(idx, 'value', e.target.value)}
+                                                                className="w-full pl-10 pr-6 py-3 bg-slate-50 border-transparent rounded-2xl outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all border appearance-none cursor-pointer"
+                                                            >
+                                                                <option value="">Vincular foto desde Documentación...</option>
+                                                                {files.filter(f => f.file_type !== 'pdf').map(f => (
+                                                                    <option key={f.id} value={f.id}>{f.filename}</option>
+                                                                ))}
+                                                            </select>
+                                                            <i className="fa-solid fa-image absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 text-sm pointer-events-none"></i>
+                                                            <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-200 text-[10px] pointer-events-none"></i>
+                                                        </div>
+                                                    ) : (
+                                                        <input 
+                                                            type={attr.type === 'date' ? 'date' : (attr.type === 'number' ? 'number' : 'text')} 
+                                                            inputMode={attr.type === 'number' ? 'decimal' : 'text'}
+                                                            placeholder={attr.type === 'date' ? '' : "Valor del registro..."} 
+                                                            value={attr.value} 
+                                                            onChange={(e) => {
+                                                                let v = e.target.value;
+                                                                if (attr.type === 'number') {
+                                                                    v = v.replace(/[^0-9.,-]/g, '');
+                                                                }
+                                                                updateAttribute(idx, 'value', v);
+                                                            }}
+                                                            className="w-full px-4 py-3 bg-slate-50 border-transparent rounded-2xl outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all border h-[46px]"
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))
                             )}
@@ -695,14 +752,14 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             <div className="flex-1 p-8 flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-50">
                                                 <div className="flex items-center justify-between mb-4">
                                                     <span className="text-[10px] font-black text-[#38C1A3] bg-teal-50 px-3 py-1 rounded-lg uppercase tracking-widest border border-teal-100/50">
-                                                        {sub.suscripcion?.periodo || 'PACK'}
+                                                        {sub.suscripcion?.periodo?.toUpperCase() || 'PACK'}
                                                     </span>
                                                     <span className="text-[10px] font-bold text-slate-300 bg-slate-50 px-3 py-1 rounded-lg">#ID-{sub.id}</span>
                                                 </div>
                                                 <h4 className="font-black text-slate-800 text-2xl tracking-tight leading-tight">{sub.suscripcion?.nombre || 'Suscripción'}</h4>
                                                 <p className="text-[11px] text-slate-400 font-bold mt-2 flex items-center gap-2">
                                                     <i className="fa-solid fa-calendar-check text-teal-400/60"></i>
-                                                    ACTIVA DESDE EL {new Date(sub.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'LONG', year: 'numeric' }).toUpperCase()}
+                                                    ACTIVA DESDE EL {sub.created_at ? new Date(sub.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() : 'N/A'}
                                                 </p>
                                             </div>
 
@@ -798,8 +855,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                 <tr key={pogo.id} className="group hover:bg-slate-50/30 transition-colors">
                                                     <td className="px-8 py-5">
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-black text-slate-700">{new Date(pogo.fecha_registro).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
-                                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-tighter mt-0.5">{new Date(pogo.fecha_registro).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                            <span className="text-xs font-black text-slate-700">{pogo.fecha_registro ? new Date(pogo.fecha_registro).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</span>
+                                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-tighter mt-0.5">{pogo.fecha_registro ? new Date(pogo.fecha_registro).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-5">
@@ -840,7 +897,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                 >
                                     <option value="">Selección de catálogo...</option>
                                     {availableSubscriptions.map(s => (
-                                        <option key={s.id} value={s.id}>{s.nombre.toUpperCase()} — {s.creditos_por_periodo} CRÉDITOS ({s.periodo})</option>
+                                        <option key={s.id} value={s.id}>{(s.nombre || 'PLAN').toUpperCase()} — {s.creditos_por_periodo} CRÉDITOS ({s.periodo?.toUpperCase()})</option>
                                     ))}
                                 </select>
                                 <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none text-[10px]"></i>
