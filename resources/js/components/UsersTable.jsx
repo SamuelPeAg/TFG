@@ -125,7 +125,7 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                         return (
                           <div key={su.id} className="group/saldo flex items-center bg-slate-50 border border-slate-100 rounded-xl px-2 py-1 gap-2 shadow-sm">
                             <span className={`${badgeColor} w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px] shadow-sm`}>
-                              {su.saldo_actual}
+                              {su.saldo_actual_calculado ?? 0}
                             </span> 
                             <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">
                               {su.suscripcion?.nombre || 'PACK'}

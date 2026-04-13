@@ -8,6 +8,9 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     const [errors, setErrors] = useState({});
     const [showCentrosDropdown, setShowCentrosDropdown] = useState(false);
     
+    // Búsqueda de entrenadores (Paso 1)
+    const [trainerSearchQuery, setTrainerSearchQuery] = useState('');
+    
     // Búsqueda de alumnos (Paso 2)
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -103,6 +106,13 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         return tiposSesion.filter(t => t.centro_id === null || t.centro_id === selectedCentroId);
     }, [centros, tiposSesion, formData.centro]);
 
+    // Filtrar entrenadores por búsqueda
+    const filteredCoaches = useMemo(() => {
+        if (!trainerSearchQuery.trim()) return entrenadores;
+        const q = trainerSearchQuery.toLowerCase();
+        return entrenadores.filter(c => c.name.toLowerCase().includes(q));
+    }, [trainerSearchQuery, entrenadores]);
+
     // Auto-corregir tipo de clase si queda fuera del filtro al cambiar de centro
     useEffect(() => {
         if (isOpen && formData.centro && filteredTipos.length > 0) {
@@ -145,8 +155,10 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             };
 
             if (name === 'tipo_clase') {
-                nextState.capacidad_maxima = defaultCapacityForType(value);
-                console.log(`[handleChange] Tipo cambió a: ${value}, capacidad ahora: ${nextState.capacidad_maxima}`);
+                const config = getDefaultConfigForType(value);
+                nextState.capacidad_maxima = config ? config.capacidad_personas.toString() : '1';
+                nextState.precio_base = config ? (config.precio_base || '0.00') : '0.00';
+                console.log(`[handleChange] Tipo cambió a: ${value}, capacidad: ${nextState.capacidad_maxima}, precio: ${nextState.precio_base}`);
             }
 
             return nextState;
@@ -407,26 +419,44 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                 </section>
 
                                 <section>
-                                    <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase mb-6">Asignación de Entrenadores</h3>
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {entrenadores.map(coach => {
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase">Asignación de Entrenadores</h3>
+                                        <div className="relative w-48">
+                                            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
+                                            <input 
+                                                type="text" 
+                                                placeholder="Buscar entrenador..." 
+                                                value={trainerSearchQuery}
+                                                onChange={(e) => setTrainerSearchQuery(e.target.value)}
+                                                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-[#38C1A3]"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-2 scrollbar-thin">
+                                        {filteredCoaches.map(coach => {
                                             const isSelected = formData.trainers.some(t => t.id === coach.id);
                                             return (
                                                 <label key={coach.id} className="cursor-pointer">
                                                     <input type="checkbox" className="hidden" checked={isSelected} onChange={() => toggleTrainer(coach.id, coach.name, coach.foto_de_perfil || coach.profile_photo_path)} />
-                                                    <div className={`border p-3 rounded-xl flex items-center gap-3 transition-all ${isSelected ? 'border-[#38C1A3] bg-teal-50/50' : 'border-slate-200 bg-white'}`}>
+                                                    <div className={`border p-3 rounded-xl flex items-center gap-3 transition-all ${isSelected ? 'border-[#38C1A3] bg-teal-50/50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                                                         <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-500 overflow-hidden shrink-0">
                                                             {coach.profile_photo_path || coach.foto_de_perfil ? <img src={`/storage/${coach.profile_photo_path || coach.foto_de_perfil}`} className="w-full h-full object-cover"/> : coach.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="flex flex-col overflow-hidden">
                                                             <span className="text-xs font-bold truncate text-slate-800">{coach.name}</span>
-                                                            <span className="text-[10px] text-slate-400 font-medium">Entrenador</span>
+                                                            <span className="text-[10px] text-slate-400 font-medium tracking-tighter uppercase">Coach</span>
                                                         </div>
-                                                        {isSelected && <i className="fa-solid fa-circle-check text-teal-500 ml-auto"></i>}
+                                                        {isSelected && <i className="fa-solid fa-circle-check text-teal-500 ml-auto text-xs"></i>}
                                                     </div>
                                                 </label>
                                             )
                                         })}
+                                        {filteredCoaches.length === 0 && (
+                                            <div className="col-span-full py-8 text-center text-slate-400 text-xs italic font-medium">
+                                                No se encontraron entrenadores.
+                                            </div>
+                                        )}
                                     </div>
                                 </section>
                             </div>

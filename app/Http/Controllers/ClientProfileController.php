@@ -83,6 +83,10 @@ class ClientProfileController extends Controller
             ],
             'files' => $files,
             'subscriptions' => $user->suscripciones()->with(['suscripcion', 'lotes'])->get(),
+            'subscriptionPayments' => Pago::where('user_id', $user->id)
+                ->where('tipo_clase', 'Suscripción')
+                ->orderBy('fecha_registro', 'desc')
+                ->get(),
             'sessions' => $sessions,
             'measurements' => $user->measurements()->orderBy('measured_at', 'desc')->get(),
         ]);

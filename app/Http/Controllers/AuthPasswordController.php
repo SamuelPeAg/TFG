@@ -18,15 +18,15 @@ class AuthPasswordController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        // Opcional: si quieres bloquear reset a no activados:
-        // if ($user && $user->activation_token) return back()->with('error', 'Primero activa tu cuenta desde el correo de registro.');
-
         if ($user) {
             $token = Password::createToken($user);
             Mail::to($user->email)->send(new ResetPasswordMail($user, $token));
         }
 
-        return back()->with('status', 'Si el correo existe, te hemos enviado un enlace para restablecer la contraseña.');
+        // Siempre devolver éxito por seguridad (aunque no exista el usuario)
+        return response()->json([
+            'message' => 'Si el correo existe, te hemos enviado un enlace para restablecer la contraseña.'
+        ]);
     }
 
 
@@ -45,13 +45,22 @@ class AuthPasswordController extends Controller
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
-                $user->password = Hash::make($request->password);
-                $user->save();
+                $user->forceFill([
+                    'password' => Hash::make($request->password)
+                ])->save();
             }
         );
 
-        return $status === Password::PASSWORD_RESET
-            ? redirect()->route('login')->with('success', 'Contraseña actualizada. Ya puedes iniciar sesión.')
-            : back()->withErrors(['email' => 'Token inválido o expirado.']);
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Contraseña actualizada. Ya puedes iniciar sesión.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Token inválido o expirado.'
+        ], 422);
     }
 }

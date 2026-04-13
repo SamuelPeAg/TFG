@@ -130,30 +130,55 @@ export default function MisEstadisticas() {
         }
     };
 
-    // Datos Peso e IMC (Evolución)
+    // Datos Evolución de Peso con Bandas de Salud
     const measurementsX = stats?.measurements?.map(m => new Date(m.measured_at).toLocaleDateString()) || [];
+    
+    // Plugin para dibujar las zonas de salud de fondo
+    const healthZonesPlugin = {
+        id: 'healthZones',
+        beforeDraw: (chart) => {
+            const { ctx, chartArea: { top, bottom, left, right }, scales: { y } } = chart;
+            
+            const drawZone = (min, max, color) => {
+                const yMin = y.getPixelForValue(min);
+                const yMax = y.getPixelForValue(max);
+                ctx.fillStyle = color;
+                ctx.fillRect(left, Math.max(yMax, top), right - left, Math.min(yMin - yMax, bottom - top));
+            };
+
+            // Definimos zonas estéticas (se podrían ajustar según altura del usuario si estuviera disponible)
+            // Aquí usamos rangos de ejemplo para un usuario promedio
+            drawZone(0, 60, '#F1F5F9');      // Zona baja
+            drawZone(60, 80, '#F0FDF4');    // Zona Saludable (Verde suave)
+            drawZone(80, 95, '#FFFBEB');    // Sobrepeso (Amarillo suave)
+            drawZone(95, 200, '#FEF2F2');   // Alerta (Rojo suave)
+        }
+    };
+
     const healthChartData = {
         labels: measurementsX,
         datasets: [
             {
-                label: 'Peso (kg)',
+                label: 'Peso Corporal (kg)',
                 data: stats?.measurements?.map(m => m.peso) || [],
                 borderColor: '#6366F1',
-                backgroundColor: '#6366F120',
+                backgroundColor: (context) => {
+                    const ctx = context.chart.ctx;
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+                    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+                    return gradient;
+                },
                 fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                yAxisID: 'y',
-            },
-            {
-                label: 'IMC',
-                data: stats?.measurements?.map(m => m.imc) || [],
-                borderColor: '#F43F5E',
-                backgroundColor: '#F43F5E',
-                fill: false,
-                tension: 0.4,
-                pointRadius: 4,
-                yAxisID: 'y1',
+                tension: 0.5,
+                pointRadius: 6,
+                pointBackgroundColor: '#FFFFFF',
+                pointBorderColor: '#6366F1',
+                pointBorderWidth: 3,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#6366F1',
+                pointHoverBorderColor: '#FFFFFF',
+                pointHoverBorderWidth: 4,
             }
         ]
     };
@@ -162,13 +187,34 @@ export default function MisEstadisticas() {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-            legend: { position: 'bottom', labels: { font: { weight: 'bold', size: 10 } } },
-            tooltip: { mode: 'index', intersect: false },
+            legend: { display: false },
+            tooltip: { 
+                backgroundColor: '#1E293B',
+                padding: 16,
+                cornerRadius: 16,
+                titleFont: { size: 14, weight: '800' },
+                bodyFont: { size: 13, weight: '600' },
+                displayColors: false,
+                callbacks: {
+                    label: (context) => ` ${context.parsed.y} kg`
+                }
+            },
         },
         scales: {
-            y: { type: 'linear', display: true, position: 'left', grid: { display: false } },
-            y1: { type: 'linear', display: true, position: 'right', grid: { display: false } },
-            x: { grid: { display: false } }
+            y: { 
+                type: 'linear', 
+                display: true, 
+                grid: { color: '#F1F5F9', borderDash: [5, 5] },
+                ticks: { 
+                    font: { weight: 'bold', size: 11 }, 
+                    color: '#94A3B8',
+                    callback: (value) => value + ' kg'
+                } 
+            },
+            x: { 
+                grid: { display: false },
+                ticks: { font: { weight: 'bold', size: 11 }, color: '#94A3B8' }
+            }
         }
     };
 
@@ -298,7 +344,7 @@ export default function MisEstadisticas() {
                                     </div>
                                     <div className="flex-1 min-h-[300px]">
                                         {stats?.measurements?.length > 1 ? (
-                                            <Line data={healthChartData} options={healthChartOptions} />
+                                            <Line data={healthChartData} options={healthChartOptions} plugins={[healthZonesPlugin]} />
                                         ) : (
                                             <div className="h-full flex flex-col items-center justify-center text-slate-300">
                                                 <i className="fa-solid fa-chart-line text-4xl mb-2 opacity-20"></i>

@@ -58,7 +58,7 @@ export default function TiposSesionTable({ tipos, centros, onUpdate }) {
       const data = { 
         ...formData, 
         centro_id: formData.centro_id === '' ? null : formData.centro_id,
-        precio_base: 0, 
+        precio_base: parseFloat(formData.precio_base) || 0, 
         capacidad_personas: parseInt(formData.capacidad_personas) || 1,
         orden: 0
       };
@@ -89,7 +89,7 @@ export default function TiposSesionTable({ tipos, centros, onUpdate }) {
       const data = { 
         ...formData, 
         centro_id: formData.centro_id === '' ? null : formData.centro_id,
-        precio_base: 0,
+        precio_base: parseFloat(formData.precio_base) || 0,
         capacidad_personas: parseInt(formData.capacidad_personas) || 1,
         orden: 0
       };
@@ -201,6 +201,11 @@ export default function TiposSesionTable({ tipos, centros, onUpdate }) {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Capacidad de personas</label>
                   <input type="number" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold" value={formData.capacidad_personas} onChange={e => setFormData({...formData, capacidad_personas: e.target.value})} />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Precio Base (€)</label>
+                  <input type="number" step="0.01" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold" value={formData.precio_base} onChange={e => setFormData({...formData, precio_base: e.target.value})} />
                 </div>
 
                 <div className="space-y-2">

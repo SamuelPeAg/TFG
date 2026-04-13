@@ -45,6 +45,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [uploading, setUploading] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
   const [measurements, setMeasurements] = useState([]);
+  const [subscriptionPayments, setSubscriptionPayments] = useState([]);
   const [editingMeasurementId, setEditingMeasurementId] = useState(null);
 
   const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
@@ -95,6 +96,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         });
         setFiles(res.data.files || []);
         setUserSubscriptions(res.data.subscriptions || []);
+        setSubscriptionPayments(res.data.subscriptionPayments || []);
         setMeasurements(res.data.measurements || []);
     } catch (error) {
         console.error("Error fetching ficha:", error);
@@ -642,16 +644,25 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             ) : activeTab === 'subscriptions' ? (
                 <div className="space-y-12 max-w-3xl mx-auto pb-10">
                     <section>
-                        <div className="flex items-center gap-3 mb-8">
-                             <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-sm shadow-sm">
-                                <i className="fa-solid fa-ticket-alt"></i>
-                             </div>
-                             <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">HISTORIAL DE SUSCRIPCIONES</h3>
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-lg shadow-sm border border-teal-100/50">
+                                    <i className="fa-solid fa-ticket-alt"></i>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-none">Planes Activos</h3>
+                                    <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">Gestión de créditos y bonos</p>
+                                </div>
+                            </div>
+                            <span className="text-[10px] font-black text-slate-400 bg-slate-100 px-4 py-2 rounded-2xl uppercase border border-slate-200/50">
+                                {userSubscriptions.length} Suscripciones
+                            </span>
                         </div>
-                        <div className="space-y-5 px-2">
+
+                        <div className="grid gap-6 px-2">
                             {userSubscriptions.length === 0 ? (
-                                <div className="bg-white rounded-[3rem] p-16 text-center border-2 border-dashed border-slate-100/50 shadow-inner group">
-                                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200 text-3xl group-hover:scale-125 transition-all duration-500">
+                                <div className="bg-white rounded-[3rem] p-16 text-center border-2 border-dashed border-slate-100/50 shadow-inner group transition-all hover:bg-slate-50/50">
+                                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-100 text-3xl group-hover:scale-125 transition-all duration-500">
                                         <i className="fa-solid fa-receipt"></i>
                                     </div>
                                     <p className="text-slate-400 font-extrabold italic text-sm tracking-tight text-balance uppercase">Sin suscripciones registradas.</p>
@@ -659,74 +670,154 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                 </div>
                             ) : (
                                 userSubscriptions.map(sub => (
-                                    <div key={sub.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 group hover:shadow-xl transition-all duration-500">
-                                        <div className="flex items-center gap-6">
+                                    <div key={sub.id} className="relative group/card animate-in fade-in slide-in-from-right-4 duration-500">
+                                        {/* Premium Ticket Card */}
+                                        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col md:flex-row hover:shadow-2xl hover:shadow-teal-500/5 transition-all duration-500 group-hover/card:-translate-y-1">
+                                            {/* Left Section: Credits Badge */}
                                             <div 
-                                                className="w-16 h-16 rounded-3xl flex flex-col items-center justify-center font-black shadow-lg shadow-teal-100/50 transition-all group-hover:rotate-3 text-white"
-                                                style={{ background: sub.saldo_actual_calculado > 0 ? 'linear-gradient(135deg, #38C1A3, #2D9B82)' : '#f1f5f9' }}
+                                                className="w-full md:w-36 flex flex-col items-center justify-center p-8 shrink-0 relative overflow-hidden transition-colors"
+                                                style={{ background: sub.saldo_actual_calculado > 0 ? 'linear-gradient(135deg, #38C1A3, #2D9B82)' : 'linear-gradient(135deg, #f8fafc, #f1f5f9)' }}
                                             >
-                                                <i className={`fa-solid fa-ticket-alt ${sub.saldo_actual_calculado > 0 ? 'opacity-70' : 'text-slate-300'} text-xs mb-1`}></i>
-                                                <span className={`text-2xl leading-none ${sub.saldo_actual_calculado > 0 ? '' : 'text-slate-300'}`}>{sub.saldo_actual_calculado ?? 0}</span>
+                                                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                                                    <div className="absolute top-0 left-0 w-12 h-12 bg-white rounded-full blur-xl -translate-x-1/2 -translate-y-1/2"></div>
+                                                    <div className="absolute bottom-0 right-0 w-16 h-16 bg-white rounded-full blur-2xl translate-x-1/3 translate-y-1/3"></div>
+                                                </div>
+                                                <i className={`fa-solid fa-ticket-alt ${sub.saldo_actual_calculado > 0 ? 'text-white/40' : 'text-slate-300'} text-xs mb-2 transition-transform group-hover/card:scale-125`}></i>
+                                                <span className={`text-4xl font-black leading-none tracking-tighter ${sub.saldo_actual_calculado > 0 ? 'text-white' : 'text-slate-400'}`}>
+                                                    {sub.saldo_actual_calculado ?? 0}
+                                                </span>
+                                                <span className={`text-[10px] font-black uppercase tracking-widest mt-2 ${sub.saldo_actual_calculado > 0 ? 'text-white/70' : 'text-slate-300'}`}>
+                                                    Créditos
+                                                </span>
                                             </div>
-                                            <div>
-                                                <h4 className="font-black text-slate-800 text-xl tracking-tighter leading-none">{sub.suscripcion?.nombre || 'PLAN PERSONAL'}</h4>
-                                                <div className="flex items-center gap-3 mt-3">
-                                                    <span className={`text-[10px] font-black px-3 py-1.5 rounded-xl border ${sub.suscripcion?.periodo === 'mensual' ? 'border-emerald-100 bg-emerald-50 text-emerald-600' : 'border-amber-100 bg-amber-50 text-amber-600'}`}>
-                                                        {sub.suscripcion?.periodo?.toUpperCase()}
+
+                                            {/* Center Section: Info */}
+                                            <div className="flex-1 p-8 flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-50">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <span className="text-[10px] font-black text-[#38C1A3] bg-teal-50 px-3 py-1 rounded-lg uppercase tracking-widest border border-teal-100/50">
+                                                        {sub.suscripcion?.periodo || 'PACK'}
                                                     </span>
-                                                    <span className="text-[9px] font-bold text-slate-300 bg-slate-50 px-3 py-1.5 rounded-xl">ID #{sub.id}</span>
+                                                    <span className="text-[10px] font-bold text-slate-300 bg-slate-50 px-3 py-1 rounded-lg">#ID-{sub.id}</span>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-4 w-full sm:w-auto">
-                                            {/* Saldo Magic Adjuster */}
-                                            <div className="flex-1 sm:flex-none flex items-center bg-slate-50 rounded-[1.75rem] p-1.5 border border-slate-100">
-                                                <button 
-                                                    onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'dec')}
-                                                    className="w-10 h-10 flex items-center justify-center rounded-[1.1rem] bg-white text-slate-400 hover:text-rose-500 hover:shadow-md transition-all active:scale-95"
-                                                >
-                                                    <i className="fa-solid fa-minus text-[10px]"></i>
-                                                </button>
-                                                <div className="px-5 text-center">
-                                                    <span className="text-sm font-black text-slate-800 block leading-none">{sub.saldo_actual_calculado ?? 0}</span>
-                                                    <span className="text-[8px] font-black text-slate-300 uppercase mt-1 block tracking-tighter">TOTAL</span>
-                                                </div>
-                                                <button 
-                                                    onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'inc')}
-                                                    className="w-10 h-10 flex items-center justify-center rounded-[1.1rem] bg-white text-slate-400 hover:text-teal-500 hover:shadow-md transition-all active:scale-95"
-                                                >
-                                                    <i className="fa-solid fa-plus text-[10px]"></i>
-                                                </button>
+                                                <h4 className="font-black text-slate-800 text-2xl tracking-tight leading-tight">{sub.suscripcion?.nombre || 'Suscripción'}</h4>
+                                                <p className="text-[11px] text-slate-400 font-bold mt-2 flex items-center gap-2">
+                                                    <i className="fa-solid fa-calendar-check text-teal-400/60"></i>
+                                                    ACTIVA DESDE EL {new Date(sub.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'LONG', year: 'numeric' }).toUpperCase()}
+                                                </p>
                                             </div>
 
-                                            <button 
-                                                onClick={() => {
-                                                    confirmAction('¿Confirmar pago y recargar créditos?', async () => {
-                                                        try {
-                                                            await axios.post(`/suscripciones-usuarios/${sub.id}/confirmar-pago`);
-                                                            fetchFicha();
-                                                        } catch (err) {
-                                                            showAlert('Error al procesar pago', true);
-                                                        }
-                                                    });
-                                                }}
-                                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-teal-50 text-teal-600 hover:bg-teal-500 hover:text-white transition-all shadow-sm"
-                                                title="Recargar Periodo"
-                                            >
-                                                <i className="fa-solid fa-coins"></i>
-                                            </button>
+                                            {/* Right Section: Actions */}
+                                            <div className="p-8 bg-slate-50/50 flex flex-row md:flex-col items-center justify-center gap-3 border-t md:border-t-0 md:border-l border-slate-100 shrink-0">
+                                                {/* Adjusted Controls */}
+                                                <div className="flex items-center bg-white shadow-sm border border-slate-100 rounded-2xl p-1 mb-2">
+                                                    <button 
+                                                        onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'dec')}
+                                                        className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-rose-50 hover:text-rose-500 text-slate-300 transition-all active:scale-90"
+                                                    >
+                                                        <i className="fa-solid fa-minus text-[10px]"></i>
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleUpdateSubscriptionSaldo(sub.id, 'inc')}
+                                                        className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-teal-50 hover:text-teal-500 text-slate-300 transition-all active:scale-90"
+                                                    >
+                                                        <i className="fa-solid fa-plus text-[10px]"></i>
+                                                    </button>
+                                                </div>
 
-                                            <button 
-                                                onClick={() => handleDeleteSubscription(sub.id)}
-                                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                                                title="Remover"
-                                            >
-                                                <i className="fa-solid fa-trash-can"></i>
-                                            </button>
+                                                <div className="flex gap-3">
+                                                    <button 
+                                                        onClick={() => {
+                                                            confirmAction('¿Confirmar el cobro y renovar el ciclo de créditos?', async () => {
+                                                                try {
+                                                                    await axios.post(`/suscripciones-usuarios/${sub.id}/confirmar-pago`);
+                                                                    fetchFicha();
+                                                                    showAlert('Pago registrado y créditos añadidos', false, 'Éxito');
+                                                                } catch (err) {
+                                                                    showAlert('No se pudo procesar el pago', true);
+                                                                }
+                                                            }, false, 'Registrar Cobro');
+                                                        }}
+                                                        className="w-12 h-12 flex items-center justify-center rounded-2xl bg-[#38C1A3] text-white hover:bg-[#2eaa8f] hover:shadow-lg hover:shadow-teal-500/20 active:scale-90 transition-all"
+                                                        title="Cobrar y Renovar"
+                                                    >
+                                                        <i className="fa-solid fa-hand-holding-dollar"></i>
+                                                    </button>
+
+                                                    <button 
+                                                        onClick={() => handleDeleteSubscription(sub.id)}
+                                                        className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white text-slate-300 hover:text-rose-500 hover:bg-rose-50 border border-slate-100 hover:border-rose-100 transition-all shadow-sm active:scale-90"
+                                                        title="Deshabilitar"
+                                                    >
+                                                        <i className="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Accounting History Section */}
+                    <section className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg shadow-sm border border-indigo-100/50">
+                                    <i className="fa-solid fa-file-invoice-dollar"></i>
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest leading-none">Contabilidad de Cobros</h3>
+                                    <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-tighter">Historial de pagos confirmados</p>
+                                </div>
+                            </div>
+                            <span className="text-[10px] font-black text-indigo-400 bg-indigo-50 px-4 py-2 rounded-2xl uppercase border border-indigo-200/50">
+                                {subscriptionPayments.length} Recibos
+                            </span>
+                        </div>
+
+                        <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+                            {subscriptionPayments.length === 0 ? (
+                                <div className="p-12 text-center opacity-40">
+                                    <i className="fa-solid fa-magnifying-glass-dollar text-3xl mb-4 text-slate-200"></i>
+                                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">Sin pagos registrados todavía</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
+                                                <th className="px-8 py-5">Fecha de Cobro</th>
+                                                <th className="px-8 py-5">Concepto / Plan</th>
+                                                <th className="px-8 py-5">Método</th>
+                                                <th className="px-8 py-5 text-right">Importe</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {subscriptionPayments.map(pogo => (
+                                                <tr key={pogo.id} className="group hover:bg-slate-50/30 transition-colors">
+                                                    <td className="px-8 py-5">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-black text-slate-700">{new Date(pogo.fecha_registro).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-tighter mt-0.5">{new Date(pogo.fecha_registro).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <span className="text-xs font-black text-slate-600 truncate max-w-[180px] block">{pogo.nombre_clase || 'ABONO'}</span>
+                                                    </td>
+                                                    <td className="px-8 py-5">
+                                                        <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-3 py-1 rounded-lg uppercase tracking-tighter border border-indigo-100/50">
+                                                            {pogo.metodo_pago || 'EFECTIVO'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-right">
+                                                        <span className="text-sm font-black text-emerald-600 tracking-tight">+{parseFloat(pogo.importe).toFixed(2)}€</span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </section>
@@ -765,7 +856,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                         </div>
                     </section>
                 </div>
-            ) : (
+            ) : activeTab === 'files' ? (
                 <div className="space-y-10 max-w-3xl mx-auto pb-10">
                     <div className="relative group">
                         <input 
@@ -867,7 +958,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                         )}
                     </div>
                 </div>
-            )}
+            ) : null}
         </div>
 
         {/* Improved Footer */}
