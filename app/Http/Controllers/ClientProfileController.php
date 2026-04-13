@@ -155,6 +155,11 @@ class ClientProfileController extends Controller
             ->orderBy('measured_at', 'asc')
             ->get();
 
+        return response()->json([
+            'attendance' => $attendance,
+            'sessionTypes' => $sessionTypes,
+            'creditBatches' => $creditBatches,
+            'subscriptionHistory' => $subscriptionHistory,
             'measurements' => $measurements,
             'kpis' => [
                 'clasesMes' => $clasesMes,
@@ -164,6 +169,7 @@ class ClientProfileController extends Controller
                 'mesesTotales' => $subscriptionHistory->first() ? (int) $user->created_at->diffInMonths(now()) : 0,
             ],
             'additional_attributes' => collect($user->additional_attributes ?? [])->filter(fn($attr) => ($attr['visibility'] ?? 'public') !== 'private')->values()->toArray()
+        ]);
     }
 
     public function update(Request $request, User $user)
