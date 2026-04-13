@@ -193,7 +193,7 @@ class PagosController extends Controller
             'trainers.*'         => ['exists:entrenadores,id'],
             'participants'       => ['nullable', 'array'],
             'participants.*.user_id'     => ['required_with:participants', 'exists:users,id'],
-            'participants.*.precio'      => ['required_with:participants', 'numeric', 'min:0'],
+            'participants.*.precio'      => ['required_with:participants', 'numeric', 'gt:0'],
             'participants.*.metodo_pago' => ['required_with:participants', 'in:TPV,EF,DD,CC'],
             'suscripciones_permitidas'   => ['nullable', 'array'],
             'suscripciones_permitidas.*' => ['exists:suscripciones,id'],

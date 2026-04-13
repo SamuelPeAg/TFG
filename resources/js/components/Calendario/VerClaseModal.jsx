@@ -489,45 +489,62 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
 
               {/* Search Client */}
               {window.IS_ADMIN && (
-                  <div className="relative">
-                      <div className="w-full flex items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 font-bold text-xs uppercase tracking-widest hover:border-[#4BB7AE] hover:text-[#4BB7AE] hover:bg-teal-50 transition-colors focus-within:border-[#4BB7AE] focus-within:bg-teal-50 focus-within:text-[#4BB7AE] relative overflow-hidden">
-                          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none opacity-50">
-                              <i className="fa-solid fa-user-plus text-lg"></i>
+                  <div className="relative mt-2">
+                       <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#38C1A3] mb-3 px-1">
+                           <i className="fa-solid fa-plus-circle mr-2"></i>Añadir Alumno a la Sesión
+                       </h4>
+                       <div className="search-box !bg-slate-50 !shadow-none !border-slate-200 focus-within:!border-[#38C1A3] focus-within:!bg-white transition-all group overflow-visible">
+                          <i className="fa-solid fa-magnifying-glass text-slate-300 group-focus-within:text-[#38C1A3]"></i>
+                          <div className="search-anchor w-full">
+                              <input 
+                                  type="text" 
+                                  placeholder="Buscar por nombre, email o DNI..." 
+                                  className="w-full py-3 bg-transparent outline-none font-bold text-xs text-slate-700 placeholder:text-slate-300"
+                                  value={clientSearchTerm}
+                                  onChange={(e) => {
+                                      setClientSearchTerm(e.target.value);
+                                      setShowClientSuggestions(true);
+                                  }}
+                                  onFocus={() => setShowClientSuggestions(true)}
+                                  onBlur={() => setTimeout(() => setShowClientSuggestions(false), 250)}
+                              />
                           </div>
-                          <input 
-                              type="text" 
-                              placeholder="SELECCIONAR CLIENTE..." 
-                              className="w-full py-4 pl-12 pr-4 bg-transparent outline-none text-center font-bold text-xs placeholder:text-inherit text-slate-700"
-                              value={clientSearchTerm}
-                              onChange={(e) => {
-                                  setClientSearchTerm(e.target.value);
-                                  setShowClientSuggestions(true);
-                              }}
-                              onFocus={() => setShowClientSuggestions(true)}
-                              onBlur={() => setTimeout(() => setShowClientSuggestions(false), 200)}
-                          />
                       </div>
                       
                       {showClientSuggestions && clientSearchTerm && (
-                          <div className="absolute top-14 left-0 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden">
+                          <div className="absolute top-full left-0 w-full bg-white border border-slate-200 rounded-2xl shadow-2xl z-[100] mt-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                              <div className="bg-slate-50 px-4 py-2 border-b border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                  Resultados de búsqueda
+                              </div>
                               {filteredUsers.length === 0 ? (
-                                  <div className="p-4 text-xs font-semibold text-slate-400 text-center">No se encontraron clientes</div>
+                                  <div className="p-6 text-xs font-bold text-slate-400 text-center italic">
+                                      <i className="fa-solid fa-face-frown mr-2"></i>No se encontraron clientes
+                                  </div>
                               ) : (
-                                  filteredUsers.map(u => (
-                                      <div 
-                                         key={u.id} 
-                                         className="px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 cursor-pointer flex items-center gap-3 transition-colors"
-                                         onClick={() => handleAddClient(u)}
-                                      >
-                                          <div className="w-8 h-8 rounded-full bg-[#4BB7AE]/10 text-[#4BB7AE] flex items-center justify-center font-bold text-xs">
-                                              {u.name.charAt(0).toUpperCase()}
+                                  <div className="max-h-[280px] overflow-y-auto">
+                                      {filteredUsers.map(u => (
+                                          <div 
+                                             key={u.id} 
+                                             className="px-4 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 cursor-pointer flex items-center gap-3 transition-all hover:pl-6 group"
+                                             onClick={() => handleAddClient(u)}
+                                          >
+                                              <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#38C1A3] flex items-center justify-center font-black text-sm border border-teal-100/50 overflow-hidden shrink-0">
+                                                  {u.photo ? (
+                                                      <img src={u.photo} alt="" className="w-full h-full object-cover" />
+                                                  ) : (
+                                                      <span>{u.name.charAt(0).toUpperCase()}</span>
+                                                  )}
+                                              </div>
+                                              <div className="flex-1 min-w-0">
+                                                  <div className="text-sm font-black text-slate-700 truncate">{u.name}</div>
+                                                  <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tight truncate">
+                                                      {u.email} {u.dni ? `• ${u.dni}` : ''}
+                                                  </div>
+                                              </div>
+                                              <i className="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:text-[#38C1A3] transition-transform group-hover:translate-x-1"></i>
                                           </div>
-                                          <div className="flex-1">
-                                              <div className="text-sm font-bold text-slate-700">{u.name}</div>
-                                              <div className="text-[10px] text-slate-400 font-semibold">{u.email}</div>
-                                          </div>
-                                      </div>
-                                  ))
+                                      ))}
+                                  </div>
                               )}
                           </div>
                       )}

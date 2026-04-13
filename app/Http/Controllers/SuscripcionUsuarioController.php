@@ -21,6 +21,10 @@ class SuscripcionUsuarioController extends Controller
     }
     public function store(Request $request)
     {
+        if (!auth()->user() || !auth()->user()->hasAnyRole(['admin', 'entrenador'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para modificar créditos.'], 403);
+        }
+
         $validated = $request->validate([
             'id_usuario'    => 'required|exists:users,id',
             'id_suscripcion' => 'required|exists:suscripciones,id',
@@ -46,8 +50,8 @@ class SuscripcionUsuarioController extends Controller
             'pago_adelantado' => $request->boolean('pago_adelantado'),
         ]);
 
-        // Si se especificó saldo manual o por defecto, lo metemos como el primer lote
-        if ($saldo > 0) {
+        // Solo liberamos los créditos si el pago ha sido confirmado por adelantado
+        if ($saldo > 0 && $request->boolean('pago_adelantado')) {
             $this->creditService->allocate($susuario, $saldo);
         }
 
@@ -59,6 +63,10 @@ class SuscripcionUsuarioController extends Controller
 
     public function update(Request $request, $id)
     {
+        if (!auth()->user() || !auth()->user()->hasAnyRole(['admin', 'entrenador'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para modificar créditos.'], 403);
+        }
+
         $susuario = SuscripcionUsuario::findOrFail($id);
         
         $validated = $request->validate([
@@ -76,6 +84,10 @@ class SuscripcionUsuarioController extends Controller
 
     public function destroy(Request $request, $id)
     {
+        if (!auth()->user() || !auth()->user()->hasAnyRole(['admin', 'entrenador'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para realizar esta acción.'], 403);
+        }
+
         $susuario = SuscripcionUsuario::findOrFail($id);
         $susuario->delete();
 
@@ -87,6 +99,10 @@ class SuscripcionUsuarioController extends Controller
 
     public function ajustarSaldo(Request $request, $id)
     {
+        if (!auth()->user() || !auth()->user()->hasAnyRole(['admin', 'entrenador'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para modificar créditos.'], 403);
+        }
+
         $susuario = SuscripcionUsuario::findOrFail($id);
         $accion = $request->input('accion');
         $cantidad = $request->input('cantidad', 1);
@@ -111,6 +127,10 @@ class SuscripcionUsuarioController extends Controller
 
     public function confirmarPago(Request $request, $id)
     {
+        if (!auth()->user() || !auth()->user()->hasAnyRole(['admin', 'entrenador'])) {
+            return response()->json(['success' => false, 'message' => 'No tienes permiso para confirmar pagos.'], 403);
+        }
+
         $susuario = SuscripcionUsuario::findOrFail($id);
         $suscripcion = $susuario->suscripcion;
 

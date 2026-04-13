@@ -152,6 +152,7 @@ Route::middleware('auth:web,staff')->group(function () {
 
     // Perfil de Cliente (Lectura propia para clientes, total para staff)
     Route::get('/client-profile/{user}', [ClientProfileController::class, 'show']);
+    Route::get('/client-profile/{user}/statistics', [ClientProfileController::class, 'statistics']);
     Route::put('/client-profile/{user}', [ClientProfileController::class, 'update']);
     Route::post('/client-profile/{user}/upload', [ClientProfileController::class, 'uploadFile']);
 

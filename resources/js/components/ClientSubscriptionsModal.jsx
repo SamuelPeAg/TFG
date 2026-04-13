@@ -5,6 +5,7 @@ import Button from './Button';
 export default function ClientSubscriptionsModal({ isOpen, user, onClose, onUpdate }) {
   // Navigation State: 'list' | 'select' | 'config'
   const [step, setStep] = useState('list');
+  const isAdminOrTrainer = window.AppConfig?.user?.role === 'admin' || window.AppConfig?.user?.role === 'entrenador';
   
   const [availableSuscripciones, setAvailableSuscripciones] = useState([]);
   const [selectedSus, setSelectedSus] = useState(null);
@@ -170,36 +171,40 @@ export default function ClientSubscriptionsModal({ isOpen, user, onClose, onUpda
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-2 border-t border-slate-50 pt-3">
-                                        <button 
-                                            onClick={() => handleConfirmPayment(su.id)}
-                                            className="flex-1 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm shadow-teal-200 flex items-center justify-center gap-2"
-                                        >
-                                            <i className="fa-solid fa-check-circle"></i>
-                                            Confirmar Pago
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDeleteSub(su.id)}
-                                            className="w-10 h-10 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition-all flex items-center justify-center"
-                                        >
-                                            <i className="fa-solid fa-trash-alt text-xs"></i>
-                                        </button>
-                                    </div>
+                                    {isAdminOrTrainer && (
+                                        <div className="flex items-center gap-2 border-t border-slate-50 pt-3">
+                                            <button 
+                                                onClick={() => handleConfirmPayment(su.id)}
+                                                className="flex-1 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm shadow-teal-200 flex items-center justify-center gap-2"
+                                            >
+                                                <i className="fa-solid fa-check-circle"></i>
+                                                Confirmar Pago
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteSub(su.id)}
+                                                className="w-10 h-10 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl transition-all flex items-center justify-center"
+                                            >
+                                                <i className="fa-solid fa-trash-alt text-xs"></i>
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}
                     </div>
 
-                    <div className="mt-8">
-                        <Button 
-                            onClick={() => setStep('select')}
-                            variant="primary"
-                            className="w-full py-4 rounded-[20px] text-xs font-black uppercase tracking-widest shadow-lg shadow-teal-500/20"
-                            icon="fa-solid fa-plus"
-                        >
-                            Nueva suscripción
-                        </Button>
-                    </div>
+                    {isAdminOrTrainer && (
+                        <div className="mt-8">
+                            <Button 
+                                onClick={() => setStep('select')}
+                                variant="primary"
+                                className="w-full py-4 rounded-[20px] text-xs font-black uppercase tracking-widest shadow-lg shadow-teal-500/20"
+                                icon="fa-solid fa-plus"
+                            >
+                                Nueva suscripción
+                            </Button>
+                        </div>
+                    )}
                 </div>
             )}
 

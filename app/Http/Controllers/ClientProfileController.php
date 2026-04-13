@@ -20,19 +20,6 @@ class ClientProfileController extends Controller
             }
         }
 
-        // El propio cliente solo ve los archivos que no son privados.
-        /* Desactivado por ahora a petición del usuario
-        $canSeePrivate = Auth::user()->hasRole('admin') || Auth::user()->hasRole('entrenador');
-        
-        $files = $user->clientFiles()
-            ->when(!$canSeePrivate, function($query) {
-                return $query->where('is_private', false);
-            })
-            ->with('uploader:id,name')
-            ->orderBy('created_at', 'desc')
-            ->get();
-        */
-
         $files = $user->clientFiles()
             ->with('uploader:id,name')
             ->orderBy('created_at', 'desc')
@@ -42,16 +29,37 @@ class ClientProfileController extends Controller
             ->where('user_id', $user->id)
             ->orderBy('fecha_registro', 'asc')
             ->get()
-            ->map(function ($pago) use ($user) {
+            ->map(function ($pago) {
+                // Encontrar a otros alumnos inscritos en la misma sesión
+                // Una sesión se identifica unívocamente por nombre, centro y fecha exacta
+                $allParticipants = Pago::where('fecha_registro', $pago->fecha_registro)
+                    ->where('nombre_clase', $pago->nombre_clase)
+                    ->where('centro', $pago->centro)
+                    ->with('user:id,name,foto_de_perfil')
+                    ->get();
+
+                $alumnos = $allParticipants->map(function($p) {
+                    return [
+                        'id' => $p->user->id,
+                        'name' => $p->user->name,
+                        'foto' => $p->user->foto_de_perfil ? \Illuminate\Support\Facades\Storage::url($p->user->foto_de_perfil) : null
+                    ];
+                });
+
                 return [
                     'id' => $pago->id,
-                    'user_id' => $user->id,
+                    'user_id' => $pago->user_id,
                     'fecha_registro' => $pago->fecha_registro?->toDateTimeString(),
                     'nombre_clase' => $pago->nombre_clase,
                     'centro' => $pago->centro,
                     'tipo_clase' => $pago->tipo_clase,
                     'capacidad_maxima' => $pago->capacidad_maxima,
-                    'entrenadores' => $pago->entrenadores->map(fn($t) => $t->name)->toArray(),
+                    'entrenadores' => $pago->entrenadores->map(fn($t) => [
+                        'id' => $t->id,
+                        'name' => $t->name,
+                        'foto' => $t->foto_de_perfil ? \Illuminate\Support\Facades\Storage::url($t->foto_de_perfil) : null
+                    ])->toArray(),
+                    'alumnos' => $alumnos,
                     'importe' => $pago->importe,
                     'metodo_pago' => $pago->metodo_pago,
                 ];
@@ -66,11 +74,68 @@ class ClientProfileController extends Controller
                 'direccion' => $user->direccion,
                 'codigo_postal' => $user->codigo_postal,
                 'ciudad' => $user->ciudad,
+                'foto_de_perfil' => $user->foto_de_perfil ? \Illuminate\Support\Facades\Storage::url($user->foto_de_perfil) : null,
                 'additional_attributes' => $user->additional_attributes ?? [],
             ],
             'files' => $files,
-            'subscriptions' => $user->suscripciones()->with('suscripcion')->get(),
+            'subscriptions' => $user->suscripciones()->with(['suscripcion', 'lotes'])->get(),
             'sessions' => $sessions,
+        ]);
+    }
+
+    /**
+     * Devuelve las estadísticas dinámicas del cliente vinculadas a la DB.
+     */
+    public function statistics(User $user)
+    {
+        // Seguridad: El cliente solo ve sus propias estadísticas
+        if (Auth::user()->hasRole('cliente') && Auth::id() !== $user->id) {
+            return abort(403);
+        }
+
+        // 1. Asistencia mensual (últimos 6 meses)
+        $attendance = Pago::where('user_id', $user->id)
+            ->where('fecha_registro', '>', now()->subMonths(6))
+            ->selectRaw('DATE_FORMAT(fecha_registro, "%Y-%m") as mes, COUNT(*) as total')
+            ->groupBy('mes')
+            ->orderBy('mes', 'asc')
+            ->get();
+
+        // 2. Distribución de tipos de clase
+        $sessionTypes = Pago::where('user_id', $user->id)
+            ->selectRaw('tipo_clase, COUNT(*) as total')
+            ->groupBy('tipo_clase')
+            ->get();
+
+        // 3. Resumen de créditos (Lotes actuales)
+        $creditBatches = \App\Models\CreditoLote::whereHas('suscripcionUsuario', function($q) use ($user) {
+                $q->where('id_usuario', $user->id);
+            })
+            ->where('cantidad_actual', '>', 0)
+            ->where('fecha_vencimiento', '>=', now())
+            ->orderBy('fecha_vencimiento', 'asc')
+            ->get();
+
+        // 4. KPIs rápidos
+        $clasesMes = Pago::where('user_id', $user->id)
+            ->whereMonth('fecha_registro', now()->month)
+            ->whereYear('fecha_registro', now()->year)
+            ->count();
+
+        $totalCredits = $creditBatches->sum('cantidad_actual');
+        
+        // Próximo vencimiento
+        $nextExpiration = $creditBatches->first() ? $creditBatches->first()->fecha_vencimiento->toDateString() : 'N/A';
+
+        return response()->json([
+            'attendance' => $attendance,
+            'sessionTypes' => $sessionTypes,
+            'creditBatches' => $creditBatches,
+            'kpis' => [
+                'clasesMes' => $clasesMes,
+                'totalCredits' => $totalCredits,
+                'nextExpiration' => $nextExpiration,
+            ]
         ]);
     }
 

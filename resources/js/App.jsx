@@ -20,6 +20,8 @@ import Configuracion from './pages/Configuracion'
 import Suscripciones from './pages/Suscripciones'
 import Estadisticas from './pages/Estadisticas'
 import MiFicha from './pages/MiFicha'
+import MisClases from './pages/MisClases'
+import MisEstadisticas from './pages/MisEstadisticas'
 import ReservaClases from './pages/ReservaClases'
 
 function App() {
@@ -58,6 +60,8 @@ function App() {
       <Route path="/suscripciones" element={<Suscripciones />} />
       <Route path="/estadisticas" element={<Estadisticas />} />
       <Route path="/mi-ficha" element={<MiFicha />} />
+      <Route path="/mis-clases" element={<MisClases />} />
+      <Route path="/mis-estadisticas" element={<MisEstadisticas />} />
     </Routes>
   )
 }

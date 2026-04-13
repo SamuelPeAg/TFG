@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
 
 export default function CrearClaseModal({ isOpen, onClose, centros = [], entrenadores = [], users = [], suscripciones = [], tiposSesion = [], initialDate, onSuccess }) {
@@ -53,22 +53,32 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     // Select2 Integration Sync
     useEffect(() => {
-        if (window.$ && select2Ref.current && isOpen) {
+        if (window.$ && select2Ref.current && isOpen && currentStep === 1) {
             const $select = window.$(select2Ref.current);
             const handleChangeS2 = (e) => {
                 const value = e.target.value;
                 const config = getDefaultConfigForType(value);
-                setFormData(prev => ({ 
-                    ...prev, 
-                    tipo_clase: value,
-                    capacidad_maxima: config ? config.capacidad_personas.toString() : prev.capacidad_maxima
-                }));
+                setFormData(prev => {
+                    if (prev.tipo_clase === value) return prev;
+                    return { 
+                        ...prev, 
+                        tipo_clase: value,
+                        capacidad_maxima: config ? config.capacidad_personas.toString() : prev.capacidad_maxima
+                    };
+                });
             };
+
+            // Asegurar que select2 esté inicializado si no lo está
+            if (!$select.hasClass('select2-hidden-accessible')) {
+                // Si existe una función global o local para inicializarlo, se llamaría aquí
+                // Por ejemplo: if ($select.select2) $select.select2();
+            }
+
             $select.on('change', handleChangeS2);
             $select.val(formData.tipo_clase).trigger('change.select2');
             return () => $select.off('change', handleChangeS2);
         }
-    }, [isOpen, formData.tipo_clase]);
+    }, [isOpen, formData.tipo_clase, currentStep]);
 
     useEffect(() => {
         if (isOpen) {
@@ -84,9 +94,11 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     }, [isOpen, initialDate]);
 
     // Filtrar tipos de sesión por centro seleccionado
-    const selectedCentroObj = centros.find(c => c.nombre === formData.centro);
-    const selectedCentroId = selectedCentroObj ? selectedCentroObj.id : null;
-    const filteredTipos = tiposSesion.filter(t => t.centro_id === null || t.centro_id === selectedCentroId);
+    const filteredTipos = useMemo(() => {
+        const selectedCentroObj = centros.find(c => c.nombre === formData.centro);
+        const selectedCentroId = selectedCentroObj ? selectedCentroObj.id : null;
+        return tiposSesion.filter(t => t.centro_id === null || t.centro_id === selectedCentroId);
+    }, [centros, tiposSesion, formData.centro]);
 
     // Auto-corregir tipo de clase si queda fuera del filtro al cambiar de centro
     useEffect(() => {
@@ -101,7 +113,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 }));
             }
         }
-    }, [formData.centro, filteredTipos, isOpen]);
+    }, [formData.centro, filteredTipos, isOpen, formData.tipo_clase]);
 
     // Lógica para filtrar usuarios en tiempo real
     useEffect(() => {
@@ -194,6 +206,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             if (!formData.tipo_clase) newErrs.tipo_clase = "Obligatorio.";
         } else if (step === 2) {
             if (!formData.fecha_hora) newErrs.fecha_hora = "Obligatorio.";
+            if (parseFloat(formData.precio_base) <= 0) newErrs.precio_base = "El precio debe ser mayor que 0.";
             if (formData.is_recurring && !formData.recurrence_end) newErrs.recurrence_end = "Obligatorio si hay repetición.";
         }
 

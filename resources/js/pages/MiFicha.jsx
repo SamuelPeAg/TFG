@@ -185,21 +185,21 @@ export default function MiFicha() {
                             <div className="w-10 h-10 border-4 border-[#38C1A3]/20 border-t-[#38C1A3] rounded-full animate-spin"></div>
                         </div>
                     ) : (
-                        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
+                        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
                             
-                            {/* INFO COL */}
-                            <div className="lg:col-span-1 space-y-6">
+                            {/* INFO COL (3/12 space) */}
+                            <div className="lg:col-span-4 space-y-6">
                                 <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
                                     <div className="flex justify-end">
                                         <button 
                                             onClick={() => setIsEditingContact(!isEditingContact)}
                                             className="text-[10px] font-black uppercase text-indigo-500 hover:text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full transition-colors"
                                         >
-                                            {isEditingContact ? 'Cancelar' : 'Editar Ficha'}
+                                            {isEditingContact ? 'Cancelar' : 'Editar Datos'}
                                         </button>
                                     </div>
                                     <div className="text-center pb-6 border-b border-slate-50">
-                                        <div className="w-20 h-20 rounded-full bg-slate-50 mx-auto flex items-center justify-center text-3xl font-black text-[#38C1A3] mb-4 border-2 border-slate-100">
+                                        <div className="w-20 h-20 rounded-full bg-slate-50 mx-auto flex items-center justify-center text-3xl font-black text-[#38C1A3] mb-4 border-2 border-slate-100 shadow-inner">
                                             {user?.name ? user.name.charAt(0).toUpperCase() : '?'}
                                         </div>
                                         <h2 className="font-black text-slate-800 text-lg">{user?.name || 'Cliente'}</h2>
@@ -280,105 +280,45 @@ export default function MiFicha() {
                                     </div>
                                 </div>
 
-                                {/* Suscripciones (Créditos) */}
-                                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-8 rounded-[2.5rem] border border-indigo-100 shadow-sm space-y-4">
-                                    <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
-                                        <i className="fa-solid fa-ticket"></i> Mis Suscripciones
+                                {/* Atributos / Notas (Compartido) */}
+                                <div className="bg-emerald-50/50 p-8 rounded-[2.5rem] border border-emerald-100/50 space-y-6">
+                                    <h3 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-2">
+                                        <i className="fa-solid fa-notes-medical"></i> Notas del Expediente
                                     </h3>
                                     <div className="space-y-4">
-                                        {subscriptions?.length > 0 ? (
-                                            subscriptions.map((subUser) => {
-                                                const nextRecharge = () => {
-                                                    if (!subUser.ultima_recarga) return 'Pendiente de activar';
-                                                    const last = new Date(subUser.ultima_recarga);
-                                                    if (subUser.suscripcion?.periodo === 'semanal') {
-                                                        last.setDate(last.getDate() + 7);
-                                                    } else {
-                                                        const mReset = subUser.suscripcion?.meses_reset;
-                                                        const monthsToAdd = mReset === 15 ? 1 : (mReset || 1);
-                                                        last.setMonth(last.getMonth() + monthsToAdd);
-                                                    }
-                                                    return last.toLocaleDateString();
-                                                };
-
-                                                return (
-                                                    <div key={subUser.id} className="bg-white p-5 rounded-3xl shadow-sm border border-indigo-50/50 relative overflow-hidden group">
-                                                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-100/30 to-transparent rounded-bl-full -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-                                                        
-                                                        <div className="flex justify-between items-start mb-4">
-                                                            <div>
-                                                                <h4 className="font-black text-slate-800 text-sm">{subUser.suscripcion?.nombre || 'Suscripción Personalizada'}</h4>
-                                                                <span className="text-[9px] font-bold text-indigo-400 bg-indigo-50 px-2 py-0.5 rounded-full uppercase">
-                                                                    {subUser.suscripcion?.periodo || 'semanal'}
-                                                                </span>
-                                                            </div>
-                                                            <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg ${subUser.saldo_actual > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
-                                                                {subUser.saldo_actual > 0 ? 'ACTIVO' : 'AGOTADO'}
-                                                            </span>
-                                                        </div>
-                                                        
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div className="space-y-0.5">
-                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Créditos Disponibles</p>
-                                                                <div className="flex items-baseline gap-1">
-                                                                    <span className="text-3xl font-black text-indigo-600 leading-none">{subUser.saldo_actual}</span>
-                                                                    <span className="text-xs font-bold text-indigo-300">/ {subUser.suscripcion?.creditos_por_periodo || 0}</span>
-                                                                </div>
-                                                            </div>
-                                                            <div className="space-y-0.5 text-right">
-                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Próxima Recarga</p>
-                                                                <p className="text-xs font-black text-slate-800 mt-1">{nextRecharge()}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="mt-4 pt-3 border-t border-slate-50 flex items-center justify-between">
-                                                            <p className="text-[9px] text-slate-400 font-bold italic">
-                                                                Límite acumulación: {subUser.suscripcion?.limite_acumulacion || 0} usos
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })
+                                        {profileData?.additional_attributes?.length > 0 ? (
+                                            profileData.additional_attributes.map((attr, i) => (
+                                                <div key={i} className="flex flex-col bg-white p-4 rounded-2xl border border-emerald-50 shadow-sm">
+                                                    <span className="text-[10px] font-black text-emerald-700/60 uppercase">{attr.key}</span>
+                                                    <span className="text-sm font-bold text-slate-800 mt-1">{attr.value}</span>
+                                                </div>
+                                            ))
                                         ) : (
-                                            <div className="bg-white/60 text-center p-6 rounded-3xl border border-indigo-50 border-dashed">
-                                                <i className="fa-solid fa-ghost text-indigo-200 text-3xl mb-3"></i>
-                                                <p className="text-xs text-slate-500 font-medium">No tienes suscripciones activas vinculadas.</p>
+                                            <div className="text-center py-6">
+                                                <i className="fa-solid fa-comment-slash text-emerald-100 text-3xl mb-3"></i>
+                                                <p className="text-xs text-slate-400 italic">No hay notas compartidas en este expediente.</p>
                                             </div>
                                         )}
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Atributos */}
-                                <div className="bg-emerald-50/50 p-8 rounded-[2.5rem] border border-emerald-100/50 space-y-4">
-                                    <h3 className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest">Notas Especiales</h3>
-                                    <div className="space-y-3">
-                                        {profileData?.additional_attributes?.length > 0 ? (
-                                            profileData.additional_attributes.map((attr, i) => (
-                                                <div key={i} className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-emerald-700/60 uppercase">{attr.key}</span>
-                                                    <span className="text-sm font-bold text-slate-800">{attr.value}</span>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <p className="text-xs text-slate-400 italic">No hay notas adicionales.</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
-                                    <div className="flex items-center justify-between mb-6">
+                            {/* MAIN COL (8/12 space) - FOCUS ON DOCUMENTS */}
+                            <div className="lg:col-span-8">
+                                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-full">
+                                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
                                         <div>
-                                            <h3 className="text-lg font-black text-slate-800">Mis Documentos</h3>
-                                            <p className="text-sm text-slate-500 mt-1">Sube y descarga archivos asociados a tu ficha.</p>
+                                            <h3 className="text-2xl font-black text-slate-800 tracking-tight">Mis Documentos Compartidos</h3>
+                                            <p className="text-sm text-slate-500 mt-1">Accede a tus informes, facturas manuales y archivos de seguimiento.</p>
                                         </div>
                                         <div className="relative">
                                             <button 
-                                                className="bg-[#38C1A3] hover:bg-teal-500 text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-lg shadow-teal-500/20 active:scale-95 disabled:grayscale"
+                                                className="bg-[#38C1A3] hover:bg-teal-500 text-white px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-teal-500/20 active:scale-95 disabled:grayscale"
                                                 onClick={() => document.getElementById('file-upload-input').click()}
                                                 disabled={submittingFile}
                                             >
-                                                {submittingFile ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-upload"></i>}
-                                                <span>Subir Archivo</span>
+                                                {submittingFile ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-cloud-arrow-up text-lg"></i>}
+                                                <span>Añadir Archivo</span>
                                             </button>
                                             <input 
                                                 id="file-upload-input" 
@@ -390,29 +330,35 @@ export default function MiFicha() {
                                     </div>
 
                                     {files.length === 0 ? (
-                                        <div className="h-64 flex flex-col items-center justify-center bg-slate-50/50 rounded-3xl border border-slate-50">
-                                            <i className="fa-regular fa-folder-open text-3xl text-slate-200 mb-3"></i>
-                                            <p className="text-slate-400 font-bold text-sm">Aún no se han compartido documentos contigo.</p>
+                                        <div className="py-24 flex flex-col items-center justify-center bg-slate-50/50 rounded-[3rem] border border-dashed border-slate-200">
+                                            <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-6">
+                                                <i className="fa-regular fa-folder-open text-4xl text-slate-300"></i>
+                                            </div>
+                                            <p className="text-slate-400 font-black text-sm uppercase tracking-widest">El expediente digital está vacío</p>
+                                            <p className="text-xs text-slate-300 mt-2">Sube tu primer documento usando el botón superior.</p>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             {files.map(file => (
-                                                <div key={file.id} className="p-5 rounded-3xl bg-slate-50 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 border border-transparent hover:border-slate-100 transition-all group">
+                                                <div key={file.id} className="p-6 rounded-[2rem] bg-[#FDFDFF] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500 group relative">
                                                     <div className="flex items-start justify-between">
-                                                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-500 ${file.file_type === 'pdf' ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}>
                                                             <i className={file.file_type === 'pdf' ? 'fa-solid fa-file-pdf' : 'fa-solid fa-file-image'}></i>
                                                         </div>
                                                         <a 
                                                            href={`/client-file/${file.id}/download`}
-                                                           className="w-8 h-8 rounded-full bg-white text-slate-400 hover:text-[#38C1A3] shadow-sm flex items-center justify-center transition-colors"
+                                                           className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-[#38C1A3] hover:bg-teal-50 shadow-sm flex items-center justify-center transition-all"
                                                            title="Descargar"
                                                         >
-                                                            <i className="fa-solid fa-download text-xs text-info"></i>
+                                                            <i className="fa-solid fa-download"></i>
                                                         </a>
                                                     </div>
-                                                    <div className="mt-4">
+                                                    <div className="mt-6">
                                                         <h4 className="font-black text-slate-800 text-sm truncate" title={file.file_name}>{file.file_name}</h4>
-                                                        <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase">Subido por: {file.uploader?.name}</p>
+                                                        <div className="flex items-center justify-between mt-3">
+                                                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">De: {file.uploader?.name || 'Sistema'}</p>
+                                                            <span className="text-[9px] font-black text-slate-300">{new Date(file.created_at || Date.now()).toLocaleDateString()}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}
@@ -421,86 +367,10 @@ export default function MiFicha() {
                                 </div>
                             </div>
 
-                        <div className="lg:col-span-2">
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div>
-                                        <h3 className="text-lg font-black text-slate-800">Tus sesiones apuntadas</h3>
-                                        <p className="text-sm text-slate-500 mt-1">Aquí verás solo las clases en las que tú estás inscrito.</p>
-                                    </div>
-                                    <span className="text-[9px] uppercase tracking-widest text-slate-500">{sessions.length} {sessions.length === 1 ? 'sesión' : 'sesiones'}</span>
-                                </div>
-
-                                {sessions.length > 0 ? (
-                                    <div className="space-y-4">
-                                        {sessions.map((session) => {
-                                            const isFuture = new Date(session.fecha_registro) > new Date();
-                                            const tipoLabel = {
-                                                EP: 'Entrenamiento Personal',
-                                                DUO: 'Dúo',
-                                                TRIO: 'Trío',
-                                                GRUPO: 'Grupo',
-                                                GRUPO_PRIVADO: 'Grupo Privado'
-                                            }[session.tipo_clase] || session.tipo_clase || 'N/A';
-
-                                            return (
-                                                <div key={session.id} className="rounded-[2rem] border border-slate-100 bg-slate-50 shadow-sm overflow-hidden">
-                                                    <div className="p-5 sm:p-6 flex flex-col gap-5">
-                                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                                            <div>
-                                                                <p className="text-lg font-black text-slate-800">{session.nombre_clase}</p>
-                                                                <p className="text-sm text-slate-500 mt-2">{new Date(session.fecha_registro).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · {new Date(session.fecha_registro).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
-                                                            </div>
-                                                            <span className="inline-flex items-center gap-2 rounded-full bg-slate-200/80 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-700">
-                                                                {tipoLabel}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-slate-600">
-                                                            <div className="rounded-3xl bg-white p-4 border border-slate-100">
-                                                                <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Centro</p>
-                                                                <p className="font-bold text-slate-800">{session.centro}</p>
-                                                            </div>
-                                                            <div className="rounded-3xl bg-white p-4 border border-slate-100">
-                                                                <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Entrenador</p>
-                                                                <p className="font-bold text-slate-800">{session.entrenadores.join(', ') || 'Pendiente'}</p>
-                                                            </div>
-                                                            <div className="rounded-3xl bg-white p-4 border border-slate-100">
-                                                                <p className="text-[10px] uppercase tracking-widest text-slate-400 mb-2">Capacidad</p>
-                                                                <p className="font-bold text-slate-800">{session.capacidad_maxima || 'Sin límite'}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                                            <div className="text-sm text-slate-500">
-                                                                <span className="font-bold text-slate-700">Método:</span> {session.metodo_pago || 'No definido'}
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                disabled={!isFuture || leavingSessionId === session.id}
-                                                                onClick={() => handleLeaveSession(session)}
-                                                                className={`w-full sm:w-auto py-3 px-5 rounded-2xl font-black uppercase tracking-widest transition-all ${isFuture ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
-                                                            >
-                                                                {leavingSessionId === session.id ? 'SALIENDO…' : isFuture ? 'Salir de esta clase' : 'Sesión cerrada'}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <div className="bg-slate-50 border border-dashed border-slate-200 rounded-3xl p-8 text-center text-slate-400 text-sm font-medium">
-                                        No estás apuntado a ninguna sesión por ahora.
-                                    </div>
-                                )}
-                            </div>
                         </div>
-
-                    </div>
-                )}
-            </div>
-        </main>
+                    )}
+                </div>
+            </main>
 
         <AlertModal 
             isOpen={alertConfig.isOpen}
