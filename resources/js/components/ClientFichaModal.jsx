@@ -3,6 +3,29 @@ import axios from 'axios';
 import Button from './Button';
 import ConfirmModal from './ConfirmModal';
 import AlertModal from './AlertModal';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [activeTab, setActiveTab] = useState('profile');
@@ -21,6 +44,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
+  const [measurements, setMeasurements] = useState([]);
+  const [editingMeasurementId, setEditingMeasurementId] = useState(null);
 
   const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
@@ -64,10 +89,13 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             direccion: data.direccion || '',
             codigo_postal: data.codigo_postal || '',
             ciudad: data.ciudad || '',
+            peso: data.peso || '',
+            altura: data.altura || '',
             additional_attributes: Array.isArray(data.additional_attributes) ? data.additional_attributes : []
         });
         setFiles(res.data.files || []);
         setUserSubscriptions(res.data.subscriptions || []);
+        setMeasurements(res.data.measurements || []);
     } catch (error) {
         console.error("Error fetching ficha:", error);
     } finally {
@@ -121,11 +149,49 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
     try {
         await axios.put(`/client-profile/${user.id}`, profileData);
         showAlert('Ficha actualizada correctamente', false, 'Guardado');
+        fetchFicha();
     } catch (error) {
         showAlert('Error al guardar la ficha', true);
     } finally {
         setSaving(false);
     }
+  };
+
+  const handleSaveHealth = async () => {
+      setSaving(true);
+      try {
+          if (editingMeasurementId) {
+               await axios.put(`/measurements/${editingMeasurementId}`, {
+                   peso: profileData.peso,
+                   altura: profileData.altura,
+                   measured_at: profileData.measured_at || new Date().toISOString().split('T')[0]
+               });
+               setEditingMeasurementId(null);
+          } else {
+              await axios.post(`/client-profile/${user.id}/progress`, {
+                  peso: profileData.peso,
+                  altura: profileData.altura
+              });
+          }
+          fetchFicha();
+          showAlert('Progreso actualizado', false, 'Completado');
+      } catch (err) {
+          const msg = err.response?.data?.message || 'Error al guardar';
+          showAlert(msg, true);
+      } finally {
+          setSaving(false);
+      }
+  };
+
+  const handleDeleteMeasurement = async (id) => {
+      confirmAction('¿Borrar esta medida del historial?', async () => {
+          try {
+              await axios.delete(`/measurements/${id}`);
+              fetchFicha();
+          } catch (err) {
+              showAlert('No se pudo eliminar', true);
+          }
+      }, true);
   };
 
   const handleFileSelect = (e) => {
@@ -177,12 +243,10 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
     const newAttrs = [...profileData.additional_attributes];
     const item = newAttrs[idx];
 
-    // Si cambiamos el tipo, reseteamos el valor para evitar inconsistencias de formato
     if (field === 'type' && item.type !== val) {
         item.value = '';
     }
 
-    // Sanitización extra si el tipo es número (independientemente del input type)
     if (field === 'value' && item.type === 'number') {
         val = val.replace(/[^0-9.,-]/g, '').replace(',', '.');
     }
@@ -214,9 +278,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl animate-in fade-in duration-500" onClick={onClose}></div>
       <div className="relative bg-[#FDFDFF] w-full max-w-4xl h-[90vh] rounded-[3rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 border border-white/50">
         
-        {/* Header Redesigned */}
         <div className="relative px-10 pt-10 pb-8 flex items-end justify-between overflow-hidden shrink-0">
-            {/* Abstract Background Decoration */}
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl"></div>
 
@@ -255,9 +317,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             </button>
         </div>
 
-        {/* Improved Tabs */}
         <div className="px-10 flex gap-10 border-b border-slate-100/60 shrink-0 relative">
-            {['profile', 'files', 'subscriptions'].map(tab => {
+            {['profile', 'health', 'files', 'subscriptions'].map(tab => {
                 const isActive = activeTab === tab;
                 return (
                     <button 
@@ -265,8 +326,9 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                         onClick={() => setActiveTab(tab)}
                         className={`py-5 font-black text-[11px] uppercase tracking-[0.2em] transition-all relative flex items-center gap-2 group ${isActive ? 'text-[#38C1A3]' : 'text-slate-300 hover:text-slate-500'}`}
                     >
-                        <i className={`fa-solid ${tab === 'profile' ? 'fa-user-gear' : tab === 'files' ? 'fa-file-shield' : 'fa-ticket-alt'} ${isActive ? 'scale-110' : 'opacity-40 group-hover:opacity-100'} transition-all`}></i>
+                        <i className={`fa-solid ${tab === 'profile' ? 'fa-user-gear' : tab === 'health' ? 'fa-heart-pulse' : tab === 'files' ? 'fa-file-shield' : 'fa-ticket-alt'} ${isActive ? 'scale-110' : 'opacity-40 group-hover:opacity-100'} transition-all`}></i>
                         {tab === 'profile' ? 'Expediente' : 
+                         tab === 'health' ? 'Salud / IMC' :
                          tab === 'files' ? `Documentación (${files.length})` :
                          'Suscripciones'}
                         {isActive && (
@@ -277,7 +339,6 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             })}
         </div>
 
-        {/* Content Body */}
         <div className="flex-1 overflow-auto p-10 scrollbar-hide bg-gradient-to-b from-white to-slate-50/30">
             {loading ? (
                 <div className="h-full flex items-center justify-center">
@@ -288,7 +349,6 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                 </div>
             ) : activeTab === 'profile' ? (
                 <div className="space-y-12 max-w-3xl mx-auto">
-                    {/* Personalized Info Section */}
                     <section className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75">
                         <div className="flex items-center gap-3 mb-8">
                              <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-sm shadow-sm">
@@ -322,7 +382,6 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                         </div>
                     </section>
 
-                    {/* Subscription Quick View */}
                     <section className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
                         <div className="flex items-center gap-3 mb-8">
                              <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm shadow-sm">
@@ -355,7 +414,6 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                         </div>
                     </section>
 
-                    {/* Additional Attributes Redesigned */}
                     <section className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
@@ -381,7 +439,6 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                             ) : (
                                 profileData.additional_attributes.map((attr, idx) => (
                                     <div key={idx} className="bg-white p-2.5 rounded-[1.75rem] border border-slate-100 shadow-sm hover:shadow-md transition-shadow animate-in slide-in-from-right-4 duration-300 flex items-stretch gap-3">
-                                        {/* Type Selector */}
                                         <div className="relative shrink-0 flex items-center pl-4 pr-1 min-w-[110px]">
                                             <i className={`fa-solid ${getAttrIcon(attr.type)} absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 text-xs pointer-events-none`}></i>
                                             <select 
@@ -398,7 +455,6 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
 
                                         <div className="w-px bg-slate-100 my-2"></div>
 
-                                        {/* Key Input */}
                                         <input 
                                             type="text" 
                                             placeholder="Nombre (p.ej: Alergia)" 
@@ -407,7 +463,6 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             className="w-1/3 px-4 py-3 bg-slate-50 border-transparent rounded-[1.1rem] outline-none focus:bg-white focus:border-teal-200 text-xs font-black text-slate-800 transition-all"
                                         />
 
-                                        {/* Value Input Area */}
                                         <div className="flex-1">
                                             {attr.type === 'boolean' ? (
                                                 <div className="h-full flex items-center px-4">
@@ -438,7 +493,6 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             )}
                                         </div>
 
-                                        {/* Remove Action */}
                                         <button 
                                             onClick={() => removeAttribute(idx)} 
                                             className="w-12 h-12 flex items-center justify-center text-slate-300 hover:text-rose-500 transition-colors group/del"
@@ -450,6 +504,140 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                             )}
                         </div>
                     </section>
+                </div>
+            ) : activeTab === 'health' ? (
+                <div className="space-y-8 max-w-2xl mx-auto pb-10">
+                    <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/20 relative overflow-hidden group">
+                         <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-8xl text-teal-900 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                            <i className="fa-solid fa-notes-medical"></i>
+                         </div>
+
+                         <div className="flex items-center justify-between mb-8 relative z-10">
+                             <div className="flex items-center gap-4">
+                                 <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl shadow-sm">
+                                     <i className="fa-solid fa-plus-circle"></i>
+                                 </div>
+                                 <h4 className="text-[11px] font-black text-slate-800 uppercase tracking-widest">{editingMeasurementId ? 'Corregir Medida' : 'Nueva Entrada de Salud'}</h4>
+                             </div>
+                             {editingMeasurementId && (
+                                 <button onClick={() => {setEditingMeasurementId(null); fetchFicha();}} className="text-[9px] font-black text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl hover:bg-rose-100 uppercase transition-all shadow-sm">Cancelar</button>
+                             )}
+                         </div>
+
+                         <div className="grid grid-cols-2 gap-6 mb-8 relative z-10">
+                             <div className="space-y-2 group/input">
+                                 <label className="text-[9px] font-black text-slate-400 uppercase ml-1 tracking-widest group-focus-within/input:text-[#38C1A3] transition-colors">Peso (kg)</label>
+                                 <div className="relative">
+                                     <input 
+                                         type="number" step="0.1"
+                                         value={profileData.peso}
+                                         onChange={(e) => setProfileData({...profileData, peso: e.target.value})}
+                                         className="w-full pl-5 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-sm font-black text-slate-700 transition-all placeholder:text-slate-200"
+                                         placeholder="75.0"
+                                     />
+                                     <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-200">KG</span>
+                                 </div>
+                             </div>
+                             <div className="space-y-2 group/input">
+                                 <label className="text-[9px] font-black text-slate-400 uppercase ml-1 tracking-widest group-focus-within/input:text-[#38C1A3] transition-colors">Altura (m)</label>
+                                 <div className="relative">
+                                     <input 
+                                         type="number" step="0.01"
+                                         value={profileData.altura}
+                                         onChange={(e) => setProfileData({...profileData, altura: e.target.value})}
+                                         className="w-full pl-5 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-sm font-black text-slate-700 transition-all placeholder:text-slate-200"
+                                         placeholder="1.80"
+                                     />
+                                     <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-200">M</span>
+                                 </div>
+                             </div>
+                         </div>
+
+                         <button 
+                             onClick={handleSaveHealth}
+                             disabled={saving}
+                             className="w-full py-5 bg-[#38C1A3] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#2eaa8f] transition-all shadow-xl shadow-teal-100/50 active:scale-[0.98] disabled:opacity-50"
+                         >
+                            {saving ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className={`fa-solid ${editingMeasurementId ? 'fa-pen-to-square' : 'fa-check-circle'} mr-2`}></i>}
+                            {editingMeasurementId ? 'CONFIRMAR ACTUALIZACIÓN' : 'REGISTRAR MEDIDAS'}
+                         </button>
+                    </div>
+
+                    {measurements.length > 1 && (
+                        <div className="h-32 w-full px-5">
+                            <Line 
+                                data={{
+                                    labels: [...measurements].reverse().map(m => new Date(m.measured_at).toLocaleDateString()),
+                                    datasets: [{
+                                        label: 'Peso',
+                                        data: [...measurements].reverse().map(m => m.peso),
+                                        borderColor: '#38C1A3',
+                                        backgroundColor: (context) => {
+                                            const chart = context.chart;
+                                            const {ctx, chartArea} = chart;
+                                            if (!chartArea) return null;
+                                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                                            gradient.addColorStop(0, '#38C1A300');
+                                            gradient.addColorStop(1, '#38C1A315');
+                                            return gradient;
+                                        },
+                                        fill: true,
+                                        tension: 0.5,
+                                        pointRadius: 3,
+                                        pointBackgroundColor: '#fff',
+                                        pointBorderWidth: 2,
+                                    }]
+                                }}
+                                options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                                    scales: { x: { display: false }, y: { display: false } }
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    {measurements.length > 0 && (
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between px-2">
+                                <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-widest pl-1">Historial Físico</h4>
+                                <span className="text-[9px] font-black text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase">{measurements.length} registros</span>
+                            </div>
+                            <div className="grid gap-4">
+                                {measurements.map(m => (
+                                    <div key={m.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 flex items-center justify-between group hover:shadow-xl transition-all duration-500">
+                                        <div className="flex items-center gap-6">
+                                           <div className="flex flex-col">
+                                               <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{new Date(m.measured_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                               <div className="flex items-baseline gap-4 mt-1">
+                                                   <span className="text-xl font-black text-slate-700 tracking-tighter">{m.peso} kg</span>
+                                                   <span className="text-[11px] font-bold text-[#38C1A3] bg-teal-50 px-3 py-1 rounded-xl border border-teal-100/50">IMC: {m.imc}</span>
+                                               </div>
+                                           </div>
+                                        </div>
+                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                            <button 
+                                                onClick={() => {
+                                                    setEditingMeasurementId(m.id);
+                                                    setProfileData({...profileData, peso: m.peso, altura: m.altura, measured_at: m.measured_at});
+                                                }}
+                                                className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 hover:text-[#38C1A3] hover:bg-white hover:shadow-md transition-all flex items-center justify-center"
+                                            >
+                                                <i className="fa-solid fa-edit text-xs"></i>
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteMeasurement(m.id)}
+                                                className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-white hover:shadow-md transition-all flex items-center justify-center"
+                                            >
+                                                <i className="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : activeTab === 'subscriptions' ? (
                 <div className="space-y-12 max-w-3xl mx-auto pb-10">

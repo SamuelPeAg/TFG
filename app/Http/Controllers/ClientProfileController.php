@@ -78,10 +78,13 @@ class ClientProfileController extends Controller
                 'ciudad' => $user->ciudad,
                 'foto_de_perfil' => $user->foto_de_perfil ? \Illuminate\Support\Facades\Storage::url($user->foto_de_perfil) : null,
                 'additional_attributes' => $user->additional_attributes ?? [],
+                'peso' => $user->peso,
+                'altura' => $user->altura,
             ],
             'files' => $files,
             'subscriptions' => $user->suscripciones()->with(['suscripcion', 'lotes'])->get(),
             'sessions' => $sessions,
+            'measurements' => $user->measurements()->orderBy('measured_at', 'desc')->get(),
         ]);
     }
 
@@ -251,6 +254,11 @@ class ClientProfileController extends Controller
             'peso' => 'required|numeric|min:20',
             'altura' => 'required|numeric|min:0.5',
             'date' => 'nullable|date',
+        ], [
+            'peso.required' => 'Tienes que introducir el peso para guardar tu avance.',
+            'altura.required' => 'Tienes que introducir la altura para calcular tu IMC.',
+            'peso.numeric' => 'El peso debe ser un número válido.',
+            'altura.numeric' => 'La altura debe ser un número válido.',
         ]);
 
         $peso = $validated['peso'];
@@ -258,7 +266,8 @@ class ClientProfileController extends Controller
         // Calcular IMC
         $imc = $peso / ($altura * $altura);
 
-        // Actualizar datos actuales en User
+        // Actualizar datos actuales en User (si es la más reciente)
+        // Por simplicidad actualizamos siempre, pero idealmente solo si es la fecha más nueva
         $user->update([
             'peso' => $peso,
             'altura' => $altura,
@@ -278,5 +287,44 @@ class ClientProfileController extends Controller
             'message' => 'Progreso guardado correctamente',
             'measurement' => $measurement
         ]);
+    }
+
+    public function deleteMeasurement(UserMeasurement $measurement)
+    {
+        // Seguridad: Dueño o staff
+        if (Auth::user()->hasRole('cliente') && Auth::id() !== $measurement->user_id) {
+            return abort(403);
+        }
+
+        $measurement->delete();
+        return response()->json(['success' => true, 'message' => 'Medida eliminada']);
+    }
+
+    public function updateMeasurement(Request $request, UserMeasurement $measurement)
+    {
+        // Seguridad: Dueño o staff
+        if (Auth::user()->hasRole('cliente') && Auth::id() !== $measurement->user_id) {
+            return abort(403);
+        }
+
+        $validated = $request->validate([
+            'peso' => 'required|numeric|min:20',
+            'altura' => 'required|numeric|min:0.5',
+            'measured_at' => 'required|date',
+        ], [
+            'peso.required' => 'Tienes que introducir el peso.',
+            'altura.required' => 'Tienes que introducir la altura.',
+        ]);
+
+        $imc = $validated['peso'] / ($validated['altura'] * $validated['altura']);
+        
+        $measurement->update([
+            'peso' => $validated['peso'],
+            'altura' => $validated['altura'],
+            'imc' => round($imc, 2),
+            'measured_at' => $validated['measured_at'],
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Medida actualizada', 'measurement' => $measurement]);
     }
 }

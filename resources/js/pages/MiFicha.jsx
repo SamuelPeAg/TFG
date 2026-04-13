@@ -2,6 +2,29 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 export default function MiFicha() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -23,6 +46,8 @@ export default function MiFicha() {
   const [loading, setLoading] = useState(true);
   const [isEditingContact, setIsEditingContact] = useState(false);
   const [leavingSessionId, setLeavingSessionId] = useState(null);
+  const [measurements, setMeasurements] = useState([]);
+  const [editingMeasurementId, setEditingMeasurementId] = useState(null);
     
     // Alert Setup
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
@@ -35,24 +60,56 @@ export default function MiFicha() {
         e.preventDefault();
         setSavingStatus(true);
         try {
-            await axios.post(`/client-profile/${user.id}/progress`, {
-                peso: profileData.peso,
-                altura: profileData.altura
-            });
-            showAlert('Estado físico guardado. Podrás ver tu avance en estadísticas.');
-            // Opcional: refrescar ficha
+            if (editingMeasurementId) {
+                await axios.put(`/measurements/${editingMeasurementId}`, {
+                    peso: profileData.peso,
+                    altura: profileData.altura,
+                    measured_at: profileData.measured_at || new Date().toISOString().split('T')[0]
+                });
+                showAlert('Medida actualizada correctamente.');
+                setEditingMeasurementId(null);
+            } else {
+                await axios.post(`/client-profile/${user.id}/progress`, {
+                    peso: profileData.peso,
+                    altura: profileData.altura
+                });
+                showAlert('¡Progreso guardado! Ya puedes ver tu evolución en estadísticas.');
+            }
             fetchFicha();
         } catch (error) {
-            showAlert('Error al guardar: ' + (error.response?.data?.message || error.message), true);
+            const msg = error.response?.data?.message || "Tienes que introducir los datos correctamente.";
+            showAlert(msg, true);
         } finally {
             setSavingStatus(false);
         }
+    };
+
+    const handleEditMeasurement = (m) => {
+        setEditingMeasurementId(m.id);
+        setProfileData(prev => ({
+            ...prev,
+            peso: m.peso,
+            altura: m.altura,
+            measured_at: m.measured_at
+        }));
+        // Scroll to form?
+        document.getElementById('health-form')?.scrollIntoView({ behavior: 'smooth' });
     };
 
     // Calcular IMC dinámico
     const weightVal = parseFloat(profileData.peso);
     const heightVal = parseFloat(profileData.altura);
     const currentIMC = (weightVal > 0 && heightVal > 0) ? (weightVal / (heightVal * heightVal)).toFixed(2) : null;
+
+    const handleDeleteMeasurement = async (id) => {
+        if (!window.confirm('¿Estás seguro de que quieres borrar esta medida?')) return;
+        try {
+            await axios.delete(`/measurements/${id}`);
+            fetchFicha();
+        } catch (error) {
+            showAlert('No se pudo borrar la medida.', true);
+        }
+    };
 
     useEffect(() => {
         if (user && user.id) {
@@ -79,6 +136,7 @@ export default function MiFicha() {
             setFiles(Array.isArray(data.files) ? data.files : []);
             setSubscriptions(Array.isArray(data.subscriptions) ? data.subscriptions : []);
             setSessions(Array.isArray(data.sessions) ? data.sessions.filter(session => session.user_id === user?.id) : []);
+            setMeasurements(Array.isArray(data.measurements) ? data.measurements : []);
         } catch (error) {
             console.error("Error fetching ficha:", error);
             setProfileData({
@@ -103,9 +161,10 @@ export default function MiFicha() {
             await axios.put(`/client-profile/${user.id}`, profileData);
             showAlert('Datos de contacto actualizados correctamente');
             setIsEditingContact(false);
-                true, 
-                "Error de Validación"
-            );
+        } catch (error) {
+            console.error("Error updating contact:", error);
+            const serverMsg = error.response?.data?.message || "No se pudo actualizar la información.";
+            showAlert(serverMsg, true);
         } finally {
             setSavingContact(false);
         }
@@ -298,53 +357,176 @@ export default function MiFicha() {
                                     </div>
                                 </div>
 
-                                {/* Nueva Sección de Salud e IMC */}
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-2">
-                                            <i className="fa-solid fa-heart-pulse text-rose-400"></i> Estado Físico
-                                        </h3>
-                                        {currentIMC && (
-                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${currentIMC < 18.5 ? 'bg-rose-50 text-rose-500' : (currentIMC > 25 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-500')}`}>
-                                                IMC: {currentIMC}
-                                            </span>
-                                        )}
+                                {/* Nueva Sección de Salud e IMC Rediseñada */}
+                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 relative overflow-hidden">
+                                    {/* Decorado abstracto */}
+                                    <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-7xl text-teal-900 pointer-events-none">
+                                        <i className="fa-solid fa-heart-pulse"></i>
                                     </div>
-                                    
-                                    <form onSubmit={handleSaveStatus} className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Peso (kg)</label>
-                                                <input 
-                                                    type="number" 
-                                                    step="0.1"
-                                                    value={profileData.peso} 
-                                                    onChange={(e) => setProfileData({...profileData, peso: e.target.value})}
-                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-[#38C1A3] outline-none"
-                                                    placeholder="75.5"
-                                                />
+
+                                    <div className="flex items-center justify-between relative z-10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl shadow-sm border border-teal-100/50">
+                                                <i className="fa-solid fa-gauge-high"></i>
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Altura (m)</label>
-                                                <input 
-                                                    type="number" 
-                                                    step="0.01"
-                                                    value={profileData.altura} 
-                                                    onChange={(e) => setProfileData({...profileData, altura: e.target.value})}
-                                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold focus:border-[#38C1A3] outline-none"
-                                                    placeholder="1.80"
-                                                />
+                                            <div>
+                                                <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">{editingMeasurementId ? 'Editando Registro' : 'Progreso Físico'}</h3>
+                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Seguimiento de peso e IMC</p>
                                             </div>
                                         </div>
+                                        <div className="flex items-center gap-2">
+                                            {editingMeasurementId && (
+                                                <button onClick={() => {setEditingMeasurementId(null); fetchFicha();}} className="text-[9px] font-black text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl hover:bg-rose-100 uppercase transition-all border border-rose-100/50">Cancelar Edición</button>
+                                            )}
+                                            {currentIMC && (
+                                                <div className={`px-4 py-2 rounded-2xl flex flex-col items-center justify-center border ${currentIMC < 18.5 ? 'bg-rose-50 border-rose-100 text-rose-500' : (currentIMC > 25 ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-emerald-50 border-emerald-100 text-emerald-500')}`}>
+                                                    <span className="text-[8px] font-black uppercase tracking-tighter opacity-70">Tu IMC</span>
+                                                    <span className="text-[11px] font-black tracking-widest leading-none mt-0.5">{currentIMC}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    
+                                    <form id="health-form" onSubmit={handleSaveStatus} className="space-y-6 relative z-10">
+                                        <div className="grid grid-cols-2 gap-5">
+                                            <div className="space-y-2 group">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1 flex items-center gap-2 group-focus-within:text-[#38C1A3] transition-colors">
+                                                    <i className="fa-solid fa-weight-scale text-[9px]"></i> Peso (kg)
+                                                </label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type="number" step="0.1"
+                                                        value={profileData.peso} 
+                                                        onChange={(e) => setProfileData({...profileData, peso: e.target.value})}
+                                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] focus:ring-4 focus:ring-teal-500/5 outline-none transition-all"
+                                                        placeholder="0.0"
+                                                    />
+                                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase tracking-widest">kg</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2 group">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1 flex items-center gap-2 group-focus-within:text-[#38C1A3] transition-colors">
+                                                    <i className="fa-solid fa-ruler-vertical text-[9px]"></i> Altura (m)
+                                                </label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type="number" step="0.01"
+                                                        value={profileData.altura} 
+                                                        onChange={(e) => setProfileData({...profileData, altura: e.target.value})}
+                                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] focus:ring-4 focus:ring-teal-500/5 outline-none transition-all"
+                                                        placeholder="0.00"
+                                                    />
+                                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase tracking-widest">m</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <button 
                                             type="submit" 
                                             disabled={savingStatus}
-                                            className="w-full py-3 bg-[#38C1A3] text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#2da98d] shadow-lg shadow-teal-100 flex items-center justify-center gap-2 transition-all active:scale-95"
+                                            className="w-full py-5 bg-[#38C1A3] text-white rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#2eaa8f] shadow-xl shadow-teal-100 flex items-center justify-center gap-3 transition-all active:scale-[0.98]"
                                         >
-                                            {savingStatus ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-floppy-disk"></i> Guardar Avance</>}
+                                            {savingStatus ? (
+                                                <i className="fa-solid fa-spinner fa-spin"></i>
+                                            ) : (
+                                                <><i className={`fa-solid ${editingMeasurementId ? 'fa-pen-to-square' : 'fa-plus-circle'}`}></i> {editingMeasurementId ? 'ACTUALIZAR REGISTRO' : 'GUARDAR MI EVOLUCIÓN'}</>
+                                            )}
                                         </button>
-                                        <p className="text-[9px] text-slate-400 font-medium text-center italic">Calculamos tu IMC automáticamente para tu gráfico de estadísticas.</p>
+                                        
+                                        {currentIMC < 18.5 && currentIMC > 0 && (
+                                            <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100 flex items-center gap-4 text-[#F43F5E] animate-bounce">
+                                                <i className="fa-solid fa-circle-exclamation text-xl"></i>
+                                                <p className="text-[10px] font-black uppercase tracking-tight leading-tight">Tu IMC está por debajo del rango ideal. ¡Asegúrate de llevar una dieta equilibrada!</p>
+                                            </div>
+                                        )}
                                     </form>
+
+                                    {/* Gráfico de Evolución Premium */}
+                                    {measurements.length > 1 && (
+                                        <div className="mt-8 pt-8 border-t border-slate-50 relative">
+                                            <div className="absolute top-8 left-0 text-[8px] font-black text-slate-300 uppercase tracking-widest">Gráfico de Peso</div>
+                                            <div className="h-40 w-full pt-4">
+                                                <Line 
+                                                    data={{
+                                                        labels: [...measurements].reverse().map(m => new Date(m.measured_at).toLocaleDateString()),
+                                                        datasets: [{
+                                                            label: 'Mi Peso',
+                                                            data: [...measurements].reverse().map(m => m.peso),
+                                                            borderColor: '#38C1A3',
+                                                            backgroundColor: (context) => {
+                                                                const chart = context.chart;
+                                                                const {ctx, chartArea} = chart;
+                                                                if (!chartArea) return null;
+                                                                const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                                                                gradient.addColorStop(0, '#38C1A300');
+                                                                gradient.addColorStop(1, '#38C1A320');
+                                                                return gradient;
+                                                            },
+                                                            fill: true,
+                                                            tension: 0.5,
+                                                            pointRadius: 4,
+                                                            pointBackgroundColor: '#fff',
+                                                            pointBorderWidth: 2,
+                                                            pointHoverRadius: 6,
+                                                        }]
+                                                    }}
+                                                    options={{
+                                                        responsive: true,
+                                                        maintainAspectRatio: false,
+                                                        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+                                                        scales: { x: { display: false }, y: { display: false } }
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Historial Timeline-style */}
+                                    {measurements.length > 0 && (
+                                        <div className="mt-8 pt-8 border-t border-slate-50 space-y-6">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-widest">HISTORIAL COMPLETO</h4>
+                                                <span className="text-[8px] font-black text-slate-400 uppercase bg-slate-100 px-3 py-1 rounded-full">{measurements.length} REGISTROS</span>
+                                            </div>
+                                            <div className="space-y-4 max-h-80 overflow-y-auto pr-3 scrollbar-hide">
+                                                {measurements.map((m, idx) => (
+                                                    <div key={m.id} className="relative pl-8 group">
+                                                        {/* Linea del Timeline */}
+                                                        {idx !== measurements.length - 1 && (
+                                                            <div className="absolute left-[11px] top-6 bottom-[-24px] w-0.5 bg-slate-100"></div>
+                                                        )}
+                                                        <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full bg-white border-4 border-slate-50 flex items-center justify-center text-slate-200 group-hover:border-[#38C1A350] group-hover:text-[#38C1A3] transition-all">
+                                                            <i className="fa-solid fa-circle text-[6px]"></i>
+                                                        </div>
+
+                                                        <div className="bg-white p-4 rounded-[1.75rem] border border-slate-100 group-hover:border-teal-100 group-hover:bg-teal-50/20 shadow-sm transition-all flex items-center justify-between gap-4">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[9px] font-black text-slate-300 uppercase tracking-tighter mb-0.5">{new Date(m.measured_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                                <div className="flex items-baseline gap-2">
+                                                                    <span className="text-sm font-black text-slate-700 tracking-tight">{m.peso} kg</span>
+                                                                    <span className="text-[9px] font-black text-[#38C1A3] uppercase">IMC: {m.imc}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                                                <button 
+                                                                    onClick={() => handleEditMeasurement(m)}
+                                                                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-slate-300 hover:text-[#38C1A3] hover:bg-white hover:shadow-md transition-all"
+                                                                >
+                                                                    <i className="fa-solid fa-pen text-[10px]"></i>
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => handleDeleteMeasurement(m.id)}
+                                                                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-white hover:shadow-md transition-all"
+                                                                >
+                                                                    <i className="fa-solid fa-trash-can text-[10px]"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Atributos / Notas (Compartido) */}

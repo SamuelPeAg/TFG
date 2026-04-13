@@ -156,6 +156,8 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::put('/client-profile/{user}', [ClientProfileController::class, 'update']);
     Route::post('/client-profile/{user}/upload', [ClientProfileController::class, 'uploadFile']);
     Route::post('/client-profile/{user}/progress', [ClientProfileController::class, 'saveProgress']);
+    Route::put('/measurements/{measurement}', [ClientProfileController::class, 'updateMeasurement']);
+    Route::delete('/measurements/{measurement}', [ClientProfileController::class, 'deleteMeasurement']);
 
 
     /*
