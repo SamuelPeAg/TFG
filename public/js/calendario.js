@@ -10,6 +10,28 @@ window.initCalendarioVanilla = () => {
         return;
     }
 
+    // === 0. CARGAR PLUGINS (Tippy.js) ===
+    const loadScript = (src) => new Promise((resolve, reject) => {
+        const fullSrc = (src.startsWith('http') || src.startsWith('//')) ? src : (window.BASE_URL + src.replace(/^\//, ''));
+        if (document.querySelector(`script[src="${fullSrc}"]`) || document.querySelector(`link[href="${fullSrc}"]`)) {
+            resolve(); return;
+        }
+        let element = src.endsWith('.css') ? document.createElement('link') : document.createElement('script');
+        if (src.endsWith('.css')) { element.rel = 'stylesheet'; element.href = fullSrc; }
+        else { element.src = fullSrc; }
+        element.onload = resolve;
+        element.onerror = reject;
+        document.head.appendChild(element);
+    });
+
+    const initPlugins = async () => {
+        try {
+            await loadScript('https://unpkg.com/@popperjs/core@2');
+            await loadScript('https://unpkg.com/tippy.js@6');
+        } catch(e) { console.error("Error loading Tippy.js", e); }
+    };
+    initPlugins();
+
     // Si ya existe una instancia, la destruimos para evitar duplicados
     if (window.calendar && typeof window.calendar.destroy === 'function') {
         try { window.calendar.destroy(); } catch(e) { console.error("Error destroying calendar", e); }
@@ -77,8 +99,83 @@ window.initCalendarioVanilla = () => {
         },
 
         eventClick: function (info) {
-            // mostrarDetallesEvento(info.event); // old logic
             window.dispatchEvent(new CustomEvent('openVerClaseReact', { detail: { event: info.event } }));
+        },
+
+        eventContent: function(arg) {
+            const p = arg.event.extendedProps;
+            const trainer = p.entrenadores && p.entrenadores.length > 0 ? p.entrenadores[0] : null;
+            const bgColor = arg.event.backgroundColor || '#38b2ac';
+            const textColor = arg.event.textColor || '#ffffff';
+            
+            // Renderizado Premium de Celda
+            const html = `
+                <div class="custom-event-card" style="background-color: ${bgColor}; color: ${textColor}">
+                    ${p.tipo_clase ? `<span class="event-type-badge" style="border-left: 3px solid ${p.tipo_color || bgColor}">${p.tipo_clase}</span>` : ''}
+                    <div class="event-header">
+                        <div class="event-trainer-avatar">
+                            ${(trainer && trainer.foto) 
+                                ? `<img src="${trainer.foto}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" />` 
+                                : `<span>${trainer ? trainer.initial : '?'}</span>`}
+                        </div>
+                        <span class="event-class-name">${p.clase_nombre}</span>
+                    </div>
+                    <div class="event-footer">
+                        <span class="event-center-tag">
+                            <i class="fa-solid fa-location-dot"></i> ${p.centro}
+                        </span>
+                        <span class="event-attendance">
+                            <i class="fa-solid fa-users"></i> ${p.alumnos_count || 0}${p.capacidad_maxima ? '/' + p.capacidad_maxima : ''}
+                        </span>
+                    </div>
+                </div>
+            `;
+            return { html: html };
+        },
+
+        eventDidMount: function(info) {
+            if (window.tippy) {
+                const p = info.event.extendedProps;
+                const trainerNames = p.entrenadores ? p.entrenadores.map(t => t.name).join(', ') : 'Sin asignar';
+                
+                // Generar avatares de alumnos para el tooltip
+                let avatarsHtml = '';
+                if (p.alumnos && p.alumnos.length > 0) {
+                    avatarsHtml = p.alumnos.slice(0, 6).map(a => 
+                        `<img src="${a.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(a.nombre)+'&background=random'}" 
+                              class="tooltip-avatar-mini" 
+                              title="${a.nombre}">`
+                    ).join('');
+                    if (p.alumnos.length > 6) {
+                        avatarsHtml += `<div class="tooltip-avatar-mini" style="display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; color:#475569;">+${p.alumnos.length - 6}</div>`;
+                    }
+                }
+
+                window.tippy(info.el, {
+                    theme: 'premium',
+                    allowHTML: true,
+                    content: `
+                        <div class="tooltip-container">
+                            <div class="tooltip-title">${p.clase_nombre}</div>
+                            <div class="tooltip-row"><i class="fa-solid fa-user-tie"></i> <span><b>Entrenador:</b> ${trainerNames}</span></div>
+                            <div class="tooltip-row"><i class="fa-solid fa-clock"></i> <span><b>Hora:</b> ${p.hora}</span></div>
+                            <div class="tooltip-row"><i class="fa-solid fa-building"></i> <span><b>Centro:</b> ${p.centro}</span></div>
+                            ${p.tipo_clase ? `<div class="tooltip-row"><i class="fa-solid fa-tags"></i> <span><b>Tipo:</b> ${p.tipo_clase}</span></div>` : ''}
+                            
+                            <div class="tooltip-participants">
+                                <div class="tooltip-participants-title">Alumnos (${p.alumnos_count || 0}${p.capacidad_maxima ? '/' + p.capacidad_maxima : ''})</div>
+                                <div class="tooltip-avatars">
+                                    ${avatarsHtml || '<span style="font-size:10px; color:#cbd5e1; font-style:italic;">Nadie inscrito aún</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    `,
+                    placement: 'top',
+                    interactive: true,
+                    appendTo: () => document.body,
+                    delay: [200, 0]
+                });
+            }
         },
 
         dateClick: function (info) {
@@ -88,8 +185,8 @@ window.initCalendarioVanilla = () => {
 
         windowResize: function (arg) {
             const newView = getInitialView();
-            if (calendar.view.type !== newView) {
-                calendar.changeView(newView);
+            if (window.calendar && window.calendar.view.type !== newView) {
+                window.calendar.changeView(newView);
             }
         }
     });

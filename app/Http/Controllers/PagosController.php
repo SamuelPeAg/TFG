@@ -60,6 +60,9 @@ class PagosController extends Controller
 
         $pagos = $query->orderBy('fecha_registro', 'asc')->get();
 
+        // Obtener todos los tipos de sesión para mapear colores
+        $tiposSesion = \App\Models\TipoSesion::all()->keyBy('nombre');
+
         // Agrupar pagos por (fecha, nombre_clase, centro, tipo_clase)
         $grouped = $pagos->groupBy(function ($p) {
             return $p->fecha_registro->format('Y-m-d H:i:s')
@@ -82,28 +85,32 @@ class PagosController extends Controller
         $events = [];
         foreach ($grouped as $key => $grupo) {
             $first = $grupo->first();
-            $count = $grupo->count();
+            $count = $grupo->filter(fn($p) => $p->user_id !== null)->count();
+
+            $tipoClase = $grupo->pluck('tipo_clase')->filter()->first() ?? $first->tipo_clase;
+            $capacidadMaxima = $grupo->pluck('capacidad_maxima')->filter()->first() ?? $first->capacidad_maxima;
 
             // Determinar título
             if ($count === 1) {
-                $title = $first->nombre_clase . ' - ' . ($first->user->name ?? 'Usuario');
+                $userSingle = $grupo->filter(fn($p) => $p->user_id !== null)->first();
+                $title = $first->nombre_clase . ' - ' . ($userSingle->user->name ?? 'Usuario');
             } else {
                 $title = $first->nombre_clase . ' (' . $count . ')';
             }
 
-            // Recopilar alumnos (filtrando placeholders donde user_id es null)
+            // Recopilar alumnos
             $alumnos = $grupo->filter(fn($p) => $p->user_id !== null)->map(function ($p) {
                 return [
                     'id' => $p->user_id,
                     'nombre' => $p->user->name ?? 'Usuario',
                     'pago' => $p->metodo_pago,
-                    'coste' => (float) $p->importe
+                    'coste' => (float) $p->importe,
+                    'foto' => ($p->user && $p->user->foto_de_perfil) ? \Storage::url($p->user->foto_de_perfil) : null
                 ];
             })->values();
 
-            // Recopilar entrenadores (únicos para el grupo)
+            // Recopilar entrenadores
             $entrenadoresMap = [];
-
             foreach ($grupo as $p) {
                 if ($p->entrenadores) {
                     foreach ($p->entrenadores as $t) {
@@ -111,39 +118,42 @@ class PagosController extends Controller
                             $entrenadoresMap[$t->id] = [
                                 'id' => $t->id,
                                 'name' => $t->name,
-                                'initial' => strtoupper(substr($t->name, 0, 1))
+                                'initial' => strtoupper(substr($t->name, 0, 1)),
+                                'foto' => $t->foto_de_perfil ? \Storage::url($t->foto_de_perfil) : null
                             ];
                         }
                     }
                 }
             }
-
             $entrenadoresList = array_values($entrenadoresMap);
 
+            // Colores por Centro (Mejorado)
             $centroUpper = strtoupper($first->centro);
-            $color = '#A5EFE2'; // Default / Open Arena
-            $textColor = '#1f2937';
+            $color = '#cbd5e1'; // Default slate-300
+            $textColor = '#1e293b';
+            
             if (str_contains($centroUpper, 'AIRA')) {
-                $color = '#4BB7AE';
+                $color = '#38b2ac'; // teal-500
                 $textColor = '#ffffff';
             } elseif (str_contains($centroUpper, 'CLINICA')) {
-                $color = '#EF5D7A';
+                $color = '#e11d48'; // rose-600
+                $textColor = '#ffffff';
+            } elseif (str_contains($centroUpper, 'ARENA')) {
+                $color = '#0ea5e9'; // sky-500
                 $textColor = '#ffffff';
             }
 
-            $tipoClase = $grupo->pluck('tipo_clase')->filter()->first() ?? $first->tipo_clase;
-            $capacidadMaxima = $grupo->pluck('capacidad_maxima')->filter()->first() ?? $first->capacidad_maxima;
+            // Color del Tipo de Sesión
+            $tipoObj = $tiposSesion->get($tipoClase);
+            $tipoColor = $tipoObj ? $tipoObj->color_hex : null;
+
             $classSubIds = $first->suscripciones->pluck('id')->toArray();
 
-            // Filtrado del lado del cliente: solo ver clases compatibles con sus bonos activos
+            // Filtrado del lado del cliente
             if (isset($isClientOnly) && $isClientOnly) {
-                if (empty($classSubIds)) {
-                    continue; // Si la clase no admite bonos, el cliente no la ve
-                }
+                if (empty($classSubIds)) continue;
                 $hasMatchingSub = !empty(array_intersect($activeSubIds, $classSubIds));
-                if (!$hasMatchingSub) {
-                    continue; // El cliente no tiene bonos compatibles para esta clase
-                }
+                if (!$hasMatchingSub) continue;
             }
 
             $events[] = [
@@ -159,7 +169,9 @@ class PagosController extends Controller
                     'centro' => $first->centro,
                     'clase_nombre' => $first->nombre_clase,
                     'tipo_clase' => $tipoClase,
+                    'tipo_color' => $tipoColor,
                     'capacidad_maxima' => $capacidadMaxima,
+                    'alumnos_count' => $count,
                     'alumnos' => $alumnos,
                     'entrenadores' => $entrenadoresList,
                     'session_key' => [
@@ -168,9 +180,7 @@ class PagosController extends Controller
                         'centro' => $first->centro
                     ],
                     'suscripciones_permitidas' => $classSubIds,
-                    'suscripciones_detalles' => $first->suscripciones->map(function($s) {
-                        return ['id' => $s->id, 'nombre' => $s->nombre];
-                    })->toArray()
+                    'suscripciones_detalles' => $first->suscripciones->map(fn($s) => ['id' => $s->id, 'nombre' => $s->nombre])->toArray()
                 ],
             ];
         }
