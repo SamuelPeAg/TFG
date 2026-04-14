@@ -89,7 +89,7 @@ Route::put('/activar-entrenador-complete/{id}', [EntrenadorController::class, 'c
 | 2. AUTENTICACIÓN (GUEST) - REACT ROUTES
 |--------------------------------------------------------------------------
 */
-Route::middleware('guest')->group(function () {
+Route::middleware(['guest', 'throttle:6,1'])->group(function () {
     // API endpoints para autenticación (solo POST)
     Route::post('/login', [LoginController::class, 'login']);
     Route::post('/register', [RegisterController::class, 'store']);
