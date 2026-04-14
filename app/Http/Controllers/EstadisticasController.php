@@ -150,6 +150,15 @@ class EstadisticasController extends Controller
                     ]);
             } catch (\Exception $e) { \Log::error('Error tiposSesion: ' . $e->getMessage()); }
 
+            // 9. Notificaciones de Entrenadores
+            $notificaciones = collect();
+            try {
+                $notificaciones = \App\Models\NotificacionEntrenador::with('entrenador')
+                    ->orderBy('created_at', 'desc')
+                    ->take(20)
+                    ->get();
+            } catch (\Exception $e) { \Log::error('Error notificaciones: ' . $e->getMessage()); }
+
             return response()->json([
                 'kpis' => [
                     'totalClientes'     => $totalClientes,
@@ -166,6 +175,7 @@ class EstadisticasController extends Controller
                 'empresas'          => $empresas,
                 'centros_list'      => $centrosList,
                 'tipos_sesion'      => $tiposSesion,
+                'notificaciones'    => $notificaciones,
             ]);
 
         } catch (\Exception $e) {

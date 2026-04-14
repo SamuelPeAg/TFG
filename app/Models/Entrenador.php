@@ -57,4 +57,9 @@ class Entrenador extends Authenticatable
     {
         return $this->hasMany(Nomina_entrenador::class, 'entrenador_id');
     }
+
+    public function notificaciones()
+    {
+        return $this->hasMany(NotificacionEntrenador::class, 'entrenador_id');
+    }
 }

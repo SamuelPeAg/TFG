@@ -6,8 +6,12 @@
     <style>
         body { font-family: 'Helvetica', 'Arial', sans-serif; color: #1e293b; line-height: 1.6; font-size: 13px; }
         .header { margin-bottom: 40px; border-bottom: 3px solid #38C1A3; padding-bottom: 20px; }
-        .logo { font-size: 28px; font-weight: 900; color: #38C1A3; letter-spacing: -0.5px; }
-        .company-info { float: left; width: 50%; }
+        .logo-table { width: 100%; border: none; }
+        .logo-td-img { width: 45px; border: none; vertical-align: middle; padding: 0; }
+        .logo-td-text { border: none; vertical-align: middle; padding: 0 0 0 12px; }
+        .logo-img { width: 40px; height: auto; display: block; }
+        .logo-text { font-size: 28px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+        .company-info { margin-top: 20px; }
         .client-info { float: right; width: 45%; text-align: right; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .clear { clear: both; }
         
@@ -39,10 +43,20 @@
 </head>
 <body>
     <div class="header">
+        <table class="logo-table">
+            <tr>
+                <td class="logo-td-img">
+                    <img src="{{ public_path('img/logopng.png') }}" class="logo-img">
+                </td>
+                <td class="logo-td-text">
+                    <div class="logo-text">
+                        <span style="color: #0f172a;">FACTO</span><span style="color: #38C1A3;">MOVE</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        
         <div class="company-info">
-            <div class="logo">
-                <span style="color: #0f172a;">FACTO</span>MOVE
-            </div>
             <div style="margin-top: 8px; font-size: 14px; color: #334155;"><strong>Moverte da Vida S.L.</strong></div>
             <div style="color: #64748b;">NIF: B-12345678</div>
             <div style="color: #64748b;">Av. del Deporte, 45, Córdoba</div>

@@ -563,6 +563,10 @@ class FacturacionController extends Controller
             $hasta = $anio . '-12-31';
         }
 
+        $xmlContent = '';
+        $pdfContent = '';
+        $baseFilename = '';
+
         // Si se han seleccionado suscripciones, generamos un XML de Remesa (Domiciliaciones)
         if (!empty($suscripcionesIds)) {
             $query = \App\Models\SuscripcionUsuario::with(['usuario', 'suscripcion'])
@@ -587,10 +591,12 @@ class FacturacionController extends Controller
             $xml->addChild('tipo', 'Domiciliaciones - Suscripciones');
             
             $total = 0;
+            $items_pdf = [];
             foreach ($suscripcionesUsuarios as $su) {
                 $item = $xml->addChild('cargo');
                 $item->addChild('id_suscripcion_usuario', $su->id);
-                $item->addChild('cliente', htmlspecialchars($su->usuario->name ?? 'N/A'));
+                $clienteNombre = $su->usuario->name ?? 'N/A';
+                $item->addChild('cliente', htmlspecialchars($clienteNombre));
                 
                 $iban = $su->usuario->iban ?? '';
                 if (!$iban && $su->usuario->additional_attributes) {
@@ -604,43 +610,99 @@ class FacturacionController extends Controller
                 $item->addChild('fecha_emision', now()->toDateString());
                 $precio = (float)($su->suscripcion->precio ?? 0);
                 $item->addChild('importe', $precio);
-                $item->addChild('concepto', htmlspecialchars($su->suscripcion->nombre ?? 'Suscripción'));
+                $concepto = $su->suscripcion->nombre ?? 'Suscripción';
+                $item->addChild('concepto', htmlspecialchars($concepto));
                 $total += $precio;
+
+                $items_pdf[] = [
+                    'Cliente' => $clienteNombre,
+                    'IBAN' => $iban ? (substr($iban, 0, 4) . ' **** **** ' . substr($iban, -4)) : 'No definido',
+                    'Concepto' => $concepto,
+                    'Importe' => $precio
+                ];
             }
             $xml->addChild('total_remesa', $total);
+            $xmlContent = $xml->asXML();
+            $baseFilename = "remesa_sepa_{$centro}_{$anio}_{$mes}";
 
-            return response($xml->asXML(), 200)
-                ->header('Content-Type', 'application/xml')
-                ->header('Content-Disposition', 'attachment; filename="remesa_sepa_'.$centro.'_'.$anio.'_'.$mes.'.xml"');
+            // Generar PDF
+            $pdfData = [
+                'titulo' => 'REPORTE DE REMESA BANCARIA',
+                'periodo' => ($mes ? "Mes $mes - " : "") . "Año $anio",
+                'centro' => $centro,
+                'items' => $items_pdf,
+                'columnas' => ['Cliente', 'IBAN', 'Concepto', 'Importe'],
+                'total' => $total
+            ];
+            $pdfContent = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.reporte_general', $pdfData)->output();
+
+        } else {
+            // General Facturacion
+            $query = Pago::with(['user', 'entrenadores'])
+                ->when($desde, fn($q) => $q->whereDate('fecha_registro', '>=', $desde))
+                ->when($hasta, fn($q) => $q->whereDate('fecha_registro', '<=', $hasta))
+                ->when($centro !== 'todos', fn($q) => $q->where('centro', $centro));
+
+            $pagos = $query->get();
+
+            $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><facturacion/>');
+            $xml->addChild('periodo', ($mes ? "Mes $mes - " : "") . "Año $anio");
+            $xml->addChild('centro', $centro);
+            
+            $total = 0;
+            $items_pdf = [];
+            foreach ($pagos as $pago) {
+                $item = $xml->addChild('pago');
+                $item->addChild('id', $pago->id);
+                $clienteNombre = $pago->user->name ?? 'N/A';
+                $item->addChild('cliente', htmlspecialchars($clienteNombre));
+                $fecha = $pago->fecha_registro->toDateTimeString();
+                $item->addChild('fecha', $fecha);
+                $item->addChild('importe', $pago->importe);
+                $metodo = $pago->metodo_pago ?? '';
+                $item->addChild('metodo', htmlspecialchars($metodo));
+                $clase = $pago->nombre_clase ?? '';
+                $item->addChild('clase', htmlspecialchars($clase));
+                
+                $total += (float)$pago->importe;
+
+                $items_pdf[] = [
+                    'ID' => $pago->id,
+                    'Cliente' => $clienteNombre,
+                    'Fecha' => $pago->fecha_registro->format('d/m/Y'),
+                    'Metodo' => $metodo,
+                    'Servicio' => $clase,
+                    'Importe' => (float)$pago->importe
+                ];
+            }
+            $xml->addChild('total_acumulado', $total);
+            $xmlContent = $xml->asXML();
+            $baseFilename = "facturacion_{$centro}_{$anio}_{$mes}";
+
+            // Generar PDF
+            $pdfData = [
+                'titulo' => 'REPORTE DE FACTURACIÓN Y PAGOS',
+                'periodo' => ($mes ? "Mes $mes - " : "") . "Año $anio",
+                'centro' => $centro,
+                'items' => $items_pdf,
+                'columnas' => ['ID', 'Cliente', 'Fecha', 'Metodo', 'Servicio', 'Importe'],
+                'total' => $total
+            ];
+            $pdfContent = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.reporte_general', $pdfData)->output();
         }
 
-        $query = Pago::with(['user', 'entrenadores'])
-            ->when($desde, fn($q) => $q->whereDate('fecha_registro', '>=', $desde))
-            ->when($hasta, fn($q) => $q->whereDate('fecha_registro', '<=', $hasta))
-            ->when($centro !== 'todos', fn($q) => $q->where('centro', $centro));
+        // Crear ZIP temporal
+        $zip = new \ZipArchive();
+        $zipFilename = $baseFilename . ".zip";
+        $zipPath = tempnam(sys_get_temp_dir(), 'export_zip');
 
-        $pagos = $query->get();
-
-        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><facturacion/>');
-        $xml->addChild('periodo', ($mes ? "Mes $mes - " : "") . "Año $anio");
-        $xml->addChild('centro', $centro);
-        
-        $total = 0;
-        foreach ($pagos as $pago) {
-            $item = $xml->addChild('pago');
-            $item->addChild('id', $pago->id);
-            $item->addChild('cliente', htmlspecialchars($pago->user->name ?? 'N/A'));
-            $item->addChild('fecha', $pago->fecha_registro->toDateTimeString());
-            $item->addChild('importe', $pago->importe);
-            $item->addChild('metodo', htmlspecialchars($pago->metodo_pago ?? ''));
-            $item->addChild('clase', htmlspecialchars($pago->nombre_clase ?? ''));
-            $total += (float)$pago->importe;
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE)) {
+            $zip->addFromString($baseFilename . ".xml", $xmlContent);
+            $zip->addFromString($baseFilename . ".pdf", $pdfContent);
+            $zip->close();
         }
-        $xml->addChild('total_acumulado', $total);
 
-        return response($xml->asXML(), 200)
-            ->header('Content-Type', 'application/xml')
-            ->header('Content-Disposition', 'attachment; filename="facturacion_'.$centro.'_'.$anio.'_'.$mes.'.xml"');
+        return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(true);
     }
 
     public function downloadFacturaPdf($id)
