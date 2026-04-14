@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'message' => 'Error de conexión con la base de datos.',
                     'errors' => [
-                        'general' => ['Error de sistema: BD1. Contacta con soporte técnico.']
+                        'general' => ['Error de sistema: ' . $e->getMessage()]
                     ]
                 ], 500);
             }
