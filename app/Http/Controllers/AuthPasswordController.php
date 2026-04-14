@@ -55,15 +55,11 @@ class AuthPasswordController extends Controller
                 'required',
                 'confirmed',
                 Password::min(8)
-                    ->letters()
-                    ->numbers()
-                    ->mixedCase()
-                    ->symbols()
             ],
         ], [
             'password.required'  => 'La contraseña es obligatoria.',
             'password.confirmed' => 'Las contraseñas no coinciden.',
-            'password'           => 'La contraseña debe tener al menos 8 caracteres e incluir letras (mayúsculas y minúsculas), números y símbolos.',
+            'password'           => 'La contraseña debe tener al menos 8 caracteres.',
         ]);
 
         $credentials = $request->only('email', 'password', 'password_confirmation', 'token');
