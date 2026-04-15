@@ -62,9 +62,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             const $select = window.$(select2Ref.current);
             const handleChangeS2 = (e) => {
                 const value = e.target.value;
-                const config = getDefaultConfigForType(value);
                 setFormData(prev => {
-                    if (prev.tipo_clase === value) return prev;
                     return { 
                         ...prev, 
                         tipo_clase: value,
@@ -89,12 +87,16 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     useEffect(() => {
         if (isOpen) {
-            setFormData(prev => ({
-                ...prev,
-                fecha_hora: initialDate || getCurrentLocalTime(),
-                capacidad_maxima: defaultCapacityForType(prev.tipo_clase),
-                horas_cancelacion: getDefaultConfigForType(prev.tipo_clase)?.horas_cancelacion_default?.toString() || '24'
-            }));
+            setFormData(prev => {
+                const config = getDefaultConfigForType(prev.tipo_clase);
+                return {
+                    ...prev,
+                    fecha_hora: initialDate || getCurrentLocalTime(),
+                    capacidad_maxima: config ? config.capacidad_personas.toString() : prev.capacidad_maxima,
+                    horas_cancelacion: config ? config.horas_cancelacion_default.toString() : prev.horas_cancelacion,
+                    precio_base: config ? (config.precio_base || '0.00') : '0.00'
+                };
+            });
             setCurrentStep(1);
             setErrors({});
             setSearchQuery('');
