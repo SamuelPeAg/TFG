@@ -24,7 +24,7 @@ import MisClases from './pages/MisClases'
 import MisEstadisticas from './pages/MisEstadisticas'
 import ReservaClases from './pages/ReservaClases'
 import Notificaciones from './pages/Notificaciones'
-import GuidedTutorial from './components/GuidedTutorial'
+
 
 function App() {
   const user = window.AppConfig?.user;
@@ -32,7 +32,7 @@ function App() {
 
   return (
     <>
-      <GuidedTutorial />
+
       <Routes>
       {/* Rutas con MainLayout (navbar y footer) */}
       <Route element={<MainLayout />}>

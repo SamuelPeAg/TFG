@@ -128,7 +128,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           {linksToShow.map((link) => (
             <Link 
               key={link.path}
-              id={`tour-${link.path.substring(1) || 'home'}`}
               to={link.path} 
               className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors ${
                 isActive(link.path) 
@@ -148,7 +147,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <i className="fa-solid fa-house w-4 text-center text-sm sm:text-lg flex-shrink-0"></i>
             <span className="tracking-wide truncate">VOLVER</span>
           </a>
-          <Link id="tour-configuracion" to="/configuracion" className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm text-white hover:bg-white/10 transition-colors" onClick={() => setIsOpen(false)}>
+          <Link to="/configuracion" className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm text-white hover:bg-white/10 transition-colors" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-user-gear w-4 text-center text-sm sm:text-lg flex-shrink-0"></i>
             <span className="tracking-wide truncate">MI PERFIL</span>
           </Link>
