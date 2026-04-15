@@ -59,6 +59,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const trainerLinks = [
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
+    { name: 'NOTIFICAR', path: '/notificaciones', icon: 'fa-solid fa-paper-plane' },
     { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_facturacion' },
     { name: 'NOMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_nominas_admin' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt', permission: 'acceder_suscripciones' },

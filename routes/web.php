@@ -186,6 +186,11 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::post('/facturas/tickar', [FacturacionController::class, 'tickar'])->name('facturas.tickar');
         Route::get('/facturas/{id}/pdf', [FacturacionController::class, 'downloadFacturaPdf'])->name('facturas.pdf');
 
+        // Notificaciones de Entrenadores (Enviar y Ver Propias)
+        Route::post('/notificaciones-entrenador', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'store'])->name('notificaciones_entrenador.store');
+        Route::get('/notificaciones-entrenador', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'myNotifications']);
+        Route::get('/api/entrenadores-list', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'getEntrenadores']);
+
         // Suscripciones
         Route::get('/suscripciones', [\App\Http\Controllers\SuscripcionController::class, 'index'])->name('suscripciones.index');
         Route::post('/suscripciones', [\App\Http\Controllers\SuscripcionController::class, 'store'])->name('suscripciones.store');
@@ -249,6 +254,12 @@ Route::middleware('auth:web,staff')->group(function () {
             Route::post('/admin/tipos-sesion', [\App\Http\Controllers\EstadisticasController::class, 'storeTipoSesion']);
             Route::put('/admin/tipos-sesion/{tipoSesion}', [\App\Http\Controllers\EstadisticasController::class, 'updateTipoSesion']);
             Route::delete('/admin/tipos-sesion/{tipoSesion}', [\App\Http\Controllers\EstadisticasController::class, 'destroyTipoSesion']);
+
+            // Gestión de Notificaciones (Admin)
+            Route::get('/admin/notificaciones', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'index']);
+            Route::post('/admin/notificaciones/{id}/read', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'markAsRead']);
+            Route::post('/admin/notificaciones/{id}/reply', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'reply']);
+            Route::delete('/admin/notificaciones/{id}', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'destroy']);
         });
 
         // Gestión de Entrenadores
