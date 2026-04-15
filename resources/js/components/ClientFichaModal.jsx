@@ -1014,46 +1014,45 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                         </div>
                     </section>
 
-                    {/* New Subscription Selector Redesigned */}
-                    <section className="relative group/alta overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-indigo-500/5 rounded-[3rem] -z-10 group-hover/alta:scale-105 transition-transform duration-700"></div>
-                        <div className="bg-white/40 backdrop-blur-sm rounded-[3rem] p-10 border border-white shadow-xl shadow-slate-200/40 relative">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                                <div className="flex items-center gap-5">
-                                    <div className="w-16 h-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center text-white text-2xl shadow-xl shadow-slate-900/10 transition-transform group-hover/alta:rotate-6">
-                                        <i className="fa-solid fa-wand-magic-sparkles"></i>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-lg font-black text-slate-800 tracking-tight leading-none mb-1">Nueva Alta de Plan</h3>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Activa un nuevo catálogo de créditos</p>
-                                    </div>
+                    {/* Simplified Subscription Selector */}
+                    <section className="mt-12 pt-10 border-t border-slate-100/60">
+                        <div className="flex items-center gap-3 mb-6 px-2">
+                             <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                                <i className="fa-solid fa-plus text-[10px]"></i>
+                             </div>
+                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vincular Nueva Suscripción</h4>
+                        </div>
+                        
+                        <div className="bg-slate-50/50 p-2 rounded-[2rem] border border-slate-100/50 flex flex-col sm:flex-row items-stretch gap-2 transition-all focus-within:bg-white focus-within:shadow-xl focus-within:shadow-slate-200/40">
+                            <div className="flex-1 relative flex items-center">
+                                <div className="absolute left-6 text-slate-300 group-focus-within:text-[#38C1A3]">
+                                    <i className="fa-solid fa-search text-[10px]"></i>
                                 </div>
-
-                                <div className="flex flex-col sm:flex-row gap-4 flex-1 max-w-xl">
-                                    <div className="flex-1 relative group/sel">
-                                        <i className="fa-solid fa-layer-group absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/sel:text-teal-500 transition-colors"></i>
-                                        <select 
-                                            value={selectedSuscripcionId}
-                                            onChange={(e) => setSelectedSuscripcionId(e.target.value)}
-                                            className="select2-ignore w-full pl-12 pr-10 py-5 bg-white border border-slate-100 rounded-2xl outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-xs font-black text-slate-700 appearance-none shadow-sm transition-all"
-                                        >
-                                            <option value="">Selección de catálogo...</option>
-                                            {availableSubscriptions.map(s => (
-                                                <option key={s.id} value={s.id}>{(s.nombre || 'PLAN').toUpperCase()} — {s.creditos_por_periodo} CRÉDITOS</option>
-                                            ))}
-                                        </select>
-                                        <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none text-[8px]"></i>
-                                    </div>
-                                    <button 
-                                        onClick={handleAssignSubscription}
-                                        disabled={!selectedSuscripcionId || saving}
-                                        className="px-8 py-5 bg-teal-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.15em] hover:bg-teal-600 transition-all shadow-lg shadow-teal-500/20 active:scale-95 disabled:opacity-30 flex items-center justify-center gap-3 shrink-0"
-                                    >
-                                        {saving ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-bolt-lightning"></i>}
-                                        ACTIVAR PLAN
-                                    </button>
+                                <select 
+                                    value={selectedSuscripcionId}
+                                    onChange={(e) => setSelectedSuscripcionId(e.target.value)}
+                                    className="select2-ignore w-full h-14 pl-14 pr-10 bg-transparent outline-none text-xs font-black text-slate-700 appearance-none cursor-pointer"
+                                >
+                                    <option value="">SELECCIONA UN CATÁLOGO DE PLANES...</option>
+                                    {availableSubscriptions.map(s => (
+                                        <option key={s.id} value={s.id}>
+                                            {(s.nombre || 'PLAN').toUpperCase()} — {s.creditos_por_periodo} CRÉDITOS ({s.periodo || 'PACK'})
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="absolute right-6 pointer-events-none text-slate-300">
+                                    <i className="fa-solid fa-chevron-down text-[8px]"></i>
                                 </div>
                             </div>
+
+                            <button 
+                                onClick={handleAssignSubscription}
+                                disabled={!selectedSuscripcionId || saving}
+                                className="h-14 px-10 bg-[#38C1A3] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#2eaa8f] transition-all active:scale-[0.98] shadow-lg shadow-teal-500/10 disabled:opacity-20 flex items-center justify-center gap-3 shrink-0"
+                            >
+                                {saving ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-check-circle"></i>}
+                                ACTIVAR PLAN
+                            </button>
                         </div>
                     </section>
                 </div>
