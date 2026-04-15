@@ -32,6 +32,7 @@ return new class extends Migration
 
             $table->decimal('altura', 5, 2)->nullable();
             $table->decimal('peso', 5, 2)->nullable();
+            $table->json('additional_attributes')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

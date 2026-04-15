@@ -453,11 +453,11 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             {/* Cabeza de la Tarjeta: Tipo y Visibilidad */}
                                             <div className="flex items-center justify-between gap-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="relative">
+                                                    <div className="relative group/sel">
                                                         <select 
                                                             value={attr.type || 'text'} 
                                                             onChange={(e) => updateAttribute(idx, 'type', e.target.value)}
-                                                            className="pl-9 pr-6 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-tighter outline-none appearance-none cursor-pointer transition-all border border-transparent focus:border-teal-200"
+                                                            className="select2-ignore pl-9 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-tighter outline-none appearance-none cursor-pointer transition-all border border-slate-100 focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 w-full"
                                                         >
                                                             <option value="text">Dato Corto</option>
                                                             <option value="note">Nota / Observación</option>
@@ -466,7 +466,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                             <option value="date">Fecha</option>
                                                             <option value="boolean">Interruptor (SÍ/NO)</option>
                                                         </select>
-                                                        <i className={`fa-solid ${getAttrIcon(attr.type)} absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-400 text-[10px] pointer-events-none`}></i>
+                                                        <i className={`fa-solid ${getAttrIcon(attr.type)} absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-400 text-[10px] pointer-events-none group-hover/sel:scale-110 transition-transform`}></i>
+                                                        <i className="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-[8px] pointer-events-none transition-transform group-hover/sel:translate-y-[-40%]" style={{ transition: 'transform 0.2s ease' }}></i>
                                                     </div>
                                                     
                                                     <button 

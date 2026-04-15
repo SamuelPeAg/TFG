@@ -50,7 +50,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             setFormData(prev => ({
                 ...prev,
                 tipo_clase: firstType.slug,
-                capacidad_maxima: firstType.capacidad_personas.toString()
+                capacidad_maxima: firstType.capacidad_personas.toString(),
+                precio_base: firstType.precio_base || '0.00'
             }));
         }
     }, [tiposSesion, isOpen]);
@@ -68,7 +69,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                         ...prev, 
                         tipo_clase: value,
                         capacidad_maxima: config ? config.capacidad_personas.toString() : prev.capacidad_maxima,
-                        horas_cancelacion: config ? config.horas_cancelacion_default.toString() : prev.horas_cancelacion
+                        horas_cancelacion: config ? config.horas_cancelacion_default.toString() : prev.horas_cancelacion,
+                        precio_base: config ? (config.precio_base || '0.00') : '0.00'
                     };
                 });
             };
@@ -122,7 +124,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 setFormData(prev => ({
                     ...prev,
                     tipo_clase: firstValid.slug,
-                    capacidad_maxima: firstValid.capacidad_personas.toString()
+                    capacidad_maxima: firstValid.capacidad_personas.toString(),
+                    precio_base: firstValid.precio_base || '0.00'
                 }));
             }
         }
