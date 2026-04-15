@@ -711,4 +711,33 @@ class PagosController extends Controller
             'message' => "Se han eliminado {$deletedCount} registros correctamente."
         ]);
     }
+
+    public function destroySingle(Pago $pago)
+    {
+        // Seguridad: Solo admin o el que lo creó (si aplica)
+        if (!auth()->user()->hasRole('admin')) {
+            return response()->json(['error' => 'No tienes permiso para eliminar este registro.'], 403);
+        }
+
+        $pago->delete();
+        return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
+    }
+
+    public function updateSingle(Request $request, Pago $pago)
+    {
+        if (!auth()->user()->hasRole('admin')) {
+            return response()->json(['error' => 'No tienes permiso para editar este registro.'], 403);
+        }
+
+        $validated = $request->validate([
+            'importe' => 'required|numeric',
+            'metodo_pago' => 'required|string',
+            'fecha_registro' => 'required|date',
+            'nombre_clase' => 'nullable|string'
+        ]);
+
+        $pago->update($validated);
+
+        return response()->json(['success' => true, 'message' => 'Registro actualizado correctamente.', 'pago' => $pago]);
+    }
 }

@@ -47,6 +47,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [measurements, setMeasurements] = useState([]);
   const [subscriptionPayments, setSubscriptionPayments] = useState([]);
   const [editingMeasurementId, setEditingMeasurementId] = useState(null);
+  const [editingPayment, setEditingPayment] = useState(null); // {id, importe, metodo_pago, fecha_registro}
 
   const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
@@ -144,6 +145,38 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             showAlert('Error al eliminar suscripción', true);
         }
     }, true, 'Eliminar Suscripción');
+  };
+  
+  const handleDeletePayment = async (pagoId) => {
+    confirmAction('¿Eliminar este registro de contabilidad definitivamente?', async () => {
+        try {
+            await axios.delete(`/pagos/${pagoId}`);
+            fetchFicha();
+            showAlert('Registro eliminado', false, 'Completado');
+        } catch (error) {
+            showAlert('Error al eliminar registro', true);
+        }
+    }, true, 'Eliminar Recibo');
+  };
+
+  const handleUpdatePayment = async () => {
+    if (!editingPayment) return;
+    setSaving(true);
+    try {
+        await axios.put(`/pagos/${editingPayment.id}`, {
+            importe: editingPayment.importe,
+            metodo_pago: editingPayment.metodo_pago,
+            fecha_registro: editingPayment.fecha_registro,
+            nombre_clase: editingPayment.nombre_clase
+        });
+        setEditingPayment(null);
+        fetchFicha();
+        showAlert('Registro actualizado', false, 'Completado');
+    } catch (error) {
+        showAlert('Error al actualizar registro', true);
+    } finally {
+        setSaving(false);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -526,19 +559,75 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                             className="w-full px-5 py-4 bg-slate-50 border-transparent rounded-[1.5rem] outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all border leading-relaxed resize-none"
                                                         ></textarea>
                                                     ) : attr.type === 'image' ? (
-                                                        <div className="relative">
-                                                            <select 
-                                                                value={attr.value} 
-                                                                onChange={(e) => updateAttribute(idx, 'value', e.target.value)}
-                                                                className="w-full pl-10 pr-6 py-3 bg-slate-50 border-transparent rounded-2xl outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all border appearance-none cursor-pointer"
-                                                            >
-                                                                <option value="">Vincular foto desde Documentación...</option>
-                                                                {files.filter(f => f.file_type !== 'pdf').map(f => (
-                                                                    <option key={f.id} value={f.id}>{f.filename}</option>
-                                                                ))}
-                                                            </select>
-                                                            <i className="fa-solid fa-image absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 text-sm pointer-events-none"></i>
-                                                            <i className="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-200 text-[10px] pointer-events-none"></i>
+                                                        <div className="space-y-3">
+                                                            {attr.value ? (
+                                                                <div className="relative group/img overflow-hidden rounded-2xl border border-slate-100 aspect-video bg-slate-50 flex items-center justify-center">
+                                                                    {(() => {
+                                                                        const selectedFile = files.find(f => f.id.toString() === attr.value.toString());
+                                                                        return selectedFile ? (
+                                                                            <img 
+                                                                                src={`/storage/${selectedFile.file_path}`} 
+                                                                                alt="Preview" 
+                                                                                className="w-full h-full object-cover transition-transform group-hover/img:scale-110"
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Archivo no encontrado</div>
+                                                                        );
+                                                                    })()}
+                                                                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                                                        <button 
+                                                                            onClick={() => updateAttribute(idx, 'value', '')}
+                                                                            className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md text-white hover:bg-rose-500 transition-all flex items-center justify-center shadow-lg"
+                                                                            title="Quitar imagen"
+                                                                        >
+                                                                            <i className="fa-solid fa-unlink text-xs"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-2 scrollbar-hide py-1">
+                                                                    {files.filter(f => f.file_type !== 'pdf').map(f => (
+                                                                        <button 
+                                                                            key={f.id}
+                                                                            onClick={() => updateAttribute(idx, 'value', f.id.toString())}
+                                                                            className="aspect-square rounded-xl border-2 border-slate-50 overflow-hidden hover:border-teal-400 hover:scale-95 transition-all shadow-sm group/thumb relative"
+                                                                            title={f.file_name}
+                                                                        >
+                                                                            <img src={`/storage/${f.file_path}`} className="w-full h-full object-cover" />
+                                                                            <div className="absolute inset-0 bg-teal-500/10 opacity-0 group-hover/thumb:opacity-100 transition-opacity"></div>
+                                                                        </button>
+                                                                    ))}
+                                                                    <label className="aspect-square rounded-xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center gap-2 text-slate-300 hover:bg-slate-50 hover:text-teal-400 transition-all cursor-pointer">
+                                                                        <i className="fa-solid fa-plus-circle text-lg"></i>
+                                                                        <span className="text-[8px] font-black uppercase tracking-tighter">SUBIR</span>
+                                                                        <input type="file" className="hidden" onChange={async (e) => {
+                                                                            const file = e.target.files[0];
+                                                                            if (file) {
+                                                                                const formData = new FormData();
+                                                                                formData.append('file', file);
+                                                                                setUploading(true);
+                                                                                try {
+                                                                                    const res = await axios.post(`/client-profile/${user.id}/upload`, formData);
+                                                                                    const newFile = res.data.file;
+                                                                                    setFiles([newFile, ...files]);
+                                                                                    updateAttribute(idx, 'value', newFile.id.toString());
+                                                                                    showAlert('Imagen vinculada', false, 'Éxito');
+                                                                                } catch (err) {
+                                                                                    showAlert('Error al subir', true);
+                                                                                } finally {
+                                                                                    setUploading(false);
+                                                                                }
+                                                                            }
+                                                                        }} />
+                                                                    </label>
+                                                                </div>
+                                                            )}
+                                                            <div className="flex items-center justify-between px-1">
+                                                                <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{attr.value ? 'Imagen Vinculada' : 'Selecciona una imagen o sube una nueva'}</p>
+                                                                {attr.value && (
+                                                                     <span className="text-[8px] font-bold text-slate-400 italic">#{attr.value}</span>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     ) : (
                                                         <input 
@@ -849,6 +938,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                 <th className="px-8 py-5">Concepto / Plan</th>
                                                 <th className="px-8 py-5">Método</th>
                                                 <th className="px-8 py-5 text-right">Importe</th>
+                                                <th className="px-8 py-5 text-right">Acciones</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50">
@@ -869,8 +959,52 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                         </span>
                                                     </td>
                                                     <td className="px-8 py-5 text-right">
-                                                        <span className="text-sm font-black text-emerald-600 tracking-tight">+{parseFloat(pogo.importe).toFixed(2)}€</span>
-                                                    </td>
+                                                         {editingPayment?.id === pogo.id ? (
+                                                             <input 
+                                                                 type="number" 
+                                                                 value={editingPayment.importe}
+                                                                 onChange={(e) => setEditingPayment({...editingPayment, importe: e.target.value})}
+                                                                 className="w-20 px-2 py-1 bg-white border border-teal-200 rounded text-right text-xs font-black outline-none"
+                                                             />
+                                                         ) : (
+                                                             <span className="text-sm font-black text-emerald-600 tracking-tight">+{parseFloat(pogo.importe).toFixed(2)}€</span>
+                                                         )}
+                                                     </td>
+                                                     <td className="px-8 py-5 text-right">
+                                                         <div className="flex justify-end gap-2">
+                                                             {editingPayment?.id === pogo.id ? (
+                                                                 <>
+                                                                     <button 
+                                                                         onClick={handleUpdatePayment}
+                                                                         className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center"
+                                                                     >
+                                                                         <i className="fa-solid fa-check"></i>
+                                                                     </button>
+                                                                     <button 
+                                                                         onClick={() => setEditingPayment(null)}
+                                                                         className="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-200 transition-all flex items-center justify-center"
+                                                                     >
+                                                                         <i className="fa-solid fa-times"></i>
+                                                                     </button>
+                                                                 </>
+                                                             ) : (
+                                                                 <>
+                                                                     <button 
+                                                                         onClick={() => setEditingPayment({...pogo})}
+                                                                         className="w-8 h-8 rounded-lg bg-slate-50 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                                                     >
+                                                                         <i className="fa-solid fa-pen text-[10px]"></i>
+                                                                     </button>
+                                                                     <button 
+                                                                         onClick={() => handleDeletePayment(pogo.id)}
+                                                                         className="w-8 h-8 rounded-lg bg-slate-50 text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                                                     >
+                                                                         <i className="fa-solid fa-trash-can text-[10px]"></i>
+                                                                     </button>
+                                                                 </>
+                                                             )}
+                                                         </div>
+                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -881,36 +1015,45 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                     </section>
 
                     {/* New Subscription Selector Redesigned */}
-                    <section className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-10 opacity-[0.03] text-8xl text-teal-900 pointer-events-none">
-                            <i className="fa-solid fa-plus"></i>
-                        </div>
-                        <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest mb-8 flex items-center gap-3">
-                             <div className="w-2 h-6 bg-teal-500 rounded-full"></div> NUEVA ALTA DE PLAN
-                        </h3>
-                        <div className="flex flex-col md:flex-row gap-5">
-                            <div className="flex-1 relative group">
-                                <i className="fa-solid fa-tags absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-teal-400 transition-colors"></i>
-                                <select 
-                                    value={selectedSuscripcionId}
-                                    onChange={(e) => setSelectedSuscripcionId(e.target.value)}
-                                    className="w-full pl-12 pr-10 py-5 bg-slate-50 border-transparent rounded-[1.5rem] outline-none focus:bg-white focus:border-teal-200 text-xs font-black text-slate-700 appearance-none shadow-inner transition-all hover:bg-slate-100"
-                                >
-                                    <option value="">Selección de catálogo...</option>
-                                    {availableSubscriptions.map(s => (
-                                        <option key={s.id} value={s.id}>{(s.nombre || 'PLAN').toUpperCase()} — {s.creditos_por_periodo} CRÉDITOS ({s.periodo?.toUpperCase()})</option>
-                                    ))}
-                                </select>
-                                <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none text-[10px]"></i>
+                    <section className="relative group/alta overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 to-indigo-500/5 rounded-[3rem] -z-10 group-hover/alta:scale-105 transition-transform duration-700"></div>
+                        <div className="bg-white/40 backdrop-blur-sm rounded-[3rem] p-10 border border-white shadow-xl shadow-slate-200/40 relative">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-16 h-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center text-white text-2xl shadow-xl shadow-slate-900/10 transition-transform group-hover/alta:rotate-6">
+                                        <i className="fa-solid fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black text-slate-800 tracking-tight leading-none mb-1">Nueva Alta de Plan</h3>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Activa un nuevo catálogo de créditos</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-4 flex-1 max-w-xl">
+                                    <div className="flex-1 relative group/sel">
+                                        <i className="fa-solid fa-layer-group absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/sel:text-teal-500 transition-colors"></i>
+                                        <select 
+                                            value={selectedSuscripcionId}
+                                            onChange={(e) => setSelectedSuscripcionId(e.target.value)}
+                                            className="select2-ignore w-full pl-12 pr-10 py-5 bg-white border border-slate-100 rounded-2xl outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-xs font-black text-slate-700 appearance-none shadow-sm transition-all"
+                                        >
+                                            <option value="">Selección de catálogo...</option>
+                                            {availableSubscriptions.map(s => (
+                                                <option key={s.id} value={s.id}>{(s.nombre || 'PLAN').toUpperCase()} — {s.creditos_por_periodo} CRÉDITOS</option>
+                                            ))}
+                                        </select>
+                                        <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none text-[8px]"></i>
+                                    </div>
+                                    <button 
+                                        onClick={handleAssignSubscription}
+                                        disabled={!selectedSuscripcionId || saving}
+                                        className="px-8 py-5 bg-teal-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.15em] hover:bg-teal-600 transition-all shadow-lg shadow-teal-500/20 active:scale-95 disabled:opacity-30 flex items-center justify-center gap-3 shrink-0"
+                                    >
+                                        {saving ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-bolt-lightning"></i>}
+                                        ACTIVAR PLAN
+                                    </button>
+                                </div>
                             </div>
-                            <button 
-                                onClick={handleAssignSubscription}
-                                disabled={!selectedSuscripcionId || saving}
-                                className="px-10 py-5 bg-slate-900 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-teal-600 transition-all shadow-xl active:scale-95 disabled:opacity-30 disabled:grayscale"
-                            >
-                                {saving ? <i className="fa-solid fa-spinner fa-spin mr-3"></i> : <i className="fa-solid fa-check-circle mr-3"></i>}
-                                VALIDAR Y ACTIVAR
-                            </button>
                         </div>
                     </section>
                 </div>

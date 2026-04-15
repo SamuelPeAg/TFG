@@ -269,6 +269,10 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::get('/Pagos/reporte', [PagosController::class, 'getReporte'])->name('Pagos.reporte');
         Route::post('/Pagos/delete-session', [PagosController::class, 'deleteSession'])->name('Pagos.deleteSession');
         Route::post('/Pagos/update-session', [PagosController::class, 'updateSession'])->name('Pagos.updateSession');
+        
+        // Operaciones individuales de Pagos
+        Route::delete('/pagos/{pago}', [PagosController::class, 'destroySingle'])->name('pagos.destroy_single');
+        Route::put('/pagos/{pago}', [PagosController::class, 'updateSingle'])->name('pagos.update_single');
 
         // Gestión entrenadores (solo admin)
         // Gestión entrenadores (solo admin)
