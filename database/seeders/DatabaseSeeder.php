@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             // 2. Roles, permisos y usuarios iniciales (Necesitan centros)
             RoleSeeder::class,
             UserSeeder::class,
+            TiposSesionSeeder::class,
         ]);
 
         // 3. Crear pool de usuarios (Entrenadores y Clientes)
