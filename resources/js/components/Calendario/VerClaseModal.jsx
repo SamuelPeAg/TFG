@@ -150,7 +150,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       }
     } catch (err) {
       console.error(err);
-      alert("Error al añadir alumno");
+      const serverError = err.response?.data?.error || err.response?.data?.message;
+      alert(serverError || "Error al añadir alumno");
     } finally {
       setIsSubmitting(false);
     }
@@ -177,7 +178,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
           alert(res.data.error || "Error");
       }
     } catch (err) {
-      alert("Error al eliminar alumno");
+      const serverError = err.response?.data?.error || err.response?.data?.message;
+      alert(serverError || "Error al eliminar alumno");
     } finally {
       setIsSubmitting(false);
     }
@@ -461,9 +463,6 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                       </div>
                                   </div>
                                   <div className="flex items-center gap-4 shrink-0">
-                                      <div className="font-black text-[#0f172a] text-[13px]">
-                                          {window.IS_ADMIN ? `€${Number(alum.coste || 0).toFixed(2)}` : ''}
-                                      </div>
                                       {window.IS_ADMIN && (
                                           <button 
                                               onClick={() => handleRemoveClient(alum.id)}
