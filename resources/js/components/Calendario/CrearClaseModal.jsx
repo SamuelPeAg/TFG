@@ -227,7 +227,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             if (!formData.tipo_clase) newErrs.tipo_clase = "Obligatorio.";
         } else if (step === 2) {
             if (!formData.fecha_hora) newErrs.fecha_hora = "Obligatorio.";
-            if (parseFloat(formData.precio_base) <= 0) newErrs.precio_base = "El precio debe ser mayor que 0.";
+            if (parseFloat(formData.precio_base) < 0) newErrs.precio_base = "El precio no puede ser negativo.";
             if (formData.is_recurring && !formData.recurrence_end) newErrs.recurrence_end = "Obligatorio si hay repetición.";
         }
 
