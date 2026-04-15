@@ -27,7 +27,7 @@ class TiposSesionSeeder extends Seeder
                 'slug'              => 'yoga',
                 'capacidad_personas'=> 12,
                 'capacidad_fija'    => false,
-                'precio_base'       => 1.00,
+                'precio_base'       => 10.00,
                 'color_hex'         => '#3B82F6', // Azul
                 'activo'            => true,
                 'orden'             => 2,

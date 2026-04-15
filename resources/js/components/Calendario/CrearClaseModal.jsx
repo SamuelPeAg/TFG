@@ -62,6 +62,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             const $select = window.$(select2Ref.current);
             const handleChangeS2 = (e) => {
                 const value = e.target.value;
+                const config = getDefaultConfigForType(value);
                 setFormData(prev => {
                     return { 
                         ...prev, 
