@@ -189,6 +189,7 @@ Route::middleware('auth:web,staff')->group(function () {
         // Notificaciones de Entrenadores (Enviar y Ver Propias)
         Route::post('/notificaciones-entrenador', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'store'])->name('notificaciones_entrenador.store');
         Route::get('/notificaciones-entrenador', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'myNotifications']);
+        Route::get('/api/entrenadores-list', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'getEntrenadores']);
 
         // Suscripciones
         Route::get('/suscripciones', [\App\Http\Controllers\SuscripcionController::class, 'index'])->name('suscripciones.index');

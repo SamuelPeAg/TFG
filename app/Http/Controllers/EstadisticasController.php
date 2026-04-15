@@ -154,6 +154,7 @@ class EstadisticasController extends Controller
             $notificaciones = collect();
             try {
                 $notificaciones = \App\Models\NotificacionEntrenador::with('entrenador')
+                    ->whereNull('destinatario_id')
                     ->orderBy('created_at', 'desc')
                     ->take(20)
                     ->get();

@@ -13,7 +13,7 @@ class NotificacionEntrenadorController extends Controller
      */
     public function index()
     {
-        $notificaciones = NotificacionEntrenador::with('entrenador')
+        $notificaciones = NotificacionEntrenador::with(['entrenador', 'destinatario'])
             ->orderBy('created_at', 'desc')
             ->get();
             
@@ -28,11 +28,31 @@ class NotificacionEntrenadorController extends Controller
         $user = Auth::guard('staff')->user();
         if (!$user) return response()->json([], 401);
 
-        $notificaciones = NotificacionEntrenador::where('entrenador_id', $user->id)
+        // Mensajes que he enviado O que he recibido
+        $notificaciones = NotificacionEntrenador::with(['entrenador', 'destinatario'])
+            ->where(function($query) use ($user) {
+                $query->where('entrenador_id', $user->id)
+                      ->orWhere('destinatario_id', $user->id);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
             
         return response()->json($notificaciones);
+    }
+
+    /**
+     * Devuelve la lista de entrenadores para seleccionar.
+     */
+    public function getEntrenadores()
+    {
+        $user = Auth::guard('staff')->user();
+        if (!$user) return response()->json([], 401);
+
+        $entrenadores = \App\Models\Entrenador::where('id', '!=', $user->id)
+            ->where('activo', true)
+            ->get(['id', 'name', 'email']);
+
+        return response()->json($entrenadores);
     }
 
     /**
@@ -43,19 +63,16 @@ class NotificacionEntrenadorController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'mensaje' => 'required|string',
-            'tipo' => 'nullable|string'
+            'tipo' => 'nullable|string',
+            'destinatario_id' => 'nullable|exists:entrenadores,id'
         ]);
 
         $user = Auth::guard('staff')->user();
-        
-        if (!$user || $user->hasRole('admin')) {
-             // Si no hay usuario o es admin, no debería usar esta ruta para "notificar" como entrenador
-             // aunque un admin técnico podría, el usuario pidió "apartado de notificar en entrenador"
-             if (!$user) return response()->json(['error' => 'No autenticado'], 401);
-        }
+        if (!$user) return response()->json(['error' => 'No autenticado'], 401);
 
         $notificacion = NotificacionEntrenador::create([
             'entrenador_id' => $user->id,
+            'destinatario_id' => $request->destinatario_id,
             'titulo' => $request->titulo,
             'mensaje' => $request->mensaje,
             'tipo' => $request->tipo ?? 'general'
