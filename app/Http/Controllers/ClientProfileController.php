@@ -37,6 +37,7 @@ class ClientProfileController extends Controller
                 $allParticipants = Pago::where('fecha_registro', $pago->fecha_registro)
                     ->where('nombre_clase', $pago->nombre_clase)
                     ->where('centro', $pago->centro)
+                    ->whereNotNull('user_id')
                     ->with('user:id,name,foto_de_perfil')
                     ->get();
 
