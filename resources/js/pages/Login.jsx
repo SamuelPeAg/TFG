@@ -234,6 +234,24 @@ export default function Login() {
                       CREAR CUENTA
                     </Link>
                   </div>
+
+                  {/* Divisor con Google */}
+                  <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-4 bg-white text-gray-400 font-medium">O continúa con</span>
+                    </div>
+                  </div>
+
+                  <a
+                    href="/auth/google"
+                    className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-gray-200 rounded-xl bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                  >
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                    INICIAR CON GOOGLE
+                  </a>
                 </form>
               </div>
             </div>

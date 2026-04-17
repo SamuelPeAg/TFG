@@ -237,6 +237,7 @@ class PagosController extends Controller
 
         // Closure: crea los pagos para una fecha concreta
         $crearPagos = function (Carbon $slot) use ($participants, $pagoBase, $trainers, $request, $isGrupo) {
+            $pagoList = [];
             if (!empty($participants)) {
                 foreach ($participants as $pData) {
                     $user = User::find($pData['user_id']);
@@ -254,6 +255,7 @@ class PagosController extends Controller
                         $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
                     }
                     if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
+                    $pagoList[] = $pago;
                 }
             } else {
                 // Sin alumnos: placeholder para que la sesión aparezca en el calendario
@@ -267,6 +269,35 @@ class PagosController extends Controller
                     $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
                 }
                 if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
+                $pagoList[] = $pago;
+            }
+
+            // --- SINCRONIZACIÓN CON GOOGLE CALENDAR ---
+            try {
+                $calendarService = app(\App\Services\GoogleCalendarService::class);
+                $sessionData = [
+                    'nombre_clase' => $pagoBase['nombre_clase'],
+                    'centro' => $pagoBase['centro'],
+                    'tipo_clase' => $pagoBase['tipo_clase'],
+                    'fecha_registro' => $slot,
+                ];
+
+                // Sincronizar para cada entrenador
+                foreach ($trainers as $trainerId) {
+                    $trainer = User::find($trainerId);
+                    if ($trainer && $trainer->google_token) {
+                        $calendarService->syncSession($sessionData, $trainer);
+                    }
+                }
+
+                // Sincronizar para cada participante
+                foreach ($pagoList as $p) {
+                    if ($p->user && $p->user->google_token) {
+                        $calendarService->syncSession($sessionData, $p->user);
+                    }
+                }
+            } catch (\Exception $e) {
+                \Log::warning('No se pudo sincronizar con Google Calendar: ' . $e->getMessage());
             }
         };
 

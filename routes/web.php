@@ -15,12 +15,17 @@ use App\Http\Controllers\NominaEntrenadorController;
 use App\Http\Controllers\PagosController;
 use App\Http\Controllers\NominaAdminController;
 use App\Http\Controllers\ClientProfileController;
+use App\Http\Controllers\GoogleAuthController;
 
 /*
 |--------------------------------------------------------------------------
 | 1. RUTAS PÚBLICAS (React)
 |--------------------------------------------------------------------------
 */
+
+// Rutas de autenticación con Google
+Route::get('/auth/google', [GoogleAuthController::class, 'redirectToGoogle'])->name('google.login');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])->name('google.callback');
 
 // Todas las rutas públicas van a la app de React
 Route::get('/', function () {

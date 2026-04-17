@@ -16,6 +16,11 @@ return new class extends Migration
             $table->boolean('activo')->default(false);
             $table->string('password')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            
+            $table->string('google_id')->nullable()->unique();
+            $table->text('google_token')->nullable();
+            $table->text('google_refresh_token')->nullable();
+            $table->timestamp('google_token_expires_at')->nullable();
 
             $table->string('dni')->nullable()->unique();
             $table->string('direccion')->nullable();
