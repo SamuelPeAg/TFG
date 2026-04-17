@@ -52,7 +52,7 @@ class GoogleAuthController extends Controller
             ]);
 
             Auth::login($user);
-            return redirect('/calendario');
+            return redirect('/mis-clases');
         }
 
         // Si el usuario no existe, denegamos el acceso

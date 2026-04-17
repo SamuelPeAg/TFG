@@ -65,6 +65,10 @@ Route::get('/contacto', function () {
     return view('app');
 })->name('contact');
 
+Route::get('/mis-clases', function () {
+    return view('app');
+})->name('mis_clases');
+
 // Contacto (POST) - Devuelve JSON para axios
 Route::post('/contacto/enviar', function (Request $request) {
     $validated = $request->validate([

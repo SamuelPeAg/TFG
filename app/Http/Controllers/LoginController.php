@@ -57,7 +57,7 @@ class LoginController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'redirect' => route('welcome'),
+                    'redirect' => route('mis_clases'),
                     'user' => [
                         'id' => $user->id,
                         'name' => $user->name,
