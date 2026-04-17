@@ -43,6 +43,9 @@ class DatabaseSeeder extends Seeder
             
             // 6. Pagos
             PagoSeeder::class,
+
+            // 7. Nóminas
+            NominaSeeder::class,
         ]);
     }
 }

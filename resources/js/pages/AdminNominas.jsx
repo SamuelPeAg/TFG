@@ -4,6 +4,8 @@ import Sidebar from '../components/Sidebar';
 import AdminNominasSummaryCards from '../components/AdminNominasSummaryCards';
 import { BorradoresTable, HistorialTable } from '../components/AdminNominasTables';
 import { GenerarNomiModal, RevisarNominaModal, DetalleNominaModal, PdfPreviewModal } from '../components/AdminNominasModals';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 
 export default function AdminNominas() {
   const currentYear = new Date().getFullYear();
@@ -32,6 +34,9 @@ export default function AdminNominas() {
     pdf: false
   });
   const [activeItem, setActiveItem] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [alert, setAlert] = useState({ show: false, title: '', message: '', isError: false });
   
   const showToast = (msg) => {
       setToast(msg);
@@ -74,20 +79,28 @@ export default function AdminNominas() {
           showToast(res.data.message || 'Nómina marcada como PAGADA.');
           fetchNominas();
       } catch (error) {
-          alert('Error marcando como pagado');
+          setAlert({ show: true, title: 'Error', message: 'No se pudo marcar la nómina como pagada.', isError: true });
       }
   };
 
-  const handleDelete = async (id) => {
-      if(!confirm('¿Seguro que deseas eliminar esta nómina?')) return;
+  const handleDelete = (id) => {
+      setDeleteId(id);
+      setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+      if(!deleteId) return;
       try {
-          const res = await axios.delete(`/admin/nominas/${id}`, {
+          const res = await axios.delete(`/admin/nominas/${deleteId}`, {
               headers: { Accept: 'application/json' }
           });
           showToast(res.data.message || 'Nómina eliminada.');
           fetchNominas();
       } catch (error) {
-          alert('Error eliminando la nómina');
+          setAlert({ show: true, title: 'Error', message: 'No se pudo eliminar la nómina.', isError: true });
+      } finally {
+          setDeleteId(null);
+          setShowDeleteModal(false);
       }
   };
 
@@ -104,6 +117,10 @@ export default function AdminNominas() {
   const onModalSuccess = (msg) => {
       showToast(msg);
       fetchNominas();
+  };
+
+  const onModalError = (msg) => {
+      setAlert({ show: true, title: 'Error', message: msg, isError: true });
   };
 
   const filteredBorradores = data.borradores.filter(b => 
@@ -216,6 +233,7 @@ export default function AdminNominas() {
           isOpen={modals.generar} 
           onClose={() => closeModal('generar')} 
           onSuccess={onModalSuccess} 
+          onError={onModalError}
           currentYear={currentYear} 
           currentMonth={filters.mes}
       />
@@ -225,6 +243,7 @@ export default function AdminNominas() {
           onClose={() => closeModal('revisar')} 
           nomina={activeItem} 
           onSuccess={onModalSuccess} 
+          onError={onModalError}
       />
 
       <DetalleNominaModal 
@@ -237,6 +256,24 @@ export default function AdminNominas() {
           isOpen={modals.pdf} 
           onClose={() => closeModal('pdf')} 
           nomina={activeItem} 
+      />
+
+      <ConfirmModal 
+          isOpen={showDeleteModal} 
+          onClose={() => setShowDeleteModal(false)} 
+          onConfirm={confirmDelete}
+          title="Eliminar Nómina"
+          message="¿Seguro que deseas eliminar esta nómina? Esta acción no se puede deshacer."
+          confirmText="Eliminar"
+          isDestructive={true}
+      />
+
+      <AlertModal 
+          isOpen={alert.show} 
+          onClose={() => setAlert({ ...alert, show: false })} 
+          title={alert.title} 
+          message={alert.message} 
+          isError={alert.isError} 
       />
 
     </div>

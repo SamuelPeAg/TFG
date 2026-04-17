@@ -201,7 +201,7 @@ class NominaAdminController extends Controller
         $mes = $request->input('mes', date('n'));
         $anio = $request->input('anio', date('Y'));
         
-        $entrenador = User::find($userId);
+        $entrenador = \App\Models\Entrenador::find($userId);
 
         // Buscar pagos del usuario para ese mes/año (considerando ambas formas de asociación)
         $pagos = Pago::where(function($q) use ($userId) {

@@ -13,7 +13,7 @@ class NominaEntrenadorController extends Controller
         $userId = Auth::id();
 
         if ($request->wantsJson() || $request->ajax()) {
-            $nominas = Nomina_entrenador::where('user_id', $userId)
+            $nominas = Nomina_entrenador::where('entrenador_id', $userId)
                 ->where('estado_nomina', '!=', 'pendiente_revision') // No mostrar borradores al entrenador
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -26,7 +26,7 @@ class NominaEntrenadorController extends Controller
     public function descargar($id)
     {
         $nomina = Nomina_entrenador::where('id', $id)
-                    ->where('user_id', Auth::id())
+                    ->where('entrenador_id', Auth::id())
                     ->firstOrFail();
 
         // Lógica de descarga (si existe archivo)

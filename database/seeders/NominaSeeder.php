@@ -4,96 +4,80 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Nomina_entrenador;
-use App\Models\User;
+use App\Models\Entrenador;
+use App\Models\Pago;
 use Carbon\Carbon;
 
 class NominaSeeder extends Seeder
 {
     public function run()
     {
-        // Buscar al entrenador
-        $entrenador = User::where('email', 'entrenador@factomove')->first();
+        // Buscar al entrenador por email (se crea en RoleSeeder)
+        $entrenador = Entrenador::where('email', 'entrenador@factomove')->first();
 
         if (!$entrenador) {
-            $this->command->error('No se encontró el usuario entrenador@factomove');
+            // Si no existe, buscamos el primero disponible
+            $entrenador = Entrenador::first();
+        }
+
+        if (!$entrenador) {
+            $this->command->error('No se encontró ningún entrenador para asignar nóminas.');
             return;
         }
 
-        // 1. Nómina del mes ACTUAL (Pendiente de cobro)
-        // Buscamos los pagos REALES que ya haya generado el PagoSeeder (o que existan en BD)
+        // Limpiar nóminas previas para este entrenador para evitar duplicados en pruebas
+        Nomina_entrenador::where('entrenador_id', $entrenador->id)->delete();
+
         $fechaActual = Carbon::now();
-        
-        $totalPagosActual = \App\Models\Pago::where('entrenador_id', $entrenador->id)
-                            ->whereMonth('fecha_registro', $fechaActual->month)
-                            ->whereYear('fecha_registro', $fechaActual->year)
-                            ->sum('importe');
 
-        // Si no hay pagos, creamos algunos para que no salga a 0
-        if ($totalPagosActual == 0) {
-            $this->crearPagosSimulados($entrenador, $fechaActual);
-            $totalPagosActual = \App\Models\Pago::where('entrenador_id', $entrenador->id)
-                                ->whereMonth('fecha_registro', $fechaActual->month)
-                                ->whereYear('fecha_registro', $fechaActual->year)
-                                ->sum('importe');
-        }
-
+        // 1. Nómina del mes ACTUAL (Pendiente de Pago)
         Nomina_entrenador::create([
-            'user_id' => $entrenador->id,
+            'entrenador_id' => $entrenador->id,
             'mes' => $fechaActual->month,
             'anio' => $fechaActual->year,
             'concepto' => 'Nómina ' . $this->getNombreMes($fechaActual->month) . ' ' . $fechaActual->year,
-            'importe' => $totalPagosActual, // AHORA SÍ CUADRA
+            'importe' => rand(1200, 1800) + (rand(0, 99) / 100),
             'estado_nomina' => 'pendiente_pago',
             'es_auto_generada' => true,
-            'created_at' => $fechaActual,
+            'detalles' => [
+                'horas_trabajadas' => rand(120, 160),
+                'salario_bruto' => 1800,
+                'ss_trabajador' => 114.30,
+                'irpf' => 0,
+                'salario_neto' => 1685.70,
+                'ss_empresa' => 565.20,
+                'coste_total' => 2365.20,
+                'porcentajes' => ['ss_trab' => '6.35', 'irpf' => '0', 'ss_emp' => '31.40']
+            ]
         ]);
 
-        // 2. 3 Nóminas ANTERIORES (Pagadas)
-        for ($i = 1; $i <= 3; $i++) {
+        // 2. Nóminas de los 5 meses ANTERIORES (Pagadas)
+        for ($i = 1; $i <= 5; $i++) {
             $fechaPasada = Carbon::now()->subMonths($i);
             
-            // Primero creamos los PAGOS para ese mes pasado, para que cuadre si se mira el historial
-            $this->crearPagosSimulados($entrenador, $fechaPasada);
-
-            // Calculamos el total
-            $totalMesPasado = \App\Models\Pago::where('entrenador_id', $entrenador->id)
-                                ->whereMonth('fecha_registro', $fechaPasada->month)
-                                ->whereYear('fecha_registro', $fechaPasada->year)
-                                ->sum('importe');
-
             Nomina_entrenador::create([
-                'user_id' => $entrenador->id,
+                'entrenador_id' => $entrenador->id,
                 'mes' => $fechaPasada->month,
                 'anio' => $fechaPasada->year,
                 'concepto' => 'Nómina ' . $this->getNombreMes($fechaPasada->month) . ' ' . $fechaPasada->year,
-                'importe' => $totalMesPasado, // Total real de los pagos generados
+                'importe' => rand(1200, 1800) + (rand(0, 99) / 100),
                 'estado_nomina' => 'pagado',
-                'fecha_pago' => $fechaPasada->copy()->endOfMonth(),
+                'fecha_pago' => $fechaPasada->copy()->addDays(5),
                 'es_auto_generada' => true,
-                'created_at' => $fechaPasada,
+                'detalles' => [
+                    'horas_trabajadas' => rand(120, 160),
+                    'salario_bruto' => 1800,
+                    'ss_trabajador' => 114.30,
+                    'irpf' => 0,
+                    'salario_neto' => 1685.70,
+                    'ss_empresa' => 565.20,
+                    'coste_total' => 2365.20,
+                    'porcentajes' => ['ss_trab' => '6.35', 'irpf' => '0', 'ss_emp' => '31.40']
+                ]
             ]);
         }
-    }
 
-    private function crearPagosSimulados($user, $fechaBase)
-    {
-        // Generar entre 3 y 8 pagos aleatorios para ese mes
-        $cantidad = rand(3, 8);
-        
-        for ($k = 0; $k < $cantidad; $k++) {
-            // Generar IBAN seguro concatenando partes para evitar overflow en rand()
-            $iban = 'ES' . str_pad(rand(0, 9999999999), 10, '0', STR_PAD_LEFT) . str_pad(rand(0, 9999999999), 10, '0', STR_PAD_LEFT);
-
-            \App\Models\Pago::create([
-                'entrenador_id' => $user->id,
-                'centro' => 'Centro Principal', // Valor por defecto
-                'nombre_clase' => 'Entrenamiento Personal',
-                'metodo_pago' => 'Tarjeta',
-                'iban' => $iban, 
-                'importe' => rand(30, 80) + (rand(0, 99) / 100),
-                'fecha_registro' => $fechaBase->copy()->day(rand(1, 28)), 
-            ]);
-        }
+        $this->command->info('Nóminas generadas correctamente para ' . $entrenador->email);
     }
 
     private function getNombreMes($mes) {

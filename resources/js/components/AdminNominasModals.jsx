@@ -3,7 +3,7 @@ import axios from 'axios';
 import Button from './Button';
 
 // 1. Modal Generar
-export function GenerarNomiModal({ isOpen, onClose, onSuccess, currentYear, currentMonth }) {
+export function GenerarNomiModal({ isOpen, onClose, onSuccess, onError, currentYear, currentMonth }) {
     const [formData, setFormData] = useState({
         mes: currentMonth.toString(),
         anio: currentYear.toString(),
@@ -41,7 +41,8 @@ export function GenerarNomiModal({ isOpen, onClose, onSuccess, currentYear, curr
             onSuccess(res.data.message || 'Nóminas generadas correctamente');
             onClose();
         } catch (error) {
-            alert('Error generando nóminas');
+            if (onError) onError('Error al generar las nóminas. Inténtalo de nuevo.');
+            else alert('Error generando nóminas');
         } finally {
             setLoading(false);
         }
@@ -108,7 +109,7 @@ export function GenerarNomiModal({ isOpen, onClose, onSuccess, currentYear, curr
 }
 
 // 2. Modal Revisar Nómina
-export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess }) {
+export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess, onError }) {
     if (!isOpen || !nomina) return null;
 
     const [loading, setLoading] = useState(false);
@@ -190,7 +191,8 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess }) {
         } catch (error) {
             console.error('Error procesando nómina:', error);
             const msg = error.response?.data?.message || 'Error al procesar la nómina';
-            alert(msg);
+            if (onError) onError(msg);
+            else alert(msg);
         } finally {
             setLoading(false);
         }

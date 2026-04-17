@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Nómina - {{ $user->name }} - {{ $mes_nombre }} {{ $nomina->anio }}</title>
+    <title>Nómina - {{ $entrenador->name }} - {{ $mes_nombre }} {{ $nomina->anio }}</title>
     <style>
         body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; line-height: 1.5; font-size: 12px; }
         .header { margin-bottom: 30px; border-bottom: 2px solid #4BB7AE; padding-bottom: 10px; }
@@ -34,9 +34,9 @@
             <div>Córdoba, España</div>
         </div>
         <div class="employee-info">
-            <div><strong>{{ $user->name }}</strong></div>
-            <div>DNI/NIE: {{ $user->dni ?? 'N/A' }}</div>
-            <div>IBAN: {{ $user->iban ?? 'N/A' }}</div>
+            <div><strong>{{ $entrenador->name }}</strong></div>
+            <div>DNI/NIE: {{ $entrenador->dni ?? 'N/A' }}</div>
+            <div>IBAN: {{ $entrenador->iban ?? 'N/A' }}</div>
             <div style="margin-top: 10px;">
                 <strong>Período:</strong> {{ $mes_nombre }} {{ $nomina->anio }}<br>
                 <strong>Estado:</strong> 

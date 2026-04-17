@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 
 
 const METROS_RESET = [
@@ -37,6 +39,9 @@ export default function Suscripciones() {
     const [form, setForm] = useState(EMPTY_FORM);
     const [saving, setSaving] = useState(false);
     const [formErrors, setFormErrors] = useState({});
+    const [deleteId, setDeleteId] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [alert, setAlert] = useState({ show: false, title: '', message: '', isError: false });
 
     // Refs for Select2
     const periodoRef = useRef(null);
@@ -158,20 +163,29 @@ export default function Suscripciones() {
                 Object.entries(err.response.data.errors || {}).forEach(([k, v]) => { errsObj[k] = v[0]; });
                 setFormErrors(errsObj);
             } else {
-                alert('Error al guardar la suscripción.');
+                setAlert({ show: true, title: 'Error', message: 'No se pudo guardar la suscripción.', isError: true });
             }
         } finally {
             setSaving(false);
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('¿Eliminar esta suscripción?')) return;
+    const handleDelete = (id) => {
+        setDeleteId(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
         try {
-            await axios.delete(`/suscripciones/${id}`);
+            await axios.delete(`/suscripciones/${deleteId}`);
+            setAlert({ show: true, title: '¡Éxito!', message: 'Suscripción eliminada correctamente.', isError: false });
             fetchData();
         } catch {
-            alert('Error al eliminar.');
+            setAlert({ show: true, title: 'Error', message: 'No se pudo eliminar la suscripción.', isError: true });
+        } finally {
+            setDeleteId(null);
+            setShowDeleteModal(false);
         }
     };
 
@@ -410,6 +424,24 @@ export default function Suscripciones() {
                     </div>
                 </div>
             )}
+
+            <ConfirmModal 
+                isOpen={showDeleteModal} 
+                onClose={() => setShowDeleteModal(false)} 
+                onConfirm={confirmDelete}
+                title="Eliminar Suscripción"
+                message="¿Estás seguro de que deseas eliminar esta suscripción? Esta acción no se puede deshacer."
+                confirmText="Eliminar"
+                isDestructive={true}
+            />
+
+            <AlertModal 
+                isOpen={alert.show} 
+                onClose={() => setAlert({ ...alert, show: false })} 
+                title={alert.title} 
+                message={alert.message} 
+                isError={alert.isError} 
+            />
         </div>
     );
 }
