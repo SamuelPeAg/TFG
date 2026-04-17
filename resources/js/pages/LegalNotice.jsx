@@ -19,10 +19,10 @@ export default function LegalNotice() {
           
           <div className="not-prose bg-gray-50 p-8 rounded-2xl border-2 border-gray-100 shadow-sm mt-4">
             <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Titular:</span> <span>[TU NOMBRE O RAZÓN SOCIAL]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">NIF/CIF:</span> <span>[TU NÚMERO DE IDENTIFICACIÓN]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Domicilio:</span> <span>[TU DIRECCIÓN COMPLETA]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Contacto:</span> <a href="mailto:contacto@factomove.com" className="text-brandTeal underline">contacto@factomove.com</a></li>
+              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Titular:</span> <span>Samuel Peña Aguayo</span></li>
+              <li className="flex items-start"><span className="font-bold w-40 shrink-0">NIF/CIF:</span> <span>31880746D</span></li>
+              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Domicilio:</span> <span>España</span></li>
+              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Contacto:</span> <a href="mailto:gtsamer39@gmail.com" className="text-brandTeal underline">gtsamer39@gmail.com</a></li>
             </ul>
           </div>
         </section>

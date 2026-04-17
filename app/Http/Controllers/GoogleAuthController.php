@@ -18,7 +18,8 @@ class GoogleAuthController extends Controller
         return Socialite::driver('google')
             ->scopes(['https://www.googleapis.com/auth/calendar'])
             ->with(['access_type' => 'offline', 'prompt' => 'consent'])
-            ->redirectUrl(config('services.google.redirect'))
+            // Usamos route() para que sea dinámico según el entorno (local o producción)
+            ->redirectUrl(route('google.callback'))
             ->redirect();
     }
 
@@ -28,45 +29,33 @@ class GoogleAuthController extends Controller
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            // Es importante usar el mismo redirectUrl que en la redirección inicial
+            $googleUser = Socialite::driver('google')
+                ->redirectUrl(route('google.callback'))
+                ->user();
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Error al autenticar con Google: ' . $e->getMessage());
         }
 
-        // Buscar el usuario por google_id o por email
-        $user = User::where('google_id', $googleUser->id)
-                    ->orWhere('email', $googleUser->email)
-                    ->first();
+        // RESTRICCIÓN: Solo permitir usuarios que ya existan en la base de datos por su email
+        $user = User::where('email', $googleUser->email)->first();
 
         if ($user) {
-            // Actualizar datos de Google
+            // Si el usuario existe, actualizamos sus credenciales de Google
+            // (Esto vincula la cuenta de Google con el usuario de Laravel automáticamente)
             $user->update([
                 'google_id' => $googleUser->id,
                 'google_token' => $googleUser->token,
+                // El refresh token solo llega la primera vez que se da consentimiento
                 'google_refresh_token' => $googleUser->refreshToken ?? $user->google_refresh_token,
                 'google_token_expires_at' => now()->addSeconds($googleUser->expiresIn),
             ]);
-        } else {
-            // OPCIONAL: Crear un nuevo usuario si no existe
-            // (Esto depende de la respuesta del usuario a mi pregunta anterior)
-            // Por ahora, vamos a crearlo como cliente si no existe.
-            $user = User::create([
-                'name' => $googleUser->name,
-                'email' => $googleUser->email,
-                'google_id' => $googleUser->id,
-                'google_token' => $googleUser->token,
-                'google_refresh_token' => $googleUser->refreshToken,
-                'google_token_expires_at' => now()->addSeconds($googleUser->expiresIn),
-                'password' => null, // No necesita password si usa Google
-                'activo' => true,
-            ]);
 
-            // Asignar rol por defecto (ej: cliente)
-            $user->assignRole('cliente');
+            Auth::login($user);
+            return redirect('/calendario');
         }
 
-        Auth::login($user);
-
-        return redirect('/calendario'); // Redirigir a la página principal tras el login
+        // Si el usuario no existe, denegamos el acceso
+        return redirect('/login')->with('error', 'Tu email (' . $googleUser->email . ') no está registrado en el sistema. Contacta con el administrador.');
     }
 }

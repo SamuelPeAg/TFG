@@ -23,10 +23,10 @@ export default function PrivacyPolicy() {
           <p>La entidad responsable de tratar tus datos personales es:</p>
           <div className="not-prose bg-gray-50 p-8 rounded-2xl border-2 border-gray-100 shadow-sm mt-4">
             <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Denominación social:</span> <span>[NOMBRE LEGAL DE TU EMPRESA O AUTÓNOMO]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">NIF/CIF:</span> <span>[TU NÚMERO FISCAL]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Domicilio social:</span> <span>[TU DIRECCIÓN COMPLETA]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Email de contacto:</span> <a href="mailto:contacto@factomove.com" className="text-brandTeal underline">contacto@factomove.com</a></li>
+              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Titular:</span> <span>Samuel Peña Aguayo</span></li>
+              <li className="flex items-start"><span className="font-bold w-40 shrink-0">NIF/CIF:</span> <span>31880746D</span></li>
+              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Domicilio social:</span> <span>España</span></li>
+              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Email de contacto:</span> <a href="mailto:gtsamer39@gmail.com" className="text-brandTeal underline">gtsamer39@gmail.com</a></li>
             </ul>
           </div>
         </section>
@@ -35,21 +35,27 @@ export default function PrivacyPolicy() {
           <h2 className="text-3xl font-bold text-gray-900 mb-6">2. ¿Qué datos recopilamos y para qué?</h2>
           <p>Recopilamos la información mínima necesaria para que Factomove funcione correctamente según tu rol (cliente, entrenador, etc.). Las principales finalidades son:</p>
           <ul>
-            <li><strong>Prestación del servicio:</strong> Gestionar tu registro de usuario, permitir el acceso a las funcionalidades de tu rol (ver rutinas, gestionar clientes), y asegurar el correcto funcionamiento técnico de la plataforma. <em>(Base legal: Ejecución del contrato)</em>.</li>
-            <li><strong>Comunicaciones transaccionales:</strong> Enviarte emails relacionados con tu cuenta (bienvenida, restablecer contraseña, avisos importantes del servicio). <em>(Base legal: Ejecución del contrato)</em>.</li>
-            <li><strong>Mejora y seguridad:</strong> Analizar cómo se usa la plataforma para mejorarla y detectar posibles fraudes o usos indebidos. <em>(Base legal: Interés legítimo)</em>.</li>
+            <li><strong>Prestación del servicio:</strong> Gestionar tu registro de usuario, permitir el acceso a las funcionalidades de tu rol y asegurar el correcto funcionamiento técnico de la plataforma.</li>
+            <li><strong>Integración con Google Calendar (OAuth):</strong> Si decides vincular tu cuenta, Factomove accederá a tu calendario de Google para:
+              <ul className="list-disc pl-5 mt-2">
+                <li>Sincronizar tus sesiones de entrenamiento agendadas.</li>
+                <li>Permitir que tanto clientes como entrenadores visualicen sus horarios de clases en tiempo real.</li>
+              </ul>
+              <em>El uso de la información recibida de las APIs de Google se ajusta a la <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer" className="text-brandTeal underline">Política de Datos de Usuario de los Servicios de API de Google</a>, incluidos los requisitos de Uso Limitado.</em>
+            </li>
+            <li><strong>Comunicaciones transaccionales:</strong> Enviarte emails relacionados con tu cuenta.</li>
           </ul>
         </section>
 
         <section>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">3. Conservación de los datos</h2>
-          <p>Mantendremos tus datos personales activos en nuestros sistemas mientras dure tu relación con nosotros (es decir, mientras tengas una cuenta activa). Una vez finalizada la relación, los datos se mantendrán bloqueados durante los plazos legales necesarios para atender posibles responsabilidades (por ejemplo, fiscales o legales).</p>
+          <p>Mantendremos tus datos personales activos en nuestros sistemas mientras dure tu relación con nosotros. Los datos de Google Calendar no se almacenan permanentemente en nuestros servidores más allá de lo necesario para realizar la sincronización en tiempo real.</p>
         </section>
 
         <section>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">4. ¿Con quién compartimos tus datos?</h2>
-          <p><strong>Factomove no vende tus datos a terceros.</strong></p>
-          <p>Solo compartimos información estrictamente necesaria con proveedores de servicios tecnológicos de confianza que actúan como "encargados del tratamiento" (por ejemplo, proveedores de alojamiento web, servicios de envío de correo electrónico). Todos ellos están obligados contractualmente a cumplir con la normativa de protección de datos y a usar la información únicamente para prestarnos el servicio.</p>
+          <p><strong>Factomove no vende tus datos a terceros ni los comparte con fines publicitarios.</strong></p>
+          <p>Solo compartimos información con proveedores de servicios tecnológicos necesarios para el funcionamiento de la app (hosting, envío de emails) y con Google a través de su API para la funcionalidad de calendario solicitada por el usuario.</p>
         </section>
 
         <section>
