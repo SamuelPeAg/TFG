@@ -18,6 +18,7 @@ class GoogleAuthController extends Controller
         return Socialite::driver('google')
             ->scopes(['https://www.googleapis.com/auth/calendar'])
             ->with(['access_type' => 'offline', 'prompt' => 'consent'])
+            ->redirectUrl(config('services.google.redirect'))
             ->redirect();
     }
 
