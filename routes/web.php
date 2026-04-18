@@ -168,6 +168,12 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::put('/measurements/{measurement}', [ClientProfileController::class, 'updateMeasurement']);
     Route::delete('/measurements/{measurement}', [ClientProfileController::class, 'deleteMeasurement']);
 
+    // Módulo de Nutrición AI
+    Route::get('/nutricion', [\App\Http\Controllers\NutritionController::class, 'index'])->name('nutricion.index');
+    Route::post('/nutricion/log', [\App\Http\Controllers\NutritionController::class, 'store'])->name('nutricion.store');
+    Route::post('/nutricion/routine', [\App\Http\Controllers\NutritionController::class, 'generateRoutine'])->name('nutricion.routine');
+
+
 
     /*
     |--------------------------------------------------------------------------

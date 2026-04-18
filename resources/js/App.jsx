@@ -24,6 +24,7 @@ import MisClases from './pages/MisClases'
 import MisEstadisticas from './pages/MisEstadisticas'
 import ReservaClases from './pages/ReservaClases'
 import Notificaciones from './pages/Notificaciones'
+import MisComidas from './pages/MisComidas'
 
 
 function App() {
@@ -67,7 +68,9 @@ function App() {
       <Route path="/mis-clases" element={<MisClases />} />
       <Route path="/mis-estadisticas" element={<MisEstadisticas />} />
       <Route path="/notificaciones" element={<Notificaciones />} />
+      <Route path="/mis-comidas" element={<MisComidas />} />
     </Routes>
+
     </>
   )
 }
