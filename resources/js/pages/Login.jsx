@@ -16,6 +16,15 @@ export default function Login() {
 
   // Cargar errores de sesión de Laravel (ej: fallos de Google Auth)
   useEffect(() => {
+    // Redirigir si ya está logueado
+    const user = window.AppConfig?.user;
+    if (user) {
+      if (user.role === 'admin') window.location.href = '/estadisticas';
+      else if (user.role === 'cliente') window.location.href = '/mis-clases';
+      else window.location.href = '/calendario';
+      return;
+    }
+
     if (window.AppConfig?.flash?.error) {
       setErrors(prev => ({ ...prev, general: window.AppConfig.flash.error }));
     }

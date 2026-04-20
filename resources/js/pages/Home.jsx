@@ -2,13 +2,6 @@ import { useEffect } from 'react'
 
 export default function Home() {
   useEffect(() => {
-    const user = window.AppConfig?.user;
-    if (user) {
-      if (user.role === 'admin') window.location.href = '/estadisticas';
-      else if (user.role === 'cliente') window.location.href = '/mis-clases';
-      else window.location.href = '/calendario';
-    }
-
     const observerOptions = { threshold: 0.1 };
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -49,8 +42,14 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5">
-              <a href="/login" className="px-10 py-5 bg-gray-900 text-white rounded-2xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center gap-3 transition-all">
-                Acceder al Sistema <i className="fa-solid fa-chevron-right text-brandTeal"></i>
+              <a 
+                href={
+                  !window.AppConfig?.user ? "/login" : 
+                  (window.AppConfig.user.role === 'admin' ? '/estadisticas' : (window.AppConfig.user.role === 'cliente' ? '/mis-clases' : '/calendario'))
+                } 
+                className="px-10 py-5 bg-gray-900 text-white rounded-2xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center gap-3 transition-all"
+              >
+                {window.AppConfig?.user ? 'IR AL PANEL' : 'Acceder al Sistema'} <i className="fa-solid fa-chevron-right text-brandTeal"></i>
               </a>
               <a href="#solucion" className="px-10 py-5 bg-white border border-gray-200 rounded-2xl font-black text-xl hover:bg-gray-50 text-center transition-all">
                 ¿Cómo funciona?
@@ -241,8 +240,14 @@ export default function Home() {
             La digitalización inteligente es la ventaja competitiva para centros de alto rendimiento como <strong>Moverte da Vida</strong>.
           </p>
           <div className="flex justify-center">
-            <a href="/login" className="inline-block px-12 py-6 bg-brandCoral text-white rounded-3xl font-black text-2xl shadow-xl hover:scale-110 hover:-rotate-2 transition-all">
-              Acceder al Sistema
+            <a 
+              href={
+                !window.AppConfig?.user ? "/login" : 
+                (window.AppConfig.user.role === 'admin' ? '/estadisticas' : (window.AppConfig.user.role === 'cliente' ? '/mis-clases' : '/calendario'))
+              }
+              className="inline-block px-12 py-6 bg-brandCoral text-white rounded-3xl font-black text-2xl shadow-xl hover:scale-110 hover:-rotate-2 transition-all"
+            >
+              {window.AppConfig?.user ? 'IR AL PANEL' : 'Acceder al Sistema'}
             </a>
           </div>
         </div>
