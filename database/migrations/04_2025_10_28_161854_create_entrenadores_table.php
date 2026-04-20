@@ -16,6 +16,12 @@ return new class extends Migration
             $table->string('password');
             $table->timestamp('email_verified_at')->nullable();
 
+            // Google OAuth
+            $table->string('google_id')->nullable()->unique();
+            $table->text('google_token')->nullable();
+            $table->text('google_refresh_token')->nullable();
+            $table->timestamp('google_token_expires_at')->nullable();
+
             $table->string('dni')->nullable()->unique();
             $table->string('foto_de_perfil')->nullable();
             

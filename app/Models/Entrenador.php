@@ -27,6 +27,10 @@ class Entrenador extends Authenticatable
         'activation_token',
         'centro_id',
         'empresa_id',
+        'google_id',
+        'google_token',
+        'google_refresh_token',
+        'google_token_expires_at',
     ];
 
     protected $hidden = [

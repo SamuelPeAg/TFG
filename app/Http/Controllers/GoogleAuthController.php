@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Entrenador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
@@ -37,25 +38,40 @@ class GoogleAuthController extends Controller
             return redirect('/login')->with('error', 'Error al autenticar con Google: ' . $e->getMessage());
         }
 
-        // RESTRICCIÓN: Solo permitir usuarios que ya existan en la base de datos por su email
+        // 1. Buscar primero en la tabla de Clientes (User)
         $user = User::where('email', $googleUser->email)->first();
-
         if ($user) {
-            // Si el usuario existe, actualizamos sus credenciales de Google
-            // (Esto vincula la cuenta de Google con el usuario de Laravel automáticamente)
             $user->update([
                 'google_id' => $googleUser->id,
                 'google_token' => $googleUser->token,
-                // El refresh token solo llega la primera vez que se da consentimiento
                 'google_refresh_token' => $googleUser->refreshToken ?? $user->google_refresh_token,
                 'google_token_expires_at' => now()->addSeconds($googleUser->expiresIn),
             ]);
 
-            Auth::login($user);
+            Auth::guard('web')->login($user);
             return redirect('/mis-clases');
         }
 
-        // Si el usuario no existe, denegamos el acceso
+        // 2. Si no es un cliente, buscar en la tabla de Staff (Entrenador)
+        $staff = Entrenador::where('email', $googleUser->email)->first();
+        if ($staff) {
+            $staff->update([
+                'google_id' => $googleUser->id,
+                'google_token' => $googleUser->token,
+                'google_refresh_token' => $googleUser->refreshToken ?? $staff->google_refresh_token,
+                'google_token_expires_at' => now()->addSeconds($googleUser->expiresIn),
+            ]);
+
+            Auth::guard('staff')->login($staff);
+            
+            // Redirigir según el rol de staff
+            if ($staff->hasRole('admin')) {
+                return redirect('/estadisticas');
+            }
+            return redirect('/calendario');
+        }
+
+        // Si el email no existe en ninguna tabla, denegamos el acceso
         return redirect('/login')->with('error', 'Tu email (' . $googleUser->email . ') no está registrado en el sistema. Contacta con el administrador.');
     }
 }
