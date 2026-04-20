@@ -38,7 +38,7 @@ class LoginController extends Controller
                 
                 return response()->json([
                     'success' => true,
-                    'redirect' => route('calendario'),
+                    'redirect' => $user->hasRole('admin') ? route('estadisticas.index') : route('calendario'),
                     'user' => [
                         'id' => $user->id,
                         'name' => $user->name,

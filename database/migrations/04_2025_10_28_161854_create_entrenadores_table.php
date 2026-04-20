@@ -38,7 +38,6 @@ return new class extends Migration
             $table->foreignId('empresa_id')->nullable()->constrained('empresas')->nullOnDelete();
 
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

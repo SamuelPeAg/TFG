@@ -2,6 +2,13 @@ import { useEffect } from 'react'
 
 export default function Home() {
   useEffect(() => {
+    const user = window.AppConfig?.user;
+    if (user) {
+      if (user.role === 'admin') window.location.href = '/estadisticas';
+      else if (user.role === 'cliente') window.location.href = '/mis-clases';
+      else window.location.href = '/calendario';
+    }
+
     const observerOptions = { threshold: 0.1 };
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
