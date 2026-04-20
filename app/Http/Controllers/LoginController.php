@@ -73,12 +73,12 @@ class LoginController extends Controller
                     'general' => ['No se pudo conectar con la base de datos. Verifica tu conexión o contacta con soporte técnico. (Error: BD1)']
                 ]
             ], 500);
-        } catch (\Exception $e) {
-            // Error genérico
+        } catch (\Throwable $e) {
+            // Error genérico - Mostrar detalles TEMPORALMENTE para debug
             return response()->json([
-                'message' => 'Error inesperado del servidor.',
+                'message' => 'Error Crítico: ' . $e->getMessage() . ' en línea ' . $e->getLine() . ' de ' . basename($e->getFile()),
                 'errors' => [
-                    'general' => ['Hubo un problema procesando tu solicitud.']
+                    'general' => ['Excepción capturada: ' . $e->getMessage()]
                 ]
             ], 500);
         }
