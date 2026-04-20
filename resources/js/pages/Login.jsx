@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
@@ -13,6 +13,13 @@ export default function Login() {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+
+  // Cargar errores de sesión de Laravel (ej: fallos de Google Auth)
+  useEffect(() => {
+    if (window.AppConfig?.flash?.error) {
+      setErrors(prev => ({ ...prev, general: window.AppConfig.flash.error }));
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target

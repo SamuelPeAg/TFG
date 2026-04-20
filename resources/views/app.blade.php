@@ -64,7 +64,11 @@
           'role' => $role,
           'photo' => $user->foto_de_perfil ? asset('storage/' . $user->foto_de_perfil) : null,
           'permissions' => ($user->hasRole('admin')) ? ['*'] : $user->getAllPermissions()->pluck('name')->toArray()
-        ] : null) !!}
+        ] : null) !!},
+        flash: {
+          error: '{{ session("error") }}',
+          success: '{{ session("success") }}'
+        }
       };
     </script>
   </head>
