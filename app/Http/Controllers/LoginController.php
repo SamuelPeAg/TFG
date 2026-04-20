@@ -74,11 +74,12 @@ class LoginController extends Controller
                 ]
             ], 500);
         } catch (\Throwable $e) {
-            // Error genérico - Mostrar detalles TEMPORALMENTE para debug
+            // Error genérico
+            \Illuminate\Support\Facades\Log::error('Login Fatal Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
-                'message' => 'Error Crítico: ' . $e->getMessage() . ' en línea ' . $e->getLine() . ' de ' . basename($e->getFile()),
+                'message' => 'Error inesperado del servidor.',
                 'errors' => [
-                    'general' => ['Excepción capturada: ' . $e->getMessage()]
+                    'general' => ['Hubo un problema procesando tu solicitud.']
                 ]
             ], 500);
         }

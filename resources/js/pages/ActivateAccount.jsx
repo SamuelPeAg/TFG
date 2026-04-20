@@ -16,6 +16,7 @@ export default function ActivateAccount() {
     const [errors, setErrors] = useState(null);
     const [success, setSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     
     const [userData, setUserData] = useState(null);
     const [isTrainerMode, setIsTrainerMode] = useState(false);
