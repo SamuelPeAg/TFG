@@ -43,29 +43,7 @@ class GoogleAuthController extends Controller
             return redirect('/login')->with('error', 'Error al autenticar con Google: ' . $e->getMessage());
         }
 
-        // 1. Buscar primero en la tabla de Clientes (User)
-        $user = User::where('email', $googleUser->email)->first();
-        if ($user) {
-            // Verificamos si el usuario está activo
-            if (!$user->activo) {
-                return redirect('/login')->with('error', 'Tu cuenta de cliente está desactivada. Contacta con el administrador.');
-            }
-
-            $user->update([
-                'google_id' => $googleUser->id,
-                'google_token' => $googleUser->token,
-                'google_refresh_token' => $googleUser->refreshToken ?? $user->google_refresh_token,
-                'google_token_expires_at' => now()->addSeconds($googleUser->expiresIn),
-            ]);
-
-            $request->session()->regenerate();
-            Auth::guard('web')->login($user);
-            
-            Log::info('Cliente logueado con Google', ['id' => $user->id]);
-            return redirect('/mis-clases');
-        }
-
-        // 2. Si no es un cliente, buscar en la tabla de Staff (Entrenador)
+        // 1. Buscar primero en la tabla de Staff (Entrenador)
         $staff = Entrenador::where('email', $googleUser->email)->first();
         if ($staff) {
             // Verificamos si el staff está activo
@@ -90,6 +68,28 @@ class GoogleAuthController extends Controller
                 return redirect('/estadisticas');
             }
             return redirect('/calendario');
+        }
+
+        // 2. Si no es un staff, buscar en la tabla de Clientes (User)
+        $user = User::where('email', $googleUser->email)->first();
+        if ($user) {
+            // Verificamos si el usuario está activo
+            if (!$user->activo) {
+                return redirect('/login')->with('error', 'Tu cuenta de cliente está desactivada. Contacta con el administrador.');
+            }
+
+            $user->update([
+                'google_id' => $googleUser->id,
+                'google_token' => $googleUser->token,
+                'google_refresh_token' => $googleUser->refreshToken ?? $user->google_refresh_token,
+                'google_token_expires_at' => now()->addSeconds($googleUser->expiresIn),
+            ]);
+
+            $request->session()->regenerate();
+            Auth::guard('web')->login($user);
+            
+            Log::info('Cliente logueado con Google', ['id' => $user->id]);
+            return redirect('/mis-clases');
         }
 
         // Si el email no existe en ninguna tabla, llevamos a REGISTRO con mensaje claro

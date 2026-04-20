@@ -165,21 +165,27 @@ class EntrenadorController extends Controller
 
         $user = Entrenador::findOrFail($id);
 
-        // Security Check: Verify token matches
+        // Control de doble submit / Token expirado
         if ($user->activation_token !== $request->token) {
-            return back()->with('error', 'Token de seguridad inválido o expirado.');
+            if ($user->activo) {
+                // Si la cuenta ya está activa, simplemente le decimos que fue un éxito
+                // para que el frontend (React) siga su camino al login o donde corresponda.
+                return response()->json(['message' => 'La cuenta ya estaba activa.']);
+            }
+            return response()->json(['errors' => ['general' => 'Token de seguridad inválido o expirado.']], 422);
         }
 
         $user->update([
             'password' => Hash::make($request->password),
             'activation_token' => null,
+            'activo' => true,
             'email_verified_at' => now(), // Mark as verified
         ]);
 
         // Autologin del usuario tras activar la cuenta
         Auth::guard('staff')->login($user); 
 
-        return redirect()->route('calendario')->with('success', '¡Cuenta activada correctamente! Ya estás dentro de Factomove.');
+        return response()->json(['message' => 'Cuenta activada correctamente. Ya puedes iniciar sesión.']);
     }
 
     public function getPermissions($id)

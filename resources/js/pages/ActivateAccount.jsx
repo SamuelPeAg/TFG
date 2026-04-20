@@ -128,21 +128,31 @@ export default function ActivateAccount() {
                             </button>
                         </div>
                         {errors?.password && <p className="text-rose-500 text-[10px] font-bold mt-1 pl-1">{errors.password[0]}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">Confirmar Contraseña</label>
-                        <div className="relative group">
-                            <i className="fas fa-shield-halved absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                name="password_confirmation"
-                                value={formData.password_confirmation}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                required
-                                className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700"
-                            />
+                    
+                        {/* CONFIRMAR CONTRASEÑA */}
+                        <div className="space-y-2 mt-4">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">
+                                Confirmar Contraseña
+                            </label>
+                            <div className="relative group">
+                                <i className="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="password_confirmation"
+                                    value={formData.password_confirmation}
+                                    onChange={handleChange}
+                                    className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#38C1A3] transition-colors focus:outline-none"
+                                >
+                                    <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
