@@ -95,6 +95,7 @@ class GoogleAuthController extends Controller
         // Si el email no existe en ninguna tabla, llevamos a REGISTRO con mensaje claro
         Log::warning('Intento de Google Login con email no registrado', ['email' => $googleUser->email]);
         
-        return redirect('/register')->with('error', 'No hemos encontrado ninguna cuenta vinculada a ' . $googleUser->email . '. Por favor, crea una cuenta primero.');
+        return redirect('/register?email=' . $googleUser->email)
+            ->with('error', 'Antes de iniciar sesión con Google para el correo ' . $googleUser->email . ', debes crear una cuenta manualmente. Una vez creada, podrás entrar con Google siempre que quieras.');
     }
 }

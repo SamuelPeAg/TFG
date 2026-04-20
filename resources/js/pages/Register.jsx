@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 export default function Register() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,6 +16,21 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  // Cargar mensajes de sesión y auto-completar email si viene en la URL
+  useEffect(() => {
+    // 1. Errores de sesión
+    if (window.AppConfig?.flash?.error) {
+      setErrors(prev => ({ ...prev, general: window.AppConfig.flash.error }));
+    }
+
+    // 2. Pre-llenar email desde URL
+    const params = new URLSearchParams(location.search);
+    const emailParam = params.get('email');
+    if (emailParam) {
+      setFormData(prev => ({ ...prev, email: emailParam }));
+    }
+  }, [location]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
