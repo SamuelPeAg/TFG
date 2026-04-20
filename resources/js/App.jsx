@@ -50,6 +50,7 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/activate-account/:token" element={<ActivateAccount />} />
+      <Route path="/activar-entrenador/:token" element={<ActivateAccount />} />
       
       {/* Ruta Calendario (Asegurada por auth middleware en backend) */}
       <Route path="/calendario" element={isClient ? <ReservaClases /> : <Calendario />} />

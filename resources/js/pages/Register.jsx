@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 import axios from 'axios'
 
 export default function Register() {
@@ -71,10 +73,13 @@ export default function Register() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pt-24 lg:pt-28 bg-gradient-to-br from-white via-brandTeal/30 to-brandCoral/40">
-
-      {/* Contenedor principal */}
-      <div className="flex-grow flex items-center justify-center p-4 sm:p-8">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="grow bg-gradient-to-br from-gray-50 via-brandTeal/10 to-brandCoral/10 flex flex-col justify-center py-20 mt-10 sm:px-6 lg:px-8">
+        
+        {/* Contenedor principal */}
+        <div className="flex-grow flex items-center justify-center p-4 sm:p-8">
         
         {/* TARJETA DE REGISTRO */}
         <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/60">
@@ -284,6 +289,8 @@ export default function Register() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   )
 }

@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Button from '../components/Button';
 
 export default function ActivateAccount() {
     const { token } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    
     const [formData, setFormData] = useState({
         password: '',
         password_confirmation: '',
@@ -14,6 +16,27 @@ export default function ActivateAccount() {
     const [errors, setErrors] = useState(null);
     const [success, setSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    
+    const [userData, setUserData] = useState(null);
+    const [isTrainerMode, setIsTrainerMode] = useState(false);
+
+    // Detectar si estamos en modo entrenador y cargar datos del token
+    useEffect(() => {
+        const checkMode = async () => {
+            const isTrainer = location.pathname.includes('activar-entrenador');
+            setIsTrainerMode(isTrainer);
+
+            if (isTrainer) {
+                try {
+                    const res = await axios.get(`/api/entrenador-by-token/${token}`);
+                    setUserData(res.data);
+                } catch (err) {
+                    setErrors({ general: 'El enlace de activación es inválido o ha expirado.' });
+                }
+            }
+        };
+        checkMode();
+    }, [token, location.pathname]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,7 +48,17 @@ export default function ActivateAccount() {
         setErrors(null);
 
         try {
-            await axios.post(`/activate-account/${token}`, formData);
+            if (isTrainerMode) {
+                // Para entrenadores usamos PUT y necesitamos el ID
+                await axios.put(`/activar-entrenador-complete/${userData.id}`, {
+                    ...formData,
+                    token: token
+                });
+            } else {
+                // Para clientes usamos el flujo estándar
+                await axios.post(`/activate-account/${token}`, formData);
+            }
+            
             setSuccess(true);
             setTimeout(() => navigate('/login'), 3000);
         } catch (err) {
@@ -59,7 +92,10 @@ export default function ActivateAccount() {
                 <div className="text-center mb-10">
                     <img src="/img/logopng.png" className="h-12 mx-auto mb-8 opacity-90" alt="Factomove" />
                     <h2 className="text-3xl font-black text-slate-800 tracking-tight">Activa tu Cuenta</h2>
-                    <p className="text-slate-500 text-sm mt-3 font-medium">Establece una contraseña para completar tu registro</p>
+                    {userData && (
+                        <p className="text-[#38C1A3] font-bold mt-2">Hola, {userData.name}</p>
+                    )}
+                    <p className="text-slate-500 text-sm mt-1 font-medium">Establece una contraseña para completar tu registro</p>
                 </div>
 
                 {errors?.general && (

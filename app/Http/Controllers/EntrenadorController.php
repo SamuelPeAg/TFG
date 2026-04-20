@@ -128,10 +128,28 @@ class EntrenadorController extends Controller
         $user = Entrenador::where('activation_token', $token)->first();
 
         if (!$user) {
-            return redirect('/login')->with('error', 'El enlace de activación es inválido o ha expirado.');
+            return redirect('/login')->with('error', 'El enlace de activación es inválida o ha expirado.');
         }
 
         return view('app');
+    }
+
+    /**
+     * API para obtener info del entrenador por token (usado por React)
+     */
+    public function getTrainerByToken($token)
+    {
+        $user = Entrenador::where('activation_token', $token)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'Token inválido.'], 404);
+        }
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+        ]);
     }
 
     public function completeActivation(Request $request, $id)
