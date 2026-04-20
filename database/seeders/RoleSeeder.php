@@ -23,35 +23,32 @@ class RoleSeeder extends Seeder
         Role::firstOrCreate(['name' => 'cliente', 'guard_name' => 'web']);
         
         // Crear Staff de prueba (Admins y Entrenadores)
-        $admin = Entrenador::withTrashed()->updateOrCreate(
+        $admin = Entrenador::updateOrCreate(
             ['email' => 'admin@factomove'],
             [
                 'name' => 'admin',
                 'password' => Hash::make('password'),
                 'activo' => true,
-                'deleted_at' => null,
             ]
         );
         $admin->syncRoles(['admin']);
 
-        $adminjavi = Entrenador::withTrashed()->updateOrCreate(
+        $adminjavi = Entrenador::updateOrCreate(
             ['email' => 'javier.ruiz@doc.medac.es'],
             [
                 'name' => 'javi',
                 'password' => Hash::make('password'),
                 'activo' => true,
-                'deleted_at' => null,
             ]
         );
         $adminjavi->syncRoles(['admin']);
         
-        $entrenador = Entrenador::withTrashed()->updateOrCreate(
+        $entrenador = Entrenador::updateOrCreate(
             ['email' => 'entrenador@factomove'],
             [
                 'name' => 'entrenador',
                 'password' => Hash::make('password'),
                 'activo' => true,
-                'deleted_at' => null,
             ]
         );
         $entrenador->syncRoles(["entrenador"]);

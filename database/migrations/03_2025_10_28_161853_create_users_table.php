@@ -40,7 +40,6 @@ return new class extends Migration
             $table->json('additional_attributes')->nullable();
 
             $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::create('user_measurements', function (Blueprint $table) {

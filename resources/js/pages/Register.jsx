@@ -1,9 +1,12 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
 import axios from 'axios'
 
 export default function Register() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,6 +18,21 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  // Cargar mensajes de sesión y auto-completar email si viene en la URL
+  useEffect(() => {
+    // 1. Errores de sesión
+    if (window.AppConfig?.flash?.error) {
+      setErrors(prev => ({ ...prev, general: window.AppConfig.flash.error }));
+    }
+
+    // 2. Pre-llenar email desde URL
+    const params = new URLSearchParams(location.search);
+    const emailParam = params.get('email');
+    if (emailParam) {
+      setFormData(prev => ({ ...prev, email: emailParam }));
+    }
+  }, [location]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -55,10 +73,13 @@ export default function Register() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen pt-24 lg:pt-28 bg-gradient-to-br from-white via-brandTeal/30 to-brandCoral/40">
-
-      {/* Contenedor principal */}
-      <div className="flex-grow flex items-center justify-center p-4 sm:p-8">
+    <div className="flex flex-col min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="grow bg-gradient-to-br from-gray-50 via-brandTeal/10 to-brandCoral/10 flex flex-col justify-center py-20 mt-10 sm:px-6 lg:px-8">
+        
+        {/* Contenedor principal */}
+        <div className="flex-grow flex items-center justify-center p-4 sm:p-8">
         
         {/* TARJETA DE REGISTRO */}
         <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/60">
@@ -268,6 +289,9 @@ export default function Register() {
           </div>
         </div>
       </div>
+    </div>
+      
+      <Footer />
     </div>
   )
 }

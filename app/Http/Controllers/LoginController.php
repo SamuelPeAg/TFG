@@ -38,7 +38,7 @@ class LoginController extends Controller
                 
                 return response()->json([
                     'success' => true,
-                    'redirect' => route('calendario'),
+                    'redirect' => $user->hasRole('admin') ? route('estadisticas.index') : route('calendario'),
                     'user' => [
                         'id' => $user->id,
                         'name' => $user->name,
@@ -73,8 +73,9 @@ class LoginController extends Controller
                     'general' => ['No se pudo conectar con la base de datos. Verifica tu conexión o contacta con soporte técnico. (Error: BD1)']
                 ]
             ], 500);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Error genérico
+            \Illuminate\Support\Facades\Log::error('Login Fatal Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'message' => 'Error inesperado del servidor.',
                 'errors' => [

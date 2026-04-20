@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Permission\Traits\HasRoles;
 
 class Entrenador extends Authenticatable
 {
-    use HasFactory, SoftDeletes, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
     protected $table = 'entrenadores';
     protected $guard_name = 'staff'; // Forzar la guardia para Spatie
@@ -27,6 +26,10 @@ class Entrenador extends Authenticatable
         'activation_token',
         'centro_id',
         'empresa_id',
+        'google_id',
+        'google_token',
+        'google_refresh_token',
+        'google_token_expires_at',
     ];
 
     protected $hidden = [

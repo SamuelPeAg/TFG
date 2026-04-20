@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Button from '../components/Button';
 
 export default function ActivateAccount() {
     const { token } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    
     const [formData, setFormData] = useState({
         password: '',
         password_confirmation: '',
@@ -14,6 +16,28 @@ export default function ActivateAccount() {
     const [errors, setErrors] = useState(null);
     const [success, setSuccess] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
+    const [userData, setUserData] = useState(null);
+    const [isTrainerMode, setIsTrainerMode] = useState(false);
+
+    // Detectar si estamos en modo entrenador y cargar datos del token
+    useEffect(() => {
+        const checkMode = async () => {
+            const isTrainer = location.pathname.includes('activar-entrenador');
+            setIsTrainerMode(isTrainer);
+
+            if (isTrainer) {
+                try {
+                    const res = await axios.get(`/api/entrenador-by-token/${token}`);
+                    setUserData(res.data);
+                } catch (err) {
+                    setErrors({ general: 'El enlace de activación es inválido o ha expirado.' });
+                }
+            }
+        };
+        checkMode();
+    }, [token, location.pathname]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,7 +49,17 @@ export default function ActivateAccount() {
         setErrors(null);
 
         try {
-            await axios.post(`/activate-account/${token}`, formData);
+            if (isTrainerMode) {
+                // Para entrenadores usamos PUT y necesitamos el ID
+                await axios.put(`/activar-entrenador-complete/${userData.id}`, {
+                    ...formData,
+                    token: token
+                });
+            } else {
+                // Para clientes usamos el flujo estándar
+                await axios.post(`/activate-account/${token}`, formData);
+            }
+            
             setSuccess(true);
             setTimeout(() => navigate('/login'), 3000);
         } catch (err) {
@@ -59,7 +93,10 @@ export default function ActivateAccount() {
                 <div className="text-center mb-10">
                     <img src="/img/logopng.png" className="h-12 mx-auto mb-8 opacity-90" alt="Factomove" />
                     <h2 className="text-3xl font-black text-slate-800 tracking-tight">Activa tu Cuenta</h2>
-                    <p className="text-slate-500 text-sm mt-3 font-medium">Establece una contraseña para completar tu registro</p>
+                    {userData && (
+                        <p className="text-[#38C1A3] font-bold mt-2">Hola, {userData.name}</p>
+                    )}
+                    <p className="text-slate-500 text-sm mt-1 font-medium">Establece una contraseña para completar tu registro</p>
                 </div>
 
                 {errors?.general && (
@@ -92,21 +129,31 @@ export default function ActivateAccount() {
                             </button>
                         </div>
                         {errors?.password && <p className="text-rose-500 text-[10px] font-bold mt-1 pl-1">{errors.password[0]}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">Confirmar Contraseña</label>
-                        <div className="relative group">
-                            <i className="fas fa-shield-halved absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                name="password_confirmation"
-                                value={formData.password_confirmation}
-                                onChange={handleChange}
-                                placeholder="••••••••"
-                                required
-                                className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700"
-                            />
+                    
+                        {/* CONFIRMAR CONTRASEÑA */}
+                        <div className="space-y-2 mt-4">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest pl-1">
+                                Confirmar Contraseña
+                            </label>
+                            <div className="relative group">
+                                <i className="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                                <input
+                                    type={showConfirmPassword ? "text" : "password"}
+                                    name="password_confirmation"
+                                    value={formData.password_confirmation}
+                                    onChange={handleChange}
+                                    className="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-700"
+                                    placeholder="••••••••"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#38C1A3] transition-colors focus:outline-none"
+                                >
+                                    <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
