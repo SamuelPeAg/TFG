@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function MisClases() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -15,6 +16,9 @@ export default function MisClases() {
     const showAlert = (message, isError = false, title = isError ? "Error" : "Aviso") => {
         setAlertConfig({ isOpen: true, title, message, isError });
     };
+
+    // Confirm Modal Setup
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, session: null });
 
     useEffect(() => {
         if (user?.id) fetchClientData();
@@ -32,8 +36,8 @@ export default function MisClases() {
         }
     };
 
-    const handleLeaveSession = async (session) => {
-        if (!window.confirm('¿Estás seguro de que quieres darte de baja de esta clase?')) return;
+    const executeLeaveSession = async (session) => {
+        if (!session) return;
         setLeavingSessionId(session.id);
         try {
             await axios.post('/Pagos/remove-client', {
@@ -254,7 +258,7 @@ export default function MisClases() {
                                                                 <span className="text-[11px] font-black text-slate-700">CLÍNICA</span>
                                                             </div>
                                                             <button 
-                                                                onClick={() => handleLeaveSession(session)}
+                                                                onClick={() => setConfirmModal({ isOpen: true, session })}
                                                                 disabled={leavingSessionId === session.id}
                                                                 className="text-[10px] font-black text-rose-500 uppercase hover:bg-rose-50 px-4 py-2.5 rounded-xl border border-transparent hover:border-rose-100 transition-all active:scale-95 disabled:opacity-50"
                                                             >
@@ -342,6 +346,16 @@ export default function MisClases() {
                 title={alertConfig.title}
                 message={alertConfig.message}
                 isError={alertConfig.isError}
+            />
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, session: null })}
+                onConfirm={() => executeLeaveSession(confirmModal.session)}
+                title="Baja de Clase"
+                message={`¿Estás seguro de que quieres darte de baja de la clase ${confirmModal.session?.nombre_clase}?`}
+                isDestructive={true}
+                confirmText="Darse de baja"
             />
         </div>
     );

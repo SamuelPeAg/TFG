@@ -36,7 +36,7 @@ class NutritionController extends Controller
 
         $user = Auth::user();
         $description = $request->meal_description;
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = config('services.gemini.key');
 
         if (!$apiKey) {
             return response()->json(['error' => 'API Key de Gemini no configurada.'], 500);
@@ -133,7 +133,7 @@ Analiza esta comida y devuelve EXCLUSIVAMENTE un objeto JSON válido con la sigu
             return response()->json(['error' => 'No hay comidas registradas para este día.'], 400);
         }
 
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = config('services.gemini.key');
         if (!$apiKey) return response()->json(['error' => 'API Key no configurada'], 500);
 
         $prompt = "Actúa como un entrenador personal experto. El cliente tiene el objetivo de '$goal'. Hoy ha consumido un total de $totalCalories kcal repartidas en estas comidas: \"$mealsSummary\".

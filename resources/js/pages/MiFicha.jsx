@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
+import ConfirmModal from '../components/ConfirmModal';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -55,6 +56,9 @@ export default function MiFicha() {
         setAlertConfig({ isOpen: true, title, message, isError });
     };
 
+    // Confirm Modal Setup
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, data: null, type: null });
+
     const [savingStatus, setSavingStatus] = useState(false);
     const handleSaveStatus = async (e) => {
         e.preventDefault();
@@ -101,11 +105,11 @@ export default function MiFicha() {
     const heightVal = parseFloat(profileData.altura);
     const currentIMC = (weightVal > 0 && heightVal > 0) ? (weightVal / (heightVal * heightVal)).toFixed(2) : null;
 
-    const handleDeleteMeasurement = async (id) => {
-        if (!window.confirm('¿Estás seguro de que quieres borrar esta medida?')) return;
+    const executeDeleteMeasurement = async (id) => {
         try {
             await axios.delete(`/measurements/${id}`);
             fetchFicha();
+            showAlert('Medida borrada correctamente.');
         } catch (error) {
             showAlert('No se pudo borrar la medida.', true);
         }
@@ -206,13 +210,9 @@ export default function MiFicha() {
         }
     };
 
-    const handleLeaveSession = async (session) => {
+    const executeLeaveSession = async (session) => {
         if (!user?.id) {
             showAlert('No se ha podido identificar tu usuario. Por favor, recarga la página.', true);
-            return;
-        }
-
-        if (!window.confirm('¿Estás seguro de que quieres darte de baja de esta clase?')) {
             return;
         }
 
@@ -511,7 +511,7 @@ export default function MiFicha() {
                                                                     <i className="fa-solid fa-pen text-[10px]"></i>
                                                                 </button>
                                                                 <button 
-                                                                    onClick={() => handleDeleteMeasurement(m.id)}
+                                                                    onClick={() => setConfirmModal({ isOpen: true, data: m.id, type: 'measurement' })}
                                                                     className="w-10 h-10 rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-white hover:shadow-md transition-all"
                                                                 >
                                                                     <i className="fa-solid fa-trash-can text-[10px]"></i>
@@ -639,6 +639,22 @@ export default function MiFicha() {
             title={alertConfig.title}
             message={alertConfig.message}
             isError={alertConfig.isError}
+        />
+
+        <ConfirmModal
+            isOpen={confirmModal.isOpen}
+            onClose={() => setConfirmModal({ isOpen: false, data: null, type: null })}
+            onConfirm={() => {
+                if (confirmModal.type === 'measurement') {
+                    executeDeleteMeasurement(confirmModal.data);
+                } else if (confirmModal.type === 'session') {
+                    executeLeaveSession(confirmModal.data);
+                }
+            }}
+            title={confirmModal.type === 'measurement' ? "Borrar Medida" : "Baja de Clase"}
+            message={confirmModal.type === 'measurement' ? "¿Estás seguro de que quieres borrar de tu historial esta medida?" : "¿Estás seguro de que quieres darte de baja de esta clase?"}
+            isDestructive={true}
+            confirmText="Sí, aceptar"
         />
     </div>
   );
