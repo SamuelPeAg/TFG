@@ -153,6 +153,7 @@ class UserController extends Controller
 
     public function importClients(Request $request)
     {
+        // Este método queda para compatibilidad o como fallback, pero usaremos el nuevo flujo
         set_time_limit(600);
         ini_set('memory_limit', '512M');
 
@@ -297,6 +298,159 @@ class UserController extends Controller
             return response()->json(['errors' => ['general' => 'Error: ' . $e->getMessage()]], 422);
         }
     }
+
+    public function importPrepare(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|file'
+            ], [
+                'file.required' => 'Debes seleccionar un archivo.'
+            ]);
+
+            $file = $request->file('file');
+            $path = $file->getRealPath();
+            $content = file_get_contents($path);
+            
+            $content = str_replace(["\xEF\xBB\xBF", "\x00"], '', $content);
+            if (!mb_check_encoding($content, 'UTF-8')) {
+                $content = mb_convert_encoding($content, 'UTF-8', 'ISO-8859-1');
+            }
+            
+            $lines = preg_split('/\r\n|\r|\n/', $content);
+            $lines = array_filter($lines, fn($line) => !empty(trim($line)));
+            $lines = array_values($lines);
+
+            if (empty($lines)) {
+                return response()->json(['errors' => ['general' => 'El archivo está vacío.']], 422);
+            }
+
+            if (str_starts_with($lines[0], 'PK')) {
+                 return response()->json(['errors' => ['general' => 'AVISO: Tu archivo es realmente un "Libro de Excel (.xlsx)" aunque la extensión diga .csv. Por favor, ábrelo en Excel y dale a "Guardar como... > CSV (delimitado por comas)" antes de subirlo.']], 422);
+            }
+
+            $delimiter = null;
+            $headers = [];
+            $headerLineIndex = -1;
+
+            foreach ($lines as $index => $line) {
+                foreach ([',', ';', "\t", '|'] as $d) {
+                    $cols = str_getcsv($line, $d);
+                    $lineClean = mb_strtolower(implode('', $cols));
+                    if (str_contains($lineClean, 'nombre') || str_contains($lineClean, 'centro') || str_contains($lineClean, 'completo')) {
+                        $delimiter = $d;
+                        $headers = array_map(fn($h) => str_replace([' ', '*', '(', ')', '.', ',', '_', '/'], '', mb_strtolower(trim($h))), $cols);
+                        $headerLineIndex = $index;
+                        break 2;
+                    }
+                }
+            }
+
+            if (!$delimiter) {
+                $delimiter = (strpos($lines[0], ';') !== false) ? ';' : ',';
+                $headers = array_map(fn($h) => str_replace([' ', '*', '(', ')', '.', ',', '_', '/'], '', mb_strtolower(trim($h))), str_getcsv($lines[0], $delimiter));
+                $headerLineIndex = 0;
+            }
+
+            $rows = [];
+            for ($i = $headerLineIndex + 1; $i < count($lines); $i++) {
+                $data = str_getcsv($lines[$i], $delimiter);
+                $rowData = [];
+                foreach ($headers as $idx => $h) {
+                    if (isset($data[$idx])) $rowData[$h] = trim($data[$idx]);
+                }
+                $rows[] = $rowData;
+            }
+
+            return response()->json([
+                'rows' => $rows,
+                'total' => count($rows)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['errors' => ['general' => 'Error: ' . $e->getMessage()]], 422);
+        }
+    }
+
+    public function importProcessRow(Request $request)
+    {
+        try {
+            $rowData = $request->all();
+            $empresa = \App\Models\Empresa::first();
+
+            $nombre = null;
+            foreach ($rowData as $key => $val) {
+                if (str_contains($key, 'nombre') || str_contains($key, 'cliente') || str_contains($key, 'completo')) {
+                    $nombre = $val;
+                    break;
+                }
+            }
+            
+            if (empty($nombre)) {
+                return response()->json(['status' => 'skipped', 'message' => 'Fila sin nombre']);
+            }
+
+            $emailRaw = $rowData['email'] ?? $rowData['correo'] ?? null;
+            if (empty($emailRaw) || !filter_var($emailRaw, FILTER_VALIDATE_EMAIL)) {
+                $email = str_replace(' ', '.', mb_strtolower($nombre)) . '-' . \Illuminate\Support\Str::random(4) . '@factomove.es';
+            } else {
+                $email = $emailRaw;
+            }
+            
+            $dni = $rowData['dni'] ?? null;
+            if (empty(trim($dni))) $dni = null;
+
+            $centroName = $rowData['centro'] ?? null;
+            $centroId = null;
+            if ($centroName) {
+                $centro = \App\Models\Centro::firstOrCreate([
+                    'nombre' => $centroName,
+                    'empresa_id' => $empresa ? $empresa->id : null
+                ]);
+                $centroId = $centro->id;
+            }
+
+            $userData = [
+                'name'      => $nombre,
+                'email'     => $email,
+                'dni'       => $dni,
+                'direccion' => $rowData['domicilio'] ?? $rowData['direccion'] ?? $rowData['street'] ?? null,
+                'centro_id' => $centroId,
+                'empresa_id' => $empresa ? $empresa->id : null,
+                'activo'    => false, 
+                'additional_attributes' => [
+                    'apodo' => $rowData['apodo'] ?? null,
+                    'mv'    => $rowData['mv'] ?? $rowData['movil'] ?? null,
+                    'birthday' => $rowData['cumpleaños'] ?? $rowData['birthday'] ?? null,
+                ]
+            ];
+
+            $user = User::where('email', $email)->orWhere(function($q) use ($dni) {
+                if ($dni) $q->where('dni', $dni); else $q->whereRaw('0=1');
+            })->first();
+
+            if ($user) {
+                $user->update($userData);
+                $action = 'updated';
+            } else {
+                $user = User::create($userData + [
+                    'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16))
+                ]);
+                $user->assignRole('cliente');
+                $action = 'created';
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'action' => $action,
+                'name' => $nombre
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 422);
+        }
+    }
+
 
     //Metodos de configuración
     public function configuracion(Request $request)

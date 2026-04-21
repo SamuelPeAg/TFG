@@ -225,6 +225,8 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::resource('users', UserController::class);
 
         Route::post('/users/import', [UserController::class, 'importClients'])->name('users.import');
+        Route::post('/users/import/prepare', [UserController::class, 'importPrepare'])->name('users.import.prepare');
+        Route::post('/users/import/process-row', [UserController::class, 'importProcessRow'])->name('users.import.process-row');
         Route::post('/users/{user}/send-activation', [UserController::class, 'sendActivation'])->name('users.send-activation');
         Route::post('/users/bulk-send-activation', [UserController::class, 'bulkSendActivation'])->name('users.bulk-send-activation');
 

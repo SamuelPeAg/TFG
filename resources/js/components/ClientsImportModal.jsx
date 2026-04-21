@@ -6,6 +6,10 @@ export default function ClientsImportModal({ isOpen, onClose, onImportSuccess })
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState(null);
+    const [importProgress, setImportProgress] = useState(0);
+    const [importingName, setImportingName] = useState('');
+    const [importedCount, setImportedCount] = useState(0);
+    const [totalToImport, setTotalToImport] = useState(0);
     const fileInputRef = useRef(null);
 
     if (!isOpen) return null;
@@ -21,20 +25,57 @@ export default function ClientsImportModal({ isOpen, onClose, onImportSuccess })
 
         setLoading(true);
         setErrors({});
+        setImportProgress(0);
+        setImportedCount(0);
+        setImportingName('');
 
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            // Aumentar tiempo de espera de axios para importaciones grandes
-            const response = await axios.post('/users/import', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                timeout: 300000 // 5 minutos de espera en frontend
+            // Paso 1: Preparar (subir archivo y obtener filas)
+            const prepareRes = await axios.post('/users/import/prepare', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
+            const rows = prepareRes.data.rows;
+            const total = prepareRes.data.total;
+            setTotalToImport(total);
+
+            if (total === 0) {
+                throw new Error('No se han encontrado clientes válidos en el archivo.');
+            }
+
+            // Paso 2: Procesar cada fila secuencialmente para progreso real
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                
+                // Buscar el nombre en los datos de la fila
+                let displayName = 'Cliente...';
+                for (const key in row) {
+                    const k = key.toLowerCase();
+                    if (k.includes('nombre') || k.includes('completo') || k.includes('cliente')) {
+                        displayName = row[key];
+                        break;
+                    }
+                }
+                
+                setImportingName(displayName);
+
+                try {
+                    await axios.post('/users/import/process-row', row);
+                } catch (rowErr) {
+                    console.error('Error in row:', row, rowErr);
+                    // Continuamos con el siguiente aunque uno falle
+                }
+
+                const updatedCount = i + 1;
+                setImportedCount(updatedCount);
+                setImportProgress(Math.round((updatedCount / total) * 100));
+            }
+
             if (onImportSuccess) {
-                onImportSuccess(response.data.message);
-                // Cerrar modal automáticamente tras éxito
+                onImportSuccess(`¡Hecho! Se han procesado ${total} clientes.`);
                 setTimeout(() => {
                     onClose();
                 }, 2000);
@@ -43,7 +84,8 @@ export default function ClientsImportModal({ isOpen, onClose, onImportSuccess })
             console.error('Import error:', err);
             const msg = err.response?.data?.errors?.general 
                      || err.response?.data?.message 
-                     || 'Error de conexión o tiempo agotado. Revisa si los clientes se han creado de todas formas.';
+                     || err.message
+                     || 'Error de conexión o datos inválidos.';
             setErrors({ general: msg });
         } finally {
             setLoading(false);
@@ -113,9 +155,26 @@ export default function ClientsImportModal({ isOpen, onClose, onImportSuccess })
 
                         <Button type="submit" variant="primary" className="w-full py-4 shadow-lg shadow-indigo-500/20" disabled={loading || !file}>
                             {loading ? (
-                                <span className="flex items-center justify-center gap-2 tracking-widest">
-                                    <i className="fas fa-circle-notch animate-spin"></i> PROCESANDO...
-                                </span>
+                                <div className="w-full px-2">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="flex items-center gap-2 text-[10px] font-black tracking-widest text-white uppercase">
+                                            <i className="fas fa-circle-notch animate-spin"></i> 
+                                            {importProgress > 0 ? `Importando ${importedCount}/${totalToImport}` : 'Preparando archivo...'}
+                                        </span>
+                                        <span className="text-[10px] font-black text-white">{importProgress}%</span>
+                                    </div>
+                                    <div className="w-full bg-black/10 rounded-full h-1.5 overflow-hidden">
+                                        <div 
+                                            className="bg-white h-full transition-all duration-300" 
+                                            style={{ width: `${importProgress}%` }}
+                                        ></div>
+                                    </div>
+                                    {importingName && (
+                                        <p className="text-[9px] text-white/80 mt-2 font-bold truncate">
+                                            Sincronizando: <span className="text-white">{importingName}</span>
+                                        </p>
+                                    )}
+                                </div>
                             ) : (
                                 <span className="tracking-widest">INICIAR IMPORTACIÓN</span>
                             )}
