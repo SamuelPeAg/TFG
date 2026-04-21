@@ -19,6 +19,7 @@ const METROS_RESET = [
 const EMPTY_FORM = {
     nombre: '',
     precio: '',
+    tipo_credito: '',
     creditos_por_periodo: '',
     periodo: 'semanal',
     limite_acumulacion: 0,
@@ -46,6 +47,7 @@ export default function Suscripciones() {
     // Refs for Select2
     const periodoRef = useRef(null);
     const resetRef = useRef(null);
+    const tipoCreditoRef = useRef(null);
 
     // Initializer for Select2 (similar to TPV)
     useEffect(() => {
@@ -53,7 +55,7 @@ export default function Suscripciones() {
 
         const checkInterval = setInterval(() => {
             const $ = window.$;
-            if ($ && typeof $.fn.select2 === 'function' && periodoRef.current && resetRef.current) {
+            if ($ && typeof $.fn.select2 === 'function' && periodoRef.current && resetRef.current && tipoCreditoRef.current) {
                 clearInterval(checkInterval);
 
                 const options = {
@@ -69,10 +71,14 @@ export default function Suscripciones() {
                 $(resetRef.current).select2({ ...options, minimumResultsForSearch: -1 }).on('change', (e) => {
                     handleFormChange({ target: { name: 'meses_reset', value: e.target.value } });
                 });
+                $(tipoCreditoRef.current).select2({ ...options }).on('change', (e) => {
+                    handleFormChange({ target: { name: 'tipo_credito', value: e.target.value } });
+                });
 
                 // Sync initial values
                 $(periodoRef.current).val(form.periodo).trigger('change.select2');
                 $(resetRef.current).val(form.meses_reset).trigger('change.select2');
+                $(tipoCreditoRef.current).val(form.tipo_credito).trigger('change.select2');
             }
         }, 100);
 
@@ -82,18 +88,17 @@ export default function Suscripciones() {
             if ($ && typeof $.fn.select2 === 'function') {
                 if (periodoRef.current) $(periodoRef.current).select2('destroy');
                 if (resetRef.current) $(resetRef.current).select2('destroy');
+                if (tipoCreditoRef.current) $(tipoCreditoRef.current).select2('destroy');
             }
         };
     }, [modalOpen]);
 
     // React state -> Select2 sync
     useEffect(() => {
-        const $ = window.$;
-        if (!modalOpen || !$) return;
-        
-        if ($(periodoRef.current).val() !== form.periodo) $(periodoRef.current).val(form.periodo).trigger('change.select2');
-        if ($(resetRef.current).val() !== String(form.meses_reset)) $(resetRef.current).val(form.meses_reset).trigger('change.select2');
-    }, [form, modalOpen]);
+        if ($ && $(periodoRef.current).data('select2') && $(periodoRef.current).val() !== form.periodo) $(periodoRef.current).val(form.periodo).trigger('change.select2');
+        if ($ && $(resetRef.current).data('select2') && $(resetRef.current).val() !== String(form.meses_reset)) $(resetRef.current).val(form.meses_reset).trigger('change.select2');
+        if ($ && $(tipoCreditoRef.current).data('select2') && $(tipoCreditoRef.current).val() !== form.tipo_credito) $(tipoCreditoRef.current).val(form.tipo_credito).trigger('change.select2');
+    }, [form.periodo, form.meses_reset, form.tipo_credito, modalOpen]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -123,6 +128,7 @@ export default function Suscripciones() {
         setForm({
             nombre: s.nombre || '',
             precio: s.precio || '',
+            tipo_credito: s.tipo_credito || '',
             creditos_por_periodo: s.creditos_por_periodo || '',
             periodo: s.periodo || 'semanal',
             limite_acumulacion: s.limite_acumulacion || 0,
@@ -145,6 +151,7 @@ export default function Suscripciones() {
         const errs = {};
         if (!form.nombre.trim()) errs.nombre = 'El nombre es obligatorio.';
         if (!form.precio) errs.precio = 'El precio es obligatorio.';
+        if (!form.tipo_credito) errs.tipo_credito = 'El tipo de crédito es obligatorio.';
         if (!form.creditos_por_periodo) errs.creditos_por_periodo = 'Obligatorio.';
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
 
@@ -351,6 +358,19 @@ export default function Suscripciones() {
                                                     placeholder="0.00"
                                                     className={`w-full bg-slate-50 border ${formErrors.precio ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`} />
                                                 {formErrors.precio && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.precio}</p>}
+                                            </div>
+
+                                            {/* Tipo de Crédito */}
+                                            <div className="space-y-1.5 md:col-span-2">
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Válido para (Tipo de Sesión)</label>
+                                                <select ref={tipoCreditoRef} name="tipo_credito" value={form.tipo_credito} onChange={handleFormChange}
+                                                    className={`w-full bg-slate-50 border ${formErrors.tipo_credito ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all`}>
+                                                    <option value="">Selecciona tipo de sesión...</option>
+                                                    {tiposSesion.map(t => (
+                                                        <option key={t.id} value={t.nombre}>{t.nombre}</option>
+                                                    ))}
+                                                </select>
+                                                {formErrors.tipo_credito && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.tipo_credito}</p>}
                                             </div>
                                         </div>
                                     </div>
