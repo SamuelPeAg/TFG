@@ -41,7 +41,13 @@ export default function EntrenadorModals({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let newValue = value;
+
+    if (name === 'iban') {
+      newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+
+    setFormData(prev => ({ ...prev, [name]: newValue }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }

@@ -69,14 +69,41 @@ export default function UserModals({
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let newValue = value;
+
+    if (name === 'iban') {
+      newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    }
+
+    setFormData(prev => ({ ...prev, [name]: newValue }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
   };
 
+  const validateForm = () => {
+    const errs = {};
+    const dniRegex = /^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i;
+    const cpRegex = /^[0-9]{5}$/;
+
+    if (formData.dni && !dniRegex.test(formData.dni)) {
+      errs.dni = ['El DNI/NIE no tiene un formato válido (Ej: 12345678A).'];
+    }
+    if (formData.codigo_postal && !cpRegex.test(formData.codigo_postal)) {
+      errs.codigo_postal = ['El Código Postal debe tener 5 números.'];
+    }
+
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
+
     setLoading(true);
     setErrors({});
     
@@ -165,9 +192,10 @@ export default function UserModals({
                     value={formData.email}
                     onChange={handleChange}
                     maxLength={100}
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs"
+                    className={`w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 text-xs ${mode === 'edit' ? 'opacity-60 cursor-not-allowed bg-slate-100' : ''}`}
                     placeholder="correo@ejemplo.com"
                     required
+                    disabled={mode === 'edit'}
                   />
                 </div>
                 {errors.email && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1">{errors.email[0]}</p>}

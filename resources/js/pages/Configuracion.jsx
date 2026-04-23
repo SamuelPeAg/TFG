@@ -55,7 +55,13 @@ export default function Configuracion() {
 
   const handleInputChange = (e) => {
       const { name, value } = e.target;
-      setFormData(prev => ({ ...prev, [name]: value }));
+      let newValue = value;
+
+      if (name === 'iban') {
+          newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      }
+
+      setFormData(prev => ({ ...prev, [name]: newValue }));
       // Borrar error puntual al tipear
       if (errors[name]) {
           setErrors(prev => ({ ...prev, [name]: null }));
@@ -93,6 +99,16 @@ export default function Configuracion() {
       }
 
       if (formData.password) {
+          if (formData.password !== formData.password_confirmation) {
+              setErrors({ password: ['Las contraseñas no coinciden.'] });
+              setSubmitting(false);
+              return;
+          }
+          if (formData.password.length < 8) {
+              setErrors({ password: ['La nueva contraseña debe tener al menos 8 caracteres.'] });
+              setSubmitting(false);
+              return;
+          }
           data.append('current_password', formData.current_password);
           data.append('password', formData.password);
           data.append('password_confirmation', formData.password_confirmation);

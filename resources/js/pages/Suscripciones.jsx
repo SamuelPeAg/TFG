@@ -142,7 +142,15 @@ export default function Suscripciones() {
 
     const handleFormChange = (e) => {
         const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        let newValue = value;
+
+        if (name === 'precio') {
+            newValue = value.replace(/[^0-9.]/g, '');
+        } else if (name === 'creditos_por_periodo' || name === 'limite_acumulacion') {
+            newValue = value.replace(/[^0-9]/g, '');
+        }
+
+        setForm(prev => ({ ...prev, [name]: newValue }));
         if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: null }));
     };
 

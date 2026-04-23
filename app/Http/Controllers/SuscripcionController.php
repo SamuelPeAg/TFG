@@ -40,6 +40,11 @@ class SuscripcionController extends Controller
             'periodo'               => 'required|in:semanal,mensual',
             'limite_acumulacion'    => 'nullable|integer|min:0',
             'meses_reset'           => 'nullable|integer|min:0',
+        ], [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'precio.numeric' => 'El precio debe ser un número.',
+            'creditos_por_periodo.min' => 'Debe haber al menos 1 crédito.',
+            'periodo.in' => 'El periodo seleccionado no es válido.',
         ]);
 
         $suscripcion = Suscripcion::create($data);
@@ -63,6 +68,10 @@ class SuscripcionController extends Controller
             'periodo'               => 'required|in:semanal,mensual',
             'limite_acumulacion'    => 'nullable|integer|min:0',
             'meses_reset'           => 'nullable|integer|min:0',
+        ], [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'precio.numeric' => 'El precio debe ser un número.',
+            'creditos_por_periodo.min' => 'Debe haber al menos 1 crédito.',
         ]);
 
         $suscripcion->update($data);

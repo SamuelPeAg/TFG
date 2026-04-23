@@ -33,7 +33,11 @@ class UserController extends Controller
             'iban.unique'        => 'Este iban ya pertenece a otro usuario.',
             'iban.min'           => 'El iban parece incompleto (mínimo 8 caracteres).',
             'iban.max'           => 'El IBAN no puede tener más de 34 caracteres.',
+            'iban.regex'         => 'El formato del IBAN no es válido.',
             
+            'dni.regex'          => 'El DNI/NIE introducido no tiene un formato válido.',
+            'codigo_postal.regex'=> 'El código postal debe tener exactamente 5 dígitos.',
+
             'firma_digital.string' => 'La firma digital debe ser texto.',
             'firma_digital.max'    => 'La firma digital es demasiado larga.',
         ];
@@ -67,11 +71,13 @@ class UserController extends Controller
             'password'      => 'nullable|string|min:6|max:64',
             
             // iban: Opcional + Texto + Único + Mínimo 8 caracteres (validez básica)
-            'iban'          => 'nullable|string|unique:users,iban|min:8|max:34',
+            'iban'          => 'nullable|string|unique:users,iban|min:8|max:34|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/i',
             
             // Firma: Opcional + Texto + Máximo 1000
             'firma_digital' => 'nullable|string|max:1000',
             'precio_hora'   => 'nullable|numeric|min:0|max:9999',
+            'dni'           => 'nullable|string|regex:/^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i',
+            'codigo_postal' => 'nullable|string|regex:/^[0-9]{5}$/',
         ], $this->validationMessages());
 
         $user = User::create([
@@ -98,19 +104,22 @@ class UserController extends Controller
         // --- VALIDACIONES AL ACTUALIZAR ---
         $request->validate([
             'name'          => 'required|string|min:3|max:100',
-            // Ignoramos el ID del usuario actual para que no falle el "unique"
+            // El email no se actualiza, pero lo validamos por si acaso se envía el mismo
             'email'         => 'required|email|max:150|unique:users,email,' . $user->id,
-            'iban'          => 'nullable|string|min:8|max:34|unique:users,iban,' . $user->id,
+            'iban'          => 'nullable|string|min:8|max:34|unique:users,iban,' . $user->id . '|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/i',
             'firma_digital' => 'nullable|string|max:1000',
             'precio_hora'   => 'nullable|numeric|min:0|max:9999',
+            'dni'           => 'nullable|string|regex:/^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i',
+            'codigo_postal' => 'nullable|string|regex:/^[0-9]{5}$/',
         ], $this->validationMessages());
 
         $data = [
             'name' => $request->name,
-            'email' => $request->email,
             'iban' => $request->iban,
             'firma_digital' => $request->firma_digital,
             'precio_hora' => $request->precio_hora,
+            'dni' => $request->dni,
+            'codigo_postal' => $request->codigo_postal,
         ];
 
         // Solo actualizar contraseña si se ha rellenado
@@ -630,5 +639,4 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Cuenta activada correctamente. Ya puedes iniciar sesión.']);
     }
-
 }

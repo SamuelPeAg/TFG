@@ -136,6 +136,19 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
     }
   };
 
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    let newValue = value;
+
+    if (name === 'dni') {
+        newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    } else if (name === 'codigo_postal') {
+        newValue = value.replace(/[^0-9]/g, '').slice(0, 5);
+    }
+
+    setProfileData(prev => ({ ...prev, [name]: newValue }));
+  };
+
   const handleDeleteSubscription = async (subId) => {
     confirmAction('¿Estás seguro de que deseas eliminar esta suscripción?', async () => {
         try {
@@ -180,6 +193,19 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   };
 
   const handleSaveProfile = async () => {
+    // Validaciones Front
+    const dniRegex = /^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i;
+    const cpRegex = /^[0-9]{5}$/;
+    
+    if (profileData.dni && !dniRegex.test(profileData.dni)) {
+        showAlert('El DNI/NIE no tiene un formato válido.', true, 'Error de Formato');
+        return;
+    }
+    if (profileData.codigo_postal && !cpRegex.test(profileData.codigo_postal)) {
+        showAlert('El código postal debe tener 5 números.', true, 'Error de Formato');
+        return;
+    }
+
     setSaving(true);
     try {
         await axios.put(`/client-profile/${user.id}`, profileData);
@@ -408,8 +434,9 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                         </div>
                                         <input 
                                             type="text" 
+                                            name={field.key}
                                             value={profileData[field.key]} 
-                                            onChange={(e) => setProfileData({...profileData, [field.key]: e.target.value})}
+                                            onChange={handleProfileChange}
                                             className="w-full pl-11 pr-5 py-4 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-slate-700 font-bold transition-all"
                                             placeholder={`Introduce ${field.label.toLowerCase()}...`}
                                         />

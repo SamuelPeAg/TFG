@@ -169,8 +169,35 @@ export default function MiFicha() {
         }
     };
 
+    const handleProfileDataChange = (e) => {
+        const { name, value } = e.target;
+        let newValue = value;
+
+        if (name === 'dni') {
+            newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        } else if (name === 'codigo_postal') {
+            newValue = value.replace(/[^0-9]/g, '').slice(0, 5);
+        }
+
+        setProfileData(prev => ({ ...prev, [name]: newValue }));
+    };
+
     const handleUpdateContact = async (e) => {
         e.preventDefault();
+
+        // Validaciones Front
+        const dniRegex = /^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i;
+        const cpRegex = /^[0-9]{5}$/;
+        
+        if (profileData.dni && !dniRegex.test(profileData.dni)) {
+            showAlert('El DNI/NIE no tiene un formato válido (Ej: 12345678A).', true, 'Error de Formato');
+            return;
+        }
+        if (profileData.codigo_postal && !cpRegex.test(profileData.codigo_postal)) {
+            showAlert('El código postal debe tener exactamente 5 números.', true, 'Error de Formato');
+            return;
+        }
+
         setSavingContact(true);
         try {
             await axios.put(`/client-profile/${user.id}`, profileData);
@@ -279,8 +306,9 @@ export default function MiFicha() {
                                         {isEditingContact ? (
                                             <input 
                                                 type="text" 
+                                                name="dni"
                                                 value={profileData?.dni || ''} 
-                                                onChange={(e) => setProfileData({...profileData, dni: e.target.value})}
+                                                onChange={handleProfileDataChange}
                                                 placeholder="DNI / NIE"
                                                 maxLength={20}
                                                 className="w-full text-center mt-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold uppercase focus:border-indigo-400 outline-none"
@@ -298,8 +326,9 @@ export default function MiFicha() {
                                                     <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Dirección</label>
                                                     <input 
                                                         type="text" 
+                                                        name="direccion"
                                                         value={profileData?.direccion || ''} 
-                                                        onChange={(e) => setProfileData({...profileData, direccion: e.target.value})}
+                                                        onChange={handleProfileDataChange}
                                                         maxLength={200}
                                                         className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                     />
@@ -309,8 +338,9 @@ export default function MiFicha() {
                                                         <label className="text-[9px] font-black text-slate-400 uppercase ml-1">Ciudad</label>
                                                         <input 
                                                             type="text" 
+                                                            name="ciudad"
                                                             value={profileData?.ciudad || ''} 
-                                                            onChange={(e) => setProfileData({...profileData, ciudad: e.target.value})}
+                                                            onChange={handleProfileDataChange}
                                                             maxLength={100}
                                                             className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                         />
@@ -319,8 +349,9 @@ export default function MiFicha() {
                                                         <label className="text-[9px] font-black text-slate-400 uppercase ml-1">C.P.</label>
                                                         <input 
                                                             type="text" 
+                                                            name="codigo_postal"
                                                             value={profileData?.codigo_postal || ''} 
-                                                            onChange={(e) => setProfileData({...profileData, codigo_postal: e.target.value})}
+                                                            onChange={handleProfileDataChange}
                                                             maxLength={10}
                                                             className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-indigo-400 outline-none"
                                                         />

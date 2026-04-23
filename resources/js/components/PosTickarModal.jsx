@@ -321,7 +321,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                                             <input 
                                                 type="number" 
                                                 value={session.price} 
-                                                onChange={(e) => handleUpdateSession(session.id, 'price', parseFloat(e.target.value))}
+                                                onChange={(e) => handleUpdateSession(session.id, 'price', parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0)}
                                                 className="w-full text-center font-black text-xs border-b border-slate-100 focus:border-teal-400 outline-none"
                                             />
                                         </div>
