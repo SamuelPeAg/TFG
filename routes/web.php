@@ -137,6 +137,22 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::get('/mis-nominas', [NominaEntrenadorController::class, 'index'])->name('nominas_e');
     Route::get('/mis-nominas/{id}/descargar', [NominaEntrenadorController::class, 'descargar'])->name('nominas_e.descargar');
 
+    // --- VACACIONES ENTRENADOR ---
+    Route::get('/mis-vacaciones', function() {
+        return view('app');
+    })->name('vacaciones_e');
+    Route::get('/api/vacations', [\App\Http\Controllers\VacationController::class, 'index']);
+    Route::post('/api/vacations', [\App\Http\Controllers\VacationController::class, 'store']);
+    Route::delete('/api/vacations/{id}', [\App\Http\Controllers\VacationController::class, 'destroy']);
+
+    // --- PLANES ENTRENADOR ---
+    Route::get('/trainer/planes', function() {
+        return view('app');
+    })->name('trainer.planes');
+    Route::get('/api/trainer/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'indexTrainer']);
+    Route::get('/api/trainer/action-plans/{id}/meals', [\App\Http\Controllers\ActionPlanController::class, 'getClientMeals']);
+    Route::post('/api/trainer/action-plans/{id}/respond', [\App\Http\Controllers\ActionPlanController::class, 'respond']);
+
     // --- PDF NÓMINAS (Preview & Download dinámico) ---
     Route::get('/nominas/{id}/preview', [\App\Http\Controllers\NominaPdfController::class, 'preview'])->name('nominas.preview');
     Route::get('/nominas/{id}/download', [\App\Http\Controllers\NominaPdfController::class, 'download'])->name('nominas.download');
@@ -169,10 +185,17 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::put('/measurements/{measurement}', [ClientProfileController::class, 'updateMeasurement']);
     Route::delete('/measurements/{measurement}', [ClientProfileController::class, 'deleteMeasurement']);
 
-    // Módulo de Nutrición AI
+    // Endpoint para que clientes obtengan entrenadores
+    Route::get('/api/client/trainers', function() {
+        return \App\Models\Entrenador::role('entrenador')->select('id', 'name')->get();
+    });
+
+    // Módulo de Nutrición AI y Planes de acción
     Route::get('/nutricion', [\App\Http\Controllers\NutritionController::class, 'index'])->name('nutricion.index');
     Route::post('/nutricion/log', [\App\Http\Controllers\NutritionController::class, 'store'])->name('nutricion.store');
     Route::post('/nutricion/routine', [\App\Http\Controllers\NutritionController::class, 'generateRoutine'])->name('nutricion.routine');
+    Route::post('/api/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'store']);
+    Route::get('/api/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'indexClient']);
 
 
 
@@ -305,6 +328,13 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::post('/admin/nominas/{id}/pagar', [NominaAdminController::class, 'marcarPagado'])->name('admin.nominas.pagar');
         Route::delete('/admin/nominas/{id}', [NominaAdminController::class, 'destroy'])->name('admin.nominas.destroy');
         Route::get('/admin/nominas/calcular/{user_id}', [NominaAdminController::class, 'calcularNomina'])->name('admin.nominas.calcular');
+
+        // --- VACACIONES ADMIN ---
+        Route::get('/admin/vacaciones', function() {
+            return view('app');
+        })->name('admin.vacaciones');
+        Route::get('/api/admin/vacations', [\App\Http\Controllers\VacationController::class, 'adminIndex']);
+        Route::put('/api/admin/vacations/{id}/status', [\App\Http\Controllers\VacationController::class, 'updateStatus']);
     });
 
 });

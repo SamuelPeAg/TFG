@@ -19,12 +19,34 @@ export default function MisComidas() {
     const [routineError, setRoutineError] = useState(null);
     const [completedExercises, setCompletedExercises] = useState([]);
     
+    // Entrenador Plan
+    const [planType, setPlanType] = useState('ai'); // 'ai' o 'trainer'
+    const [trainers, setTrainers] = useState([]);
+    const [selectedTrainer, setSelectedTrainer] = useState('');
+    const [trainerMessage, setTrainerMessage] = useState('');
+    const [clientPlans, setClientPlans] = useState([]);
+    const [submittingPlan, setSubmittingPlan] = useState(false);
+    
     // Calorías
     const [maintenanceCalories, setMaintenanceCalories] = useState(2500); // Input de mantenimiento
 
     useEffect(() => {
         fetchMeals();
+        fetchClientPlans();
     }, [selectedDate]);
+
+    useEffect(() => {
+        const fetchTrainers = async () => {
+            try {
+                const { data } = await axios.get('/api/client/trainers');
+                setTrainers(data);
+                if(data.length > 0) setSelectedTrainer(data[0].id);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchTrainers();
+    }, []);
 
     const fetchMeals = async () => {
         setLoading(true);
@@ -36,6 +58,15 @@ export default function MisComidas() {
             console.error('Error fetching meals:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchClientPlans = async () => {
+        try {
+            const { data } = await axios.get('/api/action-plans?date=' + selectedDate);
+            setClientPlans(data);
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -77,6 +108,24 @@ export default function MisComidas() {
             setRoutineError(err.response?.data?.error || 'No se pudo generar el plan de acción.');
         } finally {
             setGeneratingRoutine(false);
+        }
+    };
+
+    const handleRequestTrainerPlan = async () => {
+        if(!selectedTrainer || !trainerMessage.trim()) return;
+        setSubmittingPlan(true);
+        try {
+            await axios.post('/api/action-plans', {
+                trainer_id: selectedTrainer,
+                target_date: selectedDate,
+                goal_message: trainerMessage
+            });
+            setTrainerMessage('');
+            fetchClientPlans();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error al solicitar plan');
+        } finally {
+            setSubmittingPlan(false);
         }
     };
 
@@ -287,15 +336,25 @@ export default function MisComidas() {
                                         <div className="flex items-center justify-between mb-6">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
-                                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Plan de Acción AI</h3>
+                                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Plan de Acción</h3>
                                             </div>
-                                            {routinePlan && (
-                                                <span className="text-[10px] font-black bg-emerald-50 text-emerald-500 px-3 py-1.5 rounded-lg border border-emerald-100">
-                                                    {completedExercises.length} / {routinePlan.routine.length} Completados
-                                                </span>
-                                            )}
+                                            <div className="flex bg-slate-100 rounded-lg p-1">
+                                                <button 
+                                                    onClick={() => setPlanType('ai')}
+                                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all ${planType === 'ai' ? 'bg-white shadow-sm text-indigo-500' : 'text-slate-400 hover:text-slate-600'}`}
+                                                >
+                                                    IA
+                                                </button>
+                                                <button 
+                                                    onClick={() => setPlanType('trainer')}
+                                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-md transition-all ${planType === 'trainer' ? 'bg-white shadow-sm text-indigo-500' : 'text-slate-400 hover:text-slate-600'}`}
+                                                >
+                                                    Entrenador
+                                                </button>
+                                            </div>
                                         </div>
                                         
+                                        {planType === 'ai' ? (
                                         <div className="space-y-6">
                                             <div className="flex flex-col sm:flex-row gap-4 items-end">
                                                 <div className="w-full">
@@ -370,6 +429,70 @@ export default function MisComidas() {
                                                 </div>
                                             )}
                                         </div>
+                                        ) : (
+                                        <div className="space-y-6">
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-1.5 block">Seleccionar Entrenador:</label>
+                                                    <select 
+                                                        value={selectedTrainer} 
+                                                        onChange={(e) => setSelectedTrainer(e.target.value)}
+                                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700"
+                                                    >
+                                                        {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-1 mb-1.5 block">¿Qué deseas lograr hoy?</label>
+                                                    <textarea 
+                                                        value={trainerMessage}
+                                                        onChange={(e) => setTrainerMessage(e.target.value)}
+                                                        placeholder="Describe tu objetivo para que el entrenador te asigne ejercicios (ej. compensar calorías extra, entrenar tren superior...)"
+                                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 min-h-[100px]"
+                                                    />
+                                                </div>
+                                                <button 
+                                                    onClick={handleRequestTrainerPlan}
+                                                    disabled={submittingPlan || !trainerMessage.trim() || comidas.length === 0}
+                                                    className="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                                >
+                                                    {submittingPlan ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-paper-plane"></i>} 
+                                                    Solicitar Plan a Entrenador
+                                                </button>
+                                                {comidas.length === 0 && <p className="text-[10px] text-amber-500 text-center font-bold">Registra tus comidas primero para que el entrenador pueda evaluarte.</p>}
+                                            </div>
+
+                                            {clientPlans.length > 0 && (
+                                                <div className="mt-8 space-y-4">
+                                                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Tus Solicitudes de Hoy</h4>
+                                                    {clientPlans.map(plan => (
+                                                        <div key={plan.id} className="border border-indigo-100 rounded-[1.5rem] bg-indigo-50/20 overflow-hidden">
+                                                            <div className="p-4 border-b border-indigo-100/50 flex justify-between items-center bg-indigo-50/50">
+                                                                <span className="text-xs font-black text-indigo-900">Entrenador: {plan.trainer?.name}</span>
+                                                                {plan.status === 'pending' ? (
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest bg-amber-100 text-amber-600 px-2 py-1 rounded-md">En Espera</span>
+                                                                ) : (
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-600 px-2 py-1 rounded-md">Respondido</span>
+                                                                )}
+                                                            </div>
+                                                            {plan.status === 'completed' && (
+                                                                <div className="p-5">
+                                                                    <p className="text-sm font-medium text-slate-700 whitespace-pre-wrap">{plan.trainer_response}</p>
+                                                                    {plan.trainer_images && plan.trainer_images.length > 0 && (
+                                                                        <div className="mt-4 grid grid-cols-2 gap-2">
+                                                                            {plan.trainer_images.map((img, i) => (
+                                                                                <img key={i} src={img} alt="Plan" className="rounded-xl w-full h-auto object-cover border border-slate-200" />
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        )}
                                     </div>
                                 </div>
 

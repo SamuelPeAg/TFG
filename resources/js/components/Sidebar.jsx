@@ -54,6 +54,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice' },
     { name: 'NOMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt' },
+    { name: 'VACACIONES', path: '/admin/vacaciones', icon: 'fa-solid fa-umbrella-beach' },
   ];
 
   const trainerLinks = [
@@ -64,6 +65,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'NOMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_nominas_admin' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt', permission: 'acceder_suscripciones' },
     { name: 'MIS NOMINAS', path: '/mis-nominas', icon: 'fa-solid fa-file-invoice' },
+    { name: 'MIS VACACIONES', path: '/mis-vacaciones', icon: 'fa-solid fa-umbrella-beach' },
+    { name: 'PLANES', path: '/trainer/planes', icon: 'fa-solid fa-clipboard-list' },
   ];
 
   const clientLinks = [

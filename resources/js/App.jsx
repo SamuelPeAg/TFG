@@ -16,6 +16,9 @@ import Entrenadores from './pages/Entrenadores'
 import Facturacion from './pages/Facturacion'
 import AdminNominas from './pages/AdminNominas'
 import MisNominas from './pages/MisNominas'
+import MisVacaciones from './pages/MisVacaciones'
+import AdminVacaciones from './pages/AdminVacaciones'
+import MisPlanesEntrenador from './pages/MisPlanesEntrenador'
 import Configuracion from './pages/Configuracion'
 import Suscripciones from './pages/Suscripciones'
 import Estadisticas from './pages/Estadisticas'
@@ -60,7 +63,10 @@ function App() {
       <Route path="/entrenadores" element={<Entrenadores />} />
       <Route path="/facturas" element={<Facturacion />} />
       <Route path="/admin/nominas" element={<AdminNominas />} />
+      <Route path="/admin/vacaciones" element={<AdminVacaciones />} />
       <Route path="/mis-nominas" element={<MisNominas />} />
+      <Route path="/mis-vacaciones" element={<MisVacaciones />} />
+      <Route path="/trainer/planes" element={<MisPlanesEntrenador />} />
       <Route path="/configuracion" element={<Configuracion />} />
       <Route path="/configuracion/edit" element={<Configuracion />} />
       <Route path="/suscripciones" element={<Suscripciones />} />
