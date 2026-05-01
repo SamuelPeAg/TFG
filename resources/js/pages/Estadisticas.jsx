@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import EmpresaTable from '../components/EmpresaTable';
 import CentroTable from '../components/CentroTable';
 import TiposSesionTable from '../components/TiposSesionTable';
+import TiposCreditoTable from '../components/TiposCreditoTable';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -469,6 +470,12 @@ export default function Estadisticas() {
                 <TiposSesionTable 
                   tipos={data.tipos_sesion || []} 
                   centros={data.centros_list || []}
+                  onUpdate={fetchData}
+                />
+                <TiposCreditoTable
+                  tipos={data.tipos_credito || []}
+                  centros={data.centros_list || []}
+                  tiposSesion={data.tipos_sesion || []}
                   onUpdate={fetchData}
                 />
               </div>

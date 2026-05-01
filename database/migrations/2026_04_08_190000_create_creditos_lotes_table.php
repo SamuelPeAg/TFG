@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('creditos_lotes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('suscripcion_usuario_id')->constrained('suscripciones_usuarios')->onDelete('cascade');
+            $table->foreignId('tipo_credito_id')->constrained('tipos_credito')->onDelete('cascade');
             $table->integer('cantidad_inicial');
             $table->integer('cantidad_actual');
             $table->dateTime('fecha_vencimiento');

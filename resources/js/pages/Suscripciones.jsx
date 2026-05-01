@@ -19,18 +19,17 @@ const METROS_RESET = [
 const EMPTY_FORM = {
     nombre: '',
     precio: '',
-    tipo_credito: '',
-    creditos_por_periodo: '',
     periodo: 'semanal',
     limite_acumulacion: 0,
     meses_reset: 1,
+    creditos: [{ tipo_credito_id: '', cantidad: 1, dias_caducidad: 30 }],
 };
 
 export default function Suscripciones() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [suscripciones, setSuscripciones] = useState([]);
     const [centros, setCentros] = useState([]);
-    const [tiposSesion, setTiposSesion] = useState([]);
+    const [tiposCredito, setTiposCredito] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
@@ -44,18 +43,16 @@ export default function Suscripciones() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [alert, setAlert] = useState({ show: false, title: '', message: '', isError: false });
 
-    // Refs for Select2
     const periodoRef = useRef(null);
     const resetRef = useRef(null);
-    const tipoCreditoRef = useRef(null);
 
-    // Initializer for Select2 (similar to TPV)
+    // Initializer for Select2
     useEffect(() => {
         if (!modalOpen) return;
 
         const checkInterval = setInterval(() => {
             const $ = window.$;
-            if ($ && typeof $.fn.select2 === 'function' && periodoRef.current && resetRef.current && tipoCreditoRef.current) {
+            if ($ && typeof $.fn.select2 === 'function' && periodoRef.current && resetRef.current) {
                 clearInterval(checkInterval);
 
                 const options = {
@@ -71,14 +68,10 @@ export default function Suscripciones() {
                 $(resetRef.current).select2({ ...options, minimumResultsForSearch: -1 }).on('change', (e) => {
                     handleFormChange({ target: { name: 'meses_reset', value: e.target.value } });
                 });
-                $(tipoCreditoRef.current).select2({ ...options }).on('change', (e) => {
-                    handleFormChange({ target: { name: 'tipo_credito', value: e.target.value } });
-                });
 
                 // Sync initial values
                 $(periodoRef.current).val(form.periodo).trigger('change.select2');
                 $(resetRef.current).val(form.meses_reset).trigger('change.select2');
-                $(tipoCreditoRef.current).val(form.tipo_credito).trigger('change.select2');
             }
         }, 100);
 
@@ -88,7 +81,6 @@ export default function Suscripciones() {
             if ($ && typeof $.fn.select2 === 'function') {
                 if (periodoRef.current) $(periodoRef.current).select2('destroy');
                 if (resetRef.current) $(resetRef.current).select2('destroy');
-                if (tipoCreditoRef.current) $(tipoCreditoRef.current).select2('destroy');
             }
         };
     }, [modalOpen]);
@@ -97,8 +89,7 @@ export default function Suscripciones() {
     useEffect(() => {
         if ($ && $(periodoRef.current).data('select2') && $(periodoRef.current).val() !== form.periodo) $(periodoRef.current).val(form.periodo).trigger('change.select2');
         if ($ && $(resetRef.current).data('select2') && $(resetRef.current).val() !== String(form.meses_reset)) $(resetRef.current).val(form.meses_reset).trigger('change.select2');
-        if ($ && $(tipoCreditoRef.current).data('select2') && $(tipoCreditoRef.current).val() !== form.tipo_credito) $(tipoCreditoRef.current).val(form.tipo_credito).trigger('change.select2');
-    }, [form.periodo, form.meses_reset, form.tipo_credito, modalOpen]);
+    }, [form.periodo, form.meses_reset, modalOpen]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -106,7 +97,7 @@ export default function Suscripciones() {
             const res = await axios.get('/suscripciones', { headers: { Accept: 'application/json' } });
             setSuscripciones(res.data.suscripciones || []);
             setCentros(res.data.centros || []);
-            setTiposSesion(res.data.tipos_sesion || []);
+            setTiposCredito(res.data.tipos_credito || []);
         } catch (e) {
             console.error('Error cargando suscripciones:', e);
         } finally {
@@ -128,11 +119,14 @@ export default function Suscripciones() {
         setForm({
             nombre: s.nombre || '',
             precio: s.precio || '',
-            tipo_credito: s.tipo_credito || '',
-            creditos_por_periodo: s.creditos_por_periodo || '',
             periodo: s.periodo || 'semanal',
             limite_acumulacion: s.limite_acumulacion || 0,
             meses_reset: s.meses_reset ?? 1,
+            creditos: s.creditos && s.creditos.length > 0 ? s.creditos.map(c => ({
+                tipo_credito_id: c.tipo_credito_id,
+                cantidad: c.cantidad,
+                dias_caducidad: c.dias_caducidad
+            })) : [{ tipo_credito_id: '', cantidad: 1, dias_caducidad: 30 }],
         });
         setFormErrors({});
         setModalOpen(true);
@@ -146,7 +140,7 @@ export default function Suscripciones() {
 
         if (name === 'precio') {
             newValue = value.replace(/[^0-9.]/g, '');
-        } else if (name === 'creditos_por_periodo' || name === 'limite_acumulacion') {
+        } else if (name === 'limite_acumulacion') {
             newValue = value.replace(/[^0-9]/g, '');
         }
 
@@ -154,13 +148,41 @@ export default function Suscripciones() {
         if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: null }));
     };
 
+    const handleCreditoChange = (index, field, value) => {
+        let newValue = value;
+        if (field === 'cantidad' || field === 'dias_caducidad') {
+            newValue = value.replace(/[^0-9]/g, '');
+        }
+        const updatedCreditos = [...form.creditos];
+        updatedCreditos[index][field] = newValue;
+        setForm(prev => ({ ...prev, creditos: updatedCreditos }));
+    };
+
+    const addCreditoRow = () => {
+        setForm(prev => ({ ...prev, creditos: [...prev.creditos, { tipo_credito_id: '', cantidad: 1, dias_caducidad: 30 }] }));
+    };
+
+    const removeCreditoRow = (index) => {
+        if (form.creditos.length === 1) return;
+        setForm(prev => ({ ...prev, creditos: prev.creditos.filter((_, i) => i !== index) }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const errs = {};
         if (!form.nombre.trim()) errs.nombre = 'El nombre es obligatorio.';
         if (!form.precio) errs.precio = 'El precio es obligatorio.';
-        if (!form.tipo_credito) errs.tipo_credito = 'El tipo de crédito es obligatorio.';
-        if (!form.creditos_por_periodo) errs.creditos_por_periodo = 'Obligatorio.';
+        
+        let hasCreditoErrors = false;
+        form.creditos.forEach((c, idx) => {
+            if (!c.tipo_credito_id || !c.cantidad) {
+                hasCreditoErrors = true;
+            }
+        });
+        if (hasCreditoErrors) {
+            errs.creditos = 'Rellena todos los campos de los beneficios de crédito.';
+        }
+
         if (Object.keys(errs).length > 0) { setFormErrors(errs); return; }
 
         setSaving(true);
@@ -288,8 +310,17 @@ export default function Suscripciones() {
                                                 <td className="px-6 py-4 text-center font-black text-slate-800 text-sm">
                                                     {Number(s.precio || 0).toFixed(2)} €
                                                 </td>
-                                                <td className="px-6 py-4 text-center text-sm font-bold text-slate-700" data-label="Créditos">
-                                                    <span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg">{s.creditos_por_periodo} / {s.periodo}</span>
+                                                <td className="px-6 py-4 text-sm font-bold text-slate-700" data-label="Créditos">
+                                                    <div className="flex flex-col gap-1">
+                                                        {s.creditos && s.creditos.map((c, idx) => {
+                                                            const tipo = tiposCredito.find(t => t.id == c.tipo_credito_id);
+                                                            return (
+                                                                <span key={idx} className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-xs w-max">
+                                                                    {c.cantidad}x {tipo ? tipo.nombre : 'Crédito'} ({c.dias_caducidad > 0 ? c.dias_caducidad + ' días' : 'Sin cad.'})
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-center text-sm font-semibold text-slate-600" data-label="Límite">
                                                     {s.limite_acumulacion ? s.limite_acumulacion : <span className="text-slate-400 text-xs italic">Sin límite</span>}
@@ -368,46 +399,66 @@ export default function Suscripciones() {
                                                 {formErrors.precio && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.precio}</p>}
                                             </div>
 
-                                            {/* Tipo de Crédito */}
+                                            {/* Periodo de Facturación */}
                                             <div className="space-y-1.5 md:col-span-2">
-                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Válido para (Tipo de Sesión)</label>
-                                                <select ref={tipoCreditoRef} name="tipo_credito" value={form.tipo_credito} onChange={handleFormChange}
-                                                    className={`w-full bg-slate-50 border ${formErrors.tipo_credito ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all`}>
-                                                    <option value="">Selecciona tipo de sesión...</option>
-                                                    {tiposSesion.map(t => (
-                                                        <option key={t.id} value={t.nombre}>{t.nombre}</option>
-                                                    ))}
+                                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Frecuencia de Facturación y Entrega</label>
+                                                <select ref={periodoRef} name="periodo" value={form.periodo} onChange={handleFormChange}
+                                                    className="w-full bg-white select2-ignore border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3]">
+                                                    <option value="semanal">Semanal</option>
+                                                    <option value="mensual">Mensual</option>
                                                 </select>
-                                                {formErrors.tipo_credito && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.tipo_credito}</p>}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Ciclo de Créditos */}
+                                {/* Beneficios de la Suscripción */}
                                 <div className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 space-y-4">
-                                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                        <i className="fas fa-coins text-[#38C1A3]"></i> Ciclo de Créditos
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-5">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">¿Cuántos créditos?</label>
-                                            <input type="number" name="creditos_por_periodo" value={form.creditos_por_periodo} onChange={handleFormChange} min="1"
-                                                className={`w-full bg-white border ${formErrors.creditos_por_periodo ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:ring-4 focus:ring-[#38C1A3]/5`} />
-                                            {formErrors.creditos_por_periodo && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.creditos_por_periodo}</p>}
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">¿Cuándo se entregan?</label>
-                                            <select ref={periodoRef} name="periodo" value={form.periodo} onChange={handleFormChange}
-                                                className="w-full bg-white select2-ignore border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3]">
-                                                <option value="semanal">Semanal</option>
-                                                <option value="mensual">Mensual</option>
-                                            </select>
-                                        </div>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <p className="text-[11px] font-black uppercase tracking-widest text-[#38C1A3] flex items-center gap-2 m-0">
+                                            <i className="fas fa-coins"></i> Beneficios de Crédito
+                                        </p>
+                                        <button type="button" onClick={addCreditoRow} className="text-[10px] font-black uppercase tracking-widest text-[#38C1A3] hover:text-teal-600 px-3 py-1.5 bg-teal-50 rounded-lg transition-colors">
+                                            <i className="fas fa-plus"></i> Añadir Crédito
+                                        </button>
+                                    </div>
+                                    
+                                    {formErrors.creditos && <p className="text-[10px] text-rose-500 font-bold mb-2">{formErrors.creditos}</p>}
+
+                                    <div className="space-y-3">
+                                        {form.creditos.map((c, idx) => (
+                                            <div key={idx} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center bg-white p-3 rounded-xl border border-slate-200 shadow-sm relative">
+                                                <div className="flex-1 w-full space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Tipo de Crédito</label>
+                                                    <select value={c.tipo_credito_id} onChange={(e) => handleCreditoChange(idx, 'tipo_credito_id', e.target.value)}
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3]">
+                                                        <option value="">Selecciona crédito...</option>
+                                                        {tiposCredito.map(t => (
+                                                            <option key={t.id} value={t.id}>{t.nombre}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="w-full sm:w-24 space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Cantidad</label>
+                                                    <input type="number" min="1" value={c.cantidad} onChange={(e) => handleCreditoChange(idx, 'cantidad', e.target.value)}
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3]" />
+                                                </div>
+                                                <div className="w-full sm:w-32 space-y-1">
+                                                    <label className="text-[10px] font-bold text-slate-400 uppercase">Días Caducidad</label>
+                                                    <input type="number" min="0" value={c.dias_caducidad} onChange={(e) => handleCreditoChange(idx, 'dias_caducidad', e.target.value)}
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3]" />
+                                                </div>
+                                                {form.creditos.length > 1 && (
+                                                    <button type="button" onClick={() => removeCreditoRow(idx)} className="mt-4 sm:mt-0 w-8 h-8 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all">
+                                                        <i className="fas fa-trash text-xs"></i>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
 
-                                {/* Ahorro y Caducidad */}
+                                {/* Ahorro y Caducidad General */}
                                 <div>
                                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-4">
                                         <i className="fas fa-clock-rotate-left text-[#38C1A3]"></i> Ahorro y Caducidad
@@ -420,7 +471,7 @@ export default function Suscripciones() {
                                             <p className="text-[10px] text-slate-400 font-medium pl-1">0 = sin límite de crédito acumulable</p>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Caducidad</label>
+                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Reinicio Forzado</label>
                                             <select ref={resetRef} name="meses_reset" value={form.meses_reset} onChange={handleFormChange}
                                                 className="w-full bg-slate-50 select2-ignore border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white">
                                                 {METROS_RESET.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}

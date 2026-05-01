@@ -160,6 +160,12 @@ class EstadisticasController extends Controller
                     ->get();
             } catch (\Exception $e) { \Log::error('Error notificaciones: ' . $e->getMessage()); }
 
+            // 10. Tipos de Crédito
+            $tiposCredito = collect();
+            try {
+                $tiposCredito = \App\Models\TipoCredito::with('sesiones')->get();
+            } catch (\Exception $e) { \Log::error('Error tiposCredito: ' . $e->getMessage()); }
+
             return response()->json([
                 'kpis' => [
                     'totalClientes'     => $totalClientes,
@@ -176,6 +182,7 @@ class EstadisticasController extends Controller
                 'empresas'          => $empresas,
                 'centros_list'      => $centrosList,
                 'tipos_sesion'      => $tiposSesion,
+                'tipos_credito'     => $tiposCredito,
                 'notificaciones'    => $notificaciones,
             ]);
 

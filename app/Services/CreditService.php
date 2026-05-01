@@ -9,14 +9,33 @@ use Carbon\Carbon;
 class CreditService
 {
     /**
-     * Entrega un lote de créditos a un usuario.
+     * Entrega los créditos completos de una suscripción.
      */
-    public function allocate(SuscripcionUsuario $subUser, float $amount, int $pagoId = null)
+    public function allocateSubscription(SuscripcionUsuario $subUser, int $pagoId = null)
     {
-        $vencimiento = $this->calculateNextExpiry($subUser);
+        $lotes = [];
+        foreach ($subUser->suscripcion->creditos as $credito) {
+            $lotes[] = $this->allocate(
+                $subUser, 
+                $credito->tipo_credito_id, 
+                $credito->cantidad, 
+                $credito->dias_caducidad, 
+                $pagoId
+            );
+        }
+        return $lotes;
+    }
+
+    /**
+     * Entrega un lote específico de créditos a un usuario.
+     */
+    public function allocate(SuscripcionUsuario $subUser, int $tipoCreditoId, float $amount, int $diasCaducidad = null, int $pagoId = null)
+    {
+        $vencimiento = $this->calculateNextExpiry($subUser, $diasCaducidad);
 
         return CreditoLote::create([
             'suscripcion_usuario_id' => $subUser->id,
+            'tipo_credito_id' => $tipoCreditoId,
             'cantidad_inicial' => $amount,
             'cantidad_actual' => $amount,
             'fecha_vencimiento' => $vencimiento,
@@ -27,9 +46,42 @@ class CreditService
     /**
      * Consume créditos de los lotes disponibles (el que antes caduca primero).
      */
-    public function consume(SuscripcionUsuario $subUser, float $amount = 1)
+    public function consume(SuscripcionUsuario $subUser, int $tipoSesionId, float $amount = 1)
     {
-        $lotes = $subUser->lotes()->validos()->orderBy('fecha_vencimiento', 'asc')->get();
+        $lotes = $subUser->lotes()
+            ->validos()
+            ->whereHas('tipoCredito.sesiones', function($q) use ($tipoSesionId) {
+                $q->where('tipos_sesion.id', $tipoSesionId);
+            })
+            ->orderBy('fecha_vencimiento', 'asc')
+            ->get();
+        $restante = $amount;
+
+        foreach ($lotes as $lote) {
+            if ($restante <= 0) break;
+
+            if ($lote->cantidad_actual >= $restante) {
+                $lote->decrement('cantidad_actual', $restante);
+                $restante = 0;
+            } else {
+                $restante -= $lote->cantidad_actual;
+                $lote->update(['cantidad_actual' => 0]);
+            }
+        }
+
+        return $restante <= 0;
+    }
+
+    /**
+     * Consume créditos directamente de un lote específico por su tipo_credito_id (ajuste manual).
+     */
+    public function consumeByCredito(SuscripcionUsuario $subUser, int $tipoCreditoId, float $amount = 1)
+    {
+        $lotes = $subUser->lotes()
+            ->validos()
+            ->where('tipo_credito_id', $tipoCreditoId)
+            ->orderBy('fecha_vencimiento', 'asc')
+            ->get();
         $restante = $amount;
 
         foreach ($lotes as $lote) {
@@ -50,12 +102,15 @@ class CreditService
     /**
      * Devuelve créditos a los lotes disponibles (el que más tarde caduca primero, o cualquiera válido).
      */
-    public function refund(SuscripcionUsuario $subUser, float $amount = 1)
+    public function refund(SuscripcionUsuario $subUser, int $tipoSesionId, float $amount = 1)
     {
         // Buscamos el lote que aún no haya caducado para devolverle el crédito
         // No usamos 'validos()' porque ese scope filtra por cantidad_actual > 0
         $lote = $subUser->lotes()
             ->where('fecha_vencimiento', '>=', now())
+            ->whereHas('tipoCredito.sesiones', function($q) use ($tipoSesionId) {
+                $q->where('tipos_sesion.id', $tipoSesionId);
+            })
             ->orderBy('fecha_vencimiento', 'desc')
             ->first();
 
@@ -70,17 +125,19 @@ class CreditService
     /**
      * Calcula la fecha de vencimiento del próximo lote basado en el día de recarga.
      */
-    private function calculateNextExpiry(SuscripcionUsuario $subUser)
+    private function calculateNextExpiry(SuscripcionUsuario $subUser, int $diasCaducidad = null)
     {
         $suscripcion = $subUser->suscripcion;
+
+        if ($diasCaducidad !== null && $diasCaducidad > 0) {
+            return now()->addDays($diasCaducidad)->startOfDay();
+        } elseif ($diasCaducidad === 0) {
+            // Never expires, set it far in the future
+            return now()->addYears(100)->startOfDay();
+        }
+
         $periodo = $suscripcion->periodo; // 'semanal' o 'mensual'
         $diaRecarga = $subUser->dia_recarga;
-        $mesesReset = $suscripcion->meses_reset;
-
-        // Caso especial: 1 Mes desde que se entregan (ignora día de recarga fijo)
-        if ($mesesReset == 15) {
-            return now()->addMonth()->startOfDay();
-        }
 
         if (!$diaRecarga) {
             // Si no hay día definido, caduca en 1 semana/mes desde hoy por defecto

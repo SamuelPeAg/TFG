@@ -11,13 +11,12 @@ class SuscripcionUsuario extends Model
 
     protected $table = 'suscripciones_usuarios';
 
-    protected $appends = ['saldo_actual_calculado'];
+    protected $appends = ['saldos_por_tipo'];
 
     protected $fillable = [
         'id_usuario',
         'id_suscripcion',
         'id_entrenador',
-        'saldo_actual',
         'ultima_recarga',
         'estado',
         'dia_recarga',
@@ -34,11 +33,22 @@ class SuscripcionUsuario extends Model
     }
 
     /**
-     * Calcula el saldo real sumando solo los lotes que no han caducado.
+     * Devuelve el saldo agrupado por tipo de crédito.
      */
-    public function getSaldoActualCalculadoAttribute()
+    public function getSaldosPorTipoAttribute()
     {
-        return $this->lotes()->validos()->sum('cantidad_actual');
+        return $this->lotes()
+            ->validos()
+            ->with('tipoCredito')
+            ->get()
+            ->groupBy('tipo_credito_id')
+            ->map(function ($lotes) {
+                return [
+                    'tipo_credito' => $lotes->first()->tipoCredito,
+                    'total' => $lotes->sum('cantidad_actual')
+                ];
+            })
+            ->values();
     }
 
     /**

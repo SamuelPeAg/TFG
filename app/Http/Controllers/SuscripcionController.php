@@ -15,11 +15,12 @@ class SuscripcionController extends Controller
     public function index(Request $request)
     {
         if ($request->wantsJson() || $request->ajax()) {
-            $suscripciones = Suscripcion::with('centro')->orderBy('nombre')->get();
+            $suscripciones = Suscripcion::with(['centro', 'creditos'])->orderBy('nombre')->get();
             $centros = Centro::orderBy('nombre')->get();
 
             $tipos_sesion = \App\Models\TipoSesion::where('activo', true)->orderBy('orden')->get();
-            return response()->json(compact('suscripciones', 'centros', 'tipos_sesion'));
+            $tipos_credito = \App\Models\TipoCredito::with('sesiones')->orderBy('nombre')->get();
+            return response()->json(compact('suscripciones', 'centros', 'tipos_sesion', 'tipos_credito'));
         }
         
 
@@ -34,22 +35,35 @@ class SuscripcionController extends Controller
         $data = $request->validate([
             'nombre'                => 'required|string|max:255',
             'precio'                => 'required|numeric|min:0',
-            'tipo_credito'          => 'required|string|max:100',
             'id_centro'             => 'nullable|exists:centros,id',
-            'creditos_por_periodo'  => 'required|integer|min:1',
             'periodo'               => 'required|in:semanal,mensual',
             'limite_acumulacion'    => 'nullable|integer|min:0',
             'meses_reset'           => 'nullable|integer|min:0',
+            'creditos'              => 'required|array|min:1',
+            'creditos.*.tipo_credito_id' => 'required|exists:tipos_credito,id',
+            'creditos.*.cantidad'   => 'required|integer|min:1',
+            'creditos.*.dias_caducidad' => 'required|integer|min:0',
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'precio.numeric' => 'El precio debe ser un número.',
-            'creditos_por_periodo.min' => 'Debe haber al menos 1 crédito.',
+            'creditos.required' => 'Debe añadir al menos una línea de crédito.',
             'periodo.in' => 'El periodo seleccionado no es válido.',
         ]);
 
-        $suscripcion = Suscripcion::create($data);
+        $suscripcion = Suscripcion::create([
+            'nombre' => $data['nombre'],
+            'precio' => $data['precio'],
+            'id_centro' => $data['id_centro'] ?? null,
+            'periodo' => $data['periodo'],
+            'limite_acumulacion' => $data['limite_acumulacion'] ?? 0,
+            'meses_reset' => $data['meses_reset'] ?? 1,
+        ]);
 
-        return response()->json(['success' => true, 'suscripcion' => $suscripcion->load('centro')], 201);
+        foreach ($data['creditos'] as $credito) {
+            $suscripcion->creditos()->create($credito);
+        }
+
+        return response()->json(['success' => true, 'suscripcion' => $suscripcion->load(['centro', 'creditos'])], 201);
     }
 
     /**
@@ -62,21 +76,35 @@ class SuscripcionController extends Controller
         $data = $request->validate([
             'nombre'                => 'required|string|max:255',
             'precio'                => 'required|numeric|min:0',
-            'tipo_credito'          => 'required|string|max:100',
             'id_centro'             => 'nullable|exists:centros,id',
-            'creditos_por_periodo'  => 'required|integer|min:1',
             'periodo'               => 'required|in:semanal,mensual',
             'limite_acumulacion'    => 'nullable|integer|min:0',
             'meses_reset'           => 'nullable|integer|min:0',
+            'creditos'              => 'required|array|min:1',
+            'creditos.*.tipo_credito_id' => 'required|exists:tipos_credito,id',
+            'creditos.*.cantidad'   => 'required|integer|min:1',
+            'creditos.*.dias_caducidad' => 'required|integer|min:0',
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'precio.numeric' => 'El precio debe ser un número.',
-            'creditos_por_periodo.min' => 'Debe haber al menos 1 crédito.',
+            'creditos.required' => 'Debe añadir al menos una línea de crédito.',
         ]);
 
-        $suscripcion->update($data);
+        $suscripcion->update([
+            'nombre' => $data['nombre'],
+            'precio' => $data['precio'],
+            'id_centro' => $data['id_centro'] ?? null,
+            'periodo' => $data['periodo'],
+            'limite_acumulacion' => $data['limite_acumulacion'] ?? 0,
+            'meses_reset' => $data['meses_reset'] ?? 1,
+        ]);
 
-        return response()->json(['success' => true, 'suscripcion' => $suscripcion->load('centro')]);
+        $suscripcion->creditos()->delete();
+        foreach ($data['creditos'] as $credito) {
+            $suscripcion->creditos()->create($credito);
+        }
+
+        return response()->json(['success' => true, 'suscripcion' => $suscripcion->load(['centro', 'creditos'])]);
     }
 
     /**

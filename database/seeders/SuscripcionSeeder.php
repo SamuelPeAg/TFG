@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Suscripcion;
 use App\Models\Centro;
+use App\Models\TipoSesion;
+use App\Models\TipoCredito;
 use Illuminate\Database\Seeder;
 
 class SuscripcionSeeder extends Seeder
@@ -12,31 +14,53 @@ class SuscripcionSeeder extends Seeder
     {
         $centro = Centro::first();
         $centroId = $centro ? $centro->id : null;
+        $tipoSesion = TipoSesion::first();
+        $tipoSesionId = $tipoSesion ? $tipoSesion->id : null;
 
-        Suscripcion::updateOrCreate(
+        if (!$tipoSesionId) {
+            // No hay tipos de sesión para crear suscripciones
+            return;
+        }
+
+        // Crear un Tipo de Crédito Genérico
+        $tipoCredito = TipoCredito::updateOrCreate(
+            ['nombre' => 'Crédito Estándar'],
+            ['id_centro' => null]
+        );
+        $tipoCredito->sesiones()->syncWithoutDetaching([$tipoSesionId]);
+
+        $s1 = Suscripcion::updateOrCreate(
             ['nombre' => 'Suscripción Mensual'],
             [
-                'tipo_credito' => 'Clases',
                 'id_centro' => $centroId,
-                'creditos_por_periodo' => 8,
                 'periodo' => 'mensual',
                 'precio' => 50.00,
                 'limite_acumulacion' => 2,
                 'meses_reset' => 1,
             ]
         );
+        $s1->creditos()->delete();
+        $s1->creditos()->create([
+            'tipo_credito_id' => $tipoCredito->id,
+            'cantidad' => 8,
+            'dias_caducidad' => 30
+        ]);
 
-        Suscripcion::updateOrCreate(
+        $s2 = Suscripcion::updateOrCreate(
             ['nombre' => 'Suscripción Semanal'],
             [
-                'tipo_credito' => 'Clases',
                 'id_centro' => $centroId,
-                'creditos_por_periodo' => 2,
                 'periodo' => 'semanal',
                 'precio' => 15.00,
                 'limite_acumulacion' => 0,
                 'meses_reset' => 0,
             ]
         );
+        $s2->creditos()->delete();
+        $s2->creditos()->create([
+            'tipo_credito_id' => $tipoCredito->id,
+            'cantidad' => 2,
+            'dias_caducidad' => 7
+        ]);
     }
 }

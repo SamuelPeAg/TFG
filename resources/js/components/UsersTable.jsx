@@ -122,16 +122,31 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                       {user.suscripciones.map((su) => {
                         const isMensual = su.suscripcion?.periodo === 'mensual';
                         const badgeColor = isMensual ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white';
-                        return (
-                          <div key={su.id} className="group/saldo flex items-center bg-slate-50 border border-slate-100 rounded-xl px-2 py-1 gap-2 shadow-sm">
-                            <span className={`${badgeColor} w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px] shadow-sm`}>
-                              {su.saldo_actual_calculado ?? 0}
+                        const saldos = su.saldos_por_tipo ? Object.values(su.saldos_por_tipo) : [];
+                        
+                        if (saldos.length === 0) {
+                            return (
+                              <div key={su.id} className="group/saldo flex items-center bg-slate-50 border border-slate-100 rounded-xl px-2 py-1 gap-2 shadow-sm">
+                                <span className={`${badgeColor} w-6 h-6 rounded-lg flex items-center justify-center font-black text-[10px] shadow-sm`}>
+                                  0
+                                </span> 
+                                <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">
+                                  {su.suscripcion?.nombre || 'PACK'}
+                                </span>
+                              </div>
+                            );
+                        }
+
+                        return saldos.map((s, idx) => (
+                          <div key={`${su.id}-${idx}`} className="group/saldo flex items-center bg-slate-50 border border-slate-100 rounded-xl px-2 py-1 gap-2 shadow-sm">
+                            <span className={`${badgeColor} min-w-[1.5rem] px-1 h-6 rounded-lg flex items-center justify-center font-black text-[10px] shadow-sm`}>
+                              {s.saldo}
                             </span> 
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">
-                              {su.suscripcion?.nombre || 'PACK'}
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter" title={s.nombre}>
+                              {s.nombre}
                             </span>
                           </div>
-                        );
+                        ));
                       })}
                     </div>
                   ) : (

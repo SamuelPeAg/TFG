@@ -13,6 +13,7 @@ class CreditoLote extends Model
 
     protected $fillable = [
         'suscripcion_usuario_id',
+        'tipo_credito_id',
         'cantidad_inicial',
         'cantidad_actual',
         'fecha_vencimiento',
@@ -26,6 +27,11 @@ class CreditoLote extends Model
     public function suscripcionUsuario()
     {
         return $this->belongsTo(SuscripcionUsuario::class, 'suscripcion_usuario_id');
+    }
+
+    public function tipoCredito()
+    {
+        return $this->belongsTo(TipoCredito::class, 'tipo_credito_id');
     }
 
     public function pago()

@@ -481,16 +481,26 @@ class PagosController extends Controller
         $newUser = User::find($request->user_id);
 
         // 5. Verificar CRÉDITOS (ESTRICTO: Incluso Admin)
+        $tipoInfo = \App\Models\TipoSesion::where('nombre', $existingPago->tipo_clase)->first();
+        if (!$tipoInfo) {
+            return response()->json(['error' => 'Tipo de sesión no encontrado.'], 422);
+        }
+        $tipoSesionId = $tipoInfo->id;
+
         $allowedSubIds = $existingPago->suscripciones->pluck('id')->toArray();
         $userSubs = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
             ->whereIn('id_suscripcion', $allowedSubIds)
             ->where('estado', 'activo')
+            ->with(['lotes' => function($q) use ($tipoSesionId) {
+                $q->validos()->where('tipo_sesion_id', $tipoSesionId);
+            }])
             ->get();
             
         $hasCredits = false;
         $activeSub = null;
         foreach ($userSubs as $sub) {
-            if ($sub->saldo_actual_calculado > 0) {
+            $saldoParaTipo = $sub->lotes->sum('cantidad_actual');
+            if ($saldoParaTipo > 0) {
                 $hasCredits = true;
                 $activeSub = $sub;
                 break;
@@ -502,7 +512,7 @@ class PagosController extends Controller
         }
 
         // 6. Consumir Crédito
-        app(\App\Services\CreditService::class)->consume($activeSub, 1);
+        app(\App\Services\CreditService::class)->consume($activeSub, $tipoSesionId, 1);
 
         // 7. Crear el nuevo pago
         $newPago = Pago::create([
@@ -558,8 +568,11 @@ class PagosController extends Controller
             $diffHours = now()->diffInHours($fecha, false); 
             $horasCancelacion = $pago->horas_cancelacion ?? 0;
             
+            $tipoInfo = \App\Models\TipoSesion::where('nombre', $pago->tipo_clase)->first();
+            $tipoSesionId = $tipoInfo ? $tipoInfo->id : null;
+
             $messageSuffix = '';
-            if ($diffHours >= $horasCancelacion) {
+            if ($diffHours >= $horasCancelacion && $tipoSesionId) {
                 $allowedSubIds = $pago->suscripciones->pluck('id')->toArray();
                 $userSub = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
                     ->whereIn('id_suscripcion', $allowedSubIds)
@@ -567,7 +580,7 @@ class PagosController extends Controller
                     ->first();
                 
                 if ($userSub) {
-                    app(\App\Services\CreditService::class)->refund($userSub, 1);
+                    app(\App\Services\CreditService::class)->refund($userSub, $tipoSesionId, 1);
                     $messageSuffix = ' El crédito ha sido devuelto a tu cuenta.';
                 }
             } else {

@@ -108,9 +108,17 @@ export default function MisClases() {
                                                         </span>
                                                         <h3 className="text-xl font-black text-slate-800">{subUser.suscripcion?.nombre || 'Plan de Entrenamiento'}</h3>
                                                     </div>
-                                                    <div className="text-right">
+                                                    <div className="text-right flex flex-col items-end gap-2">
                                                         <p className="text-[10px] font-black text-slate-400 uppercase">Saldo Total</p>
-                                                        <p className="text-3xl font-black text-slate-800">{subUser.saldo_actual_calculado ?? 0}</p>
+                                                        {subUser.saldos_por_tipo && Object.entries(subUser.saldos_por_tipo).map(([tipo, data]) => (
+                                                            <div key={tipo} className="flex flex-col items-end bg-teal-50 px-3 py-1 rounded-xl">
+                                                                <p className="text-2xl font-black text-[#38C1A3] leading-none">{data.saldo}</p>
+                                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">{data.nombre}</p>
+                                                            </div>
+                                                        ))}
+                                                        {(!subUser.saldos_por_tipo || Object.keys(subUser.saldos_por_tipo).length === 0) && (
+                                                            <p className="text-3xl font-black text-slate-800">0</p>
+                                                        )}
                                                     </div>
                                                 </div>
 

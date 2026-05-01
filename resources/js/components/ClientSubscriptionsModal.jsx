@@ -66,8 +66,7 @@ export default function ClientSubscriptionsModal({ isOpen, user, onClose, onUpda
         id_suscripcion: selectedSus.id,
         dia_recarga: formData.dia_recarga,
         fecha_vencimiento_suscripcion: formData.fecha_vencimiento_suscripcion,
-        pago_adelantado: formData.pago_adelantado,
-        saldo_actual: formData.confirmar_ahora ? (formData.saldo_inicial || selectedSus.creditos_por_periodo) : 0
+        pago_adelantado: formData.pago_adelantado
       }, { headers: { 'Accept': 'application/json' } });
       
       const newSubUser = res.data.suscripcion_usuario;
@@ -165,9 +164,19 @@ export default function ClientSubscriptionsModal({ isOpen, user, onClose, onUpda
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex flex-col items-end">
-                                            <div className="text-lg font-black text-[#38C1A3]">{su.saldo_actual}</div>
-                                            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">CRÉDITOS</div>
+                                        <div className="flex flex-col items-end gap-1">
+                                            {su.saldos_por_tipo && Object.entries(su.saldos_por_tipo).map(([tipo, data]) => (
+                                                <div key={tipo} className="flex flex-col items-end bg-teal-50/50 px-2 py-1 rounded-lg">
+                                                    <div className="text-sm font-black text-[#38C1A3] leading-none">{data.saldo}</div>
+                                                    <div className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{data.nombre}</div>
+                                                </div>
+                                            ))}
+                                            {(!su.saldos_por_tipo || Object.keys(su.saldos_por_tipo).length === 0) && (
+                                                <div className="flex flex-col items-end">
+                                                    <div className="text-lg font-black text-[#38C1A3]">0</div>
+                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">CRÉDITOS</div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 

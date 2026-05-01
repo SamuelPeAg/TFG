@@ -14,9 +14,7 @@ class Suscripcion extends Model
     protected $fillable = [
         'nombre',
         'precio',
-        'tipo_credito',
         'id_centro',
-        'creditos_por_periodo',
         'periodo',
         'limite_acumulacion',
         'meses_reset',
@@ -28,5 +26,15 @@ class Suscripcion extends Model
     public function centro()
     {
         return $this->belongsTo(Centro::class, 'id_centro');
+    }
+
+    public function usuarios()
+    {
+        return $this->hasMany(SuscripcionUsuario::class, 'id_suscripcion');
+    }
+
+    public function creditos()
+    {
+        return $this->hasMany(SuscripcionCredito::class, 'suscripcion_id');
     }
 }

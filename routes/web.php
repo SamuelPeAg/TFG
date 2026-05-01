@@ -296,6 +296,11 @@ Route::middleware('auth:web,staff')->group(function () {
             Route::put('/admin/tipos-sesion/{tipoSesion}', [\App\Http\Controllers\EstadisticasController::class, 'updateTipoSesion']);
             Route::delete('/admin/tipos-sesion/{tipoSesion}', [\App\Http\Controllers\EstadisticasController::class, 'destroyTipoSesion']);
 
+            // Gestión de Tipos de Crédito
+            Route::post('/admin/tipos-credito', [\App\Http\Controllers\TipoCreditoController::class, 'store']);
+            Route::put('/admin/tipos-credito/{tipoCredito}', [\App\Http\Controllers\TipoCreditoController::class, 'update']);
+            Route::delete('/admin/tipos-credito/{tipoCredito}', [\App\Http\Controllers\TipoCreditoController::class, 'destroy']);
+
             // Gestión de Notificaciones (Admin)
             Route::get('/admin/notificaciones', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'index']);
             Route::post('/admin/notificaciones/{id}/read', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'markAsRead']);

@@ -66,4 +66,9 @@ class TipoSesion extends Model
     {
         return $query->orderBy('orden')->orderBy('nombre');
     }
+
+    public function tiposCredito()
+    {
+        return $this->belongsToMany(TipoCredito::class, 'tipo_credito_sesiones', 'tipo_sesion_id', 'tipo_credito_id');
+    }
 }

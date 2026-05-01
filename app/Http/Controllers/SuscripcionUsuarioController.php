@@ -28,21 +28,14 @@ class SuscripcionUsuarioController extends Controller
         $validated = $request->validate([
             'id_usuario'    => 'required|exists:users,id',
             'id_suscripcion' => 'required|exists:suscripciones,id',
-            'saldo_actual'  => 'nullable|integer|min:0',
         ]);
 
         $suscripcion = Suscripcion::findOrFail($validated['id_suscripcion']);
-
-        // Al asignar la suscripción, el cliente recibe de inmediato los créditos
-        // del primer ciclo (creditos_por_periodo). Si el admin especifica un
-        // saldo_actual manual (ej: migración), se usa ese en su lugar.
-        $saldo = $validated['saldo_actual'] ?? $suscripcion->creditos_por_periodo;
 
         $susuario = SuscripcionUsuario::create([
             'id_usuario'    => $validated['id_usuario'],
             'id_suscripcion' => $validated['id_suscripcion'],
             'id_entrenador' => Auth::id(),
-            'saldo_actual'  => $saldo, // Mantenemos legacy por ahora para compatibilidad UI simple
             'ultima_recarga' => now(),
             'estado'        => 'activo',
             'dia_recarga'   => $request->input('dia_recarga'),
@@ -51,14 +44,14 @@ class SuscripcionUsuarioController extends Controller
         ]);
 
         // Solo liberamos los créditos si el pago ha sido confirmado por adelantado
-        if ($saldo > 0 && $request->boolean('pago_adelantado')) {
-            $this->creditService->allocate($susuario, $saldo);
+        if ($request->boolean('pago_adelantado')) {
+            $this->creditService->allocateSubscription($susuario);
         }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json(['success' => true, 'suscripcion_usuario' => $susuario->load('suscripcion')]);
         }
-        return back()->with('success', "Suscripción asignada. Créditos iniciales: {$saldo}.");
+        return back()->with('success', "Suscripción asignada correctamente.");
     }
 
     public function update(Request $request, $id)
@@ -70,7 +63,6 @@ class SuscripcionUsuarioController extends Controller
         $susuario = SuscripcionUsuario::findOrFail($id);
         
         $validated = $request->validate([
-            'saldo_actual' => 'required|integer|min:0',
             'estado' => 'required|in:activo,cancelado',
         ]);
 
@@ -106,11 +98,25 @@ class SuscripcionUsuarioController extends Controller
         $susuario = SuscripcionUsuario::findOrFail($id);
         $accion = $request->input('accion');
         $cantidad = $request->input('cantidad', 1);
+        $tipoCreditoId = $request->input('tipo_credito_id');
 
-        if ($accion === 'inc') {
-            $this->creditService->allocate($susuario, $cantidad);
-        } elseif ($accion === 'dec') {
-            $this->creditService->consume($susuario, $cantidad);
+        if (!$tipoCreditoId) {
+            // Default to first credit type if not provided (for fallback)
+            $tipoCreditoId = $susuario->suscripcion->creditos->first()->tipo_credito_id ?? null;
+        }
+
+        if ($tipoCreditoId) {
+            if ($accion === 'inc') {
+                $this->creditService->allocate($susuario, $tipoCreditoId, $cantidad);
+            } elseif ($accion === 'dec') {
+                // To consume manually, we don't have the exact class ID.
+                // We'll need a fallback if they want to consume an exact credit type manually.
+                // Wait, creditService->consume takes tipo_sesion_id to find the related lot.
+                // But for a manual adjustment of a specific TipoCredito... we need a consumeByCredito function.
+                // Let's implement consumeByCredito in CreditService later, or assume manual dec just removes from lot directly.
+                // I will call consumeByCredito here.
+                $this->creditService->consumeByCredito($susuario, $tipoCreditoId, $cantidad);
+            }
         }
 
         $susuario->refresh();
@@ -118,7 +124,7 @@ class SuscripcionUsuarioController extends Controller
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
                 'success' => true,
-                'nuevo_saldo' => $susuario->saldo_actual
+                'nuevo_saldo' => $susuario->saldos_por_tipo
             ]);
         }
 
@@ -147,7 +153,7 @@ class SuscripcionUsuarioController extends Controller
         ]);
 
         // 2. Liberar los créditos
-        $this->creditService->allocate($susuario, $suscripcion->creditos_por_periodo, $pago->id);
+        $this->creditService->allocateSubscription($susuario, $pago->id);
 
         // 3. Resetear flag de pago adelantado si lo tenía
         $susuario->update([
@@ -158,7 +164,7 @@ class SuscripcionUsuarioController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Pago confirmado y créditos entregados.',
-            'nuevo_saldo' => $susuario->saldo_actual_calculado
+            'nuevo_saldo' => $susuario->saldos_por_tipo
         ]);
     }
 }

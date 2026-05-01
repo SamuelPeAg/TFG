@@ -13,7 +13,6 @@ return new class extends Migration
             $table->foreignId('id_usuario')->constrained('users')->onDelete('cascade');
             $table->foreignId('id_suscripcion')->constrained('suscripciones')->onDelete('cascade');
             $table->foreignId('id_entrenador')->nullable()->constrained('users')->onDelete('set null');
-            $table->integer('saldo_actual')->default(0);
             $table->timestamp('ultima_recarga')->nullable();
             $table->integer('dia_recarga')->nullable();
             $table->dateTime('fecha_vencimiento_suscripcion')->nullable();
