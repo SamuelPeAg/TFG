@@ -18,9 +18,10 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
    const [formData, setFormData] = useState({
        cliente_id: '',
        entrenador_id: '',
-       centro_id: '',
-       fecha: new Date().toISOString().split('T')[0]
-   });
+        centro_id: '',
+        fecha: new Date().toISOString().split('T')[0],
+        metodo_pago: 'Efectivo'
+    });
    const [ivaPercent, setIvaPercent] = useState(21);
    const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -123,7 +124,8 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
             cliente_id: '', 
             entrenador_id: '', 
             centro_id: initialCentroId,
-            fecha: new Date().toISOString().split('T')[0]
+            fecha: new Date().toISOString().split('T')[0],
+            metodo_pago: 'Efectivo'
         });
         
         if (initialEmpresaId) {
@@ -466,6 +468,25 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                             <option value="">Seleccionar entrenador...</option>
                             {entrenadores?.map(e => <option key={e.id} value={e.id}>{e.name || e.nombre}</option>)}
                         </select>
+                    </div>
+                    
+                    {/* Método de Pago Selector */}
+                    <div className="space-y-2 pt-2">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Forma de Pago</label>
+                        <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
+                            <button 
+                                onClick={() => setFormData({...formData, metodo_pago: 'Efectivo'})}
+                                className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${formData.metodo_pago === 'Efectivo' ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                <i className="fa-solid fa-money-bill-wave mr-1.5"></i> Efectivo
+                            </button>
+                            <button 
+                                onClick={() => setFormData({...formData, metodo_pago: 'TPV'})}
+                                className={`flex-1 py-2 text-[10px] font-black uppercase rounded-lg transition-all ${formData.metodo_pago === 'TPV' ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                <i className="fa-solid fa-credit-card mr-1.5"></i> TPV / Tarjeta
+                            </button>
+                        </div>
                     </div>
                 </div>
 

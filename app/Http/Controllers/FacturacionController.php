@@ -503,7 +503,7 @@ class FacturacionController extends Controller
                 'centro' => $request->centro,
                 'nombre_clase' => $item['tipo'], // ej: 'EP / Duo'
                 'tipo_clase' => 'Ticket TPV',
-                'metodo_pago' => 'Efectivo', // Asumimos efectivo por defecto en TPV rápido
+                'metodo_pago' => $request->input('metodo_pago', 'Efectivo'), // Permitir método personalizado (Efectivo, TPV, etc.)
             ]);
 
             // Si el item es una suscripción, actualizamos el saldo del usuario
