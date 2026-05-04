@@ -470,6 +470,7 @@ export default function Estadisticas() {
                 <TiposSesionTable 
                   tipos={data.tipos_sesion || []} 
                   centros={data.centros_list || []}
+                  tiposCredito={data.tipos_credito || []}
                   onUpdate={fetchData}
                 />
                 <TiposCreditoTable

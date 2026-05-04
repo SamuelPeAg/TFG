@@ -147,6 +147,7 @@ class EstadisticasController extends Controller
                         'descripcion'        => $t->descripcion,
                         'centro_id'          => $t->centro_id,
                         'centro_nombre'      => $t->centro?->nombre ?? 'Global (todos los centros)',
+                        'tipos_credito_ids'  => $t->tiposCredito->pluck('id')->toArray(),
                     ]);
             } catch (\Exception $e) { \Log::error('Error tiposSesion: ' . $e->getMessage()); }
 
@@ -295,9 +296,14 @@ class EstadisticasController extends Controller
             'orden'              => 'nullable|integer|min:0',
             'descripcion'        => 'nullable|string|max:500',
             'centro_id'          => 'nullable|exists:centros,id',
+            'tipos_credito'      => 'nullable|array',
+            'tipos_credito.*'    => 'exists:tipos_credito,id',
         ]);
         $tipo = TipoSesion::create($data);
-        return response()->json($tipo->load('centro'), 201);
+        if ($request->has('tipos_credito')) {
+            $tipo->tiposCredito()->sync($request->tipos_credito);
+        }
+        return response()->json($tipo->load(['centro', 'tiposCredito']), 201);
     }
 
     public function updateTipoSesion(Request $request, TipoSesion $tipoSesion)
@@ -325,9 +331,14 @@ class EstadisticasController extends Controller
             'orden'              => 'nullable|integer|min:0',
             'descripcion'        => 'nullable|string|max:500',
             'centro_id'          => 'nullable|exists:centros,id',
+            'tipos_credito'      => 'nullable|array',
+            'tipos_credito.*'    => 'exists:tipos_credito,id',
         ]);
         $tipoSesion->update($data);
-        return response()->json($tipoSesion->load('centro'));
+        if ($request->has('tipos_credito')) {
+            $tipoSesion->tiposCredito()->sync($request->tipos_credito);
+        }
+        return response()->json($tipoSesion->load(['centro', 'tiposCredito']));
     }
 
     public function destroyTipoSesion(TipoSesion $tipoSesion)

@@ -15,7 +15,8 @@ export default function TiposSesionTable({ tipos, centros, onUpdate }) {
     activo: true,
     orden: 0,
     descripcion: '',
-    centro_id: ''
+    centro_id: '',
+    tipos_credito: []
   });
 
   // Auto-generation of slug from nombre
@@ -57,16 +58,16 @@ export default function TiposSesionTable({ tipos, centros, onUpdate }) {
     try {
       const data = { 
         ...formData, 
-        centro_id: formData.centro_id === '' ? null : formData.centro_id,
         precio_base: parseFloat(formData.precio_base) || 0, 
         capacidad_personas: parseInt(formData.capacidad_personas) || 1,
-        orden: 0
+        orden: 0,
+        tipos_credito: formData.tipos_credito
       };
       await axios.post('/api/admin/tipos-sesion', data);
       setFormData({
         nombre: '', slug: '', capacidad_personas: 1, capacidad_fija: true,
         precio_base: 0, color_hex: '#4BB7AE', activo: true, orden: 0,
-        descripcion: '', centro_id: ''
+        descripcion: '', centro_id: '', tipos_credito: []
       });
       onUpdate();
       setEditMode(null);
@@ -79,7 +80,8 @@ export default function TiposSesionTable({ tipos, centros, onUpdate }) {
   const handleEdit = (tipo) => {
     setFormData({
       ...tipo,
-      centro_id: tipo.centro_id || ''
+      centro_id: tipo.centro_id || '',
+      tipos_credito: tipo.tipos_credito_ids || []
     });
     setEditMode(tipo.id);
   };
@@ -88,10 +90,10 @@ export default function TiposSesionTable({ tipos, centros, onUpdate }) {
     try {
       const data = { 
         ...formData, 
-        centro_id: formData.centro_id === '' ? null : formData.centro_id,
         precio_base: parseFloat(formData.precio_base) || 0,
         capacidad_personas: parseInt(formData.capacidad_personas) || 1,
-        orden: 0
+        orden: 0,
+        tipos_credito: formData.tipos_credito
       };
       await axios.put(`/api/admin/tipos-sesion/${editMode}`, data);
       setEditMode(null);
@@ -234,8 +236,36 @@ export default function TiposSesionTable({ tipos, centros, onUpdate }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Descripción / Notas</label>
                 <textarea rows="3" className="w-full px-6 py-4 bg-slate-50 border-none rounded-3xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-medium text-slate-600" value={formData.descripcion || ''} onChange={e => setFormData({...formData, descripcion: e.target.value})} placeholder="Para qué sirve este tipo de sesión..."></textarea>
+              </div>
+
+              {/* Selección de Créditos Permitidos */}
+              <div className="space-y-4 pt-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Créditos que dan acceso</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-2 scrollbar-hide">
+                  {tiposCredito.map(tc => {
+                    const isChecked = formData.tipos_credito.includes(tc.id);
+                    return (
+                      <label key={tc.id} className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${isChecked ? 'bg-teal-50 border-teal-200' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
+                        <input 
+                          type="checkbox" 
+                          className="w-4 h-4 rounded text-[#4BB7AE] accent-[#4BB7AE]" 
+                          checked={isChecked}
+                          onChange={() => {
+                            const newCredits = isChecked 
+                              ? formData.tipos_credito.filter(id => id !== tc.id)
+                              : [...formData.tipos_credito, tc.id];
+                            setFormData({ ...formData, tipos_credito: newCredits });
+                          }}
+                        />
+                        <span className={`text-xs font-bold ${isChecked ? 'text-teal-700' : 'text-slate-600'}`}>{tc.nombre}</span>
+                      </label>
+                    );
+                  })}
+                  {tiposCredito.length === 0 && (
+                    <p className="text-[10px] text-slate-400 italic">No hay tipos de crédito configurados aún.</p>
+                  )}
+                </div>
               </div>
             </div>
 

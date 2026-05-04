@@ -180,7 +180,9 @@ class PagosController extends Controller
                         'centro' => $first->centro
                     ],
                     'suscripciones_permitidas' => $classSubIds,
-                    'suscripciones_detalles' => $first->suscripciones->map(fn($s) => ['id' => $s->id, 'nombre' => $s->nombre])->toArray()
+                    'suscripciones_detalles' => $first->suscripciones->map(fn($s) => ['id' => $s->id, 'nombre' => $s->nombre])->toArray(),
+                    'tipos_credito_permitidos' => $first->tiposCredito->pluck('id')->toArray(),
+                    'tipos_credito_detalles' => $first->tiposCredito->map(fn($t) => ['id' => $t->id, 'nombre' => $t->nombre])->toArray()
                 ],
             ];
         }
@@ -207,6 +209,8 @@ class PagosController extends Controller
             'participants.*.metodo_pago' => ['required_with:participants', 'in:TPV,EF,DD,CC'],
             'suscripciones_permitidas'   => ['nullable', 'array'],
             'suscripciones_permitidas.*' => ['exists:suscripciones,id'],
+            'tipos_credito_permitidos'   => ['nullable', 'array'],
+            'tipos_credito_permitidos.*' => ['exists:tipos_credito,id'],
             'horas_cancelacion'          => ['nullable', 'integer'],
         ]);
 
@@ -222,7 +226,11 @@ class PagosController extends Controller
         $capacidad      = $request->input('capacidad_maxima');
         $participants   = $request->input('participants', []);
 
-        $tipoInfo = \App\Models\TipoSesion::where('nombre', $request->input('tipo_clase'))->first();
+        $tipoClaseInput = $request->input('tipo_clase');
+        $tipoInfo = \App\Models\TipoSesion::where('slug', strtolower($tipoClaseInput))
+            ->orWhere('nombre', $tipoClaseInput)
+            ->first();
+
         $horasCancelacion = $request->input('horas_cancelacion') !== null ? $request->input('horas_cancelacion') : ($tipoInfo->horas_cancelacion_default ?? 0);
 
         $pagoBase = [
@@ -268,6 +276,18 @@ class PagosController extends Controller
                 if ($request->has('suscripciones_permitidas')) {
                     $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
                 }
+                
+                // --- MANEJO DE CRÉDITOS ---
+                if ($request->has('tipos_credito_permitidos')) {
+                    $pago->tiposCredito()->sync($request->input('tipos_credito_permitidos'));
+                } elseif ($tipoInfo) {
+                    // Si no se especifican, usar los predeterminados del tipo de sesión
+                    $defaultCredits = $tipoInfo->tiposCredito->pluck('id')->toArray();
+                    if (!empty($defaultCredits)) {
+                        $pago->tiposCredito()->sync($defaultCredits);
+                    }
+                }
+
                 if (!empty($trainers)) $pago->entrenadores()->sync($trainers);
                 $pagoList[] = $pago;
             }
@@ -488,11 +508,26 @@ class PagosController extends Controller
         $tipoSesionId = $tipoInfo->id;
 
         $allowedSubIds = $existingPago->suscripciones->pluck('id')->toArray();
-        $userSubs = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
-            ->whereIn('id_suscripcion', $allowedSubIds)
-            ->where('estado', 'activo')
-            ->with(['lotes' => function($q) use ($tipoSesionId) {
+        $allowedCreditIds = $existingPago->tiposCredito->pluck('id')->toArray();
+
+        $userSubsQuery = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
+            ->where('estado', 'activo');
+
+        if (!empty($allowedCreditIds)) {
+            // Si hay créditos específicos permitidos, filtramos por ellos
+            $userSubsQuery->whereHas('suscripcion.creditos', function($q) use ($allowedCreditIds) {
+                $q->whereIn('tipo_credito_id', $allowedCreditIds);
+            });
+        } elseif (!empty($allowedSubIds)) {
+            // Si no hay créditos pero hay suscripciones, usamos la lógica antigua
+            $userSubsQuery->whereIn('id_suscripcion', $allowedSubIds);
+        }
+
+        $userSubs = $userSubsQuery->with(['lotes' => function($q) use ($tipoSesionId, $allowedCreditIds) {
                 $q->validos()->where('tipo_sesion_id', $tipoSesionId);
+                if (!empty($allowedCreditIds)) {
+                    $q->whereIn('tipo_credito_id', $allowedCreditIds);
+                }
             }])
             ->get();
             
@@ -529,9 +564,12 @@ class PagosController extends Controller
             'metodo_pago' => 'Bono',
         ]);
 
-        // Copiar suscripciones y entrenadores
+        // Copiar suscripciones, créditos y entrenadores
         $subs = $existingPago->suscripciones->pluck('id')->toArray();
         if (!empty($subs)) $newPago->suscripciones()->sync($subs);
+
+        $credits = $existingPago->tiposCredito->pluck('id')->toArray();
+        if (!empty($credits)) $newPago->tiposCredito()->sync($credits);
 
         $trainers = $existingPago->entrenadores->pluck('id')->toArray();
         if (!empty($trainers)) $newPago->entrenadores()->sync($trainers);
@@ -683,6 +721,8 @@ class PagosController extends Controller
             'capacidad_maxima' => 'nullable|integer|min:1',
             'suscripciones_permitidas' => 'nullable|array',
             'suscripciones_permitidas.*' => 'exists:suscripciones,id',
+            'tipos_credito_permitidos' => 'nullable|array',
+            'tipos_credito_permitidos.*' => 'exists:tipos_credito,id',
         ]);
 
         if (!$request->user()->hasRole('admin')) {
@@ -717,6 +757,11 @@ class PagosController extends Controller
                 $pago->suscripciones()->sync($request->input('suscripciones_permitidas'));
             } else {
                 $pago->suscripciones()->detach();
+            }
+
+            // Sync allowed credits for this session
+            if ($request->has('tipos_credito_permitidos')) {
+                $pago->tiposCredito()->sync($request->input('tipos_credito_permitidos'));
             }
         }
 

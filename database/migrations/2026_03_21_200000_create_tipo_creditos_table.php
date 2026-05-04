@@ -24,6 +24,13 @@ return new class extends Migration
             $table->foreignId('tipo_sesion_id')->constrained('tipos_sesion')->onDelete('cascade');
             $table->timestamps();
         });
+
+        Schema::create('pago_tipo_credito', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('pago_id')->constrained('pagos')->onDelete('cascade');
+            $table->foreignId('tipo_credito_id')->constrained('tipos_credito')->onDelete('cascade');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -31,6 +38,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('pago_tipo_credito');
         Schema::dropIfExists('tipo_credito_sesiones');
         Schema::dropIfExists('tipos_credito');
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
 
-export default function CrearClaseModal({ isOpen, onClose, centros = [], entrenadores = [], users = [], suscripciones = [], tiposSesion = [], initialDate, onSuccess }) {
+export default function CrearClaseModal({ isOpen, onClose, centros = [], entrenadores = [], users = [], suscripciones = [], tiposSesion = [], tiposCredito = [], initialDate, onSuccess }) {
     const [currentStep, setCurrentStep] = useState(1);
     const select2Ref = useRef(null);
     const [loading, setLoading] = useState(false);
@@ -40,6 +40,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         trainers: [],
         participants: [],
         suscripciones_permitidas: [],
+        tipos_credito_permitidos: [],
         horas_cancelacion: '0'
     });
 
@@ -51,7 +52,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 ...prev,
                 tipo_clase: firstType.slug,
                 capacidad_maxima: firstType.capacidad_personas.toString(),
-                precio_base: firstType.precio_base || '0.00'
+                precio_base: firstType.precio_base || '0.00',
+                tipos_credito_permitidos: firstType.tipos_credito_ids || []
             }));
         }
     }, [tiposSesion, isOpen]);
@@ -69,7 +71,8 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                         tipo_clase: value,
                         capacidad_maxima: config ? config.capacidad_personas.toString() : prev.capacidad_maxima,
                         horas_cancelacion: config ? config.horas_cancelacion_default.toString() : prev.horas_cancelacion,
-                        precio_base: config ? (config.precio_base || '0.00') : '0.00'
+                        precio_base: config ? (config.precio_base || '0.00') : '0.00',
+                        tipos_credito_permitidos: config ? (config.tipos_credito_ids || []) : []
                     };
                 });
             };
@@ -212,6 +215,16 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             return {
                 ...prev,
                 suscripciones_permitidas: arr.includes(id) ? arr.filter(s => s !== id) : [...arr, id]
+            }
+        });
+    };
+
+    const toggleCredito = (id) => {
+        setFormData(prev => {
+            const arr = prev.tipos_credito_permitidos;
+            return {
+                ...prev,
+                tipos_credito_permitidos: arr.includes(id) ? arr.filter(s => s !== id) : [...arr, id]
             }
         });
     };
@@ -609,12 +622,12 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                 {/* Merged Subscription section into Step 2 with Search */}
                                 <section className="pt-6 border-t border-slate-100">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase">Suscripciones Permitidas</h3>
+                                        <h3 className="text-[11px] font-black tracking-widest text-slate-400 uppercase">Créditos Permitidos</h3>
                                         <div className="relative w-48">
                                             <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px]"></i>
                                             <input 
                                                 type="text" 
-                                                placeholder="Buscar..." 
+                                                placeholder="Buscar crédito..." 
                                                 value={susSearchQuery}
                                                 onChange={(e) => setSusSearchQuery(e.target.value)}
                                                 className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-[#38C1A3]"
@@ -623,31 +636,34 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                     </div>
                                     
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin">
-                                        {suscripciones
-                                            .filter(s => s.nombre.toLowerCase().includes(susSearchQuery.toLowerCase()))
-                                            .map(sus => {
-                                                const isChecked = formData.suscripciones_permitidas.includes(sus.id);
+                                        {tiposCredito
+                                            .filter(tc => tc.nombre.toLowerCase().includes(susSearchQuery.toLowerCase()))
+                                            .map(tc => {
+                                                const isChecked = formData.tipos_credito_permitidos.includes(tc.id);
                                                 return (
-                                                    <label key={sus.id} className="cursor-pointer block relative">
-                                                        <input type="checkbox" className="hidden" checked={isChecked} onChange={() => toggleSuscripcion(sus.id)} />
+                                                    <label key={tc.id} className="cursor-pointer block relative">
+                                                        <input type="checkbox" className="hidden" checked={isChecked} onChange={() => toggleCredito(tc.id)} />
                                                         <div className={`border rounded-xl p-3 transition-all ${isChecked ? 'border-[#38C1A3] bg-teal-50/20' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}>
-                                                            <div className="flex justify-between items-center mb-1">
-                                                                <span className={`font-bold text-xs ${isChecked ? 'text-slate-900' : 'text-slate-600'}`}>{sus.nombre}</span>
+                                                            <div className="flex justify-between items-center">
+                                                                <span className={`font-bold text-xs ${isChecked ? 'text-slate-900' : 'text-slate-600'}`}>{tc.nombre}</span>
                                                                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isChecked ? 'bg-[#38C1A3] border-transparent' : 'bg-white border-slate-200'}`}>
                                                                     {isChecked && <i className="fa-solid fa-check text-[8px] text-white"></i>}
                                                                 </div>
                                                             </div>
-                                                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tighter">TIPO: {sus.tipo_credito}</span>
                                                         </div>
                                                     </label>
                                                 )
                                         })}
-                                        {suscripciones.filter(s => s.nombre.toLowerCase().includes(susSearchQuery.toLowerCase())).length === 0 && (
+                                        {tiposCredito.filter(tc => tc.nombre.toLowerCase().includes(susSearchQuery.toLowerCase())).length === 0 && (
                                             <div className="col-span-full py-4 text-center text-slate-400 text-xs italic font-medium">
-                                                No se encontraron suscripciones.
+                                                No se encontraron créditos disponibles.
                                             </div>
                                         )}
                                     </div>
+                                    <p className="text-[10px] text-slate-400 font-bold italic mt-2">
+                                        <i className="fa-solid fa-circle-info mr-1"></i> 
+                                        Por defecto se aplican los créditos configurados para este tipo de sesión.
+                                    </p>
                                 </section>
                             </div>
                         )}

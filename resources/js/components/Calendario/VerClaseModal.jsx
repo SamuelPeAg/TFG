@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros, entrenadores, users, suscripciones, tiposSesion = [], onSuccess }) {
+export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros, entrenadores, users, suscripciones, tiposCredito = [], tiposSesion = [], onSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // State for selectors
@@ -25,6 +25,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   const [editTipo, setEditTipo] = useState('');
   const [editFecha, setEditFecha] = useState('');
   const [editSuscripciones, setEditSuscripciones] = useState([]);
+  const [editCreditos, setEditCreditos] = useState([]);
   const [editCapacidad, setEditCapacidad] = useState('');
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       }
       
       setEditSuscripciones(p.suscripciones_permitidas || []);
+      setEditCreditos(p.tipos_credito_permitidos || []);
       setEditCapacidad(p.capacidad_maxima || '');
     } else {
       setLocalProps(null);
@@ -222,7 +224,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
             new_centro: editCentro,
             new_tipo_clase: editTipo,
             capacidad_maxima: editCapacidad,
-            suscripciones_permitidas: editSuscripciones
+            suscripciones_permitidas: editSuscripciones,
+            tipos_credito_permitidos: editCreditos
         };
         
         const res = await axios.post('/Pagos/update-session', payload);
@@ -243,6 +246,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                 capacidad_maxima: editCapacidad,
                 suscripciones_detalles: selectedSubs,
                 suscripciones_permitidas: editSuscripciones,
+                tipos_credito_permitidos: editCreditos,
+                tipos_credito_detalles: tiposCredito.filter(t => editCreditos.includes(t.id)).map(t => ({ id: t.id, nombre: t.nombre })),
                 hora: editFecha.split('T')[1].substring(0, 5),
                 session_key: {
                     ...sessionKey,
@@ -379,40 +384,40 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                   )}
               </div>
 
-              {/* Subscriptions Area with Premium Visuals */}
+              {/* Credits Area with Premium Visuals */}
               <div className="mb-10">
                    <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 px-1">
-                      SUSCRIPCIONES CANJEABLES
+                      CRÉDITOS CANJEABLES
                    </h4>
                    <div className={`p-6 rounded-[24px] border transition-all ${isEditing ? 'bg-white border-[#38b2ac] shadow-xl' : 'bg-slate-50/50 border-slate-100'}`}>
                       {isEditing ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
-                              {suscripciones.map(s => {
-                                  const isSelected = editSuscripciones.includes(s.id);
+                              {tiposCredito.map(t => {
+                                  const isSelected = editCreditos.includes(t.id);
                                   return (
                                       <button 
-                                          key={s.id}
+                                          key={t.id}
                                           onClick={() => {
-                                              if (isSelected) setEditSuscripciones(editSuscripciones.filter(id => id !== s.id));
-                                              else setEditSuscripciones([...editSuscripciones, s.id]);
+                                              if (isSelected) setEditCreditos(editCreditos.filter(id => id !== t.id));
+                                              else setEditCreditos([...editCreditos, t.id]);
                                           }}
                                           className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black transition-all border-2 ${isSelected ? 'bg-[#38b2ac] text-white border-[#38b2ac] shadow-md scale-[1.02]' : 'bg-white text-slate-500 border-slate-100 hover:border-[#38b2ac]/30'}`}
                                       >
                                           <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-white text-[#38b2ac]' : 'bg-slate-100 text-slate-300'}`}>
                                               <i className={`fa-solid ${isSelected ? 'fa-check text-[10px]' : 'fa-plus text-[10px]'}`}></i>
                                           </div>
-                                          <span className="truncate">{s.nombre}</span>
+                                          <span className="truncate">{t.nombre}</span>
                                       </button>
                                   );
                               })}
                           </div>
                       ) : (
                           <div className="flex flex-wrap gap-2.5">
-                              {localProps.suscripciones_detalles && localProps.suscripciones_detalles.length > 0 ? (
-                                  localProps.suscripciones_detalles.map(s => (
-                                      <span key={s.id} className="inline-flex items-center gap-3 bg-white border border-slate-100 px-4 py-2 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                              {localProps.tipos_credito_detalles && localProps.tipos_credito_detalles.length > 0 ? (
+                                  localProps.tipos_credito_detalles.map(t => (
+                                      <span key={t.id} className="inline-flex items-center gap-3 bg-white border border-slate-100 px-4 py-2 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
                                           <div className="w-2.5 h-2.5 rounded-full bg-[#38b2ac]"></div>
-                                          <span className="text-xs font-black text-[#334155]">{s.nombre}</span>
+                                          <span className="text-xs font-black text-[#334155]">{t.nombre}</span>
                                       </span>
                                   ))
                               ) : (
