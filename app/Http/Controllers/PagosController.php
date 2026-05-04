@@ -523,7 +523,7 @@ class PagosController extends Controller
             $userSubsQuery->whereIn('id_suscripcion', $allowedSubIds);
         }
 
-        $userSubs = $userSubsQuery->with(['lotes' => function($q) use ($tipoSesionId, $allowedCreditIds) {
+        $userSubs = $userSubsQuery->with(['suscripcion', 'lotes' => function($q) use ($tipoSesionId, $allowedCreditIds) {
                 $q->validos()->where('tipo_sesion_id', $tipoSesionId);
                 if (!empty($allowedCreditIds)) {
                     $q->whereIn('tipo_credito_id', $allowedCreditIds);
@@ -550,23 +550,24 @@ class PagosController extends Controller
         app(\App\Services\CreditService::class)->consume($activeSub, $tipoSesionId, 1);
 
         // 7. Crear el nuevo pago
+        $subNombre = ($activeSub && $activeSub->suscripcion) ? $activeSub->suscripcion->nombre : 'Bono';
+        
         $newPago = Pago::create([
             'user_id' => $newUser->id,
             'entrenador_id' => $existingPago->entrenador_id,
             'iban' => $newUser->iban,
-            'importe' => $existingPago->importe,
+            'importe' => $tipoInfo->precio_base ?? $existingPago->importe,
             'fecha_registro' => $fecha,
             'centro' => $existingPago->centro,
             'nombre_clase' => $existingPago->nombre_clase,
             'tipo_clase' => $existingPago->tipo_clase,
             'capacidad_maxima' => $existingPago->capacidad_maxima,
             'horas_cancelacion' => $existingPago->horas_cancelacion,
-            'metodo_pago' => 'Bono',
+            'metodo_pago' => "Bono ($subNombre)",
         ]);
 
-        // Copiar suscripciones, créditos y entrenadores
-        $subs = $existingPago->suscripciones->pluck('id')->toArray();
-        if (!empty($subs)) $newPago->suscripciones()->sync($subs);
+        // Copiar suscripciones (solo la usada), créditos y entrenadores
+        $newPago->suscripciones()->sync([$activeSub->id_suscripcion]);
 
         $credits = $existingPago->tiposCredito->pluck('id')->toArray();
         if (!empty($credits)) $newPago->tiposCredito()->sync($credits);

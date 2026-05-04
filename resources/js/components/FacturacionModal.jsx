@@ -79,6 +79,7 @@ export default function FacturacionModal({ isOpen, onClose, cellData }) {
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs">Fecha</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs">Clase</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs">Centro</th>
+                            <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Método</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-right">Importe</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Estado</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Acciones</th>
@@ -92,6 +93,11 @@ export default function FacturacionModal({ isOpen, onClose, cellData }) {
                                 </td>
                                 <td className="px-4 py-3 text-slate-600" data-label="Clase">{clase.nombre_clase || '---'}</td>
                                 <td className="px-4 py-3 text-slate-600" data-label="Centro">{clase.centro || '---'}</td>
+                                <td className="px-4 py-3 text-center" data-label="Método">
+                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg truncate max-w-[120px] inline-block">
+                                        {clase.metodo || '---'}
+                                    </span>
+                                </td>
                                 <td className="px-4 py-3 text-right" data-label="Importe">
                                     {clase.importe !== null ? (
                                         <span className="font-black text-[#38C1A3]">{Number(clase.importe).toFixed(2)} €</span>
