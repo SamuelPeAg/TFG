@@ -7,7 +7,7 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
   const [formData, setFormData] = useState({
     nombre: '',
     id_centro: '',
-    sesiones: []
+    id_centro: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -16,30 +16,18 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
       setEditingCredito(credito);
       setFormData({
         nombre: credito.nombre || '',
-        id_centro: credito.id_centro || '',
-        sesiones: credito.sesiones?.map(s => s.id) || []
+        id_centro: credito.id_centro || ''
       });
     } else {
       setEditingCredito(null);
       setFormData({
         nombre: '',
-        id_centro: '',
-        sesiones: []
+        id_centro: ''
       });
     }
     setModalOpen(true);
   };
 
-  const handleCheckboxChange = (sesionId) => {
-    setFormData(prev => {
-      const isSelected = prev.sesiones.includes(sesionId);
-      if (isSelected) {
-        return { ...prev, sesiones: prev.sesiones.filter(id => id !== sesionId) };
-      } else {
-        return { ...prev, sesiones: [...prev.sesiones, sesionId] };
-      }
-    });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,14 +82,13 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
             <tr className="text-[10px] text-slate-400 uppercase tracking-widest font-black">
               <th className="py-3 px-3">Nombre</th>
               <th className="py-3 px-3 hidden md:table-cell">Centro</th>
-              <th className="py-3 px-3">Válido para (Clases)</th>
               <th className="py-3 px-3 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50 text-[13px]">
             {tipos.length === 0 ? (
               <tr>
-                <td colSpan="4" className="py-8 text-center text-slate-400 font-medium italic">
+                <td colSpan="3" className="py-8 text-center text-slate-400 font-medium italic">
                   No hay Tipos de Crédito registrados.
                 </td>
               </tr>
@@ -111,15 +98,6 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
                   <td className="py-3 px-3 font-bold text-slate-700">{t.nombre}</td>
                   <td className="py-3 px-3 hidden md:table-cell text-slate-500">
                     {t.id_centro ? centros.find(c => c.id === t.id_centro)?.nombre : 'Global'}
-                  </td>
-                  <td className="py-3 px-3">
-                    <div className="flex flex-wrap gap-1">
-                        {t.sesiones?.map(s => (
-                            <span key={s.id} className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[10px] font-bold">
-                                {s.nombre}
-                            </span>
-                        ))}
-                    </div>
                   </td>
                   <td className="py-3 px-3 text-right space-x-2">
                     <button 
@@ -183,25 +161,6 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
                   </select>
                 </div>
 
-                <div>
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Clases Permitidas (Tipos de Sesión)</label>
-                    <div className="grid grid-cols-2 gap-3 max-h-40 overflow-y-auto custom-scrollbar p-2 bg-slate-50 border border-slate-200 rounded-xl">
-                        {tiposSesion.map(ts => (
-                            <label key={ts.id} className="flex items-center gap-2 cursor-pointer hover:bg-slate-100 p-2 rounded-lg transition-colors">
-                                <input 
-                                    type="checkbox" 
-                                    checked={formData.sesiones.includes(ts.id)}
-                                    onChange={() => handleCheckboxChange(ts.id)}
-                                    className="w-4 h-4 text-indigo-600 bg-white border-slate-300 rounded focus:ring-indigo-500 focus:ring-2"
-                                />
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-slate-700">{ts.nombre}</span>
-                                    {ts.centro_nombre && <span className="text-[9px] text-slate-400">{ts.centro_nombre}</span>}
-                                </div>
-                            </label>
-                        ))}
-                    </div>
-                </div>
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
