@@ -52,7 +52,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
     { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice' },
-    { name: 'NOMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice' },
+    { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt' },
     { name: 'VACACIONES', path: '/admin/vacaciones', icon: 'fa-solid fa-umbrella-beach' },
   ];
@@ -62,9 +62,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
     { name: 'NOTIFICAR', path: '/notificaciones', icon: 'fa-solid fa-paper-plane' },
     { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_facturacion' },
-    { name: 'NOMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_nominas_admin' },
+    { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_nominas_admin' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt', permission: 'acceder_suscripciones' },
-    { name: 'MIS NOMINAS', path: '/mis-nominas', icon: 'fa-solid fa-file-invoice' },
+    { name: 'MIS NÓMINAS', path: '/mis-nominas', icon: 'fa-solid fa-file-invoice' },
     { name: 'MIS VACACIONES', path: '/mis-vacaciones', icon: 'fa-solid fa-umbrella-beach' },
     { name: 'PLANES', path: '/trainer/planes', icon: 'fa-solid fa-clipboard-list' },
   ];

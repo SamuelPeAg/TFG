@@ -124,7 +124,7 @@ export function HistorialTable({ historial, onPreview, onVerDetalles, onPagar, o
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-sky-50 text-sky-600 border border-sky-100">
-                                                <i className="fas fa-hourglass-half"></i> Pend. Pago
+                                                <i className="fas fa-hourglass-half"></i> Pendiente de Pago
                                             </span>
                                         )}
                                     </td>

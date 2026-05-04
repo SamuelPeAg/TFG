@@ -33,7 +33,7 @@ export default function AdminNominasSummaryCards({ borradores, historial }) {
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-[#38C1A3]"></div>
                 <div className="flex justify-between items-center">
                     <div>
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pendiente Pago</h4>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pendiente de Pago</h4>
                         <p className="text-3xl font-black text-slate-800 tracking-tight">{pendientesPago.length}</p>
                         <p className="text-sm font-bold text-[#38C1A3] mt-1">
                             {sumPendientes.toFixed(2)} € total
