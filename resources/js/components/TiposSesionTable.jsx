@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Button from './Button';
 
-export default function TiposSesionTable({ tipos, centros, onUpdate }) {
+export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredito = [] }) {
   const [editMode, setEditMode] = useState(null);
   const selectRef = useRef(null);
   const [formData, setFormData] = useState({
