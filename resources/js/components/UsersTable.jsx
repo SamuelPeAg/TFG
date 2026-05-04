@@ -44,11 +44,11 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                 className="w-4 h-4 text-[#38C1A3] bg-slate-100 border-slate-300 rounded focus:ring-[#38C1A3] focus:ring-2 cursor-pointer"
               />
             </th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest">Cliente</th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest">Contacto</th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest">IBAN / Identificación</th>
-            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest">Saldo / Suscripciones</th>
-            <th className="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest">Acciones</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest w-[25%]">Cliente</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest w-[20%]">Contacto</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest w-[15%]">Identificación</th>
+            <th className="text-left px-6 py-4 text-[10px] font-black uppercase tracking-widest w-[25%]">Saldo / Suscripciones</th>
+            <th className="text-center px-6 py-4 text-[10px] font-black uppercase tracking-widest w-[15%]">Acciones</th>
           </tr>
         </thead>
         <tbody className="space-y-2">
@@ -97,7 +97,7 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                 <td className="px-6 py-5" data-label="Contacto">
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                        <span className={`text-xs font-bold transition-colors uppercase tracking-tight ${user.email && user.email.includes('factomove.es') ? 'text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100 flex items-center gap-1.5' : 'text-slate-600 group-hover:text-slate-900 line-clamp-1 max-w-[15ch]'}`}>
+                        <span className={`text-xs font-bold transition-colors uppercase tracking-tight ${user.email && user.email.includes('factomove.es') ? 'text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100 flex items-center gap-1.5' : 'text-slate-600 group-hover:text-slate-900 line-clamp-1 max-w-[25ch]'}`}>
                             {user.email && user.email.includes('factomove.es') && <i className="fa-solid fa-triangle-exclamation text-[10px] animate-pulse"></i>}
                             {user.email}
                         </span>
@@ -138,12 +138,12 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                         }
 
                         return saldos.map((s, idx) => (
-                          <div key={`${su.id}-${idx}`} className="group/saldo flex items-center bg-slate-50 border border-slate-100 rounded-xl px-2 py-1 gap-2 shadow-sm">
-                            <span className={`${badgeColor} min-w-[1.5rem] px-1 h-6 rounded-lg flex items-center justify-center font-black text-[10px] shadow-sm`}>
-                              {s.saldo}
+                          <div key={`${su.id}-${idx}`} className="group/saldo flex items-center bg-slate-50 border border-slate-100 rounded-xl px-2 py-1 gap-2 shadow-sm hover:border-teal-200 transition-all">
+                            <span className={`${badgeColor} min-w-[1.5rem] px-1.5 h-6 rounded-lg flex items-center justify-center font-black text-[10px] shadow-sm`}>
+                              {s.total ?? 0}
                             </span> 
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter" title={s.nombre}>
-                              {s.nombre}
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-tighter" title={s.tipo_credito?.nombre}>
+                              {s.tipo_credito?.nombre || 'PACK'}
                             </span>
                           </div>
                         ));

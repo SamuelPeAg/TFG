@@ -18,7 +18,7 @@ class PagosController extends Controller
         $start = $request->input('start');
         $end = $request->input('end');
 
-        $query = Pago::with(['user', 'entrenadores', 'suscripciones']);
+        $query = Pago::with(['user', 'entrenadores', 'suscripciones', 'tiposCredito']);
 
         if ($start) {
             try {
@@ -74,10 +74,20 @@ class PagosController extends Controller
         // Extraer roles del request
         $currentUser = request()->user();
         $isClientOnly = $currentUser && $currentUser->hasRole('cliente') && !$currentUser->hasRole('admin') && !$currentUser->hasRole('entrenador');
-        $activeSubIds = [];
+        $activeCreditTypeIds = [];
         if ($isClientOnly) {
+            // Obtenemos los IDs de tipos de crédito donde el usuario tiene saldo positivo y no caducado
+            $activeCreditTypeIds = \App\Models\CreditoLote::validos()
+                ->whereHas('suscripcionUsuario', function($q) use ($currentUser) {
+                    $q->where('id_usuario', $currentUser->id);
+                })
+                ->pluck('tipo_credito_id')
+                ->unique()
+                ->toArray();
+                
+            // También mantenemos soporte para el mapeo por suscripción si fuera necesario
             $activeSubIds = $currentUser->suscripciones()
-                ->where('saldo_actual', '>', 0)
+                ->where('estado', 'activo')
                 ->pluck('id_suscripcion')
                 ->toArray();
         }
@@ -149,11 +159,19 @@ class PagosController extends Controller
 
             $classSubIds = $first->suscripciones->pluck('id')->toArray();
 
-            // Filtrado del lado del cliente
-            if (isset($isClientOnly) && $isClientOnly) {
-                if (empty($classSubIds)) continue;
+            // Filtrado del lado del cliente: solo ve clases para las que tiene créditos o suscripción permitida
+            if ($isClientOnly) {
+                $classSubIds = $first->suscripciones->pluck('id')->toArray();
+                $classCreditIds = $first->tiposCredito->pluck('id')->toArray();
+
+                // Si la clase no tiene ninguna restricción de entrada, la mostramos? 
+                // Por ahora seguimos la lógica: si no hay nada configurado, no la ve (clases internas/staff)
+                if (empty($classSubIds) && empty($classCreditIds)) continue;
+
                 $hasMatchingSub = !empty(array_intersect($activeSubIds, $classSubIds));
-                if (!$hasMatchingSub) continue;
+                $hasMatchingCredit = !empty(array_intersect($activeCreditTypeIds, $classCreditIds));
+
+                if (!$hasMatchingSub && !$hasMatchingCredit) continue;
             }
 
             $events[] = [
@@ -501,53 +519,56 @@ class PagosController extends Controller
         $newUser = User::find($request->user_id);
 
         // 5. Verificar CRÉDITOS (ESTRICTO: Incluso Admin)
-        $tipoInfo = \App\Models\TipoSesion::where('nombre', $existingPago->tipo_clase)->first();
+        $tipoInfo = \App\Models\TipoSesion::with('tiposCredito')->where('nombre', $existingPago->tipo_clase)->first();
         if (!$tipoInfo) {
             return response()->json(['error' => 'Tipo de sesión no encontrado.'], 422);
         }
-        $tipoSesionId = $tipoInfo->id;
 
-        $allowedSubIds = $existingPago->suscripciones->pluck('id')->toArray();
         $allowedCreditIds = $existingPago->tiposCredito->pluck('id')->toArray();
+        if (empty($allowedCreditIds)) {
+            // Si no hay específicos en la clase, usamos los del tipo de sesión
+            $allowedCreditIds = $tipoInfo->tiposCredito->pluck('id')->toArray();
+        }
 
         $userSubsQuery = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
             ->where('estado', 'activo');
 
         if (!empty($allowedCreditIds)) {
-            // Si hay créditos específicos permitidos, filtramos por ellos
-            $userSubsQuery->whereHas('suscripcion.creditos', function($q) use ($allowedCreditIds) {
-                $q->whereIn('tipo_credito_id', $allowedCreditIds);
+            $userSubsQuery->whereHas('lotes', function($q) use ($allowedCreditIds) {
+                $q->validos()->whereIn('tipo_credito_id', $allowedCreditIds);
             });
-        } elseif (!empty($allowedSubIds)) {
-            // Si no hay créditos pero hay suscripciones, usamos la lógica antigua
-            $userSubsQuery->whereIn('id_suscripcion', $allowedSubIds);
         }
 
-        $userSubs = $userSubsQuery->with(['suscripcion', 'lotes' => function($q) use ($tipoSesionId, $allowedCreditIds) {
-                $q->validos()->where('tipo_sesion_id', $tipoSesionId);
+        $userSubs = $userSubsQuery->with(['suscripcion', 'lotes' => function($q) use ($allowedCreditIds) {
+                $q->validos();
                 if (!empty($allowedCreditIds)) {
                     $q->whereIn('tipo_credito_id', $allowedCreditIds);
                 }
             }])
             ->get();
             
-        $hasCredits = false;
+        // 6. Consumir Crédito
+        // Buscamos el lote que vamos a consumir (el primero con saldo)
+        $loteAConsumir = null;
         $activeSub = null;
+        $hasCredits = false;
         foreach ($userSubs as $sub) {
-            $saldoParaTipo = $sub->lotes->sum('cantidad_actual');
-            if ($saldoParaTipo > 0) {
-                $hasCredits = true;
-                $activeSub = $sub;
-                break;
+            foreach ($sub->lotes as $lote) {
+                if ($lote->cantidad_actual > 0) {
+                    $loteAConsumir = $lote;
+                    $activeSub = $sub;
+                    $hasCredits = true;
+                    break 2;
+                }
             }
         }
 
-        if (!$hasCredits) {
+        if (!$hasCredits || !$loteAConsumir) {
             return response()->json(['error' => 'No tienes créditos suficientes para esta clase.'], 422);
         }
 
-        // 6. Consumir Crédito
-        app(\App\Services\CreditService::class)->consume($activeSub, $tipoSesionId, 1);
+        // Consumimos del lote específico
+        $loteAConsumir->decrement('cantidad_actual', 1);
 
         // 7. Crear el nuevo pago
         $subNombre = ($activeSub && $activeSub->suscripcion) ? $activeSub->suscripcion->nombre : 'Bono';
@@ -610,17 +631,24 @@ class PagosController extends Controller
             $tipoInfo = \App\Models\TipoSesion::where('nombre', $pago->tipo_clase)->first();
             $tipoSesionId = $tipoInfo ? $tipoInfo->id : null;
 
-            $messageSuffix = '';
-            if ($diffHours >= $horasCancelacion && $tipoSesionId) {
-                $allowedSubIds = $pago->suscripciones->pluck('id')->toArray();
+            if ($diffHours >= $horasCancelacion) {
+                // Re-abonar crédito: buscamos el último lote consumido de este tipo o simplemente añadimos uno nuevo de devolución
+                // Para simplificar y no romper la trazabilidad, usamos el refund del servicio si existe o creamos un lote de "Devolución"
+                
+                $allowedCreditIds = $pago->tiposCredito->pluck('id')->toArray();
+                if (empty($allowedCreditIds) && $tipoInfo) {
+                    $allowedCreditIds = $tipoInfo->tiposCredito->pluck('id')->toArray();
+                }
+
                 $userSub = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
-                    ->whereIn('id_suscripcion', $allowedSubIds)
                     ->where('estado', 'activo')
                     ->first();
                 
-                if ($userSub) {
-                    app(\App\Services\CreditService::class)->refund($userSub, $tipoSesionId, 1);
-                    $messageSuffix = ' El crédito ha sido devuelto a tu cuenta.';
+                if ($userSub && !empty($allowedCreditIds)) {
+                    // Devolvemos al primer tipo de crédito permitido
+                    $tipoCreditoId = $allowedCreditIds[0];
+                    app(\App\Services\CreditService::class)->allocate($userSub, $tipoCreditoId, 1, 30, $pago->id);
+                    $messageSuffix = ' El crédito ha sido devuelto a tu cuenta (Lote de devolución).';
                 }
             } else {
                 $messageSuffix = ' Cancelación fuera de plazo: no se ha devuelto el crédito.';
