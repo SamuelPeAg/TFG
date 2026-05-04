@@ -11,7 +11,7 @@ class SuscripcionUsuario extends Model
 
     protected $table = 'suscripciones_usuarios';
 
-    protected $appends = ['saldos_por_tipo'];
+    protected $appends = ['saldos_por_tipo', 'saldo_actual_calculado'];
 
     protected $fillable = [
         'id_usuario',
@@ -49,6 +49,14 @@ class SuscripcionUsuario extends Model
                 ];
             })
             ->values();
+    }
+
+    /**
+     * Devuelve el saldo total sumando todos los tipos de crédito (simplificado para UI).
+     */
+    public function getSaldoActualCalculadoAttribute()
+    {
+        return (float) $this->lotes()->validos()->sum('cantidad_actual');
     }
 
     /**

@@ -899,6 +899,18 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                     <i className="fa-solid fa-calendar-check text-teal-400/60"></i>
                                                     ACTIVA DESDE EL {sub.created_at ? new Date(sub.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() : 'N/A'}
                                                 </p>
+
+                                                {/* Breakdown of credits by type */}
+                                                {sub.saldos_por_tipo && sub.saldos_por_tipo.length > 0 && (
+                                                    <div className="mt-4 flex flex-wrap gap-1.5">
+                                                        {sub.saldos_por_tipo.map((saldo, idx) => (
+                                                            <div key={idx} className="flex items-center gap-2 bg-slate-50/50 px-2.5 py-1.5 rounded-xl border border-slate-100 group/item hover:border-teal-100 hover:bg-white transition-all">
+                                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter group-hover/item:text-slate-500">{saldo.tipo_credito?.nombre || 'Créditos'}:</span>
+                                                                <span className="text-[10px] font-black text-slate-700 group-hover/item:text-[#38C1A3]">{saldo.total}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             {/* Right Section: Actions */}

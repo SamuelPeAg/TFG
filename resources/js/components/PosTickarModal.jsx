@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Button from './Button';
+import SearchSelect from './SearchSelect';
 
 const INITIAL_SESSIONS = [
   { id: 'ep', title: 'EP', subtitle: 'Individual', price: 35, icon: 'fa-solid fa-user', colorClass: 'text-blue-600' },
@@ -14,105 +15,19 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
   const [empresas, setEmpresas] = useState([]);
   const [cart, setCart] = useState([]); // Array of { id, title, price, quantity }
   const [isEditMode, setIsEditMode] = useState(false);
-   const [empresaId, setEmpresaId] = useState('');
-   const [formData, setFormData] = useState({
-       cliente_id: '',
-       entrenador_id: '',
-        centro_id: '',
-        fecha: new Date().toISOString().split('T')[0],
-        metodo_pago: 'Efectivo'
-    });
-   const [ivaPercent, setIvaPercent] = useState(21);
-   const [submitting, setSubmitting] = useState(false);
+  const [empresaId, setEmpresaId] = useState('');
+  const [formData, setFormData] = useState({
+      cliente_id: '',
+      entrenador_id: '',
+      centro_id: '',
+      fecha: new Date().toISOString().split('T')[0],
+      metodo_pago: 'Efectivo'
+  });
+  const [ivaPercent, setIvaPercent] = useState(21);
+  const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const clientRef = useRef(null);
-  const trainerRef = useRef(null);
-  const empresaRef = useRef(null);
-  const centroRef = useRef(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    // Función para inicializar los selectores con Select2
-    // Se usa un intervalo para asegurar que Select2 esté cargado y los elementos existan
-    const checkInterval = setInterval(() => {
-        const $ = window.$;
-        if ($ && typeof $.fn.select2 === 'function' && clientRef.current && trainerRef.current && empresaRef.current && centroRef.current) {
-            clearInterval(checkInterval);
-
-            const options = {
-                width: '100%',
-                dropdownParent: $(clientRef.current).parent().parent(), // Para que se vea encima del modal
-                placeholder: 'Selecciona...',
-                allowClear: true,
-                language: {
-                    noResults: () => "Sin resultados"
-                }
-            };
-
-            $(clientRef.current).select2(options).on('change', (e) => {
-                setFormData(prev => ({ ...prev, cliente_id: e.target.value }));
-            });
-
-            $(trainerRef.current).select2(options).on('change', (e) => {
-                setFormData(prev => ({ ...prev, entrenador_id: e.target.value }));
-            });
-
-            $(empresaRef.current).select2(options).on('change', (e) => {
-                setEmpresaId(e.target.value);
-            });
-
-            $(centroRef.current).select2(options).on('change', (e) => {
-                const selectedCentroId = e.target.value;
-                setFormData(prev => ({ ...prev, centro_id: selectedCentroId }));
-                
-                // Lógica de Empresa Default
-                const centro = centros.find(c => String(c.id) === String(selectedCentroId));
-                if (centro && centro.empresa_id) {
-                    setEmpresaId(String(centro.empresa_id));
-                }
-            });
-
-            // Sincronizar valor inicial
-            $(clientRef.current).val(formData.cliente_id).trigger('change.select2');
-            $(trainerRef.current).val(formData.entrenador_id).trigger('change.select2');
-            $(empresaRef.current).val(empresaId).trigger('change.select2');
-            $(centroRef.current).val(formData.centro_id).trigger('change.select2');
-        }
-    }, 100);
-
-    return () => {
-        clearInterval(checkInterval);
-        const $ = window.$;
-        if ($ && typeof $.fn.select2 === 'function') {
-            if (clientRef.current) $(clientRef.current).select2('destroy');
-            if (trainerRef.current) $(trainerRef.current).select2('destroy');
-            if (empresaRef.current) $(empresaRef.current).select2('destroy');
-            if (centroRef.current) $(centroRef.current).select2('destroy');
-        }
-    };
-  }, [isOpen, clientes, entrenadores]);
-
-  // Sincronizar estado React -> Select2 UI (solo si cambian externamente)
-  useEffect(() => {
-    const $ = window.$;
-    if ($ && typeof $.fn.select2 === 'function' && isOpen) {
-        if ($(clientRef.current).val() !== formData.cliente_id) {
-            $(clientRef.current).val(formData.cliente_id).trigger('change.select2');
-        }
-        if ($(trainerRef.current).val() !== formData.entrenador_id) {
-            $(trainerRef.current).val(formData.entrenador_id).trigger('change.select2');
-        }
-        if ($(empresaRef.current).val() !== String(empresaId)) {
-            $(empresaRef.current).val(empresaId).trigger('change.select2');
-        }
-        if ($(centroRef.current).val() !== String(formData.centro_id)) {
-            $(centroRef.current).val(formData.centro_id).trigger('change.select2');
-        }
-    }
-  }, [formData.cliente_id, formData.entrenador_id, formData.centro_id, empresaId, isOpen]);
-
+  // Initialize data when modal opens
   useEffect(() => {
     if (isOpen) {
         setCart([]);
@@ -147,7 +62,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
             if (emps.length > 0) setEmpresaId(String(emps[0].id));
         });
 
-        // Cargar suscripciones del centro para el TPV
+        // Cargar suscripciones para el TPV
         axios.get('/suscripciones').then(res => {
             const subs = res.data.suscripciones || [];
             setSessions([
@@ -167,7 +82,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
     }
   }, [isOpen, centros]);
 
-  // Move calculation and hooks before early return (Rules of Hooks)
+  // Current selected empresa and IVA
   const currEmpresa = empresas.find(e => String(e.id) === String(empresaId)) || (empresas.length > 0 ? empresas[0] : { iva_configurable: 21, nombre: 'Empresa' });
   
   useEffect(() => {
@@ -178,7 +93,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
 
   const total = cart.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * item.quantity, 0);
   
-  // Math: Reverse IVA calculation (Total includes IVA)
+  // Math: Reverse IVA calculation
   const baseSubtotal = total / (1 + (ivaPercent / 100));
   const ivaAmount = total - baseSubtotal;
   const ivaRate = ivaPercent / 100;
@@ -246,7 +161,7 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                   precio: item.price,
                   suscripcion_id: item.suscripcion_id || null 
               })),
-              importe_entregado: total // Se asume pago exacto
+              importe_entregado: total
           };
           await axios.post('/facturas/tickar', payload, { headers: { Accept: 'application/json' }});
           setShowSuccess(true);
@@ -358,7 +273,6 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
 
                     <hr className="border-t border-dashed border-slate-300 my-6" />
 
-                    {/* Ajustes Rápidos por Tipo */}
                     <div className="space-y-6">
                         {cart.length === 0 ? (
                             <div className="bg-slate-100/50 rounded-2xl p-10 text-center border-2 border-dashed border-slate-200">
@@ -399,38 +313,23 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                 </div>
             </div>
 
-            <div className="w-full lg:w-[350px] flex flex-col bg-white shrink-0">
-                <div className="p-5 border-b border-slate-100 flex flex-col gap-4">
-                    <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Empresa / IVA</label>
-                        </div>
-                        <select 
-                            ref={empresaRef}
-                            value={empresaId || ''} 
-                            onChange={(e) => setEmpresaId(e.target.value)} 
-                            className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 outline-none focus:border-[#38C1A3]"
-                        >
-                            {empresas.map(e => (
-                                <option key={e.id} value={e.id}>
-                                    {e.nombre} ({parseFloat(e.iva_configurable)}%)
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
+            <div className="w-full lg:w-[350px] flex flex-col bg-white shrink-0 shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
+                <div className="p-5 border-b border-slate-100 flex flex-col gap-4 overflow-visible">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Centro</label>
-                            <select 
-                                ref={centroRef}
-                                value={formData.centro_id} 
-                                onChange={(e) => setFormData({...formData, centro_id: e.target.value})} 
-                                className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 outline-none focus:border-[#38C1A3]"
-                            >
-                                <option value="">Seleccionar...</option>
-                                {centros?.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                            </select>
+                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sede / Centro</label>
+                            <SearchSelect 
+                                value={formData.centro_id}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setFormData(prev => ({ ...prev, centro_id: val }));
+                                    const centro = centros.find(c => String(c.id) === String(val));
+                                    if (centro && centro.empresa_id) setEmpresaId(String(centro.empresa_id));
+                                }}
+                                placeholder="Centro..."
+                                icon="fa-solid fa-building"
+                                options={centros?.map(c => ({ value: c.id, label: c.nombre })) || []}
+                            />
                         </div>
                         <div className="space-y-1">
                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha</label>
@@ -438,39 +337,44 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                                 type="date"
                                 value={formData.fecha}
                                 onChange={(e) => setFormData({...formData, fecha: e.target.value})}
-                                className="w-full p-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 outline-none focus:border-[#38C1A3] h-[38px]"
+                                className="w-full px-4 py-[9px] bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 outline-none focus:bg-white focus:border-[#38C1A3] transition-all"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cliente</label>
-                        <select 
-                            ref={clientRef}
-                            id="pos-select-cliente"
-                            value={formData.cliente_id} 
-                            onChange={(e) => setFormData({...formData, cliente_id: e.target.value})} 
-                            className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 outline-none focus:border-[#38C1A3]"
-                        >
-                            <option value="">Seleccionar cliente...</option>
-                            {clientes?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Facturar a (CIF/DNI)</label>
+                        <SearchSelect 
+                            value={empresaId}
+                            onChange={(e) => setEmpresaId(e.target.value)}
+                            placeholder="Empresa/Autónomo..."
+                            icon="fa-solid fa-id-card"
+                            options={empresas.map(e => ({ value: e.id, label: `${e.nombre} (${e.cif_dni})` }))}
+                        />
                     </div>
+
                     <div className="space-y-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Entrenador</label>
-                        <select 
-                            ref={trainerRef}
-                            id="pos-select-entrenador"
-                            value={formData.entrenador_id} 
-                            onChange={(e) => setFormData({...formData, entrenador_id: e.target.value})} 
-                            className="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 outline-none focus:border-[#38C1A3]"
-                        >
-                            <option value="">Seleccionar entrenador...</option>
-                            {entrenadores?.map(e => <option key={e.id} value={e.id}>{e.name || e.nombre}</option>)}
-                        </select>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cliente</label>
+                        <SearchSelect 
+                            value={formData.cliente_id}
+                            onChange={(e) => setFormData(prev => ({ ...prev, cliente_id: e.target.value }))}
+                            placeholder="Buscar cliente..."
+                            icon="fa-solid fa-users"
+                            options={clientes?.map(c => ({ value: c.id, label: c.name })) || []}
+                        />
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Entrenador Responsable</label>
+                        <SearchSelect 
+                            value={formData.entrenador_id}
+                            onChange={(e) => setFormData(prev => ({ ...prev, entrenador_id: e.target.value }))}
+                            placeholder="Asignar entrenador..."
+                            icon="fa-solid fa-user-tie"
+                            options={entrenadores?.map(e => ({ value: e.id, label: e.name || e.nombre })) || []}
+                        />
                     </div>
                     
-                    {/* Método de Pago Selector */}
                     <div className="space-y-2 pt-2">
                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Forma de Pago</label>
                         <div className="flex bg-slate-100 p-1 rounded-xl gap-1">
@@ -491,30 +395,30 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                 </div>
 
                 <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/50">
-                    <h4 className="font-black text-sm text-slate-700 uppercase tracking-tighter italic">Detalle de la cuenta</h4>
+                    <h4 className="font-black text-[10px] text-slate-400 uppercase tracking-widest italic">Detalle de la cuenta</h4>
                 </div>
-                <div className="flex-1 p-5 overflow-auto">
+                <div className="flex-1 p-5 overflow-auto custom-scrollbar">
                     {cart.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-300 gap-2">
-                             <span className="text-xs font-medium italic">Sin conceptos.</span>
+                             <span className="text-xs font-medium italic opacity-50">Sin conceptos.</span>
                         </div>
                     ) : (
                         <ul className="space-y-2">
                             {cart.map((item) => (
-                                <li key={item.id} className="flex items-center justify-between text-sm py-2 border-b border-slate-50 last:border-0 group">
+                                <li key={item.id} className="flex items-center justify-between text-sm py-2 border-b border-slate-50 last:border-0 group animate-in slide-in-from-right-2 duration-300">
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-1.5">
                                             <span className="w-5 h-5 bg-slate-100 text-slate-500 rounded text-[10px] flex items-center justify-center font-black">{item.quantity}x</span>
-                                            <span className="font-bold text-slate-700">{item.title}</span>
+                                            <span className="font-bold text-slate-700 text-xs">{item.title}</span>
                                         </div>
-                                        <span className="text-[10px] text-slate-400 ml-6 pl-0.5">{item.price} € / unid.</span>
+                                        <span className="text-[10px] text-slate-400 ml-6 pl-0.5 font-bold">{item.price} €</span>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className="flex items-center  bg-slate-50 rounded-lg border border-slate-100">
-                                            <button onClick={() => updateQuantity(item.id, -1)} className="px-2 py-1 text-slate-400 hover:text-rose-500">-</button>
-                                            <button onClick={() => updateQuantity(item.id, 1)} className="px-2 py-1 text-slate-400 hover:text-emerald-500">+</button>
+                                        <div className="flex items-center bg-slate-50 rounded-lg border border-slate-100 overflow-hidden">
+                                            <button onClick={() => updateQuantity(item.id, -1)} className="px-2 py-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors">-</button>
+                                            <button onClick={() => updateQuantity(item.id, 1)} className="px-2 py-1 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 transition-colors">+</button>
                                         </div>
-                                        <span className="font-black text-slate-700 min-w-[50px] text-right">{(item.quantity * item.price).toFixed(2)}€</span>
+                                        <span className="font-black text-slate-700 min-w-[50px] text-right text-xs">{(item.quantity * item.price).toFixed(2)}€</span>
                                     </div>
                                 </li>
                             ))}
@@ -523,21 +427,22 @@ export default function PosTickarModal({ isOpen, onClose, centros, entrenadores,
                 </div>
 
                 <div className="p-5 bg-slate-50 flex flex-col gap-2 border-t border-slate-100">
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        <span>Base a Percibir</span>
+                    <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <span>Base Imponible</span>
                         <span>{baseSubtotal.toFixed(2)} €</span>
                     </div>
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         <span>IVA ({ivaPercent}%)</span>
                         <span>{ivaAmount.toFixed(2)} €</span>
                     </div>
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200">
-                        <span className="text-sm text-slate-500 font-extrabold uppercase tracking-widest">Total Cobrar</span>
-                        <span className="text-3xl font-black text-slate-800 underline decoration-[#38C1A3] decoration-4">{total.toFixed(2)} €</span>
+                    <div className="flex items-center justify-between mt-2 pt-3 border-t border-slate-200">
+                        <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Total Cobrar</span>
+                        <span className="text-3xl font-black text-slate-800 tracking-tighter decoration-[#38C1A3] decoration-4">{total.toFixed(2)} €</span>
                     </div>
                     
-                    <Button onClick={handleSubmit} disabled={submitting || cart.length === 0} variant="primary" className="w-full justify-center mt-3 h-14 text-lg shadow-sm font-black tracking-widest border-transparent text-white bg-[#38c1a3] hover:bg-[#32ad92] rounded-2xl active:scale-95 transition-all">
-                        {submitting ? <i className="fa-solid fa-spinner fa-spin"></i> : 'COBRAR TICKET'}
+                    <Button onClick={handleSubmit} disabled={submitting || cart.length === 0} variant="primary" className="w-full justify-center mt-3 h-14 text-xs font-black tracking-[0.2em] uppercase border-transparent text-white bg-[#38c1a3] hover:bg-[#32ad92] rounded-2xl active:scale-95 transition-all shadow-xl shadow-teal-100">
+                        {submitting ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-check-circle mr-2"></i>}
+                        COBRAR TICKET
                     </Button>
                 </div>
             </div>

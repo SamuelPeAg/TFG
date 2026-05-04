@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from './Button';
+import SearchSelect from './SearchSelect';
 
 export default function ExportXmlModal({ isOpen, onClose, centros, suscripciones = [], clientes = [], filtros }) {
   const [selectedCentro, setSelectedCentro] = useState('todos');
@@ -90,14 +91,13 @@ export default function ExportXmlModal({ isOpen, onClose, centros, suscripciones
 
             <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Centro</label>
-                <select 
+                <SearchSelect 
                     value={selectedCentro} 
                     onChange={(e) => setSelectedCentro(e.target.value)} 
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
-                >
-                    <option value="todos">Todos los centros</option>
-                    {centros?.map(c => <option key={c.nombre} value={c.nombre}>{c.nombre}</option>)}
-                </select>
+                    placeholder="Seleccionar centro..."
+                    icon="fa-solid fa-building"
+                    options={[{ value: 'todos', label: 'Todos los centros' }, ...centros?.map(c => ({ value: c.nombre, label: c.nombre })) || []]}
+                />
             </div>
 
             <div className="space-y-2">

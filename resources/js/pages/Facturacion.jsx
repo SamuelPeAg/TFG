@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SearchSelect from '../components/SearchSelect';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
@@ -137,66 +138,64 @@ export default function Facturacion() {
                 
                 <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Año</label>
-                    <div className="relative group">
-                      <select name="anio" value={filters.anio || ''} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
-                        {years.map(y => <option key={y} value={y}>{y}</option>)}
-                      </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                        <i className="fas fa-chevron-down text-[10px]"></i>
-                      </div>
-                    </div>
+                    <SearchSelect 
+                      name="anio"
+                      value={filters.anio}
+                      onChange={handleFilterChange}
+                      placeholder="Año"
+                      icon="fa-solid fa-calendar"
+                      searchable={false}
+                      options={years.map(y => ({ value: y, label: y }))}
+                    />
                 </div>
 
                 <div className="space-y-1.5">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Mes</label>
-                    <div className="relative group">
-                      <select name="mes" value={filters.mes || ''} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
-                        <option value="">Todos</option>
-                        {meses.map(m => <option key={m.num} value={m.num}>{m.nombre}</option>)}
-                      </select>
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                        <i className="fas fa-chevron-down text-[10px]"></i>
-                      </div>
-                    </div>
+                    <SearchSelect 
+                      name="mes"
+                      value={filters.mes}
+                      onChange={handleFilterChange}
+                      placeholder="Todos"
+                      icon="fa-solid fa-calendar-days"
+                      searchable={false}
+                      options={[{ value: '', label: 'Todos' }, ...meses.map(m => ({ value: m.num, label: m.nombre }))]}
+                    />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Centro</label>
-                  <div className="relative group">
-                    <select name="centro" value={filters.centro || 'todos'} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
-                      <option value="todos">Todos los centros</option>
-                      {data.centros?.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                      <i className="fas fa-building text-[10px]"></i>
-                    </div>
-                  </div>
+                  <SearchSelect 
+                    name="centro"
+                    value={filters.centro}
+                    onChange={handleFilterChange}
+                    placeholder="Todos los centros"
+                    icon="fa-solid fa-building"
+                    options={[{ value: 'todos', label: 'Todos los centros' }, ...data.centros?.map(c => ({ value: c.nombre, label: c.nombre })) || []]}
+                  />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Entrenador</label>
-                  <div className="relative group">
-                    <select name="entrenador_id" value={filters.entrenador_id || ''} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
-                      <option value="">Cualquier entrenador</option>
-                      {data.todosLosEntrenadores?.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                      <i className="fas fa-user-tie text-[10px]"></i>
-                    </div>
-                  </div>
+                  <SearchSelect 
+                    name="entrenador_id"
+                    value={filters.entrenador_id}
+                    onChange={handleFilterChange}
+                    placeholder="Cualquier entrenador"
+                    icon="fa-solid fa-user-tie"
+                    options={data.todosLosEntrenadores?.map(e => ({ value: e.id, label: e.name })) || []}
+                  />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">Cliente</label>
-                  <div className="relative group">
-                    <select name="cliente_id" id="cliente_id_select" value={filters.cliente_id || ''} onChange={handleFilterChange} className="select2-ignore w-full appearance-none px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none text-sm font-bold text-slate-700 transition-all cursor-pointer group-hover:bg-white">
-                      <option value="">Todos los clientes</option>
-                      {data.todosLosClientes?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                      <i className="fas fa-users text-[10px]"></i>
-                    </div>
-                  </div>
+                  <SearchSelect 
+                    name="cliente_id"
+                    value={filters.cliente_id}
+                    onChange={handleFilterChange}
+                    placeholder="Todos los clientes"
+                    icon="fa-solid fa-users"
+                    options={data.todosLosClientes?.map(c => ({ value: c.id, label: c.name })) || []}
+                  />
                 </div>
 
                 <div className="flex-shrink-0">

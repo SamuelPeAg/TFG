@@ -43,13 +43,16 @@ class SuscripcionUsuarioController extends Controller
             'pago_adelantado' => $request->boolean('pago_adelantado'),
         ]);
 
+        // Aseguramos que tenga las relaciones para allocateSubscription
+        $susuario->load('suscripcion.creditos');
+
         // Solo liberamos los créditos si el pago ha sido confirmado por adelantado
         if ($request->boolean('pago_adelantado')) {
             $this->creditService->allocateSubscription($susuario);
         }
 
         if ($request->wantsJson() || $request->ajax()) {
-            return response()->json(['success' => true, 'suscripcion_usuario' => $susuario->load('suscripcion')]);
+            return response()->json(['success' => true, 'suscripcion_usuario' => $susuario->load(['suscripcion', 'lotes'])]);
         }
         return back()->with('success', "Suscripción asignada correctamente.");
     }
@@ -137,7 +140,8 @@ class SuscripcionUsuarioController extends Controller
             return response()->json(['success' => false, 'message' => 'No tienes permiso para confirmar pagos.'], 403);
         }
 
-        $susuario = SuscripcionUsuario::findOrFail($id);
+        // Cargamos con relaciones para asegurar que allocateSubscription tenga todo
+        $susuario = SuscripcionUsuario::with('suscripcion.creditos')->findOrFail($id);
         $suscripcion = $susuario->suscripcion;
 
         // 1. Crear el registro del pago
@@ -161,10 +165,13 @@ class SuscripcionUsuarioController extends Controller
             'ultima_recarga' => now()
         ]);
 
+        $susuario->refresh(); // Para recalcular saldos
+
         return response()->json([
             'success' => true,
             'message' => 'Pago confirmado y créditos entregados.',
-            'nuevo_saldo' => $susuario->saldos_por_tipo
+            'nuevo_saldo' => $susuario->saldos_por_tipo,
+            'saldo_total' => $susuario->saldo_actual_calculado
         ]);
     }
 }
