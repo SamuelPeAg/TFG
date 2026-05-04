@@ -18,6 +18,7 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
     centro_id: '',
     tipos_credito: []
   });
+  const [creditSearchQuery, setCreditSearchQuery] = useState('');
 
   // Auto-generation of slug from nombre
   useEffect(() => {
@@ -241,29 +242,51 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
 
               {/* Selección de Créditos Permitidos */}
               <div className="space-y-4 pt-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Créditos que dan acceso</label>
+                <div className="flex items-center justify-between ml-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Créditos que dan acceso</label>
+                  <div className="relative">
+                    <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
+                    <input 
+                      type="text" 
+                      placeholder="Buscar..." 
+                      className="pl-8 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-bold outline-none focus:border-[#4BB7AE] w-32 sm:w-40"
+                      value={creditSearchQuery}
+                      onChange={e => setCreditSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-2 scrollbar-hide">
-                  {tiposCredito.map(tc => {
-                    const isChecked = formData.tipos_credito.includes(tc.id);
-                    return (
-                      <label key={tc.id} className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${isChecked ? 'bg-teal-50 border-teal-200' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
-                        <input 
-                          type="checkbox" 
-                          className="w-4 h-4 rounded text-[#4BB7AE] accent-[#4BB7AE]" 
-                          checked={isChecked}
-                          onChange={() => {
-                            const newCredits = isChecked 
-                              ? formData.tipos_credito.filter(id => id !== tc.id)
-                              : [...formData.tipos_credito, tc.id];
-                            setFormData({ ...formData, tipos_credito: newCredits });
-                          }}
-                        />
-                        <span className={`text-xs font-bold ${isChecked ? 'text-teal-700' : 'text-slate-600'}`}>{tc.nombre}</span>
-                      </label>
-                    );
-                  })}
+                  {tiposCredito
+                    .filter(tc => tc.nombre.toLowerCase().includes(creditSearchQuery.toLowerCase()))
+                    .sort((a, b) => {
+                      const aChecked = formData.tipos_credito.includes(a.id);
+                      const bChecked = formData.tipos_credito.includes(b.id);
+                      if (aChecked && !bChecked) return -1;
+                      if (!aChecked && bChecked) return 1;
+                      return 0;
+                    })
+                    .map(tc => {
+                      const isChecked = formData.tipos_credito.includes(tc.id);
+                      return (
+                        <label key={tc.id} className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all border ${isChecked ? 'bg-teal-50 border-teal-200' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
+                          <input 
+                            type="checkbox" 
+                            className="w-4 h-4 rounded text-[#4BB7AE] accent-[#4BB7AE]" 
+                            checked={isChecked}
+                            onChange={() => {
+                              const newCredits = isChecked 
+                                ? formData.tipos_credito.filter(id => id !== tc.id)
+                                : [...formData.tipos_credito, tc.id];
+                              setFormData({ ...formData, tipos_credito: newCredits });
+                            }}
+                          />
+                          <span className={`text-xs font-bold ${isChecked ? 'text-teal-700' : 'text-slate-600'}`}>{tc.nombre}</span>
+                        </label>
+                      );
+                    })}
                   {tiposCredito.length === 0 && (
-                    <p className="text-[10px] text-slate-400 italic">No hay tipos de crédito configurados aún.</p>
+                    <p className="text-[10px] text-slate-400 italic text-center col-span-2 py-4">No hay tipos de crédito configurados aún.</p>
                   )}
                 </div>
               </div>

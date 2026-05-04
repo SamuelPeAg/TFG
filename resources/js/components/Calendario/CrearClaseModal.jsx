@@ -638,6 +638,13 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 scrollbar-thin">
                                         {tiposCredito
                                             .filter(tc => tc.nombre.toLowerCase().includes(susSearchQuery.toLowerCase()))
+                                            .sort((a, b) => {
+                                                const aChecked = formData.tipos_credito_permitidos.includes(a.id);
+                                                const bChecked = formData.tipos_credito_permitidos.includes(b.id);
+                                                if (aChecked && !bChecked) return -1;
+                                                if (!aChecked && bChecked) return 1;
+                                                return 0;
+                                            })
                                             .map(tc => {
                                                 const isChecked = formData.tipos_credito_permitidos.includes(tc.id);
                                                 return (

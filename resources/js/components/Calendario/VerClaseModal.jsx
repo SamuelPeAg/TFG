@@ -392,24 +392,32 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                    <div className={`p-6 rounded-[24px] border transition-all ${isEditing ? 'bg-white border-[#38b2ac] shadow-xl' : 'bg-slate-50/50 border-slate-100'}`}>
                       {isEditing ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
-                              {tiposCredito.map(t => {
-                                  const isSelected = editCreditos.includes(t.id);
-                                  return (
-                                      <button 
-                                          key={t.id}
-                                          onClick={() => {
-                                              if (isSelected) setEditCreditos(editCreditos.filter(id => id !== t.id));
-                                              else setEditCreditos([...editCreditos, t.id]);
-                                          }}
-                                          className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black transition-all border-2 ${isSelected ? 'bg-[#38b2ac] text-white border-[#38b2ac] shadow-md scale-[1.02]' : 'bg-white text-slate-500 border-slate-100 hover:border-[#38b2ac]/30'}`}
-                                      >
-                                          <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-white text-[#38b2ac]' : 'bg-slate-100 text-slate-300'}`}>
-                                              <i className={`fa-solid ${isSelected ? 'fa-check text-[10px]' : 'fa-plus text-[10px]'}`}></i>
-                                          </div>
-                                          <span className="truncate">{t.nombre}</span>
-                                      </button>
-                                  );
-                              })}
+                              {tiposCredito
+                                  .sort((a, b) => {
+                                      const aChecked = editCreditos.includes(a.id);
+                                      const bChecked = editCreditos.includes(b.id);
+                                      if (aChecked && !bChecked) return -1;
+                                      if (!aChecked && bChecked) return 1;
+                                      return 0;
+                                  })
+                                  .map(t => {
+                                      const isSelected = editCreditos.includes(t.id);
+                                      return (
+                                          <button 
+                                              key={t.id}
+                                              onClick={() => {
+                                                  if (isSelected) setEditCreditos(editCreditos.filter(id => id !== t.id));
+                                                  else setEditCreditos([...editCreditos, t.id]);
+                                              }}
+                                              className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black transition-all border-2 ${isSelected ? 'bg-[#38b2ac] text-white border-[#38b2ac] shadow-md scale-[1.02]' : 'bg-white text-slate-500 border-slate-100 hover:border-[#38b2ac]/30'}`}
+                                          >
+                                              <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-white text-[#38b2ac]' : 'bg-slate-100 text-slate-300'}`}>
+                                                  <i className={`fa-solid ${isSelected ? 'fa-check text-[10px]' : 'fa-plus text-[10px]'}`}></i>
+                                              </div>
+                                              <span className="truncate">{t.nombre}</span>
+                                          </button>
+                                      );
+                                  })}
                           </div>
                       ) : (
                           <div className="flex flex-wrap gap-2.5">
