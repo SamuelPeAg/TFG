@@ -128,7 +128,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </div>
         </div>
 
-        <nav className="grow py-2 sm:py-3 px-3 sm:px-5 space-y-1.5 sm:space-y-2 flex flex-col">
+        <nav className="grow py-2 sm:py-3 px-3 sm:px-5 space-y-1.5 sm:space-y-2 flex flex-col overflow-y-auto custom-scrollbar">
           {linksToShow.map((link) => (
             <Link 
               key={link.path}
@@ -156,9 +156,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <span className="tracking-wide truncate">MI PERFIL</span>
           </Link>
           
-          <button onClick={handleLogout} className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-xs sm:text-sm text-rose-300 hover:text-white hover:bg-rose-500 transition-colors text-left tracking-wider">
-            <i className="fa-solid fa-right-from-bracket w-4 text-center text-sm sm:text-lg flex-shrink-0"></i>
-            <span className="truncate">SALIR</span>
+          <button onClick={handleLogout} className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-xs sm:text-sm text-rose-300 hover:text-white hover:bg-rose-500 transition-all text-left tracking-widest group shadow-sm">
+            <i className="fa-solid fa-right-from-bracket w-4 text-center text-sm sm:text-lg flex-shrink-0 group-hover:scale-110 transition-transform"></i>
+            <span className="truncate">CERRAR SESIÓN</span>
           </button>
         </div>
       </aside>

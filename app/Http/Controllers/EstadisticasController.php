@@ -27,7 +27,7 @@ class EstadisticasController extends Controller
         // 1. KPIs Generales
             $totalClientes = 0;
             try {
-                $totalClientes = User::role('cliente', 'web')->count();
+                $totalClientes = User::role('cliente', 'web')->where('activo', true)->count();
             } catch (\Exception $e) { \Log::error("Error clientes: " . $e->getMessage()); }
 
             $totalEntrenadores = 0;
@@ -68,13 +68,19 @@ class EstadisticasController extends Controller
             // 3. Clases populares (Doughnut)
             $clasesPopulares = collect();
             try {
-                $clasesPopulares = DB::table('horarios_clases')
-                    ->join('clases', 'horarios_clases.clase_id', '=', 'clases.id')
-                    ->selectRaw('clases.nombre as nombre_clase, COUNT(horarios_clases.id) as total')
-                    ->groupBy('clases.nombre')
+                $clasesPopulares = Pago::selectRaw('nombre_clase, COUNT(*) as total')
+                    ->whereNotNull('nombre_clase')
+                    ->where('nombre_clase', '!=', '')
+                    ->groupBy('nombre_clase')
                     ->orderByDesc('total')
                     ->limit(5)
-                    ->get();
+                    ->get()
+                    ->map(function($p) {
+                        return [
+                            'nombre_clase' => $p->nombre_clase,
+                            'total' => $p->total
+                        ];
+                    });
             } catch (\Exception $e) { \Log::error("Error clasesPopulares: " . $e->getMessage()); }
 
             // 4. Sesiones por Centro (Bar)
@@ -90,9 +96,21 @@ class EstadisticasController extends Controller
 
             // 5. Clientes por Centro
             $clientesPorCentro = $centros->map(function ($centro) {
+                $count = User::role('cliente', 'web')
+                    ->where('activo', true)
+                    ->where(function($q) use ($centro) {
+                        $q->where('centro_id', $centro->id)
+                          ->orWhereIn('id', function($sub) use ($centro) {
+                              $sub->select('user_id')
+                                  ->from('pagos')
+                                  ->where('centro', $centro->nombre);
+                          });
+                    })
+                    ->count();
+
                 return [
                     'centro' => $centro->nombre,
-                    'total' => User::role('cliente', 'web')->where('centro_id', $centro->id)->count()
+                    'total' => $count
                 ];
             });
 
