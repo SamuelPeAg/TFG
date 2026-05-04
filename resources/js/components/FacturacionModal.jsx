@@ -72,7 +72,7 @@ export default function FacturacionModal({ isOpen, onClose, cellData }) {
                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brandTeal"></div>
             </div>
           ) : clases.length > 0 ? (
-            <div className="table-container rounded-xl overflow-hidden border border-slate-100 shadow-sm">
+            <div className="table-container rounded-xl overflow-x-auto border border-slate-100 shadow-sm">
                 <table className="facto-table w-full text-left text-sm whitespace-nowrap">
                     <thead className="bg-slate-50/80 border-b border-slate-100">
                         <tr>

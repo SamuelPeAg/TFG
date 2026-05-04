@@ -60,8 +60,9 @@ class PagosController extends Controller
 
         $pagos = $query->orderBy('fecha_registro', 'asc')->get();
 
-        // Obtener todos los tipos de sesión para mapear colores
-        $tiposSesion = \App\Models\TipoSesion::all()->keyBy('nombre');
+        // Obtener todos los tipos de sesión para mapear colores y datos
+        $tiposSesionRaw = \App\Models\TipoSesion::all();
+        $tiposSesion = $tiposSesionRaw->keyBy('nombre')->merge($tiposSesionRaw->keyBy('slug'));
 
         // Agrupar pagos por (fecha, nombre_clase, centro, tipo_clase)
         $grouped = $pagos->groupBy(function ($p) {
@@ -519,9 +520,14 @@ class PagosController extends Controller
         $newUser = User::find($request->user_id);
 
         // 5. Verificar CRÉDITOS (ESTRICTO: Incluso Admin)
-        $tipoInfo = \App\Models\TipoSesion::with('tiposCredito')->where('nombre', $existingPago->tipo_clase)->first();
+        $tipoInfo = \App\Models\TipoSesion::with('tiposCredito')
+            ->where('nombre', $existingPago->tipo_clase)
+            ->orWhere('slug', strtolower($existingPago->tipo_clase))
+            ->orWhere('slug', $existingPago->tipo_clase)
+            ->first();
+
         if (!$tipoInfo) {
-            return response()->json(['error' => 'Tipo de sesión no encontrado.'], 422);
+            return response()->json(['error' => 'Tipo de sesión no encontrado: ' . $existingPago->tipo_clase], 422);
         }
 
         $allowedCreditIds = $existingPago->tiposCredito->pluck('id')->toArray();
@@ -628,7 +634,10 @@ class PagosController extends Controller
             $diffHours = now()->diffInHours($fecha, false); 
             $horasCancelacion = $pago->horas_cancelacion ?? 0;
             
-            $tipoInfo = \App\Models\TipoSesion::where('nombre', $pago->tipo_clase)->first();
+            $tipoInfo = \App\Models\TipoSesion::where('nombre', $pago->tipo_clase)
+                ->orWhere('slug', strtolower($pago->tipo_clase))
+                ->orWhere('slug', $pago->tipo_clase)
+                ->first();
             $tipoSesionId = $tipoInfo ? $tipoInfo->id : null;
 
             if ($diffHours >= $horasCancelacion) {

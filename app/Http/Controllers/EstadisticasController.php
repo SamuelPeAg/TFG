@@ -27,7 +27,12 @@ class EstadisticasController extends Controller
         // 1. KPIs Generales
             $totalClientes = 0;
             try {
-                $totalClientes = User::role('cliente', 'web')->where('activo', true)->count();
+                $totalClientes = User::role('cliente', 'web')
+                    ->where('activo', true)
+                    ->whereHas('suscripciones', function($q) {
+                        $q->where('estado', 'activo');
+                    })
+                    ->count();
             } catch (\Exception $e) { \Log::error("Error clientes: " . $e->getMessage()); }
 
             $totalEntrenadores = 0;
@@ -71,6 +76,7 @@ class EstadisticasController extends Controller
                 $clasesPopulares = Pago::selectRaw('nombre_clase, COUNT(*) as total')
                     ->whereNotNull('nombre_clase')
                     ->where('nombre_clase', '!=', '')
+                    ->where('tipo_clase', '!=', 'Suscripción') // Excluir abonos de suscripciones
                     ->groupBy('nombre_clase')
                     ->orderByDesc('total')
                     ->limit(5)
