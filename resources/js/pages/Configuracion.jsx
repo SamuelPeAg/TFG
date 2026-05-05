@@ -24,6 +24,7 @@ export default function Configuracion() {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
 
+  const [showSuccess, setShowSuccess] = useState(false);
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
   const showAlert = (message, isError = false, title = isError ? "Error" : "Éxito") => {
       setAlertConfig({ isOpen: true, title, message, isError });
@@ -123,7 +124,8 @@ export default function Configuracion() {
           const res = await axios.post('/configuracion', data, {
               headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' }
           });
-          showAlert(res.data.message || 'Configuración actualizada correctamente.');
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 5000);
           
           if (res.data.user && res.data.user.foto_de_perfil) {
               if (window.AppConfig && window.AppConfig.user) {
@@ -154,6 +156,18 @@ export default function Configuracion() {
 
         <main className="flex-1 lg:ml-72 p-6 md:p-12 transition-all">
             <div className="max-w-7xl mx-auto space-y-12">
+                {/* Success Notification */}
+                {showSuccess && (
+                    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="bg-[#38C1A3] text-white px-8 py-4 rounded-[2rem] shadow-2xl shadow-teal-500/40 flex items-center gap-4 border-2 border-white/20 backdrop-blur-md">
+                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                <i className="fa-solid fa-check"></i>
+                            </div>
+                            <span className="text-sm font-black uppercase tracking-widest">¡Cambios guardados con éxito!</span>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div className="flex items-center gap-5">
@@ -206,6 +220,25 @@ export default function Configuracion() {
                                             <p className="text-sm font-bold text-slate-400 mt-1">{formData.email}</p>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* NEW LOCATION FOR SAVE BUTTON */}
+                                <div className="space-y-4">
+                                    <button 
+                                        type="submit" 
+                                        disabled={submitting} 
+                                        className="w-full px-10 py-7 bg-[#38C1A3] text-white rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.2em] hover:bg-teal-500 shadow-2xl shadow-teal-500/20 active:scale-95 transition-all flex items-center justify-center gap-4"
+                                    >
+                                        {submitting ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-cloud-arrow-up text-xl"></i> Guardar Cambios</>}
+                                    </button>
+                                    
+                                    <button 
+                                        type="button" 
+                                        onClick={() => window.history.back()} 
+                                        className="w-full py-5 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 hover:text-slate-400 transition-all border-2 border-transparent hover:border-slate-100 rounded-[2rem]"
+                                    >
+                                        Descartar
+                                    </button>
                                 </div>
                             </div>
 
@@ -292,15 +325,6 @@ export default function Configuracion() {
                                     </div>
                                 </div>
 
-                                {/* ACTION BAR */}
-                                <div className="flex flex-col sm:flex-row justify-end items-center gap-8 pt-8">
-                                    <button type="button" onClick={() => window.history.back()} className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-300 hover:text-slate-500 transition-all">
-                                        Descartar Ajustes
-                                    </button>
-                                    <button type="submit" disabled={submitting} className="w-full sm:w-auto px-16 py-7 bg-[#38C1A3] text-white rounded-[3rem] text-[12px] font-black uppercase tracking-[0.3em] hover:bg-teal-500 shadow-2xl shadow-teal-500/40 active:scale-95 transition-all flex items-center justify-center gap-4 min-w-[280px]">
-                                        {submitting ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-bolt-lightning text-xl"></i> Guardar Cambios</>}
-                                    </button>
-                                </div>
                             </div>
                         </div>
                     </form>
