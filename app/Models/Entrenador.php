@@ -21,6 +21,7 @@ class Entrenador extends Authenticatable
         'dni',
         'foto_de_perfil',
         'iban',
+        'firma_digital',
         'precio_hora',
         'activo',
         'activation_token',

@@ -32,6 +32,7 @@ return new class extends Migration
             // Datos laborales/Staff
             $table->string('iban')->nullable()->unique();
             $table->decimal('precio_hora', 10, 2)->default(0);
+            $table->text('firma_digital')->nullable();
 
             // Relaciones consolidadas
             $table->foreignId('centro_id')->nullable()->constrained('centros')->nullOnDelete();

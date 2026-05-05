@@ -16,6 +16,8 @@ return new class extends Migration
             $table->boolean('activo')->default(false);
             $table->string('password')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->string('iban')->nullable()->unique();
+            $table->text('firma_digital')->nullable();
             
             $table->string('google_id')->nullable()->unique();
             $table->text('google_token')->nullable();

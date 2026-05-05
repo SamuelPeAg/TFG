@@ -15,6 +15,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'iban',
+        'firma_digital',
         'dni',
         'direccion',
         'codigo_postal',

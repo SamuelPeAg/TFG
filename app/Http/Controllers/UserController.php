@@ -478,12 +478,19 @@ class UserController extends Controller
             'name'  => ['required', 'string', 'min:3', 'max:100'],
 
             'iban' => [
-                'nullable', 
-                'string', 
-                'string', 
-                'min:8', 
-                'max:34',
-                Rule::unique('users', 'iban')->ignore($user->id)
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $cleanIban = str_replace(' ', '', $value);
+                    if (str_starts_with(strtoupper($cleanIban), 'ES')) {
+                        if (strlen($cleanIban) !== 24) {
+                            $fail('El IBAN español debe tener exactamente 24 caracteres.');
+                        }
+                    } elseif (strlen($cleanIban) < 15 || strlen($cleanIban) > 34) {
+                        $fail('El IBAN introducido no tiene una longitud válida.');
+                    }
+                },
+                Rule::unique($user->getTable(), 'iban')->ignore($user->id)
             ],
             'foto_de_perfil' => ['nullable', 'image', 'max:2048'], // Validar imagen (max 2MB)
             'firma_digital' => ['nullable', 'string', 'max:500'],
