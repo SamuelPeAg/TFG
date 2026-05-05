@@ -208,7 +208,8 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                   </div>
                 </td>
               </tr>
-            ))
+            );
+          })
           ) : (
             <tr>
               <td colSpan="7" className="px-6 py-20 text-center">
