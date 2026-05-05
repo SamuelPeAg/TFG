@@ -30,6 +30,9 @@ export default function Configuracion() {
       setAlertConfig({ isOpen: true, title, message, isError });
   };
   
+  const [initialData, setInitialData] = useState({});
+  const [hasChanges, setHasChanges] = useState(false);
+  
   const [errors, setErrors] = useState({});
   const fileInputRef = useRef(null);
 
@@ -37,13 +40,26 @@ export default function Configuracion() {
      fetchUser();
   }, []);
 
+  useEffect(() => {
+    const checkChanges = () => {
+        // Ignoramos los campos de password para la detección de cambios simples
+        // a menos que se hayan empezado a escribir
+        const fieldsToCompare = ['name', 'iban', 'dni', 'direccion', 'ciudad', 'codigo_postal'];
+        const changed = fieldsToCompare.some(field => formData[field] !== (initialData[field] || '')) || 
+                        formData.password !== '' || 
+                        photoFile !== null;
+        setHasChanges(changed);
+    };
+    checkChanges();
+  }, [formData, photoFile, initialData]);
+
   const fetchUser = async () => {
       try {
           const res = await axios.get('/configuracion', {
               headers: { Accept: 'application/json' }
           });
           const user = res.data.user;
-          setFormData({
+          const data = {
               name: user.name || '',
               email: user.email || '',
               iban: user.iban || '',
@@ -54,9 +70,13 @@ export default function Configuracion() {
               current_password: '',
               password: '',
               password_confirmation: ''
-          });
+          };
+          setFormData(data);
+          setInitialData(data);
+          
           if (user.foto_de_perfil) {
-              setPhotoPreview(`${window.location.origin}/storage/${user.foto_de_perfil}`);
+              const baseUrl = window.AppConfig?.baseUrl || '/';
+              setPhotoPreview(`${baseUrl}storage/${user.foto_de_perfil}`);
           }
       } catch (error) {
           console.error('Error fetching user config:', error);
@@ -124,12 +144,16 @@ export default function Configuracion() {
           const res = await axios.post('/configuracion', data, {
               headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' }
           });
+          
           setShowSuccess(true);
+          setHasChanges(false);
+          setInitialData({ ...formData, current_password: '', password: '', password_confirmation: '' });
           setTimeout(() => setShowSuccess(false), 5000);
           
           if (res.data.user && res.data.user.foto_de_perfil) {
               if (window.AppConfig && window.AppConfig.user) {
-                  window.AppConfig.user.photo = `${window.location.origin}/storage/${res.data.user.foto_de_perfil}`;
+                  const baseUrl = window.AppConfig?.baseUrl || '/';
+                  window.AppConfig.user.photo = `${baseUrl}storage/${res.data.user.foto_de_perfil}`;
                   window.dispatchEvent(new CustomEvent('user-updated'));
               }
           }
@@ -164,6 +188,18 @@ export default function Configuracion() {
                                 <i className="fa-solid fa-check"></i>
                             </div>
                             <span className="text-sm font-black uppercase tracking-widest">¡Cambios guardados con éxito!</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Warning Notification (Unsaved changes) */}
+                {hasChanges && !showSuccess && (
+                    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="bg-amber-400 text-amber-950 px-8 py-4 rounded-[2rem] shadow-2xl shadow-amber-500/20 flex items-center gap-4 border-2 border-white/50 backdrop-blur-md">
+                            <div className="w-8 h-8 rounded-full bg-amber-950/10 flex items-center justify-center">
+                                <i className="fa-solid fa-triangle-exclamation animate-pulse"></i>
+                            </div>
+                            <span className="text-sm font-black uppercase tracking-widest">Tienes cambios sin guardar — ¡Cuidado!</span>
                         </div>
                     </div>
                 )}
@@ -223,23 +259,25 @@ export default function Configuracion() {
                                 </div>
 
                                 {/* NEW LOCATION FOR SAVE BUTTON */}
-                                <div className="space-y-4">
-                                    <button 
-                                        type="submit" 
-                                        disabled={submitting} 
-                                        className="w-full px-10 py-7 bg-[#38C1A3] text-white rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.2em] hover:bg-teal-500 shadow-2xl shadow-teal-500/20 active:scale-95 transition-all flex items-center justify-center gap-4"
-                                    >
-                                        {submitting ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-cloud-arrow-up text-xl"></i> Guardar Cambios</>}
-                                    </button>
-                                    
-                                    <button 
-                                        type="button" 
-                                        onClick={() => window.history.back()} 
-                                        className="w-full py-5 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 hover:text-slate-400 transition-all border-2 border-transparent hover:border-slate-100 rounded-[2rem]"
-                                    >
-                                        Descartar
-                                    </button>
-                                </div>
+                                {hasChanges && (
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                                        <button 
+                                            type="submit" 
+                                            disabled={submitting} 
+                                            className="w-full px-10 py-7 bg-[#38C1A3] text-white rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.2em] hover:bg-teal-500 shadow-2xl shadow-teal-500/20 active:scale-95 transition-all flex items-center justify-center gap-4"
+                                        >
+                                            {submitting ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-cloud-arrow-up text-xl"></i> Guardar Cambios</>}
+                                        </button>
+                                        
+                                        <button 
+                                            type="button" 
+                                            onClick={() => window.history.back()} 
+                                            className="w-full py-5 text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 hover:text-slate-400 transition-all border-2 border-transparent hover:border-slate-100 rounded-[2rem]"
+                                        >
+                                            Descartar
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             {/* RIGHT COLUMN: Detailed Forms */}
