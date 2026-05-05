@@ -89,10 +89,15 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                                 className="w-full h-full object-cover absolute inset-0 z-10"
                                 onError={(e) => {
                                   e.target.style.display = 'none';
+                                  const fallback = e.target.parentElement.querySelector('.avatar-fallback');
+                                  if (fallback) fallback.style.display = 'block';
                                 }}
                               />
                             ) : null}
-                            <span className="relative z-0 pointer-events-none opacity-40">
+                            <span 
+                              className="avatar-fallback relative z-0 pointer-events-none opacity-40"
+                              style={{ display: user.foto_de_perfil ? 'none' : 'block' }}
+                            >
                               {user.name ? user.name.trim().charAt(0).toUpperCase() : 'U'}
                             </span>
                           </div>

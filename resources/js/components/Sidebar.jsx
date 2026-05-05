@@ -77,11 +77,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days' },
   ];
 
-  const linksToShow = isAdmin 
-    ? adminLinks 
-    : (isTrainer 
-        ? trainerLinks.filter(link => !link.permission || hasPermission(link.permission)) 
-        : clientLinks);
+  const linksToShow = isAdmin
+    ? adminLinks
+    : (isTrainer
+      ? trainerLinks.filter(link => !link.permission || hasPermission(link.permission))
+      : clientLinks);
 
   const getImageUrl = (path) => {
     if (!path) return null;
@@ -90,19 +90,19 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
     // Si el path ya incluye storage, no lo repetimos
     if (cleanPath.startsWith('storage/')) {
-        return baseUrl + cleanPath;
+      return baseUrl + cleanPath;
     }
     return baseUrl + 'storage/' + cleanPath;
   };
 
   return (
     <>
-      <div 
+      <div
         className={`fixed inset-0 bg-gray-900/50 z-40 transition-opacity duration-300 lg:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsOpen(false)}
       />
-      
-      <aside 
+
+      <aside
         style={{ backgroundImage: 'linear-gradient(to bottom, #4eb7ac, #334352)' }}
         className={`fixed top-0 left-0 h-full w-64 sm:w-72 text-white flex flex-col z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 overflow-hidden shadow-2xl`}
       >
@@ -114,17 +114,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </div>
 
         <div className="px-4 sm:px-8 py-4 sm:py-6 mb-2 flex items-center gap-3 sm:gap-4 bg-white/5 rounded-[32px] mx-3 sm:mx-4 border border-white/10 shadow-inner">
-          <div 
+          <div
             className="w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-white flex items-center justify-center font-black text-lg sm:text-xl shrink-0 overflow-hidden shadow-lg border-2 border-white/20"
           >
             {user.photo ? (
-              <img 
-                src={getImageUrl(user.photo)} 
-                alt={user.name} 
-                className="w-full h-full object-cover shadow-inner" 
+              <img
+                src={getImageUrl(user.photo)}
+                alt={user.name}
+                className="w-full h-full object-cover shadow-inner"
                 onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.parentElement.innerHTML = `<span class="text-[#38C1A3]">${user.name.charAt(0).toUpperCase()}</span>`;
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = `<span class="text-[#38C1A3]">${user.name.charAt(0).toUpperCase()}</span>`;
                 }}
               />
             ) : (
@@ -134,22 +134,21 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <div className="flex flex-col overflow-hidden min-w-0">
             <span className="font-extrabold truncate text-white text-sm sm:text-[15px] leading-tight mb-0.5 tracking-tight" title={user.name}>{user.name}</span>
             <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></div>
-                <span className="text-[9px] text-white/60 uppercase tracking-[0.15em] font-black whitespace-nowrap">{user.role}</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></div>
+              <span className="text-[9px] text-white/60 uppercase tracking-[0.15em] font-black whitespace-nowrap">{user.role}</span>
             </div>
           </div>
         </div>
 
         <nav className="grow py-2 sm:py-3 px-3 sm:px-5 space-y-1.5 sm:space-y-2 flex flex-col overflow-y-auto custom-scrollbar">
           {linksToShow.map((link) => (
-            <Link 
+            <Link
               key={link.path}
-              to={link.path} 
-              className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors ${
-                isActive(link.path) 
-                  ? 'bg-white text-[#38C1A3] shadow-md' 
+              to={link.path}
+              className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors ${isActive(link.path)
+                  ? 'bg-white text-[#38C1A3] shadow-md'
                   : 'text-white hover:bg-white/10'
-              }`}
+                }`}
               onClick={() => setIsOpen(false)}
             >
               <i className={`${link.icon} w-4 text-center text-sm sm:text-lg flex-shrink-0`}></i>
@@ -167,7 +166,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             <i className="fa-solid fa-user-gear w-4 text-center text-sm sm:text-lg flex-shrink-0"></i>
             <span className="tracking-wide truncate">MI PERFIL</span>
           </Link>
-          
+
           <button onClick={handleLogout} className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-xs sm:text-sm text-rose-300 hover:text-white hover:bg-rose-500 transition-all text-left tracking-widest group shadow-sm">
             <i className="fa-solid fa-right-from-bracket w-4 text-center text-sm sm:text-lg flex-shrink-0 group-hover:scale-110 transition-transform"></i>
             <span className="truncate">CERRAR SESIÓN</span>
