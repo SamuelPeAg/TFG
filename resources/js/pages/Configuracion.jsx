@@ -245,9 +245,6 @@ export default function Configuracion() {
                                                     <i className="fa-solid fa-camera text-3xl text-white"></i>
                                                 </div>
                                             </div>
-                                            <button type="button" onClick={() => fileInputRef.current.click()} className="absolute -bottom-2 -right-2 w-14 h-14 bg-[#38C1A3] border-4 border-white rounded-3xl flex items-center justify-center text-white shadow-xl active:scale-90 transition-transform hover:scale-110">
-                                                <i className="fa-solid fa-pen-nib text-lg"></i>
-                                            </button>
                                         </div>
                                         <input type="file" ref={fileInputRef} onChange={handleFileChange} hidden accept="image/*" />
                                         

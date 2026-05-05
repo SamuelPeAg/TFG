@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import PhysicalProgress from '../components/PhysicalProgress';
+import AlertModal from '../components/AlertModal';
 
 export default function MisComidas() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -18,6 +19,10 @@ export default function MisComidas() {
     const [altura, setAltura] = useState('');
     const [measurements, setMeasurements] = useState([]);
     const [submittingProgress, setSubmittingProgress] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+    const showAlert = (message, isError = false, title = isError ? "Error" : "Éxito") => {
+        setAlertConfig({ isOpen: true, title, message, isError });
+    };
 
     // Calorías
     const [maintenanceCalories, setMaintenanceCalories] = useState(2500);
@@ -74,14 +79,21 @@ export default function MisComidas() {
 
     const handleProgressSave = async (e) => {
         e.preventDefault();
+
+        if (!peso || !altura || parseFloat(peso) <= 0 || parseFloat(altura) <= 0) {
+            showAlert('Debes completar el peso y la altura correctamente antes de registrar tu progreso.', true, 'Datos incompletos');
+            return;
+        }
+
         setSubmittingProgress(true);
         try {
             const userRes = await axios.get('/configuracion');
             const userId = userRes.data.user.id;
             await axios.post(`/client-profile/${userId}/progress`, { peso, altura });
+            showAlert('¡Genial! Tu evolución física se ha registrado correctamente.');
             fetchFicha();
         } catch (err) {
-            alert('Error al registrar el progreso');
+            showAlert('No hemos podido registrar tu progreso en este momento. Por favor, inténtalo más tarde.', true);
         } finally {
             setSubmittingProgress(false);
         }
@@ -327,6 +339,15 @@ export default function MisComidas() {
                     -moz-appearance: textfield;
                 }
             `}} />
+            </main>
+
+            <AlertModal 
+                isOpen={alertConfig.isOpen} 
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })} 
+                title={alertConfig.title} 
+                message={alertConfig.message} 
+                isError={alertConfig.isError} 
+            />
         </div>
     );
 }
