@@ -73,7 +73,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'MI FICHA', path: '/mi-ficha', icon: 'fa-solid fa-folder-open text-[#38C1A3]' },
     { name: 'MIS CLASES', path: '/mis-clases', icon: 'fa-solid fa-person-running' },
     { name: 'NUTRICIÓN', path: '/mis-comidas', icon: 'fa-solid fa-utensils text-brandCoral' },
-    { name: 'ESTADÍSTICAS', path: '/mis-estadisticas', icon: 'fa-solid fa-chart-simple text-indigo-300' },
+    { name: 'ESTADÍSTICAS', path: '/mis-estadisticas', icon: 'fa-solid fa-chart-line text-indigo-300' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days' },
   ];
 
