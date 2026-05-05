@@ -96,10 +96,10 @@ export default function MiFicha() {
                 codigo_postal: profileData.codigo_postal
             });
             setIsEditingContact(false);
-            showAlert('Información de contacto actualizada.');
+            showAlert('Información de contacto actualizada correctamente.');
             fetchFicha();
         } catch (error) {
-            showAlert('Error al actualizar contacto.', true);
+            showAlert('Hubo un error al actualizar los datos de contacto.', true);
         } finally {
             setSavingContact(false);
         }
@@ -115,18 +115,18 @@ export default function MiFicha() {
                     altura: profileData.altura,
                     measured_at: profileData.measured_at || new Date().toISOString().split('T')[0]
                 });
-                showAlert('Medida actualizada.');
+                showAlert('Registro físico actualizado.');
                 setEditingMeasurementId(null);
             } else {
                 await axios.post(`/client-profile/${user.id}/progress`, {
                     peso: profileData.peso,
                     altura: profileData.altura
                 });
-                showAlert('¡Progreso guardado!');
+                showAlert('¡Evolución guardada con éxito!');
             }
             fetchFicha();
         } catch (error) {
-            showAlert('Error al guardar progreso.', true);
+            showAlert('No se pudieron guardar las medidas.', true);
         } finally {
             setSavingStatus(false);
         }
@@ -141,21 +141,11 @@ export default function MiFicha() {
         try {
             await axios.post(`/client-profile/${user.id}/upload`, data);
             fetchFicha();
-            showAlert('Archivo subido.');
+            showAlert('Archivo subido al expediente.');
         } catch (error) {
-            showAlert('Error al subir archivo.', true);
+            showAlert('Error al subir el archivo.', true);
         } finally {
             setSubmittingFile(false);
-        }
-    };
-
-    const executeDeleteMeasurement = async (id) => {
-        try {
-            await axios.delete(`/measurements/${id}`);
-            fetchFicha();
-            showAlert('Medida eliminada.');
-        } catch (error) {
-            showAlert('Error al eliminar medida.', true);
         }
     };
 
@@ -177,182 +167,291 @@ export default function MiFicha() {
     if (loading) return <div className="flex items-center justify-center min-h-screen bg-slate-50"><div className="animate-spin h-10 w-10 border-4 border-[#38C1A3] border-t-transparent rounded-full"></div></div>;
 
     return (
-        <div className="flex bg-slate-50 min-h-screen font-sans text-slate-800">
+        <div className="flex bg-[#F8FAFC] min-h-screen font-sans text-slate-800">
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
-            {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/50 z-30 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
+            {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/40 z-30 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />}
 
-            <main className="flex-1 lg:ml-72 p-4 md:p-10 transition-all">
-                <div className="max-w-7xl mx-auto space-y-10">
-                    <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                            <button className="lg:hidden p-2 text-slate-500" onClick={() => setIsSidebarOpen(true)}><i className="fa-solid fa-bars text-xl"></i></button>
-                            <h1 className="text-3xl font-black tracking-tight">Mi Expediente Digital</h1>
+            <main className="flex-1 lg:ml-72 p-6 md:p-12 transition-all">
+                <div className="max-w-7xl mx-auto space-y-12">
+                    {/* Header */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div className="flex items-center gap-5">
+                            <button className="lg:hidden p-3 bg-white shadow-sm rounded-2xl text-slate-500 hover:text-[#38C1A3] transition-all" onClick={() => setIsSidebarOpen(true)}>
+                                <i className="fa-solid fa-bars-staggered text-xl"></i>
+                            </button>
+                            <div>
+                                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900">Mi Expediente Digital</h1>
+                                <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-wider">Gestión centralizada de tu salud y documentos</p>
+                            </div>
+                        </div>
+                        <div className="hidden md:flex items-center gap-3 bg-white p-2 rounded-3xl shadow-sm border border-slate-100">
+                            <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-[#38C1A3]">
+                                <i className="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <span className="pr-4 text-xs font-black text-slate-600 uppercase tracking-widest">Portal Seguro</span>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                        {/* COLUMNA INFO IZQ */}
-                        <div className="lg:col-span-4 space-y-8">
-                            <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+                        {/* LEFT COLUMN: Profile & Health */}
+                        <div className="lg:col-span-5 space-y-10">
+                            
+                            {/* Contact Card (Enhanced) */}
+                            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-bl-[10rem] -mr-10 -mt-10 transition-all group-hover:bg-indigo-100/50"></div>
+                                
                                 <button 
                                     onClick={() => setIsEditingContact(!isEditingContact)}
-                                    className="absolute top-6 right-6 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-indigo-100 transition-all z-20"
+                                    className="absolute top-8 right-8 px-5 py-2.5 bg-indigo-50 text-indigo-600 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all z-20 shadow-sm"
                                 >
                                     {isEditingContact ? 'Cancelar' : 'Editar Datos'}
                                 </button>
                                 
-                                <div className="flex flex-col items-center text-center space-y-4 mb-8">
-                                    <div className="w-24 h-24 rounded-full bg-slate-50 border-4 border-slate-50 shadow-inner flex items-center justify-center overflow-hidden">
-                                        {user?.foto_de_perfil ? <img src={user.foto_de_perfil} alt="perfil" className="w-full h-full object-cover" /> : <span className="text-4xl font-black text-[#38C1A3]">{user?.name?.charAt(0)}</span>}
+                                <div className="flex flex-col items-center text-center space-y-5 mb-12 relative z-10">
+                                    <div className="relative">
+                                        <div className="w-28 h-28 rounded-[2.5rem] bg-slate-50 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105">
+                                            {user?.foto_de_perfil ? (
+                                                <img src={user.foto_de_perfil} alt="perfil" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-50 to-teal-100">
+                                                    <span className="text-5xl font-black text-[#38C1A3]">{user?.name?.charAt(0)}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-emerald-500 border-4 border-white rounded-2xl flex items-center justify-center text-white text-xs shadow-lg shadow-emerald-500/20">
+                                            <i className="fa-solid fa-check"></i>
+                                        </div>
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-black text-slate-800">{user?.name}</h2>
-                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">{user?.dni || 'DNI NO ASIGNADO'}</p>
+                                        <h2 className="text-2xl font-black text-slate-900 tracking-tight">{user?.name}</h2>
+                                        <div className="inline-flex items-center gap-2 mt-2 px-4 py-1.5 bg-slate-100 rounded-full">
+                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em]">{user?.dni || 'DNI NO ASIGNADO'}</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="space-y-6">
-                                    <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] border-b border-slate-50 pb-2">Información de Contacto</h4>
+                                <div className="space-y-8 relative z-10">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-px flex-1 bg-slate-100"></div>
+                                        <h4 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em]">Información de Contacto</h4>
+                                        <div className="h-px flex-1 bg-slate-100"></div>
+                                    </div>
                                     
                                     {isEditingContact ? (
-                                        <form onSubmit={handleSaveContact} className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">DNI</label>
-                                                <input type="text" name="dni" value={profileData.dni} onChange={handleProfileDataChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:bg-white focus:border-indigo-400 outline-none transition-all" />
+                                        <form onSubmit={handleSaveContact} className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">DNI / NIE</label>
+                                                <input type="text" name="dni" value={profileData.dni} onChange={handleProfileDataChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-bold focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all uppercase" placeholder="12345678X" />
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Dirección</label>
-                                                <input type="text" name="direccion" value={profileData.direccion} onChange={handleProfileDataChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:bg-white focus:border-indigo-400 outline-none transition-all" />
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Dirección completa</label>
+                                                <input type="text" name="direccion" value={profileData.direccion} onChange={handleProfileDataChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-bold focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all" placeholder="Calle Ejemplo 123" />
                                             </div>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Ciudad</label>
-                                                    <input type="text" name="ciudad" value={profileData.ciudad} onChange={handleProfileDataChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:bg-white focus:border-indigo-400 outline-none transition-all" />
+                                            <div className="grid grid-cols-2 gap-5">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Ciudad</label>
+                                                    <input type="text" name="ciudad" value={profileData.ciudad} onChange={handleProfileDataChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-bold focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all" placeholder="Madrid" />
                                                 </div>
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-1">CP</label>
-                                                    <input type="text" name="codigo_postal" value={profileData.codigo_postal} onChange={handleProfileDataChange} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold focus:bg-white focus:border-indigo-400 outline-none transition-all" />
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">CP</label>
+                                                    <input type="text" name="codigo_postal" value={profileData.codigo_postal} onChange={handleProfileDataChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-bold focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all" placeholder="28001" />
                                                 </div>
                                             </div>
-                                            <button type="submit" disabled={savingContact} className="w-full py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-100 flex items-center justify-center gap-2">
-                                                {savingContact ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Guardar Datos'}
+                                            <button type="submit" disabled={savingContact} className="w-full py-4 bg-indigo-600 text-white rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-3">
+                                                {savingContact ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Actualizar Expediente'}
                                             </button>
                                         </form>
                                     ) : (
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-4 text-slate-600 group/item">
-                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-envelope"></i></div>
-                                                <span className="text-sm font-bold">{user?.email || 'Sin email'}</span>
+                                        <div className="grid gap-4">
+                                            <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
+                                                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-envelope text-lg"></i></div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email</span>
+                                                    <span className="text-sm font-black text-slate-700">{user?.email || 'Sin email registrado'}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-4 text-slate-600 group/item">
-                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-location-dot"></i></div>
-                                                <span className="text-sm font-bold">{profileData.direccion || '---'}{profileData.ciudad ? `, ${profileData.ciudad}` : ''}</span>
+                                            <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
+                                                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-location-dot text-lg"></i></div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Residencia</span>
+                                                    <span className="text-sm font-black text-slate-700">{profileData.direccion || '---'}{profileData.ciudad ? `, ${profileData.ciudad}` : ''}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-4 text-slate-600 group/item">
-                                                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-truck-ramp-box"></i></div>
-                                                <span className="text-sm font-bold">CP: {profileData.codigo_postal || '---'}</span>
+                                            <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
+                                                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-truck-ramp-box text-lg"></i></div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Código Postal</span>
+                                                    <span className="text-sm font-black text-slate-700">{profileData.codigo_postal || '---'}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm space-y-8 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-8 opacity-[0.05] text-7xl text-teal-900 pointer-events-none"><i className="fa-solid fa-heart-pulse"></i></div>
+                            {/* Physical Progress Card */}
+                            <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-10 relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 p-10 opacity-[0.03] text-8xl text-[#38C1A3] pointer-events-none group-hover:scale-110 transition-transform duration-700"><i className="fa-solid fa-heart-pulse"></i></div>
+                                
                                 <div className="flex items-center justify-between relative z-10">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl"><i className="fa-solid fa-gauge-high"></i></div>
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-14 h-14 rounded-3xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-2xl shadow-inner"><i className="fa-solid fa-gauge-high"></i></div>
                                         <div>
-                                            <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Progreso Físico</h3>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Seguimiento de peso e IMC</p>
+                                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Evolución Física</h3>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Control de peso & IMC</p>
                                         </div>
                                     </div>
                                     {currentIMC && (
-                                        <div className={`px-4 py-2 rounded-2xl flex flex-col items-center justify-center border ${currentIMC < 18.5 ? 'bg-rose-50 border-rose-100 text-rose-500' : (currentIMC > 25 ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-emerald-50 border-emerald-100 text-emerald-500')}`}>
-                                            <span className="text-[8px] font-black uppercase tracking-tighter opacity-70">Tu IMC</span>
-                                            <span className="text-[11px] font-black tracking-widest leading-none mt-0.5">{currentIMC}</span>
+                                        <div className={`px-5 py-2.5 rounded-[1.2rem] flex flex-col items-center justify-center border-2 ${currentIMC < 18.5 ? 'bg-rose-50 border-rose-100 text-rose-500' : (currentIMC > 25 ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-emerald-50 border-emerald-100 text-emerald-500')}`}>
+                                            <span className="text-[9px] font-black uppercase tracking-tighter opacity-70">Tu IMC</span>
+                                            <span className="text-base font-black tracking-widest leading-none mt-1">{currentIMC}</span>
                                         </div>
                                     )}
                                 </div>
+
                                 <form onSubmit={handleSaveStatus} className="space-y-6 relative z-10">
-                                    <div className="grid grid-cols-2 gap-5">
+                                    <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2 group">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Peso (kg)</label>
-                                            <input type="number" step="0.1" value={profileData.peso} onChange={(e) => setProfileData({...profileData, peso: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all" placeholder="0.0" />
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Peso (kg)</label>
+                                            <div className="relative">
+                                                <input type="number" step="0.1" value={profileData.peso} onChange={(e) => setProfileData({...profileData, peso: e.target.value})} className="w-full px-7 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="0.0" />
+                                                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">kg</span>
+                                            </div>
                                         </div>
                                         <div className="space-y-2 group">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Altura (m)</label>
-                                            <input type="number" step="0.01" value={profileData.altura} onChange={(e) => setProfileData({...profileData, altura: e.target.value})} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all" placeholder="0.00" />
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Altura (m)</label>
+                                            <div className="relative">
+                                                <input type="number" step="0.01" value={profileData.altura} onChange={(e) => setProfileData({...profileData, altura: e.target.value})} className="w-full px-7 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="0.00" />
+                                                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">m</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <button type="submit" disabled={savingStatus} className="w-full py-4 bg-[#38C1A3] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-teal-500 shadow-lg shadow-teal-500/20 flex items-center justify-center gap-2">
-                                        {savingStatus ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-plus-circle"></i> Guardar Avance</>}
+                                    <button type="submit" disabled={savingStatus} className="w-full py-5 bg-[#38C1A3] text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.25em] hover:bg-teal-500 shadow-xl shadow-teal-500/30 active:scale-95 transition-all flex items-center justify-center gap-3">
+                                        {savingStatus ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-fire-pulse text-lg"></i> Registrar Progreso</>}
                                     </button>
                                 </form>
+
+                                {measurements.length > 1 && (
+                                    <div className="pt-6 border-t border-slate-100">
+                                        <div className="h-44 w-full">
+                                            <Line 
+                                                data={{
+                                                    labels: [...measurements].reverse().map(m => new Date(m.measured_at).toLocaleDateString()),
+                                                    datasets: [{
+                                                        label: 'Peso',
+                                                        data: [...measurements].reverse().map(m => m.peso),
+                                                        borderColor: '#38C1A3',
+                                                        backgroundColor: 'rgba(56, 193, 163, 0.1)',
+                                                        fill: true,
+                                                        tension: 0.45,
+                                                        pointRadius: 4,
+                                                        pointBackgroundColor: '#fff',
+                                                        pointBorderColor: '#38C1A3',
+                                                        pointBorderWidth: 2
+                                                    }]
+                                                }}
+                                                options={{
+                                                    responsive: true,
+                                                    maintainAspectRatio: false,
+                                                    plugins: { legend: { display: false }, tooltip: { cornerRadius: 10, padding: 12 } },
+                                                    scales: { 
+                                                        x: { display: false }, 
+                                                        y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 10 }, color: '#94A3B8' } } 
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* COLUMNA DERECHA - DOCUMENTOS Y NOTAS */}
-                        <div className="lg:col-span-8 space-y-10">
-                            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-full">
-                                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
-                                    <div>
-                                        <h3 className="text-2xl font-black text-slate-800 tracking-tight">Mis Documentos Compartidos</h3>
-                                        <p className="text-sm text-slate-500 mt-1 font-medium">Informes, facturas manuales y archivos de seguimiento.</p>
+                        {/* RIGHT COLUMN: Documents & Notes */}
+                        <div className="lg:col-span-7 space-y-10">
+                            
+                            {/* Documents Center */}
+                            <div className="bg-white p-12 rounded-[4rem] border border-slate-100 shadow-xl shadow-slate-200/40 min-h-[500px] flex flex-col group">
+                                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 gap-8 relative z-10">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-16 h-16 rounded-[2rem] bg-indigo-50 text-indigo-500 flex items-center justify-center text-3xl shadow-inner"><i className="fa-solid fa-folder-tree"></i></div>
+                                        <div>
+                                            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Expediente Digital</h3>
+                                            <p className="text-sm text-slate-400 mt-1 font-bold uppercase tracking-wider">Historial de informes y archivos</p>
+                                        </div>
                                     </div>
                                     <button 
-                                        className="bg-[#38C1A3] hover:bg-teal-500 text-white px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest flex items-center gap-3 transition-all shadow-xl shadow-teal-500/20"
+                                        className="bg-[#38C1A3] hover:bg-teal-500 text-white px-10 py-5 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-4 transition-all shadow-xl shadow-teal-500/30 active:scale-95 group/btn"
                                         onClick={() => document.getElementById('file-upload-input').click()}
                                         disabled={submittingFile}
                                     >
-                                        {submittingFile ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-cloud-arrow-up text-lg"></i>}
-                                        <span>Añadir Archivo</span>
+                                        {submittingFile ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-upload text-lg group-btn-hover:animate-bounce"></i>}
+                                        <span>Subir Archivo</span>
                                     </button>
                                     <input id="file-upload-input" type="file" hidden onChange={onFileChange} />
                                 </div>
 
-                                {files.length === 0 ? (
-                                    <div className="py-24 flex flex-col items-center justify-center bg-slate-50/50 rounded-[3rem] border border-dashed border-slate-200">
-                                        <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mb-6"><i className="fa-regular fa-folder-open text-4xl text-slate-300"></i></div>
-                                        <p className="text-slate-400 font-black text-sm uppercase tracking-widest">El expediente está vacío</p>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {files.map(file => (
-                                            <div key={file.id} className="p-6 rounded-[2rem] bg-[#FDFDFF] border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
-                                                <div className="flex items-start justify-between">
-                                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${file.file_type === 'pdf' ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}><i className={file.file_type === 'pdf' ? 'fa-solid fa-file-pdf' : 'fa-solid fa-file-image'}></i></div>
-                                                    <a href={`/client-file/${file.id}/download`} className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-[#38C1A3] hover:bg-teal-50 flex items-center justify-center transition-all shadow-sm"><i className="fa-solid fa-download"></i></a>
-                                                </div>
-                                                <div className="mt-6">
-                                                    <h4 className="font-black text-slate-800 text-sm truncate">{file.file_name}</h4>
-                                                    <div className="flex items-center justify-between mt-3 text-[9px] text-slate-400 font-bold uppercase tracking-widest">
-                                                        <span>De: {file.uploader?.name || 'Sistema'}</span>
-                                                        <span>{new Date(file.created_at).toLocaleDateString()}</span>
+                                <div className="flex-1">
+                                    {files.length === 0 ? (
+                                        <div className="h-full py-32 flex flex-col items-center justify-center bg-slate-50/50 rounded-[3.5rem] border-2 border-dashed border-slate-200 group-hover:bg-white group-hover:border-[#38C1A3] transition-all duration-700">
+                                            <div className="w-24 h-24 rounded-full bg-white shadow-xl flex items-center justify-center mb-8"><i className="fa-regular fa-folder-open text-5xl text-slate-200 group-hover:text-[#38C1A3]/30 transition-colors"></i></div>
+                                            <p className="text-slate-400 font-black text-sm uppercase tracking-[0.3em]">No hay archivos</p>
+                                            <p className="text-[10px] text-slate-300 mt-3 font-bold uppercase">Sube tu primer informe para comenzar</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            {files.map(file => (
+                                                <div key={file.id} className="p-8 rounded-[3rem] bg-white border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group/card relative overflow-hidden">
+                                                    <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-full -mr-10 -mt-10 group-hover/card:bg-teal-50 transition-colors"></div>
+                                                    
+                                                    <div className="flex items-start justify-between relative z-10">
+                                                        <div className={`w-16 h-16 rounded-3xl flex items-center justify-center text-3xl shadow-sm transition-transform duration-500 group-hover/card:scale-110 ${file.file_type === 'pdf' ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}>
+                                                            <i className={file.file_type === 'pdf' ? 'fa-solid fa-file-pdf' : 'fa-solid fa-file-image'}></i>
+                                                        </div>
+                                                        <a href={`/client-file/${file.id}/download`} className="w-12 h-12 rounded-[1.2rem] bg-white border border-slate-100 text-slate-400 hover:text-[#38C1A3] hover:border-[#38C1A3] shadow-sm flex items-center justify-center transition-all group/dl">
+                                                            <i className="fa-solid fa-download group-hover/dl:animate-bounce"></i>
+                                                        </a>
+                                                    </div>
+                                                    <div className="mt-8 relative z-10">
+                                                        <h4 className="font-black text-slate-800 text-base truncate pr-4" title={file.file_name}>{file.file_name}</h4>
+                                                        <div className="flex items-center justify-between mt-5 pt-5 border-t border-slate-50">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Subido por</span>
+                                                                <span className="text-[10px] font-black text-slate-500 uppercase">{file.uploader?.name || 'Sistema'}</span>
+                                                            </div>
+                                                            <span className="text-[10px] font-black text-slate-300 tracking-tighter bg-slate-50 px-3 py-1 rounded-full">{new Date(file.created_at).toLocaleDateString()}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            <section className="bg-emerald-50/30 p-10 rounded-[3rem] border border-emerald-100/50">
-                                <h3 className="text-xl font-black text-emerald-800 tracking-tight flex items-center gap-3 mb-8"><i className="fas fa-notes-medical text-emerald-400"></i> Notas del Expediente</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Medical Notes / Expedient Attributes */}
+                            <section className="bg-gradient-to-br from-emerald-50/50 to-teal-50/50 p-12 rounded-[4rem] border border-emerald-100/50 shadow-sm">
+                                <h3 className="text-2xl font-black text-emerald-900 tracking-tight flex items-center gap-4 mb-10">
+                                    <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm text-emerald-400"><i className="fas fa-notes-medical"></i></div>
+                                    Notas del Especialista
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {additionalAttributes.length > 0 ? (
                                         additionalAttributes.map((attr, i) => (
-                                            <div key={i} className="bg-white p-6 rounded-[2rem] border border-emerald-50 shadow-sm hover:shadow-md transition-all">
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    <i className={`fa-solid ${getAttrIcon(attr.type)} text-xs text-emerald-400`}></i>
-                                                    <span className="text-[10px] font-black text-emerald-700/60 uppercase tracking-widest">{attr.key}</span>
+                                            <div key={i} className="bg-white p-8 rounded-[3rem] border border-emerald-50 shadow-sm hover:shadow-lg transition-all group/note relative overflow-hidden">
+                                                <div className="absolute top-0 right-0 p-4 opacity-[0.05] text-emerald-900 pointer-events-none group-hover/note:scale-125 transition-transform"><i className={`fa-solid ${getAttrIcon(attr.type)} text-2xl`}></i></div>
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                                                    <span className="text-[10px] font-black text-emerald-700/60 uppercase tracking-[0.2em]">{attr.key}</span>
                                                 </div>
-                                                <p className="text-sm font-bold text-slate-700 whitespace-pre-line">{attr.value}</p>
+                                                <p className="text-[15px] font-bold text-slate-700 leading-relaxed whitespace-pre-line">{attr.value}</p>
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="col-span-full py-10 text-center text-emerald-700/40 text-[10px] font-black uppercase tracking-widest">No hay notas compartidas</div>
+                                        <div className="col-span-full py-16 text-center">
+                                            <div className="text-emerald-900/10 text-6xl mb-6"><i className="fa-solid fa-clipboard-question"></i></div>
+                                            <p className="text-emerald-800/40 text-[11px] font-black uppercase tracking-[0.3em]">Sin notas compartidas actualmente</p>
+                                        </div>
                                     )}
                                 </div>
                             </section>
@@ -362,7 +461,7 @@ export default function MiFicha() {
             </main>
 
             <AlertModal isOpen={alertConfig.isOpen} onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })} title={alertConfig.title} message={alertConfig.message} isError={alertConfig.isError} />
-            <ConfirmModal isOpen={confirmModal.isOpen} onClose={() => setConfirmModal({ isOpen: false, data: null, type: null })} onConfirm={() => confirmModal.type === 'measurement' && executeDeleteMeasurement(confirmModal.data)} title="Borrar Medida" message="¿Estás seguro de que quieres borrar de tu historial esta medida?" isDestructive={true} confirmText="Sí, aceptar" />
+            <ConfirmModal isOpen={confirmModal.isOpen} onClose={() => setConfirmModal({ isOpen: false, data: null, type: null })} onConfirm={() => confirmModal.type === 'measurement' && executeDeleteMeasurement(confirmModal.data)} title="Confirmar Acción" message="¿Estás seguro de que quieres realizar esta operación?" isDestructive={true} confirmText="Sí, aceptar" />
         </div>
     );
 }

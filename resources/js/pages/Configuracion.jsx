@@ -12,10 +12,6 @@ export default function Configuracion() {
       name: '',
       email: '',
       iban: '',
-      dni: '',
-      direccion: '',
-      ciudad: '',
-      codigo_postal: '',
       current_password: '',
       password: '',
       password_confirmation: ''
@@ -43,10 +39,6 @@ export default function Configuracion() {
               name: user.name || '',
               email: user.email || '',
               iban: user.iban || '',
-              dni: user.dni || '',
-              direccion: user.direccion || '',
-              ciudad: user.ciudad || '',
-              codigo_postal: user.codigo_postal || '',
               current_password: '',
               password: '',
               password_confirmation: ''
@@ -100,10 +92,6 @@ export default function Configuracion() {
       data.append('_method', 'PUT'); // Laravel spoofing since HTML forms only do GET/POST, axios can do PUT but with FormData _method is useful
       
       data.append('name', formData.name);
-      data.append('dni', formData.dni);
-      data.append('direccion', formData.direccion);
-      data.append('ciudad', formData.ciudad);
-      data.append('codigo_postal', formData.codigo_postal);
       data.append('iban', formData.iban);
       
       if (photoFile) {
@@ -289,36 +277,11 @@ export default function Configuracion() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">DNI / NIE</label>
-                                            <input type="text" name="dni" value={formData.dni} onChange={handleInputChange} placeholder="12345678A"
-                                                   className={`w-full text-sm font-bold bg-slate-50/50 border ${errors.dni ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 focus:bg-white outline-none transition-all uppercase`} />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">IBAN de Facturación</label>
-                                            <input type="text" name="iban" value={formData.iban} onChange={handleInputChange} placeholder="ES00 0000 0000 0000 0000 0000"
-                                                   className={`w-full text-sm font-bold bg-slate-50/50 border ${errors.iban ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 focus:bg-white outline-none transition-all`} />
-                                        </div>
-                                    </div>
-
                                     <div className="space-y-1.5">
-                                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Dirección</label>
-                                        <input type="text" name="direccion" value={formData.direccion} onChange={handleInputChange} placeholder="Calle Ejemplo, 123"
-                                               className="w-full text-sm font-bold bg-slate-50/50 border border-slate-200 focus:border-[#38C1A3] rounded-xl px-4 py-3 focus:bg-white outline-none transition-all" />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Ciudad</label>
-                                            <input type="text" name="ciudad" value={formData.ciudad} onChange={handleInputChange} placeholder="Madrid"
-                                                   className="w-full text-sm font-bold bg-slate-50/50 border border-slate-200 focus:border-[#38C1A3] rounded-xl px-4 py-3 focus:bg-white outline-none transition-all" />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Código Postal</label>
-                                            <input type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleInputChange} placeholder="28001"
-                                                   className={`w-full text-sm font-bold bg-slate-50/50 border ${errors.codigo_postal ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 focus:bg-white outline-none transition-all`} />
-                                        </div>
+                                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">IBAN de Facturación</label>
+                                        <input type="text" name="iban" value={formData.iban} onChange={handleInputChange} placeholder="ES00 0000 0000 0000 0000 0000"
+                                               className={`w-full text-sm font-bold bg-slate-50/50 border ${errors.iban ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 focus:bg-white outline-none transition-all`} />
+                                        <p className="text-[11px] text-slate-400 font-medium pl-2">La cuenta donde recibirás tus ingresos.</p>
                                     </div>
                                 </div>
                             </section>
