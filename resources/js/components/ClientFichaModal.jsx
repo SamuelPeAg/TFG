@@ -378,20 +378,36 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl"></div>
 
             <div className="flex items-center gap-10 relative z-10 w-full pr-12">
-                <div 
-                    className="w-28 h-28 rounded-[2.5rem] flex items-center justify-center text-white text-5xl font-black shadow-2xl shadow-teal-200/50 group shrink-0 relative overflow-hidden border-4 border-white"
-                    style={{ background: 'linear-gradient(135deg, #38C1A3, #2D9B82)' }}
-                >
-                    {user?.foto_de_perfil ? (
-                        <img 
-                            src={user?.foto_de_perfil.startsWith('http') ? user.foto_de_perfil : `/storage/${user.foto_de_perfil}`} 
-                            alt={user.name} 
-                            className="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <span>{user?.name.trim().charAt(0).toUpperCase()}</span>
-                    )}
-                </div>
+                {(() => {
+                    const getImageUrl = (path) => {
+                        if (!path) return null;
+                        if (path.startsWith('http')) return path;
+                        const baseUrl = window.AppConfig?.baseUrl || '/';
+                        const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+                        if (cleanPath.startsWith('storage/')) return baseUrl + cleanPath;
+                        return baseUrl + 'storage/' + cleanPath;
+                    };
+                    return (
+                        <div 
+                            className="w-28 h-28 rounded-[2.5rem] flex items-center justify-center text-white text-5xl font-black shadow-2xl shadow-teal-200/50 group shrink-0 relative overflow-hidden border-4 border-white"
+                            style={{ background: 'linear-gradient(135deg, #38C1A3, #2D9B82)' }}
+                        >
+                            {user?.foto_de_perfil ? (
+                                <img 
+                                    src={getImageUrl(user.foto_de_perfil)} 
+                                    alt={user.name} 
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.parentElement.innerHTML = `<span>${user.name.trim().charAt(0).toUpperCase()}</span>`;
+                                    }}
+                                />
+                            ) : (
+                                <span>{user?.name.trim().charAt(0).toUpperCase()}</span>
+                            )}
+                        </div>
+                    );
+                })()}
                 <div className="flex-1 min-w-0">
                     <h2 className="text-5xl font-black text-slate-800 tracking-tighter leading-none mb-4 truncate">{user?.name}</h2>
                     <div className="flex flex-wrap items-center gap-4">

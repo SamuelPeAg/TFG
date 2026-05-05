@@ -57,7 +57,10 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
               const getImageUrl = (path) => {
                 if (!path) return null;
                 if (path.startsWith('http')) return path;
-                return `/storage/${path}`;
+                const baseUrl = window.AppConfig?.baseUrl || '/';
+                const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+                if (cleanPath.startsWith('storage/')) return baseUrl + cleanPath;
+                return baseUrl + 'storage/' + cleanPath;
               };
 
               return (
