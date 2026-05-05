@@ -1,29 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+import PhysicalProgress from '../components/PhysicalProgress';
 
 export default function MisComidas() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -41,42 +19,13 @@ export default function MisComidas() {
     const [measurements, setMeasurements] = useState([]);
     const [submittingProgress, setSubmittingProgress] = useState(false);
 
-    // Rutinas AI
-    const [routineGoal, setRoutineGoal] = useState('perder peso');
-    const [generatingRoutine, setGeneratingRoutine] = useState(false);
-    const [routinePlan, setRoutinePlan] = useState(null);
-    const [routineError, setRoutineError] = useState(null);
-    const [completedExercises, setCompletedExercises] = useState([]);
-    
-    // Entrenador Plan
-    const [planType, setPlanType] = useState('ai'); // 'ai' o 'trainer'
-    const [trainers, setTrainers] = useState([]);
-    const [selectedTrainer, setSelectedTrainer] = useState('');
-    const [trainerMessage, setTrainerMessage] = useState('');
-    const [clientPlans, setClientPlans] = useState([]);
-    const [submittingPlan, setSubmittingPlan] = useState(false);
-    
     // Calorías
     const [maintenanceCalories, setMaintenanceCalories] = useState(2500);
 
     useEffect(() => {
         fetchMeals();
-        fetchClientPlans();
         fetchFicha();
     }, [selectedDate]);
-
-    useEffect(() => {
-        const fetchTrainers = async () => {
-            try {
-                const { data } = await axios.get('/api/client/trainers');
-                setTrainers(data);
-                if(data.length > 0) setSelectedTrainer(data[0].id);
-            } catch (err) {
-                console.error(err);
-            }
-        };
-        fetchTrainers();
-    }, []);
 
     const fetchMeals = async () => {
         setLoading(true);
@@ -103,15 +52,6 @@ export default function MisComidas() {
         }
     };
 
-    const fetchClientPlans = async () => {
-        try {
-            const { data } = await axios.get('/api/action-plans?date=' + selectedDate);
-            setClientPlans(data);
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!mealText.trim()) return;
@@ -125,7 +65,6 @@ export default function MisComidas() {
             });
             setComidas([data.meal, ...comidas]);
             setMealText('');
-            setRoutinePlan(null);
         } catch (err) {
             setError(err.response?.data?.error || 'Ocurrió un error con la IA.');
         } finally {
@@ -133,7 +72,7 @@ export default function MisComidas() {
         }
     };
 
-    const handleProgressSubmit = async (e) => {
+    const handleProgressSave = async (e) => {
         e.preventDefault();
         setSubmittingProgress(true);
         try {
@@ -148,23 +87,6 @@ export default function MisComidas() {
         }
     };
 
-    const handleGenerateRoutine = async () => {
-        setGeneratingRoutine(true);
-        setRoutineError(null);
-        try {
-            const { data } = await axios.post('/nutricion/routine', {
-                date: selectedDate,
-                goal: routineGoal
-            });
-            setRoutinePlan(data.plan);
-            setCompletedExercises([]);
-        } catch (err) {
-            setRoutineError(err.response?.data?.error || 'No se pudo generar el plan de acción.');
-        } finally {
-            setGeneratingRoutine(false);
-        }
-    };
-
     const calculateTotals = () => {
         let calories = 0, protein = 0, carbs = 0, fats = 0;
         comidas.forEach(meal => {
@@ -173,10 +95,7 @@ export default function MisComidas() {
             carbs += Number(meal.macros_est?.carbs || 0);
             fats += Number(meal.macros_est?.fats || 0);
         });
-        const burnedCalories = completedExercises.reduce((total, i) => {
-            const ex = routinePlan?.routine[i];
-            return total + (ex?.focus?.toLowerCase().includes('cardio') ? 80 : 50);
-        }, 0);
+        const burnedCalories = 0; // Simplified for now
         const netCalories = calories - burnedCalories;
         const isDeficit = maintenanceCalories > netCalories;
         const diffCalories = Math.abs(maintenanceCalories - netCalories);
@@ -185,12 +104,8 @@ export default function MisComidas() {
 
     const totals = calculateTotals();
 
-    const weightVal = parseFloat(peso);
-    const heightVal = parseFloat(altura);
-    const currentIMC = (weightVal > 0 && heightVal > 0) ? (weightVal / (heightVal * heightVal)).toFixed(2) : null;
-
     return (
-        <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans text-slate-900">
+        <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans text-slate-900 custom-select-arrows">
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
@@ -199,7 +114,7 @@ export default function MisComidas() {
                         <button className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3]" onClick={() => setIsSidebarOpen(true)}>
                             <i className="fa-solid fa-bars text-xl"></i>
                         </button>
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brandCoral to-rose-600 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-rose-100/50">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#38C1A3] to-teal-600 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-teal-100/50">
                             🍎
                         </div>
                         <div>
@@ -211,87 +126,123 @@ export default function MisComidas() {
 
                 <div className="flex-1 overflow-auto p-6 lg:p-10 space-y-12">
                     <div className="max-w-7xl mx-auto">
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
+                        <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
                             
                             {/* Columna Izquierda: Input y Listado */}
-                            <div className="xl:col-span-2 space-y-10">
+                            <div className="xl:col-span-8 space-y-10">
                                 
-                                <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 hover:border-[#38C1A3]/30 transition-all duration-300 relative overflow-hidden group">
-                                    <div className="absolute -top-12 -right-12 w-24 h-24 bg-teal-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50"></div>
+                                <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/20 border border-slate-100 relative overflow-hidden group">
+                                    <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50"></div>
                                     <div className="relative z-10">
-                                        <div className="flex items-center gap-3 mb-6">
-                                            <div className="w-1.5 h-6 bg-[#38C1A3] rounded-full"></div>
-                                            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registrar Comida</h2>
-                                        </div>
-                                        <form onSubmit={handleSubmit} className="space-y-5">
-                                            <div className="flex gap-4">
-                                                <select value={mealType} onChange={(e) => setMealType(e.target.value)} className="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#38C1A3] outline-none text-slate-700 w-48 shadow-sm">
-                                                    <option value="desayuno">Desayuno</option>
-                                                    <option value="almuerzo">Almuerzo</option>
-                                                    <option value="cena">Cena</option>
-                                                    <option value="snack">Snack</option>
-                                                </select>
+                                        <div className="flex items-center gap-4 mb-8">
+                                            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl shadow-inner"><i className="fa-solid fa-pizza-slice"></i></div>
+                                            <div>
+                                                <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">¿Qué has comido hoy?</h2>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">La IA desglosará tus macros automáticamente</p>
                                             </div>
-                                            <textarea value={mealText} onChange={(e) => setMealText(e.target.value)} placeholder="Ej: 200g de pollo con arroz..." rows="3" className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] p-5 text-sm font-medium focus:ring-2 focus:ring-[#38C1A3] outline-none resize-none text-slate-700 shadow-inner" />
-                                            {error && <p className="text-rose-500 text-xs font-bold px-2"><i className="fa-solid fa-triangle-exclamation mr-1"></i> {error}</p>}
-                                            <div className="flex justify-end pt-2">
-                                                <button type="submit" disabled={submitting || !mealText.trim()} className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 shadow-lg shadow-slate-900/10 hover:-translate-y-0.5">
-                                                    {submitting ? <i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i> : <i className="fa-solid fa-paper-plane text-[#38C1A3]"></i>} Analizar con IA
+                                        </div>
+                                        
+                                        <form onSubmit={handleSubmit} className="space-y-6">
+                                            <div className="flex flex-col md:flex-row gap-6">
+                                                <div className="relative inline-block w-full md:w-56 group">
+                                                    <select 
+                                                        value={mealType} 
+                                                        onChange={(e) => setMealType(e.target.value)} 
+                                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-black focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none text-slate-700 shadow-inner appearance-none cursor-pointer transition-all"
+                                                    >
+                                                        <option value="desayuno">Desayuno</option>
+                                                        <option value="almuerzo">Almuerzo</option>
+                                                        <option value="cena">Cena</option>
+                                                        <option value="snack">Merienda / Snack</option>
+                                                    </select>
+                                                    <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none group-hover:text-[#38C1A3] transition-colors"></i>
+                                                </div>
+                                            </div>
+                                            <div className="relative">
+                                                <textarea 
+                                                    value={mealText} 
+                                                    onChange={(e) => setMealText(e.target.value)} 
+                                                    placeholder="Ej: He desayunado una tostada de aguacate con 2 huevos revueltos y un café con leche..." 
+                                                    rows="3" 
+                                                    className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-7 text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none resize-none transition-all shadow-inner" 
+                                                />
+                                            </div>
+                                            {error && <p className="text-rose-500 text-xs font-black px-4"><i className="fa-solid fa-triangle-exclamation mr-1.5 animate-bounce"></i> {error}</p>}
+                                            <div className="flex justify-end">
+                                                <button 
+                                                    type="submit" 
+                                                    disabled={submitting || !mealText.trim()} 
+                                                    className="bg-slate-900 hover:bg-black text-white px-10 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.25em] transition-all flex items-center gap-3 shadow-xl shadow-slate-900/20 active:scale-95 disabled:opacity-50"
+                                                >
+                                                    {submitting ? <i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i> : <i className="fa-solid fa-wand-magic-sparkles text-[#38C1A3]"></i>} 
+                                                    Analizar Comida
                                                 </button>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
 
-                                <div className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
-                                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registros Diario</h3>
+                                <div className="space-y-8">
+                                    <div className="flex items-center justify-between px-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center shadow-inner"><i className="fa-solid fa-clock-rotate-left"></i></div>
+                                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Registros del Día</h3>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer" />
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative group">
+                                                <input 
+                                                    type="date" 
+                                                    value={selectedDate} 
+                                                    onChange={(e) => setSelectedDate(e.target.value)} 
+                                                    className="bg-white border border-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl outline-none focus:border-indigo-400 cursor-pointer shadow-sm appearance-none pr-10" 
+                                                />
+                                                <i className="fa-solid fa-calendar absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none group-hover:text-indigo-400"></i>
+                                            </div>
                                         </div>
                                     </div>
 
                                     {loading ? (
-                                        <div className="flex justify-center py-10"><div className="w-10 h-10 border-4 border-[#38C1A3]/20 border-t-[#38C1A3] rounded-full animate-spin"></div></div>
+                                        <div className="flex justify-center py-20"><div className="w-12 h-12 border-4 border-[#38C1A3]/20 border-t-[#38C1A3] rounded-full animate-spin shadow-lg"></div></div>
                                     ) : comidas.length === 0 ? (
-                                        <div className="bg-white p-12 rounded-[2.5rem] border border-dashed border-slate-200 text-center shadow-sm">
-                                            <p className="text-slate-500 font-black text-sm uppercase tracking-widest mb-1">Sin comidas registradas</p>
+                                        <div className="bg-white p-16 rounded-[3.5rem] border border-dashed border-slate-200 text-center shadow-sm">
+                                            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner opacity-40">🍽️</div>
+                                            <p className="text-slate-400 font-black text-xs uppercase tracking-widest mb-1">Tu diario está en ayunas</p>
+                                            <p className="text-slate-300 text-[10px] font-bold uppercase tracking-widest">Registra algo para empezar el análisis</p>
                                         </div>
                                     ) : (
-                                        <div className="space-y-5">
+                                        <div className="grid gap-8">
                                             {comidas.map(meal => (
-                                                <div key={meal.id} className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col hover:shadow-md transition-all">
-                                                    <div className="flex justify-between items-start mb-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-lg">
-                                                                <i className={`fa-solid ${meal.meal_type === 'desayuno' ? 'fa-mug-saucer' : meal.meal_type === 'almuerzo' ? 'fa-utensils' : meal.meal_type === 'cena' ? 'fa-moon' : 'fa-cookie'}`}></i>
+                                                <div key={meal.id} className="bg-white p-8 rounded-[3rem] shadow-xl shadow-slate-200/40 border border-slate-100 flex flex-col hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative">
+                                                    <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-[4rem] transition-all group-hover:bg-teal-50"></div>
+                                                    
+                                                    <div className="flex justify-between items-start mb-6 relative z-10">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl shadow-inner">
+                                                                <i className={`fa-solid ${meal.meal_type === 'desayuno' ? 'fa-mug-hot' : meal.meal_type === 'almuerzo' ? 'fa-bowl-food' : meal.meal_type === 'cena' ? 'fa-moon' : 'fa-cookie-bite'}`}></i>
                                                             </div>
                                                             <div>
-                                                                <span className="text-xs font-black uppercase text-slate-800">{meal.meal_type}</span>
-                                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{new Date(meal.logged_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                                                <span className="text-sm font-black uppercase text-slate-800 tracking-tight">{meal.meal_type}</span>
+                                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{new Date(meal.logged_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="bg-slate-50 text-slate-700 px-4 py-2 rounded-xl border border-slate-100 text-center">
-                                                            <span className="block text-lg font-black leading-none">{meal.calories_est || 0}</span>
-                                                            <span className="block text-[9px] font-black uppercase text-slate-400 tracking-widest mt-1">Kcal</span>
+                                                        <div className="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-xl shadow-slate-900/20 text-center">
+                                                            <span className="block text-xl font-black leading-none">{meal.calories_est || 0}</span>
+                                                            <span className="block text-[9px] font-black uppercase text-teal-400 tracking-widest mt-1">Kcal</span>
                                                         </div>
                                                     </div>
-                                                    <p className="text-sm text-slate-600 font-medium mb-6 px-1 italic">"{meal.meal_description}"</p>
-                                                    <div className="grid grid-cols-3 gap-3">
-                                                        <div className="flex items-center justify-between bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                                            <span className="text-[10px] text-rose-500 uppercase font-black tracking-widest">Pro</span>
-                                                            <span className="font-black text-slate-800 text-sm">{meal.macros_est?.protein || 0}g</span>
+                                                    <p className="text-base text-slate-600 font-bold mb-8 px-2 leading-relaxed relative z-10 italic">"{meal.meal_description}"</p>
+                                                    <div className="grid grid-cols-3 gap-6 relative z-10">
+                                                        <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100 flex flex-col items-center">
+                                                            <span className="text-[10px] text-rose-500 uppercase font-black tracking-widest mb-1">Proteína</span>
+                                                            <span className="font-black text-slate-800 text-lg">{meal.macros_est?.protein || 0}g</span>
                                                         </div>
-                                                        <div className="flex items-center justify-between bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                                            <span className="text-[10px] text-[#38C1A3] uppercase font-black tracking-widest">Car</span>
-                                                            <span className="font-black text-slate-800 text-sm">{meal.macros_est?.carbs || 0}g</span>
+                                                        <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100 flex flex-col items-center">
+                                                            <span className="text-[10px] text-[#38C1A3] uppercase font-black tracking-widest mb-1">Carbos</span>
+                                                            <span className="font-black text-slate-800 text-lg">{meal.macros_est?.carbs || 0}g</span>
                                                         </div>
-                                                        <div className="flex items-center justify-between bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                                            <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest">Fat</span>
-                                                            <span className="font-black text-slate-800 text-sm">{meal.macros_est?.fats || 0}g</span>
+                                                        <div className="bg-slate-50 rounded-3xl p-5 border border-slate-100 flex flex-col items-center">
+                                                            <span className="text-[10px] text-amber-500 uppercase font-black tracking-widest mb-1">Grasas</span>
+                                                            <span className="font-black text-slate-800 text-lg">{meal.macros_est?.fats || 0}g</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -302,111 +253,80 @@ export default function MisComidas() {
                             </div>
 
                             {/* Columna Derecha: Summaries & Evolución */}
-                            <div className="space-y-10">
+                            <div className="xl:col-span-4 space-y-10">
                                 
                                 {/* Resumen Calorías */}
-                                <div className="bg-slate-900 rounded-[2.5rem] p-8 shadow-xl text-white relative overflow-hidden group">
-                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#38C1A3] rounded-full opacity-20 blur-3xl"></div>
+                                <div className="bg-slate-900 rounded-[3.5rem] p-10 shadow-2xl text-white relative overflow-hidden group">
+                                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#38C1A3] rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity"></div>
                                     <div className="relative z-10">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h3 className="font-black text-lg uppercase tracking-widest">Balance Hoy</h3>
-                                            <i className="fa-solid fa-fire text-rose-400"></i>
+                                        <div className="flex items-center justify-between mb-10">
+                                            <h3 className="font-black text-xl tracking-tight uppercase tracking-widest">Meta Diaria</h3>
+                                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm"><i className="fa-solid fa-bullseye text-teal-400"></i></div>
                                         </div>
-                                        <div className="flex justify-center mb-8">
-                                            <div className="relative w-44 h-44 flex items-center justify-center">
-                                                <svg className="w-full h-full transform -rotate-90">
-                                                    <circle cx="88" cy="88" r="78" stroke="rgba(255,255,255,0.05)" strokeWidth="12" fill="none" />
-                                                    <circle cx="88" cy="88" r="78" stroke={totals.isDeficit ? "#38C1A3" : "#F35B5B"} strokeWidth="12" strokeLinecap="round" fill="none" strokeDasharray="490" strokeDashoffset={490 - (490 * Math.min(Math.max(0, totals.netCalories) / maintenanceCalories, 1))} className="transition-all duration-1000" />
+                                        <div className="flex justify-center mb-10">
+                                            <div className="relative w-48 h-48 flex items-center justify-center">
+                                                <svg className="w-full h-full transform -rotate-90 filter drop-shadow-xl">
+                                                    <circle cx="96" cy="96" r="86" stroke="rgba(255,255,255,0.05)" strokeWidth="12" fill="none" />
+                                                    <circle cx="96" cy="96" r="86" stroke={totals.isDeficit ? "#38C1A3" : "#F35B5B"} strokeWidth="12" strokeLinecap="round" fill="none" strokeDasharray="540" strokeDashoffset={540 - (540 * Math.min(Math.max(0, totals.netCalories) / maintenanceCalories, 1))} className="transition-all duration-1000 ease-out" />
                                                 </svg>
-                                                <div className="absolute text-center">
-                                                    <div className="text-4xl font-black">{totals.netCalories}</div>
-                                                    <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Netas</div>
+                                                <div className="absolute text-center flex flex-col items-center">
+                                                    <div className="text-5xl font-black tracking-tighter">{totals.netCalories}</div>
+                                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 bg-white/5 px-4 py-1.5 rounded-full">Consumidas</div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className={`text-center p-3 rounded-xl border ${totals.isDeficit ? 'bg-emerald-500/10 border-emerald-500/20 text-[#38C1A3]' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'} font-black text-xs uppercase tracking-widest`}>
-                                            {totals.isDeficit ? 'En Déficit: ' : 'Exceso: '} {totals.diffCalories} Kcal
+                                        
+                                        <div className="space-y-4">
+                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Ajustar Mantenimiento</div>
+                                            <div className="flex items-center bg-black/20 rounded-2xl p-2 border border-white/5">
+                                                <input 
+                                                    type="number" 
+                                                    className="w-full bg-transparent text-white text-center font-black text-lg outline-none no-spinner" 
+                                                    value={maintenanceCalories} 
+                                                    onChange={(e) => setMaintenanceCalories(e.target.value)} 
+                                                />
+                                                <span className="pr-4 text-[10px] font-black text-slate-500 uppercase">Kcal</span>
+                                            </div>
+                                        </div>
+
+                                        <div className={`mt-8 text-center p-5 rounded-[2rem] border-2 transition-all ${totals.isDeficit ? 'bg-emerald-500/10 border-emerald-500/20 text-[#38C1A3]' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'} font-black text-sm uppercase tracking-widest shadow-inner`}>
+                                            {totals.isDeficit ? 'Déficit' : 'Superávit'}: {totals.diffCalories} Kcal
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* IMC y Evolución Física */}
-                                <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-10 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-10 opacity-[0.03] text-8xl text-[#38C1A3] pointer-events-none group-hover:scale-110 transition-transform duration-700"><i className="fa-solid fa-heart-pulse"></i></div>
-                                    <div className="flex items-center justify-between relative z-10">
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-14 h-14 rounded-3xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-2xl shadow-inner"><i className="fa-solid fa-gauge-high"></i></div>
-                                            <div>
-                                                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Evolución Física</h3>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Control de peso &amp; IMC</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <form onSubmit={handleProgressSubmit} className="space-y-6 relative z-10">
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2 group">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Peso (kg)</label>
-                                                <div className="relative">
-                                                    <input step="0.1" className="w-full px-7 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="0.0" type="number" value={peso} onChange={(e) => setPeso(e.target.value)} />
-                                                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">kg</span>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2 group">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Altura (m)</label>
-                                                <div className="relative">
-                                                    <input step="0.01" className="w-full px-7 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="0.00" type="number" value={altura} onChange={(e) => setAltura(e.target.value)} />
-                                                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">m</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button type="submit" disabled={submittingProgress} className="w-full py-5 bg-[#38C1A3] text-white rounded-[2rem] text-[11px] font-black uppercase tracking-[0.25em] hover:bg-teal-500 shadow-xl shadow-teal-500/30 active:scale-95 transition-all flex items-center justify-center gap-3">
-                                            {submittingProgress ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-fire-pulse text-lg"></i> Registrar Progreso</>}
-                                        </button>
-                                    </form>
-                                    <div className="pt-6 border-t border-slate-100">
-                                        <div className="h-56 w-full">
-                                            {measurements.length > 0 ? (
-                                                <Line 
-                                                    data={{
-                                                        labels: [...measurements].reverse().map(m => new Date(m.measured_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })),
-                                                        datasets: [{
-                                                            label: 'Peso',
-                                                            data: [...measurements].reverse().map(m => m.peso),
-                                                            borderColor: '#38C1A3',
-                                                            backgroundColor: 'rgba(56, 193, 163, 0.1)',
-                                                            fill: true,
-                                                            tension: 0.45,
-                                                            pointRadius: 6,
-                                                            pointBackgroundColor: '#fff',
-                                                            pointBorderColor: '#38C1A3',
-                                                            pointBorderWidth: 3
-                                                        }]
-                                                    }}
-                                                    options={{
-                                                        responsive: true,
-                                                        maintainAspectRatio: false,
-                                                        plugins: { legend: { display: false }, tooltip: { cornerRadius: 12, padding: 12 } },
-                                                        scales: { 
-                                                            x: { display: true, grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 }, color: '#94A3B8' } }, 
-                                                            y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 }, color: '#94A3B8' } } 
-                                                        }
-                                                    }}
-                                                />
-                                            ) : (
-                                                <div className="h-full flex flex-col items-center justify-center text-slate-300">
-                                                    <i className="fa-solid fa-chart-line text-4xl mb-3 opacity-20"></i>
-                                                    <p className="text-[9px] font-black uppercase tracking-widest">Sin historial de peso</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                {/* IMC y Evolución Física - COMPONENTE */}
+                                <PhysicalProgress 
+                                    peso={peso}
+                                    setPeso={setPeso}
+                                    altura={altura}
+                                    setAltura={setAltura}
+                                    measurements={measurements}
+                                    onSave={handleProgressSave}
+                                    isSubmitting={submittingProgress}
+                                />
 
                             </div>
                         </div>
                     </div>
                 </div>
             </main>
+
+            <style dangerouslySetInnerHTML={{ __html: `
+                .custom-select-arrows select {
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                    appearance: none;
+                }
+                .no-spinner::-webkit-inner-spin-button, 
+                .no-spinner::-webkit-outer-spin-button { 
+                    -webkit-appearance: none; 
+                    margin: 0; 
+                }
+                .no-spinner {
+                    -moz-appearance: textfield;
+                }
+            `}} />
         </div>
     );
 }

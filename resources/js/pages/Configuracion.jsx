@@ -207,22 +207,6 @@ export default function Configuracion() {
                                         </div>
                                     </div>
                                 </div>
-
-                                {/* PRIVACY BOX */}
-                                <div className="bg-indigo-600 p-10 rounded-[3.5rem] text-white shadow-2xl shadow-indigo-200 relative overflow-hidden group">
-                                    <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000"></div>
-                                    <div className="relative z-10 space-y-5">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shadow-inner"><i className="fa-solid fa-shield-halved"></i></div>
-                                            <h4 className="text-lg font-black tracking-tight uppercase tracking-widest">Privacidad Blindada</h4>
-                                        </div>
-                                        <p className="text-sm font-bold leading-relaxed opacity-90">
-                                            Tus datos están protegidos bajo protocolos de cifrado <span className="text-teal-300">AES-256</span>. Solo tú tienes acceso a tu información de facturación y residencia. 
-                                            <br/><br/>
-                                            <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-white/10 px-3 py-1 rounded-full">Sistema Seguro</span>
-                                        </p>
-                                    </div>
-                                </div>
                             </div>
 
                             {/* RIGHT COLUMN: Detailed Forms */}
