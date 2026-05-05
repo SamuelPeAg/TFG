@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import VerClaseModal from '../components/Calendario/VerClaseModal';
 import VistaTarjetas from '../components/Calendario/VistaTarjetas';
 
 export default function ReservaClases() {
+  const location = useLocation();
   const [data, setData] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -87,8 +89,47 @@ export default function ReservaClases() {
     };
 
     window.addEventListener('openVerClaseReact', handleOpenVerReactModal);
+
+    // Lógica para saltar a fecha y abrir sesión si venimos de Mis Clases
+    if (location.state?.goToDate && window.calendar && !loading) {
+        const date = new Date(location.state.goToDate);
+        window.calendar.gotoDate(date);
+
+        if (location.state.openSession) {
+            const checkAndOpen = () => {
+                const events = window.calendar.getEvents();
+                const target = events.find(ev => {
+                    const ep = ev.extendedProps;
+                    const s = location.state.openSession;
+                    return ev.startStr.slice(0, 16) === s.fecha_hora.slice(0, 16) && 
+                           ep.clase_nombre === s.nombre_clase && 
+                           ep.centro === s.centro;
+                });
+                if (target) {
+                    window.dispatchEvent(new CustomEvent('openVerClaseReact', { detail: { event: target } }));
+                } else {
+                    // Si no lo encuentra a la primera, reintentamos una vez tras un pequeño delay (por si los eventos tardan en cargar)
+                    setTimeout(() => {
+                        const eventsRetry = window.calendar.getEvents();
+                        const targetRetry = eventsRetry.find(ev => {
+                            const ep = ev.extendedProps;
+                            const s = location.state.openSession;
+                            return ev.startStr.slice(0, 16) === s.fecha_hora.slice(0, 16) && 
+                                   ep.clase_nombre === s.nombre_clase && 
+                                   ep.centro === s.centro;
+                        });
+                        if (targetRetry) window.dispatchEvent(new CustomEvent('openVerClaseReact', { detail: { event: targetRetry } }));
+                    }, 500);
+                }
+            };
+            setTimeout(checkAndOpen, 300);
+        }
+        // Limpiamos el estado para no repetir el salto al recargar
+        window.history.replaceState({}, document.title);
+    }
+
     return () => window.removeEventListener('openVerClaseReact', handleOpenVerReactModal);
-  }, [data, user]);
+  }, [data, user, loading, location.state]);
 
   useEffect(() => {
     if (viewMode === 'calendar' && window.calendar && !loading) {

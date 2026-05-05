@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
 import ConfirmModal from '../components/ConfirmModal';
 
 export default function MisClases() {
+    const navigate = useNavigate();
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const user = window.AppConfig?.user || null;
     const [loading, setLoading] = useState(true);
@@ -187,7 +189,20 @@ export default function MisClases() {
                                     <div className="space-y-4">
                                         {upcomingSessions.length > 0 ? (
                                             upcomingSessions.map(session => (
-                                                <div key={session.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-5 hover:border-[#38C1A3]/30 transition-all group relative overflow-hidden">
+                                                <div 
+                                                    key={session.id} 
+                                                    onClick={() => navigate('/calendario', { 
+                                                        state: { 
+                                                            goToDate: session.fecha_registro,
+                                                            openSession: {
+                                                                fecha_hora: session.fecha_registro,
+                                                                nombre_clase: session.nombre_clase,
+                                                                centro: session.centro
+                                                            }
+                                                        } 
+                                                    })}
+                                                    className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-5 hover:border-[#38C1A3]/50 transition-all group relative overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-[#38C1A3]/5 active:scale-[0.98]"
+                                                >
                                                     
                                                     {/* Decorador de Fondo */}
                                                     <div className="absolute -top-12 -right-12 w-24 h-24 bg-teal-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50"></div>
@@ -205,9 +220,9 @@ export default function MisClases() {
                                                                 {new Date(session.fecha_registro).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                                                             </p>
                                                         </div>
-                                                        <div className="bg-slate-900 text-white px-5 py-3 rounded-[1.5rem] text-center shadow-lg shadow-slate-900/10">
+                                                        <div className="bg-slate-900 text-white px-5 py-3 rounded-[1.5rem] text-center shadow-lg shadow-slate-900/10 group-hover:bg-[#38C1A3] transition-colors duration-500">
                                                             <p className="text-xl font-black leading-none">{new Date(session.fecha_registro).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
-                                                            <p className="text-[9px] font-black text-slate-400 uppercase mt-1 tracking-widest">Hora</p>
+                                                            <p className="text-[9px] font-black text-slate-400 uppercase mt-1 tracking-widest group-hover:text-white/70">Hora</p>
                                                         </div>
                                                     </div>
 
