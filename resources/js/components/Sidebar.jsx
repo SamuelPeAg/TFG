@@ -47,34 +47,34 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   };
 
   const adminLinks = [
-    { name: 'ESTADÍSTICAS', path: '/estadisticas', icon: 'fa-solid fa-chart-line' },
-    { name: 'ENTRENADORES', path: '/entrenadores', icon: 'fa-solid fa-dumbbell' },
-    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
-    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
-    { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice' },
-    { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice' },
-    { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt' },
-    { name: 'VACACIONES', path: '/admin/vacaciones', icon: 'fa-solid fa-umbrella-beach' },
+    { name: 'ESTADÍSTICAS', path: '/estadisticas', icon: 'fa-solid fa-chart-simple' },
+    { name: 'ENTRENADORES', path: '/entrenadores', icon: 'fa-solid fa-user-tie' },
+    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-user-group' },
+    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days' },
+    { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-receipt' },
+    { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-money-check-dollar' },
+    { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-credit-card' },
+    { name: 'VACACIONES', path: '/admin/vacaciones', icon: 'fa-solid fa-sun' },
   ];
 
   const trainerLinks = [
-    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-users' },
-    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
-    { name: 'NOTIFICAR', path: '/notificaciones', icon: 'fa-solid fa-paper-plane' },
-    { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_facturacion' },
-    { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-file-invoice', permission: 'acceder_nominas_admin' },
-    { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-ticket-alt', permission: 'acceder_suscripciones' },
-    { name: 'MIS NÓMINAS', path: '/mis-nominas', icon: 'fa-solid fa-file-invoice' },
-    { name: 'MIS VACACIONES', path: '/mis-vacaciones', icon: 'fa-solid fa-umbrella-beach' },
+    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-user-group' },
+    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days' },
+    { name: 'NOTIFICAR', path: '/notificaciones', icon: 'fa-solid fa-envelope' },
+    { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-receipt', permission: 'acceder_facturacion' },
+    { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-money-check-dollar', permission: 'acceder_nominas_admin' },
+    { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-credit-card', permission: 'acceder_suscripciones' },
+    { name: 'MIS NÓMINAS', path: '/mis-nominas', icon: 'fa-solid fa-money-check-dollar' },
+    { name: 'MIS VACACIONES', path: '/mis-vacaciones', icon: 'fa-solid fa-sun' },
     { name: 'PLANES', path: '/trainer/planes', icon: 'fa-solid fa-clipboard-list' },
   ];
 
   const clientLinks = [
     { name: 'MI FICHA', path: '/mi-ficha', icon: 'fa-solid fa-folder-open text-[#38C1A3]' },
-    { name: 'MIS CLASES', path: '/mis-clases', icon: 'fa-solid fa-calendar-days' },
-    { name: 'NUTRICIÓN', path: '/mis-comidas', icon: 'fa-solid fa-apple-whole text-brandCoral' },
-    { name: 'ESTADÍSTICAS', path: '/mis-estadisticas', icon: 'fa-solid fa-square-poll-vertical text-indigo-300' },
-    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-check' },
+    { name: 'MIS CLASES', path: '/mis-clases', icon: 'fa-solid fa-person-running' },
+    { name: 'NUTRICIÓN', path: '/mis-comidas', icon: 'fa-solid fa-utensils text-brandCoral' },
+    { name: 'ESTADÍSTICAS', path: '/mis-estadisticas', icon: 'fa-solid fa-chart-simple text-indigo-300' },
+    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days' },
   ];
 
   const linksToShow = isAdmin 
