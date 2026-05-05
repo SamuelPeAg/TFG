@@ -47,7 +47,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   };
 
   const adminLinks = [
-    { name: 'ESTADÍSTICAS', path: '/estadisticas', icon: 'fa-solid fa-chart-simple' },
+    { name: 'ESTADÍSTICAS', path: '/estadisticas', icon: 'fa-solid fa-chart-line text-emerald-200' },
     { name: 'ENTRENADORES', path: '/entrenadores', icon: 'fa-solid fa-user-tie' },
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-user-group' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days' },
@@ -83,6 +83,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         ? trainerLinks.filter(link => !link.permission || hasPermission(link.permission)) 
         : clientLinks);
 
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const baseUrl = window.AppConfig?.baseUrl || '/';
+    return `${baseUrl}storage/${path}`;
+  };
+
   return (
     <>
       <div 
@@ -107,7 +114,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           >
             {user.photo ? (
               <img 
-                src={user.photo} 
+                src={getImageUrl(user.photo)} 
                 alt={user.name} 
                 className="w-full h-full object-cover shadow-inner" 
                 onError={(e) => {

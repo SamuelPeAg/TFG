@@ -29,6 +29,38 @@ ChartJS.register(
 
 export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [activeTab, setActiveTab] = useState('profile');
+  
+  // Inyección de estilos para corregir flechas y spinners
+  useEffect(() => {
+    if (isOpen) {
+        const style = document.createElement('style');
+        style.id = 'ficha-modal-styles';
+        style.innerHTML = `
+            .ficha-modal-select {
+                -webkit-appearance: none !important;
+                -moz-appearance: none !important;
+                appearance: none !important;
+            }
+            .ficha-modal-select::-ms-expand {
+                display: none !important;
+            }
+            .no-spinner::-webkit-inner-spin-button,
+            .no-spinner::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            .no-spinner {
+                -moz-appearance: textfield;
+            }
+        `;
+        document.head.appendChild(style);
+        return () => {
+            const el = document.getElementById('ficha-modal-styles');
+            if (el) el.remove();
+        };
+    }
+  }, [isOpen]);
+
   const [profileData, setProfileData] = useState({
     dni: '',
     direccion: '',
@@ -345,14 +377,14 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl"></div>
 
-            <div className="flex items-center gap-8 relative z-10 w-full pr-12">
+            <div className="flex items-center gap-10 relative z-10 w-full pr-12">
                 <div 
-                    className="w-24 h-24 rounded-[2rem] flex items-center justify-center text-white text-4xl font-black shadow-2xl shadow-teal-200/50 group shrink-0 relative overflow-hidden"
+                    className="w-28 h-28 rounded-[2.5rem] flex items-center justify-center text-white text-5xl font-black shadow-2xl shadow-teal-200/50 group shrink-0 relative overflow-hidden border-4 border-white"
                     style={{ background: 'linear-gradient(135deg, #38C1A3, #2D9B82)' }}
                 >
                     {user?.foto_de_perfil ? (
                         <img 
-                            src={`/storage/${user.foto_de_perfil}`} 
+                            src={user?.foto_de_perfil.startsWith('http') ? user.foto_de_perfil : `/storage/${user.foto_de_perfil}`} 
                             alt={user.name} 
                             className="w-full h-full object-cover"
                         />
@@ -361,13 +393,13 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                     )}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h2 className="text-4xl font-black text-slate-800 tracking-tight leading-none mb-3 truncate">{user?.name}</h2>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <span className="flex items-center gap-2 px-4 py-2 bg-teal-50 text-[#38C1A3] rounded-2xl text-[10px] font-black uppercase tracking-widest border border-teal-100/50">
-                            <i className="fa-solid fa-folder-open"></i> FICHA CLÍNICA
+                    <h2 className="text-5xl font-black text-slate-800 tracking-tighter leading-none mb-4 truncate">{user?.name}</h2>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <span className="flex items-center gap-2.5 px-5 py-2.5 bg-teal-50 text-[#38C1A3] rounded-2xl text-[10px] font-black uppercase tracking-widest border border-teal-100/50 shadow-sm">
+                            <i className="fa-solid fa-heart-pulse"></i> FICHA CLÍNICA
                         </span>
-                        <span className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-indigo-100/50">
-                            <i className="fa-solid fa-id-card"></i> CLIENTE #{user?.id}
+                        <span className="flex items-center gap-2.5 px-5 py-2.5 bg-indigo-50 text-indigo-500 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-indigo-100/50 shadow-sm">
+                            <i className="fa-solid fa-fingerprint"></i> ID: {user?.id}
                         </span>
                     </div>
                 </div>
@@ -387,15 +419,17 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                     <button 
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`py-5 font-black text-[11px] uppercase tracking-[0.2em] transition-all relative flex items-center gap-2 group ${isActive ? 'text-[#38C1A3]' : 'text-slate-300 hover:text-slate-500'}`}
+                        className={`py-6 font-black text-[11px] uppercase tracking-[0.25em] transition-all relative flex items-center gap-3 group ${isActive ? 'text-[#38C1A3]' : 'text-slate-300 hover:text-slate-500'}`}
                     >
-                        <i className={`fa-solid ${tab === 'profile' ? 'fa-user-gear' : tab === 'health' ? 'fa-heart-pulse' : tab === 'files' ? 'fa-file-shield' : 'fa-ticket-alt'} ${isActive ? 'scale-110' : 'opacity-40 group-hover:opacity-100'} transition-all`}></i>
-                        {tab === 'profile' ? 'Expediente' : 
-                         tab === 'health' ? 'Salud / IMC' :
-                         tab === 'files' ? `Documentación (${files.length})` :
-                         'Suscripciones'}
+                        <i className={`fa-solid ${tab === 'profile' ? 'fa-user-gear' : tab === 'health' ? 'fa-heart-pulse' : tab === 'files' ? 'fa-file-shield' : 'fa-credit-card'} ${isActive ? 'scale-110' : 'opacity-30 group-hover:opacity-100'} transition-all text-sm`}></i>
+                        <span>
+                            {tab === 'profile' ? 'Expediente' : 
+                             tab === 'health' ? 'Salud / IMC' :
+                             tab === 'files' ? `Documentación (${files.length})` :
+                             'Suscripciones'}
+                        </span>
                         {isActive && (
-                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#38C1A3] rounded-t-full shadow-[0_0_10px_rgba(56,193,163,0.5)] animate-in slide-in-from-bottom-2 duration-300"></div>
+                            <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-[#38C1A3] rounded-t-full shadow-[0_0_15px_rgba(56,193,163,0.4)] animate-in slide-in-from-bottom-2 duration-500"></div>
                         )}
                     </button>
                 );
@@ -534,11 +568,11 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                             {/* Cabeza de la Tarjeta: Tipo y Visibilidad */}
                                             <div className="flex items-center justify-between gap-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="relative group/sel">
+                                                    <div className="relative group/sel flex-1">
                                                         <select 
                                                             value={attr.type || 'text'} 
                                                             onChange={(e) => updateAttribute(idx, 'type', e.target.value)}
-                                                            className="select2-ignore pl-9 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-[10px] font-black text-slate-500 uppercase tracking-tighter outline-none appearance-none cursor-pointer transition-all border border-slate-100 focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 w-full"
+                                                            className="ficha-modal-select w-full pl-10 pr-10 py-3.5 bg-slate-50 hover:bg-slate-100 rounded-[1.25rem] text-[10px] font-black text-slate-500 uppercase tracking-widest outline-none cursor-pointer transition-all border border-slate-100 focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 appearance-none"
                                                         >
                                                             <option value="text">Dato Corto</option>
                                                             <option value="note">Nota / Observación</option>
@@ -547,8 +581,10 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                             <option value="date">Fecha</option>
                                                             <option value="boolean">Interruptor (SÍ/NO)</option>
                                                         </select>
-                                                        <i className={`fa-solid ${getAttrIcon(attr.type)} absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-400 text-[10px] pointer-events-none group-hover/sel:scale-110 transition-transform`}></i>
-                                                        <i className="fa-solid fa-chevron-down absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 text-[8px] pointer-events-none transition-transform group-hover/sel:translate-y-[-40%]" style={{ transition: 'transform 0.2s ease' }}></i>
+                                                        <i className={`fa-solid ${getAttrIcon(attr.type)} absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 text-xs pointer-events-none group-hover/sel:scale-110 transition-transform`}></i>
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none transition-transform group-hover/sel:translate-y-[-40%]">
+                                                            <i className="fa-solid fa-chevron-down text-[8px]"></i>
+                                                        </div>
                                                     </div>
                                                     
                                                     <button 
@@ -690,7 +726,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                                                 }
                                                                 updateAttribute(idx, 'value', v);
                                                             }}
-                                                            className="w-full px-4 py-3 bg-slate-50 border-transparent rounded-2xl outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all border h-[46px]"
+                                                            className={`w-full px-5 py-3.5 bg-slate-50 border-transparent rounded-[1.25rem] outline-none focus:bg-white focus:border-teal-200 text-xs font-bold text-slate-600 transition-all border h-[52px] ${attr.type === 'number' ? 'no-spinner' : ''}`}
                                                         />
                                                     )}
                                                 </div>
@@ -729,7 +765,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                          type="number" step="0.1"
                                          value={profileData.peso}
                                          onChange={(e) => setProfileData({...profileData, peso: e.target.value})}
-                                         className="w-full pl-5 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-sm font-black text-slate-700 transition-all placeholder:text-slate-200"
+                                         className="no-spinner w-full pl-5 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-sm font-black text-slate-700 transition-all placeholder:text-slate-200"
                                          placeholder="75.0"
                                      />
                                      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-200">KG</span>
@@ -742,7 +778,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                          type="number" step="0.01"
                                          value={profileData.altura}
                                          onChange={(e) => setProfileData({...profileData, altura: e.target.value})}
-                                         className="w-full pl-5 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-sm font-black text-slate-700 transition-all placeholder:text-slate-200"
+                                         className="no-spinner w-full pl-5 pr-12 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-sm font-black text-slate-700 transition-all placeholder:text-slate-200"
                                          placeholder="1.80"
                                      />
                                      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-200">M</span>
@@ -1091,7 +1127,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                 <select 
                                     value={selectedSuscripcionId}
                                     onChange={(e) => setSelectedSuscripcionId(e.target.value)}
-                                    className="select2-ignore w-full h-14 pl-14 pr-10 bg-transparent outline-none text-xs font-black text-slate-700 appearance-none cursor-pointer"
+                                    className="ficha-modal-select w-full h-14 pl-14 pr-10 bg-transparent outline-none text-[10px] font-black text-slate-700 appearance-none cursor-pointer tracking-widest"
                                 >
                                     <option value="">SELECCIONA UN CATÁLOGO DE PLANES...</option>
                                     {availableSubscriptions.map(s => (
@@ -1100,7 +1136,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                         </option>
                                     ))}
                                 </select>
-                                <div className="absolute right-6 pointer-events-none text-slate-300">
+                                <div className="absolute right-6 pointer-events-none text-slate-300 group-focus-within:text-[#38C1A3]">
                                     <i className="fa-solid fa-chevron-down text-[8px]"></i>
                                 </div>
                             </div>
