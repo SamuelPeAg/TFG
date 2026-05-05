@@ -98,6 +98,26 @@ export default function Configuracion() {
           data.append('foto_de_perfil', photoFile);
       }
 
+      if (formData.iban) {
+          const cleanIban = formData.iban.toUpperCase().replace(/\s/g, '');
+          if (cleanIban.startsWith('ES')) {
+              if (cleanIban.length !== 24) {
+                  setErrors({ iban: ['El IBAN español debe tener exactamente 24 caracteres (ES + 22 números).'] });
+                  setSubmitting(false);
+                  return;
+              }
+              if (!/^\d+$/.test(cleanIban.substring(2))) {
+                  setErrors({ iban: ['El IBAN español solo debe contener números después de "ES".'] });
+                  setSubmitting(false);
+                  return;
+              }
+          } else if (cleanIban.length < 15 || cleanIban.length > 34) {
+              setErrors({ iban: ['El IBAN internacional debe tener entre 15 y 34 caracteres.'] });
+              setSubmitting(false);
+              return;
+          }
+      }
+
       if (formData.password) {
           if (formData.password !== formData.password_confirmation) {
               setErrors({ password: ['Las contraseñas no coinciden.'] });

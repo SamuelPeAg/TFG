@@ -69,7 +69,19 @@ class EntrenadorController extends Controller
     {
         $request->validate([
             'password' => 'nullable|confirmed|min:8|max:64',
-            'iban' => 'nullable|string|min:8|max:34|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/i',
+            'iban' => [
+                'nullable', 
+                'string', 
+                function ($attribute, $value, $fail) {
+                    $cleanIban = strtoupper(str_replace(' ', '', $value));
+                    if (str_starts_with($cleanIban, 'ES')) {
+                        if (strlen($cleanIban) !== 24) $fail('El IBAN español debe tener exactamente 24 caracteres (ES + 22 números).');
+                        elseif (!ctype_digit(substr($cleanIban, 2))) $fail('El IBAN español solo debe contener números después de "ES".');
+                    } elseif (strlen($cleanIban) < 15 || strlen($cleanIban) > 34) {
+                        $fail('El IBAN internacional debe tener entre 15 y 34 caracteres.');
+                    }
+                }
+            ],
         ], [
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',

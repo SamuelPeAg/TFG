@@ -106,7 +106,20 @@ class UserController extends Controller
             'name'          => 'required|string|min:3|max:100',
             // El email no se actualiza, pero lo validamos por si acaso se envía el mismo
             'email'         => 'required|email|max:150|unique:users,email,' . $user->id,
-            'iban'          => 'nullable|string|min:8|max:34|unique:users,iban,' . $user->id . '|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/i',
+            'iban'          => [
+                'nullable', 
+                'string', 
+                function ($attribute, $value, $fail) use ($user) {
+                    $cleanIban = strtoupper(str_replace(' ', '', $value));
+                    if (str_starts_with($cleanIban, 'ES')) {
+                        if (strlen($cleanIban) !== 24) $fail('El IBAN español debe tener exactamente 24 caracteres (ES + 22 números).');
+                        elseif (!ctype_digit(substr($cleanIban, 2))) $fail('El IBAN español solo debe contener números después de "ES".');
+                    } elseif (strlen($cleanIban) < 15 || strlen($cleanIban) > 34) {
+                        $fail('El IBAN internacional debe tener entre 15 y 34 caracteres.');
+                    }
+                },
+                Rule::unique('users', 'iban')->ignore($user->id)
+            ],
             'firma_digital' => 'nullable|string|max:1000',
             'precio_hora'   => 'nullable|numeric|min:0|max:9999',
             'dni'           => 'nullable|string|regex:/^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i',
@@ -481,13 +494,23 @@ class UserController extends Controller
                 'nullable',
                 'string',
                 function ($attribute, $value, $fail) {
-                    $cleanIban = str_replace(' ', '', $value);
-                    if (str_starts_with(strtoupper($cleanIban), 'ES')) {
+                    $cleanIban = strtoupper(str_replace(' ', '', $value));
+                    
+                    // Caso España: ES + 22 números
+                    if (str_starts_with($cleanIban, 'ES')) {
                         if (strlen($cleanIban) !== 24) {
-                            $fail('El IBAN español debe tener exactamente 24 caracteres.');
+                            $fail('El IBAN español debe tener exactamente 24 caracteres (ES seguido de 22 números).');
+                            return;
                         }
-                    } elseif (strlen($cleanIban) < 15 || strlen($cleanIban) > 34) {
-                        $fail('El IBAN introducido no tiene una longitud válida.');
+                        if (!ctype_digit(substr($cleanIban, 2))) {
+                            $fail('El IBAN español no puede contener letras después del código de país "ES". Debe ser ES seguido de 22 números.');
+                            return;
+                        }
+                    } else {
+                        // Caso Internacional General
+                        if (!preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}$/', $cleanIban)) {
+                            $fail('El formato del IBAN internacional no es válido. Debe comenzar con 2 letras de país, 2 dígitos de control y entre 11 y 30 caracteres alfanuméricos.');
+                        }
                     }
                 },
                 Rule::unique($user->getTable(), 'iban')->ignore($user->id)
