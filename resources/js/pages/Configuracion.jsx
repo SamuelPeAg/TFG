@@ -2,29 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
 
 export default function Configuracion() {
   const [loading, setLoading] = useState(true);
@@ -39,14 +16,11 @@ export default function Configuracion() {
       direccion: '',
       ciudad: '',
       codigo_postal: '',
-      peso: '',
-      altura: '',
       current_password: '',
       password: '',
       password_confirmation: ''
   });
   
-  const [measurements, setMeasurements] = useState([]);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
 
@@ -76,8 +50,6 @@ export default function Configuracion() {
               direccion: user.direccion || '',
               ciudad: user.ciudad || '',
               codigo_postal: user.codigo_postal || '',
-              peso: user.peso || '',
-              altura: user.altura || '',
               current_password: '',
               password: '',
               password_confirmation: ''
@@ -85,11 +57,6 @@ export default function Configuracion() {
           if (user.foto_de_perfil) {
               setPhotoPreview(`${window.location.origin}/storage/${user.foto_de_perfil}`);
           }
-
-          // Fetch measurements for the chart preview
-          const resFicha = await axios.get(`/client-profile/${user.id}`);
-          setMeasurements(resFicha.data.measurements || []);
-
       } catch (error) {
           console.error('Error fetching user config:', error);
       } finally {
@@ -156,15 +123,6 @@ export default function Configuracion() {
           const res = await axios.post('/configuracion', data, {
               headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' }
           });
-          
-          // Also update physical progress if changed
-          if (formData.peso || formData.altura) {
-             await axios.post(`/client-profile/${formData.id}/progress`, {
-                 peso: formData.peso,
-                 altura: formData.altura
-             });
-          }
-
           showAlert(res.data.message || 'Configuración actualizada correctamente.');
           
           if (res.data.user && res.data.user.foto_de_perfil) {
@@ -187,10 +145,6 @@ export default function Configuracion() {
           setSubmitting(false);
       }
   };
-
-  const weightVal = parseFloat(formData.peso);
-  const heightVal = parseFloat(formData.altura);
-  const currentIMC = (weightVal > 0 && heightVal > 0) ? (weightVal / (heightVal * heightVal)).toFixed(2) : null;
 
   return (
     <div className="flex bg-[#F8FAFC] min-h-screen font-sans text-slate-800 overflow-x-hidden">
@@ -254,7 +208,7 @@ export default function Configuracion() {
                                     </div>
                                 </div>
 
-                                {/* PRIVACY BOX IMPROVED */}
+                                {/* PRIVACY BOX */}
                                 <div className="bg-indigo-600 p-10 rounded-[3.5rem] text-white shadow-2xl shadow-indigo-200 relative overflow-hidden group">
                                     <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-1000"></div>
                                     <div className="relative z-10 space-y-5">
@@ -267,84 +221,6 @@ export default function Configuracion() {
                                             <br/><br/>
                                             <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-white/10 px-3 py-1 rounded-full">Sistema Seguro</span>
                                         </p>
-                                    </div>
-                                </div>
-
-                                {/* IMC CARD (Incorporated as requested) */}
-                                <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-10 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 p-10 opacity-[0.03] text-8xl text-[#38C1A3] pointer-events-none group-hover:scale-110 transition-transform duration-700"><i className="fa-solid fa-heart-pulse"></i></div>
-                                    
-                                    <div className="flex items-center justify-between relative z-10">
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-14 h-14 rounded-3xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-2xl shadow-inner"><i className="fa-solid fa-gauge-high"></i></div>
-                                            <div>
-                                                <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Evolución Física</h3>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Control de peso & IMC</p>
-                                            </div>
-                                        </div>
-                                        {currentIMC && (
-                                            <div className={`px-5 py-2.5 rounded-[1.2rem] flex flex-col items-center justify-center border-2 ${currentIMC < 18.5 ? 'bg-rose-50 border-rose-100 text-rose-500' : (currentIMC > 25 ? 'bg-amber-50 border-amber-100 text-amber-600' : 'bg-emerald-50 border-emerald-100 text-emerald-500')}`}>
-                                                <span className="text-[9px] font-black uppercase tracking-tighter opacity-70">Tu IMC</span>
-                                                <span className="text-base font-black tracking-widest leading-none mt-1">{currentIMC}</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-6 relative z-10">
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2 group">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Peso (kg)</label>
-                                                <div className="relative">
-                                                    <input type="number" step="0.1" name="peso" value={formData.peso} onChange={handleInputChange} className="w-full px-7 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="0.0" />
-                                                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">kg</span>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2 group">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Altura (m)</label>
-                                                <div className="relative">
-                                                    <input type="number" step="0.01" name="altura" value={formData.altura} onChange={handleInputChange} className="w-full px-7 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="0.00" />
-                                                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">m</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-6 border-t border-slate-100">
-                                        <div className="h-44 w-full">
-                                            {measurements.length > 0 ? (
-                                                <Line 
-                                                    data={{
-                                                        labels: [...measurements].reverse().map(m => new Date(m.measured_at).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })),
-                                                        datasets: [{
-                                                            label: 'Peso',
-                                                            data: [...measurements].reverse().map(m => m.peso),
-                                                            borderColor: '#38C1A3',
-                                                            backgroundColor: 'rgba(56, 193, 163, 0.1)',
-                                                            fill: true,
-                                                            tension: 0.45,
-                                                            pointRadius: 4,
-                                                            pointBackgroundColor: '#fff',
-                                                            pointBorderColor: '#38C1A3',
-                                                            pointBorderWidth: 2
-                                                        }]
-                                                    }}
-                                                    options={{
-                                                        responsive: true,
-                                                        maintainAspectRatio: false,
-                                                        plugins: { legend: { display: false }, tooltip: { cornerRadius: 10, padding: 12 } },
-                                                        scales: { 
-                                                            x: { display: false }, 
-                                                            y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 9 }, color: '#94A3B8' } } 
-                                                        }
-                                                    }}
-                                                />
-                                            ) : (
-                                                <div className="h-full flex flex-col items-center justify-center text-slate-200">
-                                                    <i className="fa-solid fa-chart-line text-3xl mb-2"></i>
-                                                    <p className="text-[8px] font-black uppercase tracking-widest">Sin historial</p>
-                                                </div>
-                                            )}
-                                        </div>
                                     </div>
                                 </div>
                             </div>
