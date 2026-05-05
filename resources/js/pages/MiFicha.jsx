@@ -43,8 +43,6 @@ export default function MiFicha() {
     const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     
-    const [isEditingContact, setIsEditingContact] = useState(false);
-    const [savingContact, setSavingContact] = useState(false);
     const [savingStatus, setSavingStatus] = useState(false);
     const [editingMeasurementId, setEditingMeasurementId] = useState(null);
     const [submittingFile, setSubmittingFile] = useState(false);
@@ -78,30 +76,6 @@ export default function MiFicha() {
             console.error('Error fetching ficha:', error);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleProfileDataChange = (e) => {
-        setProfileData({ ...profileData, [e.target.name]: e.target.value });
-    };
-
-    const handleSaveContact = async (e) => {
-        e.preventDefault();
-        setSavingContact(true);
-        try {
-            await axios.put(`/client-profile/${user.id}`, {
-                dni: profileData.dni,
-                direccion: profileData.direccion,
-                ciudad: profileData.ciudad,
-                codigo_postal: profileData.codigo_postal
-            });
-            setIsEditingContact(false);
-            showAlert('Información de contacto actualizada correctamente.');
-            fetchFicha();
-        } catch (error) {
-            showAlert('Hubo un error al actualizar los datos de contacto.', true);
-        } finally {
-            setSavingContact(false);
         }
     };
 
@@ -201,13 +175,6 @@ export default function MiFicha() {
                             <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-bl-[10rem] -mr-10 -mt-10 transition-all group-hover:bg-indigo-100/50"></div>
                                 
-                                <button 
-                                    onClick={() => setIsEditingContact(!isEditingContact)}
-                                    className="absolute top-8 right-8 px-5 py-2.5 bg-indigo-50 text-indigo-600 rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all z-20 shadow-sm"
-                                >
-                                    {isEditingContact ? 'Cancelar' : 'Editar Datos'}
-                                </button>
-                                
                                 <div className="flex flex-col items-center text-center space-y-5 mb-12 relative z-10">
                                     <div className="relative">
                                         <div className="w-28 h-28 rounded-[2.5rem] bg-slate-50 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105">
@@ -238,55 +205,29 @@ export default function MiFicha() {
                                         <div className="h-px flex-1 bg-slate-100"></div>
                                     </div>
                                     
-                                    {isEditingContact ? (
-                                        <form onSubmit={handleSaveContact} className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">DNI / NIE</label>
-                                                <input type="text" name="dni" value={profileData.dni} onChange={handleProfileDataChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-bold focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all uppercase" placeholder="12345678X" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Dirección completa</label>
-                                                <input type="text" name="direccion" value={profileData.direccion} onChange={handleProfileDataChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-bold focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all" placeholder="Calle Ejemplo 123" />
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-5">
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Ciudad</label>
-                                                    <input type="text" name="ciudad" value={profileData.ciudad} onChange={handleProfileDataChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-bold focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all" placeholder="Madrid" />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">CP</label>
-                                                    <input type="text" name="codigo_postal" value={profileData.codigo_postal} onChange={handleProfileDataChange} className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-sm font-bold focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all" placeholder="28001" />
-                                                </div>
-                                            </div>
-                                            <button type="submit" disabled={savingContact} className="w-full py-4 bg-indigo-600 text-white rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-indigo-700 shadow-xl shadow-indigo-600/20 active:scale-95 transition-all flex items-center justify-center gap-3">
-                                                {savingContact ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Actualizar Expediente'}
-                                            </button>
-                                        </form>
-                                    ) : (
-                                        <div className="grid gap-4">
-                                            <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
-                                                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-envelope text-lg"></i></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email</span>
-                                                    <span className="text-sm font-black text-slate-700">{user?.email || 'Sin email registrado'}</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
-                                                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-location-dot text-lg"></i></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Residencia</span>
-                                                    <span className="text-sm font-black text-slate-700">{profileData.direccion || '---'}{profileData.ciudad ? `, ${profileData.ciudad}` : ''}</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
-                                                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-truck-ramp-box text-lg"></i></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Código Postal</span>
-                                                    <span className="text-sm font-black text-slate-700">{profileData.codigo_postal || '---'}</span>
-                                                </div>
+                                    <div className="grid gap-4">
+                                        <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
+                                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-envelope text-lg"></i></div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Email</span>
+                                                <span className="text-sm font-black text-slate-700">{user?.email || 'Sin email registrado'}</span>
                                             </div>
                                         </div>
-                                    )}
+                                        <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
+                                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-location-dot text-lg"></i></div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Residencia</span>
+                                                <span className="text-sm font-black text-slate-700">{profileData.direccion || '---'}{profileData.ciudad ? `, ${profileData.ciudad}` : ''}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-5 p-5 bg-slate-50/50 rounded-[2rem] border border-slate-50 group/item hover:bg-white hover:shadow-md transition-all">
+                                            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover/item:text-indigo-500 transition-colors"><i className="fa-solid fa-truck-ramp-box text-lg"></i></div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Código Postal</span>
+                                                <span className="text-sm font-black text-slate-700">{profileData.codigo_postal || '---'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
