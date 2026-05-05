@@ -489,7 +489,10 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'name'  => ['required', 'string', 'min:3', 'max:100'],
-
+            'dni'   => ['nullable', 'string', 'regex:/^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i'],
+            'direccion' => ['nullable', 'string', 'max:255'],
+            'ciudad'    => ['nullable', 'string', 'max:100'],
+            'codigo_postal' => ['nullable', 'string', 'regex:/^[0-9]{5}$/'],
             'iban' => [
                 'nullable',
                 'string',
@@ -515,15 +518,18 @@ class UserController extends Controller
                 },
                 Rule::unique($user->getTable(), 'iban')->ignore($user->id)
             ],
-            'foto_de_perfil' => ['nullable', 'image', 'max:2048'], // Validar imagen (max 2MB)
+            'foto_de_perfil' => ['nullable', 'image', 'max:2048'],
             'firma_digital' => ['nullable', 'string', 'max:500'],
-
             'current_password' => ['nullable', 'string', 'max:64'],
             'password'         => ['nullable', 'string', 'min:6', 'max:64', 'confirmed'],
         ], $this->validationMessages());
 
         $data = [
             'name' => $validated['name'],
+            'dni'  => $validated['dni'] ?? $user->dni,
+            'direccion' => $validated['direccion'] ?? $user->direccion,
+            'ciudad' => $validated['ciudad'] ?? $user->ciudad,
+            'codigo_postal' => $validated['codigo_postal'] ?? $user->codigo_postal,
             'iban' => $validated['iban'] ?? $user->iban,
             'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
             'email' => $user->email,
