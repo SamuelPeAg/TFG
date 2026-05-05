@@ -29,15 +29,14 @@ class EstadisticasController extends Controller
             try {
                 $totalClientes = User::role('cliente', 'web')
                     ->where('activo', true)
-                    ->whereHas('suscripciones', function($q) {
-                        $q->where('estado', 'activo');
-                    })
                     ->count();
             } catch (\Exception $e) { \Log::error("Error clientes: " . $e->getMessage()); }
 
             $totalEntrenadores = 0;
             try {
-                $totalEntrenadores = \App\Models\Entrenador::role('entrenador', 'staff')->count();
+                $totalEntrenadores = \App\Models\Entrenador::role('entrenador', 'staff')
+                    ->where('activo', true)
+                    ->count();
             } catch (\Exception $e) { \Log::error("Error entrenadores: " . $e->getMessage()); }
             
             $startOfMonth = Carbon::now()->startOfMonth();
