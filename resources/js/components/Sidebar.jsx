@@ -5,10 +5,28 @@ import axios from 'axios';
 export default function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
   const [user, setUser] = useState(window.AppConfig?.user);
+  const [loading, setLoading] = useState(!window.AppConfig?.user);
+
+  useEffect(() => {
+    if (!user) {
+      axios.get('/configuracion')
+        .then(res => {
+          if (res.data.user) {
+            setUser(res.data.user);
+            // También actualizamos AppConfig para futuros usos
+            if (window.AppConfig) window.AppConfig.user = res.data.user;
+          }
+        })
+        .catch(err => console.error('Error fetching user for sidebar:', err))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     const handleUpdate = () => {
-      setUser({ ...window.AppConfig.user });
+      setUser({ ...window.AppConfig?.user });
     };
     window.addEventListener('user-updated', handleUpdate);
     return () => window.removeEventListener('user-updated', handleUpdate);
@@ -19,7 +37,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     setIsOpen(false);
   }, [location.pathname, setIsOpen]);
 
-  // Si no hay usuario, el sidebar no debería renderizar nada importante o debería redirigir
+  if (loading) return null;
   if (!user) return null;
 
   const isAdmin = user.role === 'admin';

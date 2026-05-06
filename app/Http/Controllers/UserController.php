@@ -478,7 +478,17 @@ class UserController extends Controller
     public function configuracion(Request $request)
     {
         if ($request->wantsJson()) {
-            return response()->json(['user' => $request->user()]);
+            $user = null;
+            if (auth('staff')->check()) {
+                $user = auth('staff')->user();
+                $user->role = $user->hasRole('admin') ? 'admin' : 'entrenador';
+                $user->permissions = $user->hasRole('admin') ? ['*'] : $user->getAllPermissions()->pluck('name')->toArray();
+            } elseif (auth('web')->check()) {
+                $user = auth('web')->user();
+                $user->role = 'cliente';
+                $user->permissions = [];
+            }
+            return response()->json(['user' => $user]);
         }
         return view('app');
     }
