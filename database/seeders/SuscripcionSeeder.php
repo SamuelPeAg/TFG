@@ -56,11 +56,35 @@ class SuscripcionSeeder extends Seeder
                 'meses_reset' => 0,
             ]
         );
-        $s2->creditos()->delete();
         $s2->creditos()->create([
             'tipo_credito_id' => $tipoCredito->id,
             'cantidad' => 2,
             'dias_caducidad' => 7
         ]);
+
+        // ASIGNAR SUSCRIPCIONES A CLIENTES EXISTENTES
+        $clientes = \App\Models\User::role('cliente')->get();
+        foreach ($clientes as $cliente) {
+            $plan = rand(0, 1) === 0 ? $s1 : $s2;
+            $userSub = \App\Models\SuscripcionUsuario::create([
+                'id_usuario' => $cliente->id,
+                'id_suscripcion' => $plan->id,
+                'estado' => 'activo',
+                'fecha_inicio' => now(),
+                'fecha_fin' => now()->addMonth(),
+                'proxima_renovacion' => now()->addMonth(),
+                'metodo_pago' => 'Transferencia',
+            ]);
+
+            // Darle los créditos iniciales
+            foreach ($plan->creditos as $c) {
+                $userSub->lotes()->create([
+                    'tipo_credito_id' => $c->tipo_credito_id,
+                    'cantidad_total' => $c->cantidad,
+                    'cantidad_disponible' => $c->cantidad,
+                    'fecha_caducidad' => now()->addDays($c->dias_caducidad),
+                ]);
+            }
+        }
     }
 }

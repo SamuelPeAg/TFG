@@ -382,11 +382,15 @@ class PagosController extends Controller
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
+        $fechaStart = $fecha->copy()->startOfMinute();
+        $fechaEnd = $fecha->copy()->endOfMinute();
+        $nombreClase = trim($request->nombre_clase);
+        $centro = trim($request->centro);
 
         // Buscar todos los pagos que coinciden con la "sesión"
-        $pagos = Pago::where('fecha_registro', $fecha)
-            ->where('nombre_clase', $request->nombre_clase)
-            ->where('centro', $request->centro)
+        $pagos = Pago::whereBetween('fecha_registro', [$fechaStart, $fechaEnd])
+            ->whereRaw('LOWER(TRIM(nombre_clase)) = ?', [strtolower($nombreClase)])
+            ->whereRaw('LOWER(TRIM(centro)) = ?', [strtolower($centro)])
             ->get();
 
         if ($pagos->isEmpty()) {
@@ -434,10 +438,14 @@ class PagosController extends Controller
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
+        $fechaStart = $fecha->copy()->startOfMinute();
+        $fechaEnd = $fecha->copy()->endOfMinute();
+        $nombreClase = trim($request->nombre_clase);
+        $centro = trim($request->centro);
 
-        $pagos = Pago::where('fecha_registro', $fecha)
-            ->where('nombre_clase', $request->nombre_clase)
-            ->where('centro', $request->centro)
+        $pagos = Pago::whereBetween('fecha_registro', [$fechaStart, $fechaEnd])
+            ->whereRaw('LOWER(TRIM(nombre_clase)) = ?', [strtolower($nombreClase)])
+            ->whereRaw('LOWER(TRIM(centro)) = ?', [strtolower($centro)])
             ->get();
 
         if ($pagos->isEmpty()) {
@@ -482,11 +490,16 @@ class PagosController extends Controller
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
+        $fechaStart = $fecha->copy()->startOfMinute();
+        $fechaEnd = $fecha->copy()->endOfMinute();
+
+        $nombreClase = trim($request->nombre_clase);
+        $centro = trim($request->centro);
 
         // 1. Buscar un pago existente de esa sesión para copiar datos (importe, tipo, método, entrenadores)
-        $existingPago = Pago::where('fecha_registro', $fecha)
-            ->where('nombre_clase', $request->nombre_clase)
-            ->where('centro', $request->centro)
+        $existingPago = Pago::whereBetween('fecha_registro', [$fechaStart, $fechaEnd])
+            ->whereRaw('LOWER(TRIM(nombre_clase)) = ?', [strtolower($nombreClase)])
+            ->whereRaw('LOWER(TRIM(centro)) = ?', [strtolower($centro)])
             ->first();
 
         if (!$existingPago) {
@@ -495,9 +508,9 @@ class PagosController extends Controller
 
         // 2. Verificar si el grupo tiene un límite y si ya se alcanzó
         if (!empty($existingPago->capacidad_maxima) && $existingPago->capacidad_maxima > 0) {
-            $currentCount = Pago::where('fecha_registro', $fecha)
-                ->where('nombre_clase', $request->nombre_clase)
-                ->where('centro', $request->centro)
+            $currentCount = Pago::whereBetween('fecha_registro', [$fechaStart, $fechaEnd])
+                ->whereRaw('LOWER(TRIM(nombre_clase)) = ?', [strtolower($nombreClase)])
+                ->whereRaw('LOWER(TRIM(centro)) = ?', [strtolower($centro)])
                 ->whereNotNull('user_id')
                 ->count();
 
@@ -507,9 +520,9 @@ class PagosController extends Controller
         }
 
         // 3. Verificar que el usuario no esté ya en esa sesión
-        $exists = Pago::where('fecha_registro', $fecha)
-            ->where('nombre_clase', $request->nombre_clase)
-            ->where('centro', $request->centro)
+        $exists = Pago::whereBetween('fecha_registro', [$fechaStart, $fechaEnd])
+            ->whereRaw('LOWER(TRIM(nombre_clase)) = ?', [strtolower($nombreClase)])
+            ->whereRaw('LOWER(TRIM(centro)) = ?', [strtolower($centro)])
             ->where('user_id', $request->user_id)
             ->exists();
 

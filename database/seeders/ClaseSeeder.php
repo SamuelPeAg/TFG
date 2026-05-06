@@ -40,11 +40,18 @@ class ClaseSeeder extends Seeder
             ],
         ];
 
-        foreach ($clases as $clase) {
-            Clase::updateOrCreate(
-                ['nombre' => $clase['nombre'], 'id_centro' => $clase['id_centro']],
-                $clase
+        $tipoCredito = \App\Models\TipoCredito::first();
+
+        foreach ($clases as $claseData) {
+            $clase = Clase::updateOrCreate(
+                ['nombre' => $claseData['nombre'], 'id_centro' => $claseData['id_centro']],
+                $claseData
             );
+
+            // Asignar créditos permitidos a la clase base
+            if ($tipoCredito) {
+                $clase->tiposCredito()->syncWithoutDetaching([$tipoCredito->id]);
+            }
         }
 
         // Generar algunas clases adicionales aleatorias usando el factory (que ya usa centros existentes)
