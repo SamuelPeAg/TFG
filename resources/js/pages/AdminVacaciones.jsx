@@ -57,14 +57,10 @@ export default function AdminVacaciones() {
   const filteredVacations = vacations.filter(v => filter === 'all' ? true : v.status === filter);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-      
-      {isSidebarOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
-      )}
 
-      <main className="flex-1 lg:pl-72 flex flex-col min-h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
         <PageHeader 
             title="Vacaciones"
             subtitle="Gestión de solicitudes de entrenadores"
