@@ -79,7 +79,8 @@ class ActionPlanController extends Controller
 
         $request->validate([
             'response' => 'required|string',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120'
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'videos.*' => 'nullable|mimetypes:video/mp4,video/mpeg,video/quicktime|max:51200'
         ]);
 
         $imagePaths = [];
@@ -98,6 +99,10 @@ class ActionPlanController extends Controller
                     if ($request->hasFile("routine_images_{$index}")) {
                         $path = $request->file("routine_images_{$index}")->store('action_plans/exercises', 'public');
                         $exercise['image_url'] = '/storage/' . $path;
+                    }
+                    if ($request->hasFile("routine_videos_{$index}")) {
+                        $path = $request->file("routine_videos_{$index}")->store('action_plans/exercises/videos', 'public');
+                        $exercise['video_url'] = '/storage/' . $path;
                     }
                 }
             }

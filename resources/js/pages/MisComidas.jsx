@@ -534,9 +534,18 @@ export default function MisComidas() {
                                                                                             {structuredData.routine.map((ex, i) => (
                                                                                                 <div key={i} className="bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-sm relative overflow-hidden">
                                                                                                     <div className="flex gap-6 relative z-10">
-                                                                                                        {ex.image_url && (
-                                                                                                            <div className="shrink-0 w-28 h-28 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white">
-                                                                                                                <img src={ex.image_url} alt={ex.ejercicio} className="w-full h-full object-cover" />
+                                                                                                        {(ex.image_url || ex.video_url) && (
+                                                                                                            <div className="shrink-0 flex flex-col gap-3">
+                                                                                                                {ex.image_url && (
+                                                                                                                    <div className="w-28 h-28 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+                                                                                                                        <img src={ex.image_url} alt={ex.ejercicio} className="w-full h-full object-cover" />
+                                                                                                                    </div>
+                                                                                                                )}
+                                                                                                                {ex.video_url && (
+                                                                                                                    <div className="w-28 h-28 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+                                                                                                                        <video src={ex.video_url} className="w-full h-full object-cover" controls />
+                                                                                                                    </div>
+                                                                                                                )}
                                                                                                             </div>
                                                                                                         )}
                                                                                                         <div className="flex-1">

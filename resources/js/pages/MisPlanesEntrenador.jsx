@@ -12,13 +12,12 @@ export default function MisPlanesEntrenador() {
   const [meals, setMeals] = useState([]);
   const [loadingMeals, setLoadingMeals] = useState(false);
   
-  const [response, setResponse] = useState('');
   const [images, setImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
   // Builder states
-  const [responseMode, setResponseMode] = useState('text'); // text | routine
   const [motivation, setMotivation] = useState('');
+  const [intensity, setIntensity] = useState('MEDIO');
   const [routine, setRoutine] = useState([]);
   
   // Custom templates states
@@ -27,56 +26,46 @@ export default function MisPlanesEntrenador() {
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
 
-  const textTemplates = [
-    { name: 'Fuerza Básica', text: '💪 RUTINA FUERZA:\n- Sentadillas: 4 x 10 (Peso: [XX] kg)\n- Press Banca: 4 x 8 (Peso: [XX] kg)\n- Peso Muerto: 4 x 8 (Peso: [XX] kg)' },
-    { name: 'HIIT Cardio', text: '🔥 RUTINA HIIT:\n- Burpees: 5 x 20 seg (10 seg descanso)\n- Mountain Climbers: 5 x 20 seg\n- Jumping Jacks: 5 x 30 seg' },
-    { name: 'Burpees 5x4', text: '- Burpees: 5 series x 4 repeticiones\n- Descanso: 45 segundos' }
-  ];
-
   const routineTemplates = [
     { 
       name: '🤰 Embarazadas', 
       data: [
-        { ejercicio: 'Sentadillas con Fitball', series: '3', reps: '12', weight: 'Corporal', tools: 'Fitball', focus: 'FUERZA', imageFile: null, imagePreview: null },
-        { ejercicio: 'Elevación de pelvis', series: '3', reps: '15', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null },
-        { ejercicio: 'Paseo Ligero', series: '1', reps: '20 min', weight: '-', tools: 'Cinta', focus: 'CARDIO', imageFile: null, imagePreview: null }
+        { ejercicio: 'Sentadillas con Fitball', series: '3', reps: '12', weight: 'Corporal', tools: 'Fitball', focus: 'FUERZA', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null },
+        { ejercicio: 'Elevación de pelvis', series: '3', reps: '15', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null },
+        { ejercicio: 'Paseo Ligero', series: '1', reps: '20 min', weight: '-', tools: 'Cinta', focus: 'CARDIO', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null }
       ] 
     },
     { 
       name: '🔥 Perder Peso', 
       data: [
-        { ejercicio: 'Burpees', series: '4', reps: '15', weight: 'Corporal', tools: 'Esterilla', focus: 'CARDIO', imageFile: null, imagePreview: null },
-        { ejercicio: 'Mountain Climbers', series: '4', reps: '45 seg', weight: 'Corporal', tools: 'Ninguna', focus: 'CARDIO', imageFile: null, imagePreview: null },
-        { ejercicio: 'Kettlebell Swings', series: '4', reps: '20', weight: '12kg', tools: 'Kettlebell', focus: 'FUERZA', imageFile: null, imagePreview: null }
+        { ejercicio: 'Burpees', series: '4', reps: '15', weight: 'Corporal', tools: 'Esterilla', focus: 'CARDIO', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null },
+        { ejercicio: 'Mountain Climbers', series: '4', reps: '45 seg', weight: 'Corporal', tools: 'Ninguna', focus: 'CARDIO', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null },
+        { ejercicio: 'Kettlebell Swings', series: '4', reps: '20', weight: '12kg', tools: 'Kettlebell', focus: 'FUERZA', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null }
       ] 
     },
     { 
       name: '💪 Ganar Músculo', 
       data: [
-        { ejercicio: 'Press Banca', series: '4', reps: '8', weight: '60kg', tools: 'Banco y Barra', focus: 'FUERZA', imageFile: null, imagePreview: null },
-        { ejercicio: 'Sentadilla Libre', series: '4', reps: '8', weight: '80kg', tools: 'Rack', focus: 'FUERZA', imageFile: null, imagePreview: null },
-        { ejercicio: 'Remo con Barra', series: '4', reps: '10', weight: '50kg', tools: 'Barra', focus: 'FUERZA', imageFile: null, imagePreview: null }
+        { ejercicio: 'Press Banca', series: '4', reps: '8', weight: '60kg', tools: 'Banco y Barra', focus: 'FUERZA', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null },
+        { ejercicio: 'Sentadilla Libre', series: '4', reps: '8', weight: '80kg', tools: 'Rack', focus: 'FUERZA', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null },
+        { ejercicio: 'Remo con Barra', series: '4', reps: '10', weight: '50kg', tools: 'Barra', focus: 'FUERZA', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null }
       ] 
     },
     { 
       name: '🧘 Recuperación', 
       data: [
-        { ejercicio: 'Estiramientos Dinámicos', series: '1', reps: '10 min', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null },
-        { ejercicio: 'Yoga Básico', series: '1', reps: '20 min', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null }
+        { ejercicio: 'Estiramientos Dinámicos', series: '1', reps: '10 min', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null },
+        { ejercicio: 'Yoga Básico', series: '1', reps: '20 min', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null }
       ] 
     }
   ];
-
-  const handleInsertTextTemplate = (templateText) => {
-    setResponse(prev => prev + (prev ? '\n\n' : '') + templateText);
-  };
 
   const handleAddRoutineTemplate = (templateDataArray) => {
     setRoutine([...routine, ...templateDataArray]);
   };
 
   const handleAddRoutineItem = () => {
-    setRoutine([...routine, { ejercicio: '', series: '', reps: '', weight: '', tools: '', focus: 'FUERZA', imageFile: null, imagePreview: null }]);
+    setRoutine([...routine, { ejercicio: '', series: '', reps: '', weight: '', tools: '', focus: 'FUERZA', imageFile: null, imagePreview: null, videoFile: null, videoPreview: null }]);
   };
 
   const handleUpdateRoutineItem = (index, field, value) => {
@@ -95,6 +84,16 @@ export default function MisPlanesEntrenador() {
       const newRoutine = [...routine];
       newRoutine[index].imageFile = file;
       newRoutine[index].imagePreview = URL.createObjectURL(file);
+      setRoutine(newRoutine);
+    }
+  };
+
+  const handleExerciseVideoChange = (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const newRoutine = [...routine];
+      newRoutine[index].videoFile = file;
+      newRoutine[index].videoPreview = URL.createObjectURL(file);
       setRoutine(newRoutine);
     }
   };
@@ -119,7 +118,7 @@ export default function MisPlanesEntrenador() {
 
     setSavingTemplate(true);
     const routineDataForJson = routine.map(item => {
-      const { imageFile, imagePreview, ...rest } = item;
+      const { imageFile, imagePreview, videoFile, videoPreview, ...rest } = item;
       return rest;
     });
 
@@ -157,7 +156,6 @@ export default function MisPlanesEntrenador() {
 
   const handleSelectPlan = async (plan) => {
     setActivePlan(plan);
-    setResponse('');
     setImages([]);
     setMeals([]);
     
@@ -178,35 +176,33 @@ export default function MisPlanesEntrenador() {
 
   const handleSubmitResponse = async (e) => {
     e.preventDefault();
-    if (responseMode === 'text' && !response.trim() && images.length === 0) return;
-    if (responseMode === 'routine' && routine.length === 0 && !motivation.trim()) return;
+    if (routine.length === 0 && !motivation.trim()) return;
     
     setSubmitting(true);
     
-    let finalResponse = response;
-    if (responseMode === 'routine') {
-      const routineDataForJson = routine.map(item => {
-        const { imageFile, imagePreview, ...rest } = item;
-        return rest;
-      });
+    const routineDataForJson = routine.map(item => {
+      const { imageFile, imagePreview, videoFile, videoPreview, ...rest } = item;
+      return rest;
+    });
 
-      finalResponse = JSON.stringify({
-        is_structured_routine: true,
-        motivation: motivation,
-        routine: routineDataForJson
-      });
-    }
+    const finalResponse = JSON.stringify({
+      is_structured_routine: true,
+      motivation: motivation,
+      intensity: intensity,
+      routine: routineDataForJson
+    });
 
     const formData = new FormData();
     formData.append('response', finalResponse);
     
-    if (responseMode === 'routine') {
-      routine.forEach((item, index) => {
-        if (item.imageFile) {
-          formData.append(`routine_images_${index}`, item.imageFile);
-        }
-      });
-    }
+    routine.forEach((item, index) => {
+      if (item.imageFile) {
+        formData.append(`routine_images_${index}`, item.imageFile);
+      }
+      if (item.videoFile) {
+        formData.append(`routine_videos_${index}`, item.videoFile);
+      }
+    });
 
     images.forEach(img => {
       formData.append('images[]', img);
@@ -289,13 +285,34 @@ export default function MisPlanesEntrenador() {
                   </div>
 
                   <div>
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Comidas del {new Date(activePlan.target_date).toLocaleDateString()}</h3>
+                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Análisis de Nutrición ({new Date(activePlan.target_date).toLocaleDateString()})</h3>
                     {loadingMeals ? (
                       <div className="text-center py-4"><i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i></div>
                     ) : meals.length === 0 ? (
                       <p className="text-sm text-slate-500">No hay comidas registradas para este día.</p>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                            <span className="block text-[9px] font-black text-slate-400 uppercase mb-1">Total Calorías</span>
+                            <span className="text-lg font-black text-slate-800">{meals.reduce((sum, m) => sum + (m.calories_est || 0), 0)} <span className="text-[10px] text-slate-400">kcal</span></span>
+                          </div>
+                          <div className="bg-rose-50 rounded-2xl p-4 border border-rose-100">
+                            <span className="block text-[9px] font-black text-rose-400 uppercase mb-1">Proteínas</span>
+                            <span className="text-lg font-black text-rose-600">{meals.reduce((sum, m) => sum + (m.macros_est?.protein || 0), 0)} <span className="text-[10px] text-rose-300">g</span></span>
+                          </div>
+                          <div className="bg-teal-50 rounded-2xl p-4 border border-teal-100">
+                            <span className="block text-[9px] font-black text-teal-400 uppercase mb-1">Carbohidratos</span>
+                            <span className="text-lg font-black text-teal-600">{meals.reduce((sum, m) => sum + (m.macros_est?.carbs || 0), 0)} <span className="text-[10px] text-teal-300">g</span></span>
+                          </div>
+                          <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                            <span className="block text-[9px] font-black text-amber-400 uppercase mb-1">Grasas</span>
+                            <span className="text-lg font-black text-amber-600">{meals.reduce((sum, m) => sum + (m.macros_est?.fats || 0), 0)} <span className="text-[10px] text-amber-300">g</span></span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Desglose de Comidas</p>
                         {meals.map(meal => (
                           <div key={meal.id} className="flex gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
                             <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-lg shrink-0">
@@ -313,6 +330,7 @@ export default function MisPlanesEntrenador() {
                             </div>
                           </div>
                         ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -321,40 +339,28 @@ export default function MisPlanesEntrenador() {
                     <div>
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Tu Respuesta y Plan</h3>
-                        <div className="bg-slate-100 p-1 rounded-xl flex gap-1">
-                          <button type="button" onClick={() => setResponseMode('text')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${responseMode === 'text' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Texto</button>
-                          <button type="button" onClick={() => setResponseMode('routine')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${responseMode === 'routine' ? 'bg-white text-[#38C1A3] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Rutina Visual</button>
-                        </div>
                       </div>
 
                       <form onSubmit={handleSubmitResponse} className="space-y-4">
-                        
-                        {responseMode === 'text' ? (
-                          <>
-                            <div className="mb-4 bg-slate-50 border border-slate-100 rounded-2xl p-4">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3"><i className="fa-solid fa-bolt text-indigo-400 mr-1"></i> Plantillas de Texto:</p>
-                              <div className="flex flex-wrap gap-2">
-                                {textTemplates.map((tpl, i) => (
-                                  <button key={i} type="button" onClick={() => handleInsertTextTemplate(tpl.text)} className="text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl bg-white text-indigo-600 hover:bg-indigo-600 hover:text-white hover:shadow-lg transition-all border border-indigo-100">
-                                    {tpl.name} <i className="fa-solid fa-plus opacity-50 ml-1"></i>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                            <textarea
-                              required
-                              value={response}
-                              onChange={(e) => setResponse(e.target.value)}
-                              placeholder="Escribe la rutina, consejos o el plan de acción aquí..."
-                              className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[300px] resize-y text-sm leading-relaxed"
-                            />
-                          </>
-                        ) : (
                           <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-6 space-y-6">
                             <div>
-                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Mensaje / Motivación</label>
-                              <textarea value={motivation} onChange={(e) => setMotivation(e.target.value)} placeholder="Ej: Has tenido una carga proteica elevada hoy; aprovechemos..." className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-sm font-medium italic resize-none h-20" />
-                            </div>
+                               <div className="flex justify-between items-center mb-2">
+                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Mensaje / Motivación</label>
+                                 <div className="flex gap-2">
+                                   {['FÁCIL', 'MEDIO', 'INTENSO'].map(lvl => (
+                                     <button 
+                                       key={lvl} 
+                                       type="button" 
+                                       onClick={() => setIntensity(lvl)}
+                                       className={`text-[8px] font-black px-2 py-1 rounded-md transition-all ${intensity === lvl ? (lvl === 'FÁCIL' ? 'bg-emerald-500 text-white' : lvl === 'MEDIO' ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white') : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
+                                     >
+                                       {lvl}
+                                     </button>
+                                   ))}
+                                 </div>
+                               </div>
+                               <textarea value={motivation} onChange={(e) => setMotivation(e.target.value)} placeholder="Ej: Has tenido una carga proteica elevada hoy; aprovechemos..." className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-sm font-medium italic resize-none h-20" />
+                             </div>
                             
                             <div>
                               <div className="flex justify-between items-center mb-3">
@@ -377,25 +383,42 @@ export default function MisPlanesEntrenador() {
                                 {routine.map((item, idx) => (
                                   <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative group">
                                     <div className="flex gap-4 items-start">
-                                      {/* Image Uploader */}
-                                      <div className="shrink-0 w-24 h-24 bg-slate-50 rounded-xl border border-dashed border-slate-300 relative overflow-hidden flex items-center justify-center group/img cursor-pointer">
-                                        {item.imagePreview ? (
-                                          <img src={item.imagePreview} className="w-full h-full object-cover" />
-                                        ) : (
-                                          <div className="text-center">
-                                            <i className="fa-solid fa-camera text-slate-300 text-xl mb-1"></i>
-                                            <p className="text-[8px] font-black uppercase text-slate-400">Añadir<br/>Foto</p>
-                                          </div>
-                                        )}
-                                        <input type="file" accept="image/*" onChange={(e) => handleExerciseImageChange(idx, e)} className="absolute inset-0 opacity-0 cursor-pointer" />
-                                        {item.imagePreview && (
-                                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
-                                            <i className="fa-solid fa-pen text-white"></i>
-                                          </div>
-                                        )}
+                                      <div className="shrink-0 flex flex-col gap-2">
+                                        <div className="w-24 h-24 bg-slate-50 rounded-xl border border-dashed border-slate-300 relative overflow-hidden flex items-center justify-center group/img cursor-pointer">
+                                          {item.imagePreview ? (
+                                            <img src={item.imagePreview} className="w-full h-full object-cover" />
+                                          ) : (
+                                            <div className="text-center">
+                                              <i className="fa-solid fa-camera text-slate-300 text-xl mb-1"></i>
+                                              <p className="text-[8px] font-black uppercase text-slate-400">Foto</p>
+                                            </div>
+                                          )}
+                                          <input type="file" accept="image/*" onChange={(e) => handleExerciseImageChange(idx, e)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                          {item.imagePreview && (
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                              <i className="fa-solid fa-pen text-white"></i>
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        <div className="w-24 h-24 bg-slate-50 rounded-xl border border-dashed border-slate-300 relative overflow-hidden flex items-center justify-center group/vid cursor-pointer">
+                                          {item.videoPreview ? (
+                                            <video src={item.videoPreview} className="w-full h-full object-cover" muted />
+                                          ) : (
+                                            <div className="text-center">
+                                              <i className="fa-solid fa-video text-slate-300 text-xl mb-1"></i>
+                                              <p className="text-[8px] font-black uppercase text-slate-400">Vídeo</p>
+                                            </div>
+                                          )}
+                                          <input type="file" accept="video/*" onChange={(e) => handleExerciseVideoChange(idx, e)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                          {item.videoPreview && (
+                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/vid:opacity-100 transition-opacity">
+                                              <i className="fa-solid fa-pen text-white"></i>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
 
-                                      {/* Fields */}
                                       <div className="flex-1 space-y-3">
                                         <div className="flex gap-3">
                                           <input type="text" value={item.ejercicio} onChange={(e) => handleUpdateRoutineItem(idx, 'ejercicio', e.target.value)} placeholder="Nombre del Ejercicio (Ej: Sentadillas)" className="flex-1 bg-slate-50 border border-slate-100 text-xs font-black uppercase rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-teal-200" />
@@ -439,25 +462,26 @@ export default function MisPlanesEntrenador() {
                               </div>
                             </div>
                           </div>
-                        )}
-                        <div>
-                          <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Adjuntar Fotos (Opcional)</label>
-                          <input 
-                            type="file" 
-                            multiple 
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
-                          />
-                        </div>
-                        <button 
-                          type="submit" 
-                          disabled={submitting}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-2xl shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
-                        >
-                          {submitting ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-paper-plane mr-2"></i>}
-                          Enviar Plan
-                        </button>
+                          
+                          <div>
+                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Adjuntar Fotos (Opcional)</label>
+                            <input 
+                              type="file" 
+                              multiple 
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-black file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
+                            />
+                          </div>
+
+                          <button 
+                            type="submit" 
+                            disabled={submitting}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest py-4 px-8 rounded-2xl shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
+                          >
+                            {submitting ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-paper-plane mr-2"></i>}
+                            Enviar Plan
+                          </button>
                       </form>
                     </div>
                   ) : (
@@ -478,19 +502,35 @@ export default function MisPlanesEntrenador() {
                             if (isStructured) {
                                 return (
                                     <div className="bg-white border border-emerald-100 rounded-[2rem] p-6">
-                                        {structuredData.motivation && (
-                                            <p className="text-sm font-bold italic text-slate-700 mb-6 text-center">"{structuredData.motivation}"</p>
-                                        )}
+                                        <div className="flex justify-between items-center mb-6">
+                                            {structuredData.motivation ? (
+                                                <p className="text-sm font-bold italic text-slate-700 flex-1 text-center">"{structuredData.motivation}"</p>
+                                            ) : <div></div>}
+                                            {structuredData.intensity && (
+                                                <span className={`shrink-0 text-[9px] font-black uppercase px-3 py-1 rounded-full border ${structuredData.intensity === 'FÁCIL' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : structuredData.intensity === 'MEDIO' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                                                    {structuredData.intensity}
+                                                </span>
+                                            )}
+                                        </div>
                                         {structuredData.routine && structuredData.routine.length > 0 && (
                                             <div className="space-y-6">
                                                 {structuredData.routine.map((ex, i) => (
                                                     <div key={i} className="bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-sm relative overflow-hidden">
                                                         <div className="flex gap-6 relative z-10">
-                                                            {ex.image_url && (
-                                                                <div className="shrink-0 w-28 h-28 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white">
-                                                                    <img src={ex.image_url} alt={ex.ejercicio} className="w-full h-full object-cover" />
-                                                                </div>
-                                                            )}
+                                                        {(ex.image_url || ex.video_url) && (
+                                                            <div className="shrink-0 flex flex-col gap-3">
+                                                                {ex.image_url && (
+                                                                    <div className="w-28 h-28 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+                                                                        <img src={ex.image_url} alt={ex.ejercicio} className="w-full h-full object-cover" />
+                                                                    </div>
+                                                                )}
+                                                                {ex.video_url && (
+                                                                    <div className="w-28 h-28 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+                                                                        <video src={ex.video_url} className="w-full h-full object-cover" controls />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                             <div className="flex-1">
                                                                 <div className="flex justify-between items-start mb-4">
                                                                     <div>

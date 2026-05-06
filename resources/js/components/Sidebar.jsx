@@ -76,11 +76,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   const trainerLinks = [
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days text-[#38C1A3]' },
-    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-user-group text-amber-300' },
-    { name: 'NOTIFICAR', path: '/notificaciones', icon: 'fa-solid fa-envelope text-sky-300' },
-    { name: 'PLANES', path: '/trainer/planes', icon: 'fa-solid fa-clipboard-list text-emerald-300' },
-    { name: 'MIS NÓMINAS', path: '/mis-nominas', icon: 'fa-solid fa-money-check-dollar text-indigo-300' },
-    { name: 'MIS VACACIONES', path: '/mis-vacaciones', icon: 'fa-solid fa-sun text-yellow-300' },
+    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-user-group text-violet-400' },
+    { name: 'NOTIFICAR', path: '/notificaciones', icon: 'fa-solid fa-envelope text-sky-400' },
+    { name: 'PLANES', path: '/trainer/planes', icon: 'fa-solid fa-clipboard-list text-rose-400' },
+    { name: 'MIS NÓMINAS', path: '/mis-nominas', icon: 'fa-solid fa-money-check-dollar text-emerald-400' },
+    { name: 'MIS VACACIONES', path: '/mis-vacaciones', icon: 'fa-solid fa-sun text-amber-400' },
     { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-receipt text-rose-300', permission: 'acceder_facturacion' },
     { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-money-check-dollar text-indigo-300', permission: 'acceder_nominas_admin' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-credit-card text-purple-300', permission: 'acceder_suscripciones' },
