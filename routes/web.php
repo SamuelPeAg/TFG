@@ -171,6 +171,10 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])->name('Pagos.removeTrainer');
     Route::post('/Pagos/add-client', [PagosController::class, 'addClientToSession'])->name('Pagos.addClient');
     Route::post('/Pagos/remove-client', [PagosController::class, 'removeClientFromSession'])->name('Pagos.removeClient');
+    
+    // Intercambio de Clases
+    Route::get('/booking-swap/{pago}/candidates', [\App\Http\Controllers\BookingSwapController::class, 'getCandidates']);
+    Route::post('/booking-swap/execute', [\App\Http\Controllers\BookingSwapController::class, 'executeSwap']);
 
     // Configuración de Perfil (Para TODOS los usuarios)
     Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');

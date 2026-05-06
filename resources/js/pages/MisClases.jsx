@@ -5,6 +5,7 @@ import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
 import ConfirmModal from '../components/ConfirmModal';
 import PageHeader from '../components/PageHeader';
+import SwapClassModal from '../components/SwapClassModal';
 
 export default function MisClases() {
     const navigate = useNavigate();
@@ -22,6 +23,9 @@ export default function MisClases() {
 
     // Confirm Modal Setup
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, session: null });
+
+    // Swap Modal Setup
+    const [swapModal, setSwapModal] = useState({ isOpen: false, session: null });
 
     useEffect(() => {
         if (user?.id) fetchClientData();
@@ -268,13 +272,25 @@ export default function MisClases() {
                                                             )}
                                                         </div>
 
-                                                        <div className="flex items-center gap-3">
+                                                        <div className="flex items-center gap-2">
                                                             <div className="flex flex-col items-end mr-2">
                                                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{session.centro}</span>
                                                                 <span className="text-[11px] font-black text-slate-700">CLÍNICA</span>
                                                             </div>
                                                             <button 
-                                                                onClick={() => setConfirmModal({ isOpen: true, session })}
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setSwapModal({ isOpen: true, session });
+                                                                }}
+                                                                className="text-[10px] font-black text-[#38C1A3] uppercase hover:bg-teal-50 px-4 py-2.5 rounded-xl border border-transparent hover:border-teal-100 transition-all active:scale-95"
+                                                            >
+                                                                <span className="flex items-center gap-2"><i className="fa-solid fa-right-left"></i>Intercambiar</span>
+                                                            </button>
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setConfirmModal({ isOpen: true, session });
+                                                                }}
                                                                 disabled={leavingSessionId === session.id}
                                                                 className="text-[10px] font-black text-rose-500 uppercase hover:bg-rose-50 px-4 py-2.5 rounded-xl border border-transparent hover:border-rose-100 transition-all active:scale-95 disabled:opacity-50"
                                                             >
@@ -372,6 +388,16 @@ export default function MisClases() {
                 message={`¿Estás seguro de que quieres darte de baja de la clase ${confirmModal.session?.nombre_clase}?`}
                 isDestructive={true}
                 confirmText="Darse de baja"
+            />
+
+            <SwapClassModal
+                isOpen={swapModal.isOpen}
+                onClose={() => setSwapModal({ isOpen: false, session: null })}
+                originalSession={swapModal.session}
+                onSwapSuccess={() => {
+                    showAlert('Clase intercambiada correctamente.');
+                    fetchClientData();
+                }}
             />
         </div>
     );

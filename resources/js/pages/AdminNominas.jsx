@@ -186,7 +186,7 @@ export default function AdminNominas() {
                             className="pl-10 pr-4 py-3 w-full bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-[#38C1A3]/20 focus:border-[#38C1A3] outline-none transition-all font-medium text-slate-600 placeholder:text-slate-400 text-sm shadow-sm" />
                 </div>
             </div>
-        </header>
+        </div>
 
         <div className="flex-1 overflow-auto p-4 sm:p-8">
              {toast && (

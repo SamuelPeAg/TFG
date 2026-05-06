@@ -154,6 +154,16 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
         return new Date(now.getTime() - offset).toISOString().slice(0, 16);
     };
 
+    const adjustTime = (minutes) => {
+        if (!formData.fecha_hora) return;
+        const d = new Date(formData.fecha_hora);
+        if (isNaN(d.getTime())) return;
+        d.setMinutes(d.getMinutes() + minutes);
+        const pad = (n) => String(n).padStart(2, '0');
+        const newValue = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        setFormData(prev => ({ ...prev, fecha_hora: newValue }));
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         console.log(`[handleChange] name:${name}, value:${value}, type:${type}`);
@@ -522,11 +532,58 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                     </div>
                                     
                                     <div className="grid md:grid-cols-2 gap-6">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-slate-600 pl-1">Fecha y Hora</label>
-                                            <input type="datetime-local" name="fecha_hora" value={formData.fecha_hora} onChange={handleChange} 
-                                                className={`w-full bg-slate-50 border ${errors.fecha_hora ? 'border-rose-400' : 'border-slate-200'} text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none`} />
-                                            {errors.fecha_hora && <p className="text-xs text-rose-500 font-bold pl-1">{errors.fecha_hora}</p>}
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest mb-2 block pl-1">Fecha y Hora</label>
+                                            
+                                            {/* Selector de Fecha */}
+                                            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 focus-within:border-[#38b2ac] transition-all">
+                                                <i className="fa-solid fa-calendar-day text-[#38b2ac]"></i>
+                                                <input 
+                                                    type="date" 
+                                                    value={formData.fecha_hora.split('T')[0]} 
+                                                    onChange={(e) => {
+                                                        const time = formData.fecha_hora.split('T')[1] || '00:00';
+                                                        setFormData(prev => ({ ...prev, fecha_hora: `${e.target.value}T${time}` }));
+                                                    }}
+                                                    className="w-full bg-transparent outline-none font-bold text-slate-700 text-sm cursor-pointer"
+                                                />
+                                            </div>
+
+                                            {/* Selector de Hora con controles rápidos */}
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex-1 flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 focus-within:border-[#38b2ac] transition-all">
+                                                    <i className="fa-solid fa-clock text-[#38b2ac]"></i>
+                                                    <input 
+                                                        type="time" 
+                                                        value={formData.fecha_hora.split('T')[1]?.substring(0, 5) || '00:00'} 
+                                                        onChange={(e) => {
+                                                            const date = formData.fecha_hora.split('T')[0];
+                                                            setFormData(prev => ({ ...prev, fecha_hora: `${date}T${e.target.value}` }));
+                                                        }}
+                                                        className="w-full bg-transparent outline-none font-bold text-slate-700 text-sm cursor-pointer"
+                                                    />
+                                                </div>
+                                                {/* Botones de ajuste rápido (+/- 15 min) */}
+                                                <div className="flex flex-col gap-1">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => adjustTime(15)}
+                                                        className="w-8 h-6 bg-slate-100 hover:bg-[#38b2ac] hover:text-white rounded-t-lg flex items-center justify-center text-[10px] transition-colors"
+                                                        title="+15 min"
+                                                    >
+                                                        <i className="fa-solid fa-plus"></i>
+                                                    </button>
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => adjustTime(-15)}
+                                                        className="w-8 h-6 bg-slate-100 hover:bg-rose-500 hover:text-white rounded-b-lg flex items-center justify-center text-[10px] transition-colors"
+                                                        title="-15 min"
+                                                    >
+                                                        <i className="fa-solid fa-minus"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {errors.fecha_hora && <p className="text-xs text-rose-500 font-bold pl-1 mt-1">{errors.fecha_hora}</p>}
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-bold text-slate-600 pl-1">Precio Base por Persona (€)</label>
