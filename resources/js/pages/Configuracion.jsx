@@ -13,6 +13,7 @@ export default function Configuracion() {
       name: '',
       email: '',
       iban: '',
+      country: 'ES',
       dni: '',
       direccion: '',
       ciudad: '',
@@ -45,7 +46,7 @@ export default function Configuracion() {
     const checkChanges = () => {
         // Ignoramos los campos de password para la detección de cambios simples
         // a menos que se hayan empezado a escribir
-        const fieldsToCompare = ['name', 'iban', 'dni', 'direccion', 'ciudad', 'codigo_postal'];
+        const fieldsToCompare = ['name', 'iban', 'country', 'dni', 'direccion', 'ciudad', 'codigo_postal'];
         const changed = fieldsToCompare.some(field => formData[field] !== (initialData[field] || '')) || 
                         formData.password !== '' || 
                         photoFile !== null;
@@ -63,7 +64,8 @@ export default function Configuracion() {
           const data = {
               name: user.name || '',
               email: user.email || '',
-              iban: user.iban || '',
+              iban: user.iban || 'ES',
+              country: user.iban ? user.iban.substring(0, 2).toUpperCase() : 'ES',
               dni: user.dni || '',
               direccion: user.direccion || '',
               ciudad: user.ciudad || '',
@@ -90,7 +92,32 @@ export default function Configuracion() {
       let newValue = value;
 
       if (name === 'iban') {
-          newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          // Si el valor no empieza por el prefijo del país seleccionado, se lo ponemos
+          const prefix = formData.country;
+          let val = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          
+          if (val.length > 0 && !val.startsWith(prefix)) {
+              // Si borra el prefijo, lo mantenemos o lo corregimos
+              if (val.length <= 2) val = prefix;
+              else val = prefix + val;
+          } else if (val.length === 0) {
+              val = prefix;
+          }
+          newValue = val;
+      }
+
+      if (name === 'country') {
+          // Al cambiar de país, actualizamos el prefijo del IBAN si el usuario no ha escrito mucho
+          const oldPrefix = formData.country;
+          const newPrefix = value;
+          let currentIban = formData.iban;
+          
+          if (!currentIban || currentIban === oldPrefix) {
+              setFormData(prev => ({ ...prev, country: newPrefix, iban: newPrefix }));
+              return;
+          } else {
+              newValue = value; // Solo cambia el país en el estado
+          }
       }
 
       setFormData(prev => ({ ...prev, [name]: newValue }));
@@ -297,11 +324,40 @@ export default function Configuracion() {
 
                                     <div className="space-y-3 group">
                                         <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em] group-focus-within:text-[#38C1A3] transition-colors">IBAN (Cuenta de Facturación)</label>
-                                        <div className="relative">
-                                            <input type="text" name="iban" value={formData.iban} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="ES00 0000..." />
-                                            <i className="fa-solid fa-building-columns absolute right-8 top-1/2 -translate-y-1/2 text-slate-200"></i>
+                                        <div className="flex gap-3">
+                                            <div className="w-[140px] relative group/sel">
+                                                <select 
+                                                    name="country" 
+                                                    value={formData.country} 
+                                                    onChange={handleInputChange}
+                                                    className="w-full h-full pl-8 pr-10 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner appearance-none cursor-pointer relative z-10"
+                                                >
+                                                    <option value="ES">🇪🇸 ES</option>
+                                                    <option value="PT">🇵🇹 PT</option>
+                                                    <option value="FR">🇫🇷 FR</option>
+                                                    <option value="IT">🇮🇹 IT</option>
+                                                    <option value="DE">🇩🇪 DE</option>
+                                                </select>
+                                                <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] z-20 pointer-events-none group-hover/sel:text-[#38C1A3] transition-colors"></i>
+                                            </div>
+                                            <div className="flex-1 relative">
+                                                <input 
+                                                    type="text" 
+                                                    name="iban" 
+                                                    value={formData.iban} 
+                                                    onChange={handleInputChange} 
+                                                    className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" 
+                                                    placeholder="0000 0000 0000 0000 0000" 
+                                                />
+                                                <i className="fa-solid fa-building-columns absolute right-8 top-1/2 -translate-y-1/2 text-slate-200"></i>
+                                            </div>
                                         </div>
                                         {errors.iban && <p className="text-[10px] text-rose-500 font-black uppercase ml-6 tracking-widest">{errors.iban[0]}</p>}
+                                        <p className="text-[9px] text-slate-400 font-bold uppercase ml-6 tracking-tighter">
+                                            {formData.country === 'ES' && "Formato para España: 24 caracteres (ES + 22 dígitos)"}
+                                            {formData.country === 'PT' && "Formato para Portugal: 25 caracteres (PT + 23 dígitos)"}
+                                            {formData.country === 'FR' && "Formato para Francia: 27 caracteres"}
+                                        </p>
                                     </div>
 
                                     <div className="space-y-3 group">
