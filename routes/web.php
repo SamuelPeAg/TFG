@@ -197,6 +197,7 @@ Route::middleware('auth:web,staff')->group(function () {
     // Módulo de Nutrición AI y Planes de acción
     Route::get('/nutricion', [\App\Http\Controllers\NutritionController::class, 'index'])->name('nutricion.index');
     Route::post('/nutricion/log', [\App\Http\Controllers\NutritionController::class, 'store'])->name('nutricion.store');
+    Route::put('/nutricion/log/{id}', [\App\Http\Controllers\NutritionController::class, 'update'])->name('nutricion.update');
     Route::post('/nutricion/routine', [\App\Http\Controllers\NutritionController::class, 'generateRoutine'])->name('nutricion.routine');
     Route::post('/api/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'store']);
     Route::get('/api/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'indexClient']);

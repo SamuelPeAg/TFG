@@ -16,6 +16,18 @@ export default function MisPlanesEntrenador() {
   const [images, setImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
+  const exerciseTemplates = [
+    { name: 'Fuerza Básica', text: '💪 RUTINA FUERZA:\n- Sentadillas: 4 x 10 (Peso: [XX] kg)\n- Press Banca: 4 x 8 (Peso: [XX] kg)\n- Peso Muerto: 4 x 8 (Peso: [XX] kg)' },
+    { name: 'HIIT Cardio', text: '🔥 RUTINA HIIT:\n- Burpees: 5 x 20 seg (10 seg descanso)\n- Mountain Climbers: 5 x 20 seg\n- Jumping Jacks: 5 x 30 seg' },
+    { name: 'Pierna Pesado', text: '🦵 RUTINA PIERNAS:\n- Prensa: 5 x 10 (Peso: [XX] kg)\n- Zancadas: 4 x 12 c/u\n- Curl Femoral: 4 x 15 (Peso: [XX] kg)' },
+    { name: 'Burpees 5x4', text: '- Burpees: 5 series x 4 repeticiones\n- Descanso: 45 segundos' },
+    { name: 'Core & Abdomen', text: '🛡️ RUTINA CORE:\n- Plancha Abdominal: 4 x 45 seg\n- Crunches: 4 x 20\n- Elevación de Piernas: 4 x 15' }
+  ];
+
+  const handleInsertTemplate = (templateText) => {
+    setResponse(prev => prev + (prev ? '\n\n' : '') + templateText);
+  };
+
   useEffect(() => {
     fetchPlans();
   }, []);
@@ -173,12 +185,30 @@ export default function MisPlanesEntrenador() {
                     <div>
                       <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Tu Respuesta y Plan</h3>
                       <form onSubmit={handleSubmitResponse} className="space-y-4">
+                        
+                        <div className="mb-4 bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3"><i className="fa-solid fa-bolt text-indigo-400 mr-1"></i> Plantillas Rápidas (Haz clic para insertar):</p>
+                          <div className="flex flex-wrap gap-2">
+                            {exerciseTemplates.map((tpl, i) => (
+                              <button 
+                                key={i}
+                                type="button"
+                                onClick={() => handleInsertTemplate(tpl.text)}
+                                className="text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl bg-white text-indigo-600 hover:bg-indigo-600 hover:text-white hover:shadow-lg transition-all border border-indigo-100 active:scale-95"
+                              >
+                                {tpl.name} <i className="fa-solid fa-plus opacity-50 ml-1"></i>
+                              </button>
+                            ))}
+                          </div>
+                          <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Sustituye los [XX] por el peso deseado tras insertar la plantilla.</p>
+                        </div>
+
                         <textarea
                           required
                           value={response}
                           onChange={(e) => setResponse(e.target.value)}
                           placeholder="Escribe la rutina, consejos o el plan de acción aquí..."
-                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[150px] resize-y"
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[300px] resize-y text-sm leading-relaxed"
                         />
                         <div>
                           <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Adjuntar Fotos (Opcional)</label>
