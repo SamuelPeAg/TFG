@@ -45,11 +45,11 @@ export default function Home() {
               <a 
                 href={
                   !window.AppConfig?.user ? "/login" : 
-                  (window.AppConfig.user.role === 'admin' ? '/estadisticas' : (window.AppConfig.user.role === 'cliente' ? '/mis-clases' : '/calendario'))
+                  (window.AppConfig.user.role === 'admin' ? '/estadisticas' : (window.AppConfig.user.role === 'cliente' ? '/calendario' : '/calendario'))
                 } 
                 className="px-10 py-5 bg-gray-900 text-white rounded-2xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center gap-3 transition-all"
               >
-                {window.AppConfig?.user ? 'IR AL PANEL' : 'Acceder al Sistema'} <i className="fa-solid fa-chevron-right text-brandTeal"></i>
+                {window.AppConfig?.user ? (window.AppConfig.user.role === 'cliente' ? 'ENTRAR A MI ÁREA' : 'IR AL PANEL') : 'Acceder al Sistema'} <i className="fa-solid fa-chevron-right text-brandTeal"></i>
               </a>
               <a href="#solucion" className="px-10 py-5 bg-white border border-gray-200 rounded-2xl font-black text-xl hover:bg-gray-50 text-center transition-all">
                 ¿Cómo funciona?
@@ -243,11 +243,11 @@ export default function Home() {
             <a 
               href={
                 !window.AppConfig?.user ? "/login" : 
-                (window.AppConfig.user.role === 'admin' ? '/estadisticas' : (window.AppConfig.user.role === 'cliente' ? '/mis-clases' : '/calendario'))
+                (window.AppConfig.user.role === 'admin' ? '/estadisticas' : (window.AppConfig.user.role === 'cliente' ? '/calendario' : '/calendario'))
               }
               className="inline-block px-12 py-6 bg-brandCoral text-white rounded-3xl font-black text-2xl shadow-xl hover:scale-110 hover:-rotate-2 transition-all"
             >
-              {window.AppConfig?.user ? 'IR AL PANEL' : 'Acceder al Sistema'}
+              {window.AppConfig?.user ? (window.AppConfig.user.role === 'cliente' ? 'ENTRAR A MI ÁREA' : 'IR AL PANEL') : 'Acceder al Sistema'}
             </a>
           </div>
         </div>

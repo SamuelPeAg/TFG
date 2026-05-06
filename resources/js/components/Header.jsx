@@ -53,10 +53,10 @@ export default function Header() {
                     </span>
                   </div>
                   <Link 
-                    to={user.role === 'admin' ? "/estadisticas" : (user.role === 'cliente' ? "/mis-clases" : "/calendario")} 
+                    to={user.role === 'admin' ? "/estadisticas" : (user.role === 'cliente' ? "/calendario" : "/calendario")} 
                     className="bg-[#38C1A3] hover:bg-teal-500 text-white px-3 lg:px-5 py-2 lg:py-2.5 rounded-full font-bold text-sm transition shadow-md hover:shadow-lg whitespace-nowrap"
                   >
-                    Dashboard
+                    {user.role === 'cliente' ? 'MI ÁREA' : 'Dashboard'}
                   </Link>
                 </>
               ) : (
@@ -120,11 +120,11 @@ export default function Header() {
                     </span>
                   </div>
                   <Link 
-                    to={user.role === 'admin' ? "/estadisticas" : (user.role === 'cliente' ? "/mis-clases" : "/calendario")} 
+                    to={user.role === 'admin' ? "/estadisticas" : (user.role === 'cliente' ? "/calendario" : "/calendario")} 
                     className="block w-full bg-[#38C1A3] hover:bg-teal-500 text-white px-4 py-2.5 rounded-lg font-bold text-sm text-center transition shadow-md hover:shadow-lg"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    {user.role === 'cliente' ? 'MI ÁREA' : 'Dashboard'}
                   </Link>
                 </>
               ) : (

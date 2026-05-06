@@ -65,14 +65,14 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   };
 
   const adminLinks = [
-    { name: 'ESTADÍSTICAS', path: '/estadisticas', icon: 'fa-solid fa-chart-simple text-emerald-200' },
-    { name: 'ENTRENADORES', path: '/entrenadores', icon: 'fa-solid fa-user-tie' },
-    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-user-group' },
-    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days' },
-    { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-receipt' },
-    { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-money-check-dollar' },
-    { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-credit-card' },
-    { name: 'VACACIONES', path: '/admin/vacaciones', icon: 'fa-solid fa-sun' },
+    { name: 'ESTADÍSTICAS', path: '/estadisticas', icon: 'fa-solid fa-chart-column text-emerald-300' },
+    { name: 'ENTRENADORES', path: '/entrenadores', icon: 'fa-solid fa-user-tie text-blue-300' },
+    { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-user-group text-amber-300' },
+    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days text-[#38C1A3]' },
+    { name: 'FACTURACIÓN', path: '/facturas', icon: 'fa-solid fa-receipt text-rose-300' },
+    { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-money-check-dollar text-indigo-300' },
+    { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-credit-card text-purple-300' },
+    { name: 'VACACIONES', path: '/admin/vacaciones', icon: 'fa-solid fa-sun text-yellow-300' },
   ];
 
   const trainerLinks = [
@@ -88,11 +88,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   ];
 
   const clientLinks = [
-    { name: 'MI FICHA', path: '/mi-ficha', icon: 'fa-solid fa-folder-open text-[#38C1A3]' },
-    { name: 'MIS CLASES', path: '/mis-clases', icon: 'fa-solid fa-person-running' },
-    { name: 'NUTRICIÓN', path: '/mis-comidas', icon: 'fa-solid fa-utensils text-brandCoral' },
-    { name: 'ESTADÍSTICAS', path: '/mis-estadisticas', icon: 'fa-solid fa-chart-line text-indigo-300' },
-    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days' },
+    { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days text-[#38C1A3]' },
+    { name: 'MIS CLASES', path: '/mis-clases', icon: 'fa-solid fa-person-running text-amber-300' },
+    { name: 'MI FICHA', path: '/mi-ficha', icon: 'fa-solid fa-folder-open text-indigo-300' },
+    { name: 'NUTRICIÓN', path: '/mis-comidas', icon: 'fa-solid fa-utensils text-rose-300' },
+    { name: 'ESTADÍSTICAS', path: '/mis-estadisticas', icon: 'fa-solid fa-chart-line text-emerald-200' },
   ];
 
   const linksToShow = isAdmin
@@ -131,9 +131,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </Link>
         </div>
 
-        <div className="px-4 sm:px-8 py-4 sm:py-6 mb-2 flex items-center gap-3 sm:gap-4 bg-white/5 rounded-[32px] mx-3 sm:mx-4 border border-white/10 shadow-inner">
+        <Link 
+          to="/configuracion" 
+          onClick={() => setIsOpen(false)}
+          className="px-4 sm:px-8 py-4 sm:py-6 mb-2 flex items-center gap-3 sm:gap-4 bg-white/5 hover:bg-white/10 rounded-[32px] mx-3 sm:mx-4 border border-white/10 shadow-inner transition-colors group"
+        >
           <div
-            className="w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-white flex items-center justify-center font-black text-lg sm:text-xl shrink-0 overflow-hidden shadow-lg border-2 border-white/20"
+            className="w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-white flex items-center justify-center font-black text-lg sm:text-xl shrink-0 overflow-hidden shadow-lg border-2 border-white/20 transition-transform group-hover:scale-105"
           >
             {user.photo ? (
               <img
@@ -150,13 +154,13 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             )}
           </div>
           <div className="flex flex-col overflow-hidden min-w-0">
-            <span className="font-extrabold truncate text-white text-sm sm:text-[15px] leading-tight mb-0.5 tracking-tight" title={user.name}>{user.name}</span>
+            <span className="font-extrabold truncate text-white text-sm sm:text-[15px] leading-tight mb-0.5 tracking-tight group-hover:text-emerald-300 transition-colors" title={user.name}>{user.name}</span>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></div>
               <span className="text-[9px] text-white/60 uppercase tracking-[0.15em] font-black whitespace-nowrap">{user.role}</span>
             </div>
           </div>
-        </div>
+        </Link>
 
         <nav className="grow py-2 sm:py-3 px-3 sm:px-5 space-y-1.5 sm:space-y-2 flex flex-col overflow-y-auto custom-scrollbar">
           {linksToShow.map((link) => (

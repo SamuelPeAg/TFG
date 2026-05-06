@@ -160,19 +160,19 @@ class PagosController extends Controller
 
             $classSubIds = $first->suscripciones->pluck('id')->toArray();
 
-            // Filtrado del lado del cliente: solo ve clases para las que tiene créditos o suscripción permitida
+            // Filtrado del lado del cliente: solo ve clases para las que existe una restricción de entrada
             if ($isClientOnly) {
                 $classSubIds = $first->suscripciones->pluck('id')->toArray();
                 $classCreditIds = $first->tiposCredito->pluck('id')->toArray();
 
-                // Si la clase no tiene ninguna restricción de entrada, la mostramos? 
-                // Por ahora seguimos la lógica: si no hay nada configurado, no la ve (clases internas/staff)
+                // Si la clase no tiene ninguna restricción de entrada, es una clase interna/privada de staff
                 if (empty($classSubIds) && empty($classCreditIds)) continue;
 
-                $hasMatchingSub = !empty(array_intersect($activeSubIds, $classSubIds));
-                $hasMatchingCredit = !empty(array_intersect($activeCreditTypeIds, $classCreditIds));
-
-                if (!$hasMatchingSub && !$hasMatchingCredit) continue;
+                // [CAMBIO] Permitimos que vea la clase aunque no tenga saldo, para que el calendario no salga vacío.
+                // La lógica de "apuntarse" ya se encarga de validar el saldo después.
+                // $hasMatchingSub = !empty(array_intersect($activeSubIds, $classSubIds));
+                // $hasMatchingCredit = !empty(array_intersect($activeCreditTypeIds, $classCreditIds));
+                // if (!$hasMatchingSub && !$hasMatchingCredit) continue;
             }
 
             $events[] = [
