@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import ConfirmModal from '../ConfirmModal';
+import AlertModal from '../AlertModal';
 
 export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros, entrenadores, users, suscripciones, tiposCredito = [], tiposSesion = [], onSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -14,6 +16,18 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   // We keep a local copy of extendedProps to do optimistic UI updates easily
   const [localProps, setLocalProps] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // Custom Alerts & Confirms
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
+
+  const showAlert = (message, isError = false, title = isError ? "Error" : "Éxito") => {
+    setAlertConfig({ isOpen: true, title, message, isError });
+  };
+
+  const askConfirmation = (title, message, onConfirm, isDestructive = false) => {
+    setConfirmConfig({ isOpen: true, title, message, onConfirm, isDestructive });
+  };
   
   const sessionTypeLabel = (tipo) => {
     const config = tiposSesion.find(t => t.slug.toUpperCase() === (tipo || '').toString().toUpperCase());
@@ -92,28 +106,34 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
     }
   };
 
-  const handleRemoveTrainer = async (trainerId) => {
-    if(!window.confirm("¿Seguro que deseas desasignar a este entrenador?")) return;
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append('trainer_id', trainerId);
-      formData.append('fecha_hora', sessionKey.fecha_hora);
-      formData.append('nombre_clase', sessionKey.nombre_clase);
-      formData.append('centro', sessionKey.centro);
+  const handleRemoveTrainer = (trainerId) => {
+    askConfirmation(
+        "¿Desasignar entrenador?",
+        "Seguro que deseas quitar a este entrenador de la sesión?",
+        async () => {
+            setIsSubmitting(true);
+            try {
+              const formData = new FormData();
+              formData.append('trainer_id', trainerId);
+              formData.append('fecha_hora', sessionKey.fecha_hora);
+              formData.append('nombre_clase', sessionKey.nombre_clase);
+              formData.append('centro', sessionKey.centro);
 
-      const res = await axios.post('/Pagos/remove-trainer', formData, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.data.success) {
-        setLocalProps({ ...localProps, entrenadores: res.data.trainers });
-        if (onSuccess) onSuccess();
-      }
-    } catch (err) {
-      alert("Error al remover entrenador");
-    } finally {
-      setIsSubmitting(false);
-    }
+              const res = await axios.post('/Pagos/remove-trainer', formData, {
+                headers: { 'Accept': 'application/json' }
+              });
+              if (res.data.success) {
+                setLocalProps({ ...localProps, entrenadores: res.data.trainers });
+                if (onSuccess) onSuccess();
+              }
+            } catch (err) {
+              showAlert("No se pudo remover al entrenador", true);
+            } finally {
+              setIsSubmitting(false);
+            }
+        },
+        true
+    );
   };
 
   const handleAddClient = async (user) => {
@@ -159,57 +179,70 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
     }
   };
 
-  const handleRemoveClient = async (userId) => {
-    if(!window.confirm("¿Eliminar a este cliente de la sesión?")) return;
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append('user_id', userId);
-      formData.append('fecha_hora', sessionKey.fecha_hora);
-      formData.append('nombre_clase', sessionKey.nombre_clase);
-      formData.append('centro', sessionKey.centro);
+  const handleRemoveClient = (userId) => {
+    askConfirmation(
+        "¿Eliminar asistente?",
+        "¿Estás seguro de que quieres dar de baja a este cliente de la sesión? Se le devolverá el crédito si está en plazo.",
+        async () => {
+            setIsSubmitting(true);
+            try {
+              const formData = new FormData();
+              formData.append('user_id', userId);
+              formData.append('fecha_hora', sessionKey.fecha_hora);
+              formData.append('nombre_clase', sessionKey.nombre_clase);
+              formData.append('centro', sessionKey.centro);
 
-      const res = await axios.post('/Pagos/remove-client', formData, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.data.success) {
-          const newAlumnos = (localProps.alumnos || []).filter(a => a.id != userId);
-          setLocalProps({ ...localProps, alumnos: newAlumnos });
-          if(onSuccess) onSuccess();
-      } else {
-          alert(res.data.error || "Error");
-      }
-    } catch (err) {
-      const serverError = err.response?.data?.error || err.response?.data?.message;
-      alert(serverError || "Error al eliminar alumno");
-    } finally {
-      setIsSubmitting(false);
-    }
+              const res = await axios.post('/Pagos/remove-client', formData, {
+                headers: { 'Accept': 'application/json' }
+              });
+              if (res.data.success) {
+                  const newAlumnos = (localProps.alumnos || []).filter(a => a.id != userId);
+                  setLocalProps({ ...localProps, alumnos: newAlumnos });
+                  if(onSuccess) onSuccess();
+                  showAlert(res.data.message || "Cliente eliminado correctamente");
+              } else {
+                  showAlert(res.data.error || "No se pudo eliminar al cliente", true);
+              }
+            } catch (err) {
+              const serverError = err.response?.data?.error || err.response?.data?.message;
+              showAlert(serverError || "Error al conectar con el servidor", true);
+            } finally {
+              setIsSubmitting(false);
+            }
+        },
+        true
+    );
   };
 
-  const handleDeleteSession = async () => {
-    if (!window.confirm("Esta acción eliminará la sesión completa y los pagos asociados. ¿Continuar?")) return;
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      formData.append('fecha_hora', sessionKey.fecha_hora);
-      formData.append('nombre_clase', sessionKey.nombre_clase);
-      formData.append('centro', sessionKey.centro);
+  const handleDeleteSession = () => {
+    askConfirmation(
+        "¿Eliminar sesión?",
+        "Esta acción eliminará la sesión completa y los pagos asociados de forma permanente. ¿Continuar?",
+        async () => {
+            setIsSubmitting(true);
+            try {
+              const formData = new FormData();
+              formData.append('fecha_hora', sessionKey.fecha_hora);
+              formData.append('nombre_clase', sessionKey.nombre_clase);
+              formData.append('centro', sessionKey.centro);
 
-      const res = await axios.post('/Pagos/delete-session', formData, {
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.data.success) {
-        if (onSuccess) onSuccess();
-        onClose();
-      } else {
-        alert(res.data.error || "Error al eliminar la sesión");
-      }
-    } catch (err) {
-      alert("Error al eliminar la sesión");
-    } finally {
-      setIsSubmitting(false);
-    }
+              const res = await axios.post('/Pagos/delete-session', formData, {
+                headers: { 'Accept': 'application/json' }
+              });
+              if (res.data.success) {
+                if (onSuccess) onSuccess();
+                onClose();
+              } else {
+                showAlert(res.data.error || "Error al eliminar la sesión", true);
+              }
+            } catch (err) {
+              showAlert("Error al conectar con el servidor", true);
+            } finally {
+              setIsSubmitting(false);
+            }
+        },
+        true
+    );
   };
 
   const handleSaveSession = async () => {
@@ -728,6 +761,24 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
            </div>
         </div>
 
+        </div>
+ 
+        <ConfirmModal 
+          isOpen={confirmConfig.isOpen}
+          onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+          onConfirm={confirmConfig.onConfirm}
+          title={confirmConfig.title}
+          message={confirmConfig.message}
+          isDestructive={confirmConfig.isDestructive}
+        />
+
+        <AlertModal 
+          isOpen={alertConfig.isOpen}
+          onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+          title={alertConfig.title}
+          message={alertConfig.message}
+          isError={alertConfig.isError}
+        />
       </div>
     </div>
   );

@@ -167,7 +167,7 @@ export default function MisComidas() {
                                                         <option value="cena">Cena</option>
                                                         <option value="snack">Merienda / Snack</option>
                                                     </select>
-                                                    <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 pointer-events-none group-hover:text-[#38C1A3] transition-colors"></i>
+                                                    <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none group-hover:text-[#38C1A3] transition-colors"></i>
                                                 </div>
                                             </div>
                                             <div className="relative">

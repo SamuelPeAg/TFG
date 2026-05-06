@@ -622,8 +622,10 @@ class PagosController extends Controller
         }
 
         $fecha = Carbon::parse($request->fecha_hora);
+        $fechaStart = $fecha->copy()->startOfMinute();
+        $fechaEnd = $fecha->copy()->endOfMinute();
 
-        $pago = Pago::where('fecha_registro', $fecha)
+        $pago = Pago::whereBetween('fecha_registro', [$fechaStart, $fechaEnd])
             ->where('nombre_clase', $request->nombre_clase)
             ->where('centro', $request->centro)
             ->where('user_id', $request->user_id)
