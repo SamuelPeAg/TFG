@@ -1,12 +1,48 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Header() {
-  const user = window.AppConfig?.user;
+  const [user, setUser] = useState(window.AppConfig?.user);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const location = useLocation();
 
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      setUser({ ...window.AppConfig?.user });
+      setImgError(false); // Reset error state on update
+    };
+    window.addEventListener('user-updated', handleUserUpdate);
+    return () => window.removeEventListener('user-updated', handleUserUpdate);
+  }, []);
+
   const isHome = location.pathname === '/';
+
+  const renderAvatar = (isMobile = false) => {
+    const sizeClasses = isMobile ? "w-8 h-8" : "w-7 h-7 lg:w-8 lg:h-8";
+    const textClasses = isMobile ? "text-sm" : "text-xs lg:text-sm";
+
+    if (user?.photo && !imgError) {
+      // Ensure it's not just the root storage path
+      const isRootStorage = user.photo.endsWith('/storage') || user.photo.endsWith('/storage/');
+      if (!isRootStorage) {
+        return (
+          <img 
+            src={user.photo} 
+            alt="Avatar" 
+            className={`${sizeClasses} rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm`}
+            onError={() => setImgError(true)}
+          />
+        );
+      }
+    }
+
+    return (
+      <div className={`${sizeClasses} rounded-full bg-gradient-to-br from-[#38C1A3] to-teal-600 text-white flex items-center justify-center font-black ${textClasses} shadow-sm border border-white/20`}>
+        {user?.name ? user.name.trim().charAt(0).toUpperCase() : '?'}
+      </div>
+    );
+  };
 
   return (
     <nav className="fixed w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm transition-all duration-300 top-0 border-b border-transparent dark:border-gray-800">
@@ -41,13 +77,7 @@ export default function Header() {
               {user ? (
                 <>
                   <div className="flex items-center gap-2 mr-2">
-                    {user.photo ? (
-                      <img src={user.photo} alt="Avatar" className="w-7 h-7 lg:w-8 lg:h-8 rounded-full object-cover border border-gray-200" />
-                    ) : (
-                      <div className="w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-xs lg:text-sm">
-                        {user.name.trim().charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    {renderAvatar()}
                     <span className="text-xs lg:text-sm font-bold text-gray-700 dark:text-gray-200 hidden lg:block">
                       Hola, {user.name.trim().split(' ')[0]}
                     </span>
@@ -108,13 +138,7 @@ export default function Header() {
               {user ? (
                 <>
                   <div className="px-4 py-2 flex items-center gap-2">
-                    {user.photo ? (
-                      <img src={user.photo} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-sm">
-                        {user.name.trim().charAt(0).toUpperCase()}
-                      </div>
-                    )}
+                    {renderAvatar(true)}
                     <span className="text-sm font-bold text-gray-700 dark:text-gray-200">
                       Hola, {user.name.trim().split(' ')[0]}
                     </span>

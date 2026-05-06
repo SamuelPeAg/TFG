@@ -62,7 +62,7 @@
           'id' => $user->id,
           'name' => $user->name,
           'role' => $role,
-          'photo' => $user->foto_de_perfil ? asset('storage/' . $user->foto_de_perfil) : null,
+          'photo' => $user->photo,
           'permissions' => ($role === 'admin') ? ['*'] : (($user && method_exists($user, 'getAllPermissions')) ? $user->getAllPermissions()->pluck('name')->toArray() : [])
         ] : null) !!},
         flash: {

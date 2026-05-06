@@ -6,6 +6,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
   const [user, setUser] = useState(window.AppConfig?.user);
   const [loading, setLoading] = useState(!window.AppConfig?.user);
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -13,7 +14,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         .then(res => {
           if (res.data.user) {
             setUser(res.data.user);
-            // También actualizamos AppConfig para futuros usos
             if (window.AppConfig) window.AppConfig.user = res.data.user;
           }
         })
@@ -27,12 +27,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   useEffect(() => {
     const handleUpdate = () => {
       setUser({ ...window.AppConfig?.user });
+      setImgError(false);
     };
     window.addEventListener('user-updated', handleUpdate);
     return () => window.removeEventListener('user-updated', handleUpdate);
   }, []);
 
-  // Cerrar sidebar cuando cambia la ruta
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname, setIsOpen]);
@@ -49,7 +49,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     return user.permissions.includes(perm);
   };
 
-  // Helper para verificar ruta activa
   const isActive = (path) => location.pathname.startsWith(path);
 
   const handleLogout = async (e) => {
@@ -106,11 +105,34 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     if (path.startsWith('http')) return path;
     const baseUrl = window.AppConfig?.baseUrl || '/';
     const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-    // Si el path ya incluye storage, no lo repetimos
     if (cleanPath.startsWith('storage/')) {
       return baseUrl + cleanPath;
     }
     return baseUrl + 'storage/' + cleanPath;
+  };
+
+  const renderAvatar = () => {
+    if (user?.photo && !imgError) {
+      // Ensure it's not just the root storage path
+      const photoUrl = getImageUrl(user.photo);
+      const isRootStorage = photoUrl.endsWith('/storage') || photoUrl.endsWith('/storage/');
+      
+      if (!isRootStorage) {
+        return (
+          <img
+            src={photoUrl}
+            alt={user.name}
+            className="w-full h-full object-cover shadow-inner"
+            onError={() => setImgError(true)}
+          />
+        );
+      }
+    }
+    return (
+      <span className="text-[#38C1A3]">
+        {user?.name ? user.name.trim().charAt(0).toUpperCase() : '?'}
+      </span>
+    );
   };
 
   return (
@@ -139,19 +161,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <div
             className="w-12 sm:w-14 h-12 sm:h-14 rounded-full bg-white flex items-center justify-center font-black text-lg sm:text-xl shrink-0 overflow-hidden shadow-lg border-2 border-white/20 transition-transform group-hover:scale-105"
           >
-            {user.photo ? (
-              <img
-                src={getImageUrl(user.photo)}
-                alt={user.name}
-                className="w-full h-full object-cover shadow-inner"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = `<span class="text-[#38C1A3]">${user.name.charAt(0).toUpperCase()}</span>`;
-                }}
-              />
-            ) : (
-              <span className="text-[#38C1A3]">{user.name.trim().charAt(0).toUpperCase()}</span>
-            )}
+            {renderAvatar()}
           </div>
           <div className="flex flex-col overflow-hidden min-w-0">
             <span className="font-extrabold truncate text-white text-sm sm:text-[15px] leading-tight mb-0.5 tracking-tight group-hover:text-emerald-300 transition-colors" title={user.name}>{user.name}</span>
