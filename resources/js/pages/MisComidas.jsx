@@ -206,9 +206,8 @@ export default function MisComidas() {
                                                     type="date" 
                                                     value={selectedDate} 
                                                     onChange={(e) => setSelectedDate(e.target.value)} 
-                                                    className="bg-white border border-slate-200 text-slate-700 text-[10px] font-black uppercase tracking-widest px-4 py-2.5 rounded-xl outline-none focus:border-indigo-400 cursor-pointer shadow-sm appearance-none pr-10" 
+                                                    className="bg-white border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-[0.15em] px-6 py-3 rounded-2xl outline-none focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/5 cursor-pointer shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 w-full sm:w-auto min-w-[160px] text-center" 
                                                 />
-                                                <i className="fa-solid fa-calendar absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none group-hover:text-indigo-400"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -325,11 +324,52 @@ export default function MisComidas() {
             </main>
 
             <style dangerouslySetInnerHTML={{ __html: `
-                .custom-select-arrows select {
-                    -webkit-appearance: none;
-                    -moz-appearance: none;
-                    appearance: none;
+                /* 1. Eliminar SOLO la flecha de Select2, manteniendo bordes y fondo */
+                .select2-container .select2-selection__arrow {
+                    display: none !important;
                 }
+                .select2-container--default .select2-selection--single {
+                    height: auto !important;
+                    border: 1px solid #f1f5f9 !important; /* border-slate-100 */
+                    background-color: #f8fafc !important; /* bg-slate-50 */
+                    border-radius: 1rem !important; /* rounded-2xl */
+                    padding: 0.5rem 1rem !important;
+                }
+                .select2-container--default .select2-selection--single .select2-selection__rendered {
+                    line-height: 2.5rem !important;
+                    color: #334155 !important; /* text-slate-700 */
+                    font-weight: 900 !important;
+                    font-size: 0.875rem !important;
+                }
+
+                /* 2. Eliminar flecha nativa del navegador */
+                select {
+                    -webkit-appearance: none !important;
+                    -moz-appearance: none !important;
+                    appearance: none !important;
+                }
+
+                /* 3. Eliminar icono nativo del calendario y hacerlo clicable en toda el área */
+                input[type="date"]::-webkit-calendar-picker-indicator {
+                    position: absolute !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    bottom: 0 !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    opacity: 0 !important;
+                    cursor: pointer !important;
+                    background: none !important;
+                }
+                
+                input[type="date"] {
+                    position: relative !important;
+                    -webkit-appearance: none !important;
+                    -moz-appearance: none !important;
+                    appearance: none !important;
+                }
+
                 .no-spinner::-webkit-inner-spin-button, 
                 .no-spinner::-webkit-outer-spin-button { 
                     -webkit-appearance: none; 
