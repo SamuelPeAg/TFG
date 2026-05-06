@@ -142,37 +142,9 @@ class EstadisticasController extends Controller
                     ];
                 });
 
-            $empresas = collect();
-            try { $empresas = Empresa::all(); } catch (\Exception $e) { \Log::error("Error empresas: " . $e->getMessage()); }
-
             $centrosList = collect();
-            try { $centrosList = Centro::with('empresa')->get(); } catch (\Exception $e) { \Log::error("Error centrosList: " . $e->getMessage()); }
+            try { $centrosList = Centro::all(); } catch (\Exception $e) { \Log::error("Error centrosList: " . $e->getMessage()); }
 
-            // 8. Tipos de Sesión (agrupados por centro)
-            $tiposSesion = collect();
-            try {
-                $tiposSesion = TipoSesion::with('centro')
-                    ->withTrashed(false)
-                    ->orderBy('centro_id')
-                    ->orderBy('orden')
-                    ->orderBy('nombre')
-                    ->get()
-                    ->map(fn($t) => [
-                        'id'                 => $t->id,
-                        'nombre'             => $t->nombre,
-                        'slug'               => $t->slug,
-                        'capacidad_personas' => $t->capacidad_personas,
-                        'capacidad_fija'     => $t->capacidad_fija,
-                        'precio_base'        => $t->precio_base,
-                        'color_hex'          => $t->color_hex,
-                        'activo'             => $t->activo,
-                        'orden'              => $t->orden,
-                        'descripcion'        => $t->descripcion,
-                        'centro_id'          => $t->centro_id,
-                        'centro_nombre'      => $t->centro?->nombre ?? 'Global (todos los centros)',
-                        'tipos_credito_ids'  => $t->tiposCredito->pluck('id')->toArray(),
-                    ]);
-            } catch (\Exception $e) { \Log::error('Error tiposSesion: ' . $e->getMessage()); }
 
             // 9. Notificaciones de Entrenadores
             $notificaciones = collect();
@@ -184,11 +156,6 @@ class EstadisticasController extends Controller
                     ->get();
             } catch (\Exception $e) { \Log::error('Error notificaciones: ' . $e->getMessage()); }
 
-            // 10. Tipos de Crédito
-            $tiposCredito = collect();
-            try {
-                $tiposCredito = \App\Models\TipoCredito::with('sesiones')->get();
-            } catch (\Exception $e) { \Log::error('Error tiposCredito: ' . $e->getMessage()); }
 
             return response()->json([
                 'kpis' => [
@@ -203,11 +170,8 @@ class EstadisticasController extends Controller
                 'clientesPorCentro' => $clientesPorCentro,
                 'ingresosPorCentro' => $ingresosPorCentro,
                 'ultimosPagos'      => $ultimosPagos,
-                'empresas'          => $empresas,
-                'centros_list'      => $centrosList,
-                'tipos_sesion'      => $tiposSesion,
-                'tipos_credito'     => $tiposCredito,
                 'notificaciones'    => $notificaciones,
+                'centros_list'      => $centrosList,
             ]);
 
         } catch (\Exception $e) {
@@ -216,159 +180,4 @@ class EstadisticasController extends Controller
         }
     }
 
-    // Gestion de Empresas
-    public function storeEmpresa(Request $request) {
-        $data = $request->validate([
-            'nombre' => 'required',
-            'cif_dni' => 'required|unique:empresas,cif_dni',
-            'direccion' => 'nullable',
-            'cp' => 'nullable',
-            'ciudad' => 'nullable',
-            'iva_configurable' => 'nullable|numeric'
-        ]);
-        $empresa = Empresa::create($data);
-        return response()->json($empresa);
-    }
-
-    public function updateEmpresa(Request $request, Empresa $empresa) {
-        $data = $request->validate([
-            'nombre' => 'required',
-            'cif_dni' => 'required|unique:empresas,cif_dni,'.$empresa->id,
-            'direccion' => 'nullable',
-            'cp' => 'nullable',
-            'ciudad' => 'nullable',
-            'iva_configurable' => 'nullable|numeric'
-        ]);
-        $empresa->update($data);
-        return response()->json($empresa);
-    }
-
-    public function destroyEmpresa(Empresa $empresa) {
-        $empresa->delete();
-        return response()->json(['message' => 'Empresa eliminada']);
-    }
-
-    // Gestion de Centros
-    public function storeCentro(Request $request) {
-        $data = $request->validate([
-            'nombre' => 'required',
-            'cif' => 'nullable',
-            'direccion' => 'nullable',
-            'cp' => 'nullable',
-            'ciudad' => 'nullable',
-            'empresa_id' => 'nullable|exists:empresas,id',
-            'google_maps_link' => 'nullable',
-            'color_hex' => 'nullable|string|max:7'
-        ]);
-        $centro = Centro::create($data);
-        return response()->json($centro);
-    }
-
-    public function updateCentro(Request $request, Centro $centro) {
-        $data = $request->validate([
-            'nombre' => 'required',
-            'cif' => 'nullable',
-            'direccion' => 'nullable',
-            'cp' => 'nullable',
-            'ciudad' => 'nullable',
-            'empresa_id' => 'nullable|exists:empresas,id',
-            'google_maps_link' => 'nullable',
-            'color_hex' => 'nullable|string|max:7'
-        ]);
-        $centro->update($data);
-        return response()->json($centro);
-    }
-
-    public function destroyCentro(Centro $centro) {
-        $centro->delete();
-        return response()->json(['message' => 'Centro eliminado']);
-    }
-
-    // -------------------------------------------------------------------------
-    // Gestión de Tipos de Sesión
-    // -------------------------------------------------------------------------
-
-    public function indexTiposSesion()
-    {
-        $tipos = TipoSesion::with('centro')
-            ->orderBy('centro_id')
-            ->orderBy('orden')
-            ->orderBy('nombre')
-            ->get();
-        return response()->json($tipos);
-    }
-
-    public function storeTipoSesion(Request $request)
-    {
-        // Generar slug si no viene en el request
-        if (!$request->filled('slug') && $request->filled('nombre')) {
-            $request->merge(['slug' => Str::slug($request->nombre)]);
-        }
-
-        $data = $request->validate([
-            'nombre'             => 'required|string|max:100',
-            'slug'               => [
-                'required', 'string', 'max:100',
-                Rule::unique('tipos_sesion')->where(function ($query) use ($request) {
-                    return $query->where('centro_id', $request->centro_id);
-                })
-            ],
-            'capacidad_personas' => 'required|integer|min:1|max:100',
-            'capacidad_fija'     => 'required|boolean',
-            'precio_base'        => 'nullable|numeric|min:0',
-            'color_hex'          => 'nullable|string|max:7',
-            'activo'             => 'nullable|boolean',
-            'orden'              => 'nullable|integer|min:0',
-            'descripcion'        => 'nullable|string|max:500',
-            'centro_id'          => 'nullable|exists:centros,id',
-            'tipos_credito'      => 'nullable|array',
-            'tipos_credito.*'    => 'exists:tipos_credito,id',
-        ]);
-        $tipo = TipoSesion::create($data);
-        if ($request->has('tipos_credito')) {
-            $tipo->tiposCredito()->sync($request->tipos_credito);
-        }
-        return response()->json($tipo->load(['centro', 'tiposCredito']), 201);
-    }
-
-    public function updateTipoSesion(Request $request, TipoSesion $tipoSesion)
-    {
-        // Asegurar slug
-        if (!$request->filled('slug') && $request->filled('nombre')) {
-            $request->merge(['slug' => Str::slug($request->nombre)]);
-        }
-
-        $data = $request->validate([
-            'nombre'             => 'required|string|max:100',
-            'slug'               => [
-                'required', 'string', 'max:100',
-                Rule::unique('tipos_sesion')
-                    ->where(function ($query) use ($request) {
-                        return $query->where('centro_id', $request->centro_id);
-                    })
-                    ->ignore($tipoSesion->id)
-            ],
-            'capacidad_personas' => 'required|integer|min:1|max:100',
-            'capacidad_fija'     => 'required|boolean',
-            'precio_base'        => 'nullable|numeric|min:0',
-            'color_hex'          => 'nullable|string|max:7',
-            'activo'             => 'nullable|boolean',
-            'orden'              => 'nullable|integer|min:0',
-            'descripcion'        => 'nullable|string|max:500',
-            'centro_id'          => 'nullable|exists:centros,id',
-            'tipos_credito'      => 'nullable|array',
-            'tipos_credito.*'    => 'exists:tipos_credito,id',
-        ]);
-        $tipoSesion->update($data);
-        if ($request->has('tipos_credito')) {
-            $tipoSesion->tiposCredito()->sync($request->tipos_credito);
-        }
-        return response()->json($tipoSesion->load(['centro', 'tiposCredito']));
-    }
-
-    public function destroyTipoSesion(TipoSesion $tipoSesion)
-    {
-        $tipoSesion->delete();
-        return response()->json(['message' => 'Tipo de sesión eliminado']);
-    }
 }

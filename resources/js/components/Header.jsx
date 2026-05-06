@@ -38,7 +38,7 @@ export default function Header() {
     }
 
     return (
-      <div className={`${sizeClasses} rounded-full bg-gradient-to-br from-[#38C1A3] to-teal-600 text-white flex items-center justify-center font-black ${textClasses} shadow-sm border border-white/20`}>
+      <div className={`${sizeClasses} rounded-full bg-white text-[#38C1A3] flex items-center justify-center font-black ${textClasses} shadow-sm border border-gray-100 dark:border-gray-700`}>
         {user?.name ? user.name.trim().charAt(0).toUpperCase() : '?'}
       </div>
     );

@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string("color_hex")->nullable()->default("#38b2ac");
             $table->foreignId('empresa_id')->nullable()->constrained('empresas')->nullOnDelete();
             $table->text("google_maps_link")->nullable();
+            $table->decimal('lat', 10, 8)->nullable();
+            $table->decimal('lng', 11, 8)->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -32,7 +32,7 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                   <td className="px-4 sm:px-6 py-3 sm:py-4" data-label="Entrenador">
                     <div className="flex items-center gap-3">
                       <div 
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#38C1A3] flex items-center justify-center text-white font-black text-xs sm:text-sm relative overflow-hidden shadow-sm flex-shrink-0"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-[#38C1A3] font-black text-xs sm:text-sm relative overflow-hidden shadow-sm flex-shrink-0 border border-slate-100"
                       >
                         {entrenador.photo ? (
                           <img 
@@ -112,7 +112,7 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div 
-                      className="w-10 h-10 rounded-full bg-[#38C1A3] flex items-center justify-center text-white font-black text-sm relative overflow-hidden shadow-sm flex-shrink-0"
+                      className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#38C1A3] font-black text-sm relative overflow-hidden shadow-sm flex-shrink-0 border border-slate-100"
                     >
                       {entrenador.photo ? (
                         <img 

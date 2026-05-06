@@ -2,10 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import EmpresaTable from '../components/EmpresaTable';
-import CentroTable from '../components/CentroTable';
-import TiposSesionTable from '../components/TiposSesionTable';
-import TiposCreditoTable from '../components/TiposCreditoTable';
+import MapaEstadisticas from '../components/MapaEstadisticas';
 import PageHeader from '../components/PageHeader';
 import {
   Chart as ChartJS,
@@ -451,29 +448,9 @@ export default function Estadisticas() {
                   </div>
               </div>
 
-              {/* Gestión de Empresas y Centros */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-8 border-t border-slate-100">
-                <EmpresaTable 
-                  empresas={data.empresas || []} 
-                  onUpdate={fetchData} 
-                />
-                <CentroTable 
-                  centros={data.centros_list || []} 
-                  empresas={data.empresas || []}
-                  onUpdate={fetchData} 
-                />
-                <TiposSesionTable 
-                  tipos={data.tipos_sesion || []} 
-                  centros={data.centros_list || []}
-                  tiposCredito={data.tipos_credito || []}
-                  onUpdate={fetchData}
-                />
-                <TiposCreditoTable
-                  tipos={data.tipos_credito || []}
-                  centros={data.centros_list || []}
-                  tiposSesion={data.tipos_sesion || []}
-                  onUpdate={fetchData}
-                />
+              {/* Mapa de Sedes */}
+              <div className="pt-4 pb-8">
+                  <MapaEstadisticas centers={data?.centros_list || []} />
               </div>
 
             </div>

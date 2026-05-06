@@ -28,6 +28,7 @@ import MisEstadisticas from './pages/MisEstadisticas'
 import ReservaClases from './pages/ReservaClases'
 import Notificaciones from './pages/Notificaciones'
 import MisComidas from './pages/MisComidas'
+import Gestion from './pages/Gestion'
 
 
 function App() {
@@ -71,6 +72,7 @@ function App() {
       <Route path="/configuracion/edit" element={<Configuracion />} />
       <Route path="/suscripciones" element={<Suscripciones />} />
       <Route path="/estadisticas" element={<Estadisticas />} />
+      <Route path="/gestion" element={<Gestion />} />
       <Route path="/mi-ficha" element={<MiFicha />} />
       <Route path="/mis-clases" element={<MisClases />} />
       <Route path="/mis-estadisticas" element={<MisEstadisticas />} />

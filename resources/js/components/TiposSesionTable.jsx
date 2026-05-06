@@ -213,15 +213,20 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Centro Asignado</label>
-                  <select 
-                    ref={selectRef}
-                    className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold text-slate-600" 
-                    value={formData.centro_id} 
-                    onChange={e => setFormData({...formData, centro_id: e.target.value})}
-                  >
-                    <option value="">Global (Todos los centros)</option>
-                    {centros.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                  </select>
+                  <div className="relative group">
+                    <select 
+                      ref={selectRef}
+                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold text-slate-600 appearance-none cursor-pointer pr-12 transition-all hover:bg-slate-100 select2-ignore" 
+                      value={formData.centro_id || ''} 
+                      onChange={e => setFormData({...formData, centro_id: e.target.value})}
+                    >
+                      <option value="">Global (Todos los centros)</option>
+                      {centros.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                    </select>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300 group-hover:text-[#4BB7AE] transition-colors">
+                      <i className="fa-solid fa-chevron-down"></i>
+                    </div>
+                  </div>
                 </div>
               </div>
 
