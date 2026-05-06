@@ -122,7 +122,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
       <aside
         style={{ backgroundImage: 'linear-gradient(to bottom, #4eb7ac, #334352)' }}
-        className={`fixed top-0 left-0 h-full w-64 sm:w-72 text-white flex flex-col z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 overflow-hidden shadow-2xl`}
+        className={`fixed top-0 left-0 h-full w-64 sm:w-72 text-white flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} overflow-hidden shadow-2xl`}
       >
         <div className="pt-8 sm:pt-10 pb-4 sm:pb-6 flex flex-col items-center px-4">
           <Link to="/" className="flex flex-col items-center gap-2 sm:gap-3 group w-full" onClick={() => setIsOpen(false)}>
