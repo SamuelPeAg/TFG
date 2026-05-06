@@ -198,9 +198,13 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::get('/nutricion', [\App\Http\Controllers\NutritionController::class, 'index'])->name('nutricion.index');
     Route::post('/nutricion/log', [\App\Http\Controllers\NutritionController::class, 'store'])->name('nutricion.store');
     Route::put('/nutricion/log/{id}', [\App\Http\Controllers\NutritionController::class, 'update'])->name('nutricion.update');
+    Route::delete('/nutricion/log/{id}', [\App\Http\Controllers\NutritionController::class, 'destroy'])->name('nutricion.destroy');
     Route::post('/nutricion/routine', [\App\Http\Controllers\NutritionController::class, 'generateRoutine'])->name('nutricion.routine');
     Route::post('/api/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'store']);
     Route::get('/api/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'indexClient']);
+
+    Route::get('/api/trainer-templates', [\App\Http\Controllers\TrainerTemplateController::class, 'index']);
+    Route::post('/api/trainer-templates', [\App\Http\Controllers\TrainerTemplateController::class, 'store']);
 
 
 

@@ -36,6 +36,40 @@ class NutritionController extends Controller
 
         $user = Auth::user();
         $description = $request->meal_description;
+
+        // Easter Egg: Leche de amapolas para Samuel
+        if (stripos($description, 'leche de amapolas') !== false) {
+            return response()->json([
+                'error' => 'Samuel, mi compañero de desarrollo, no me jodas. ¿Leche de amapolas en serio? 😂'
+            ], 400);
+        }
+
+        // Easter Egg: Semillas del Ermitaño
+        if (stripos($description, 'semilla del ermitaño') !== false || stripos($description, 'semillas del ermitaño') !== false) {
+            $targetDate = $request->input('target_date');
+            $loggedAt = $targetDate ? \Carbon\Carbon::parse($targetDate)->format('Y-m-d H:i:s') : now();
+            
+            $meal = \App\Models\MealLog::create([
+                'user_id' => $user->id,
+                'meal_type' => $request->meal_type,
+                'meal_description' => '🌿 Semillas del Ermitaño',
+                'calories_est' => 9001,
+                'macros_est' => [
+                    'protein' => 9001,
+                    'carbs' => 9001,
+                    'fats' => 9001,
+                ],
+                'ai_feedback' => '¡NIVEL DE PODER SUPERANDO LOS 9000! Recuperación muscular al 1000%.',
+                'logged_at' => $loggedAt,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'is_senzu' => true,
+                'meal' => $meal
+            ]);
+        }
+
         $apiKey = config('services.gemini.key');
 
         if (!$apiKey) {
@@ -43,11 +77,12 @@ class NutritionController extends Controller
         }
 
         // Llamada a la API de Gemini
-        $prompt = "Actúa como un nutricionista deportivo experto. El usuario (con objetivo de optimizar su cuerpo y salud) acaba de comer lo siguiente en su " . $request->meal_type . ": \"" . $description . "\". 
-Analiza esta comida y devuelve EXCLUSIVAMENTE un objeto JSON válido con la siguiente estructura (sin formato Markdown adicional ni etiquetas como ```json):
+        $prompt = "Actúa como un nutricionista deportivo experto. El usuario (con objetivo de optimizar su cuerpo y salud) acaba de registrar lo siguiente en su " . $request->meal_type . ": \"" . $description . "\". 
+Analiza esta entrada y devuelve EXCLUSIVAMENTE un objeto JSON válido con la siguiente estructura (sin formato Markdown adicional ni etiquetas como ```json).
+REGLA MUY IMPORTANTE: Si el usuario menciona CUALQUIER COSA que no sea comida real y comestible (aunque lo mezcle con comida real, por ejemplo 'una manzana y una piedra' o 'leche y un coche'), debes evaluarlo como NO comida. Todo lo mencionado debe ser comestible para ser válido.
 {
-  \"is_food\": booleano_true_si_es_comida_false_si_es_absurdo_o_no_comestible,
-  \"error_message\": \"Solo si is_food es false, explica brevemente por qué de forma amistosa y graciosa (ej. '¡Un coche no tiene macros, intenta comer comida real!'). Si es true, déjalo vacío.\",
+  \"is_food\": booleano_true_SOLO_si_ABSOLUTAMENTE_TODO_es_comida_false_si_hay_ALGO_no_comestible,
+  \"error_message\": \"Solo si is_food es false, explica brevemente por qué de forma amistosa y graciosa (ej. '¡Las piedras no tienen macros, intenta comer solo comida real!'). Si es true, déjalo vacío.\",
   \"calories\": numero_entero (estimacion, 0 si no es comida),
   \"protein\": numero_entero_en_gramos (0 si no es comida),
   \"carbs\": numero_entero_en_gramos (0 si no es comida),
@@ -56,7 +91,7 @@ Analiza esta comida y devuelve EXCLUSIVAMENTE un objeto JSON válido con la sigu
 }";
 
         try {
-            $response = Http::withOptions(['verify' => false])->withHeaders([
+            $response = Http::timeout(60)->withOptions(['verify' => false])->withHeaders([
                 'Content-Type' => 'application/json',
             ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={$apiKey}", [
                 'contents' => [
@@ -95,37 +130,41 @@ Analiza esta comida y devuelve EXCLUSIVAMENTE un objeto JSON válido con la sigu
                         }
 
                         if (isset($aiData['calories'])) {
-                        $targetDate = $request->input('target_date');
-                        $loggedAt = $targetDate ? \Carbon\Carbon::parse($targetDate)->format('Y-m-d H:i:s') : now();
+                            $targetDate = $request->input('target_date');
+                            $loggedAt = $targetDate ? \Carbon\Carbon::parse($targetDate)->format('Y-m-d H:i:s') : now();
 
-                        $meal = MealLog::create([
-                            'user_id' => $user->id,
-                            'meal_type' => $request->meal_type,
-                            'meal_description' => $description,
-                            'calories_est' => $aiData['calories'],
-                            'macros_est' => [
-                                'protein' => $aiData['protein'] ?? 0,
-                                'carbs' => $aiData['carbs'] ?? 0,
-                                'fats' => $aiData['fats'] ?? 0,
-                            ],
-                            'ai_feedback' => $aiData['feedback'] ?? '',
-                            'logged_at' => $loggedAt,
-                        ]);
+                            $meal = MealLog::create([
+                                'user_id' => $user->id,
+                                'meal_type' => $request->meal_type,
+                                'meal_description' => $description,
+                                'calories_est' => $aiData['calories'],
+                                'macros_est' => [
+                                    'protein' => $aiData['protein'] ?? 0,
+                                    'carbs' => $aiData['carbs'] ?? 0,
+                                    'fats' => $aiData['fats'] ?? 0,
+                                ],
+                                'ai_feedback' => $aiData['feedback'] ?? '',
+                                'logged_at' => $loggedAt,
+                            ]);
 
-                        return response()->json([
-                            'success' => true,
-                            'meal' => $meal
-                        ]);
+                            return response()->json([
+                                'success' => true,
+                                'meal' => $meal
+                            ]);
+                        }
                     }
                 }
             }
-        }
-        Log::error('Error parseando respuesta de Gemini', ['response' => $result]);
-        return response()->json(['error' => 'No se pudo procesar la respuesta de la IA. Revisa la descripción o intenta de nuevo.'], 500);
+            Log::error('Error parseando respuesta de Gemini', ['response' => $result]);
+            return response()->json(['error' => 'No se pudo procesar la respuesta de la IA. Revisa la descripción o intenta de nuevo.'], 500);
 
-    } catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Error de red al llamar a Gemini', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Error de conexión: ' . $e->getMessage()], 500);
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'cURL error 28') || str_contains($errorMessage, 'timed out')) {
+                return response()->json(['error' => 'La IA está tardando demasiado en pensar (saturación de Google). ¡Vuelve a intentarlo en unos segundos!'], 504);
+            }
+            return response()->json(['error' => 'Error de conexión: No pudimos contactar a la IA.'], 500);
         }
     }
 
@@ -165,7 +204,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con este formato exacto (sin form
 }";
 
         try {
-            $response = Http::withOptions(['verify' => false])->withHeaders([
+            $response = Http::timeout(60)->withOptions(['verify' => false])->withHeaders([
                 'Content-Type' => 'application/json',
             ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={$apiKey}", [
                 'contents' => [['parts' => [['text' => $prompt]]]]
@@ -173,16 +212,28 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con este formato exacto (sin form
 
             $result = $response->json();
             
+            if (isset($result['error'])) {
+                Log::error('Error de Gemini API en generateRoutine', ['response' => $result]);
+                if (isset($result['error']['code']) && $result['error']['code'] == 503) {
+                    return response()->json(['error' => 'La IA está experimentando mucha demanda ahora mismo. Por favor, inténtalo de nuevo en unos minutos.'], 503);
+                }
+                return response()->json(['error' => 'Error en la IA: ' . ($result['error']['message'] ?? 'Desconocido')], 500);
+            }
+
             if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
-                preg_match('/\{[\s\S]*\}/', $result['candidates'][0]['content']['parts'][0]['text'], $matches);
+                $aiText = $result['candidates'][0]['content']['parts'][0]['text'];
+                preg_match('/\{[\s\S]*\}/', $aiText, $matches);
                 if (!empty($matches)) {
                     $aiData = json_decode($matches[0], true);
                     if (json_last_error() === JSON_ERROR_NONE) {
                         return response()->json(['success' => true, 'plan' => $aiData]);
+                    } else {
+                        Log::error('JSON parsing failed', ['aiText' => $aiText, 'json_error' => json_last_error_msg()]);
                     }
                 }
             }
-            return response()->json(['error' => 'No se pudo generar la rutina.'], 500);
+            Log::error('Error parseando respuesta de Gemini (Rutina)', ['response' => $result]);
+            return response()->json(['error' => 'No se pudo generar la rutina correctamente. Inténtalo de nuevo.'], 500);
 
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error de conexión: ' . $e->getMessage()], 500);
@@ -212,6 +263,17 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con este formato exacto (sin form
         return response()->json([
             'success' => true,
             'meal' => $meal
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        $meal = MealLog::where('user_id', $user->id)->findOrFail($id);
+        $meal->delete();
+
+        return response()->json([
+            'success' => true
         ]);
     }
 }

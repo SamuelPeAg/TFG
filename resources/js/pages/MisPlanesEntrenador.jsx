@@ -16,20 +16,131 @@ export default function MisPlanesEntrenador() {
   const [images, setImages] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
-  const exerciseTemplates = [
+  // Builder states
+  const [responseMode, setResponseMode] = useState('text'); // text | routine
+  const [motivation, setMotivation] = useState('');
+  const [routine, setRoutine] = useState([]);
+  
+  // Custom templates states
+  const [customTemplates, setCustomTemplates] = useState([]);
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+
+  const textTemplates = [
     { name: 'Fuerza Básica', text: '💪 RUTINA FUERZA:\n- Sentadillas: 4 x 10 (Peso: [XX] kg)\n- Press Banca: 4 x 8 (Peso: [XX] kg)\n- Peso Muerto: 4 x 8 (Peso: [XX] kg)' },
     { name: 'HIIT Cardio', text: '🔥 RUTINA HIIT:\n- Burpees: 5 x 20 seg (10 seg descanso)\n- Mountain Climbers: 5 x 20 seg\n- Jumping Jacks: 5 x 30 seg' },
-    { name: 'Pierna Pesado', text: '🦵 RUTINA PIERNAS:\n- Prensa: 5 x 10 (Peso: [XX] kg)\n- Zancadas: 4 x 12 c/u\n- Curl Femoral: 4 x 15 (Peso: [XX] kg)' },
-    { name: 'Burpees 5x4', text: '- Burpees: 5 series x 4 repeticiones\n- Descanso: 45 segundos' },
-    { name: 'Core & Abdomen', text: '🛡️ RUTINA CORE:\n- Plancha Abdominal: 4 x 45 seg\n- Crunches: 4 x 20\n- Elevación de Piernas: 4 x 15' }
+    { name: 'Burpees 5x4', text: '- Burpees: 5 series x 4 repeticiones\n- Descanso: 45 segundos' }
   ];
 
-  const handleInsertTemplate = (templateText) => {
+  const routineTemplates = [
+    { 
+      name: '🤰 Embarazadas', 
+      data: [
+        { ejercicio: 'Sentadillas con Fitball', series: '3', reps: '12', weight: 'Corporal', tools: 'Fitball', focus: 'FUERZA', imageFile: null, imagePreview: null },
+        { ejercicio: 'Elevación de pelvis', series: '3', reps: '15', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null },
+        { ejercicio: 'Paseo Ligero', series: '1', reps: '20 min', weight: '-', tools: 'Cinta', focus: 'CARDIO', imageFile: null, imagePreview: null }
+      ] 
+    },
+    { 
+      name: '🔥 Perder Peso', 
+      data: [
+        { ejercicio: 'Burpees', series: '4', reps: '15', weight: 'Corporal', tools: 'Esterilla', focus: 'CARDIO', imageFile: null, imagePreview: null },
+        { ejercicio: 'Mountain Climbers', series: '4', reps: '45 seg', weight: 'Corporal', tools: 'Ninguna', focus: 'CARDIO', imageFile: null, imagePreview: null },
+        { ejercicio: 'Kettlebell Swings', series: '4', reps: '20', weight: '12kg', tools: 'Kettlebell', focus: 'FUERZA', imageFile: null, imagePreview: null }
+      ] 
+    },
+    { 
+      name: '💪 Ganar Músculo', 
+      data: [
+        { ejercicio: 'Press Banca', series: '4', reps: '8', weight: '60kg', tools: 'Banco y Barra', focus: 'FUERZA', imageFile: null, imagePreview: null },
+        { ejercicio: 'Sentadilla Libre', series: '4', reps: '8', weight: '80kg', tools: 'Rack', focus: 'FUERZA', imageFile: null, imagePreview: null },
+        { ejercicio: 'Remo con Barra', series: '4', reps: '10', weight: '50kg', tools: 'Barra', focus: 'FUERZA', imageFile: null, imagePreview: null }
+      ] 
+    },
+    { 
+      name: '🧘 Recuperación', 
+      data: [
+        { ejercicio: 'Estiramientos Dinámicos', series: '1', reps: '10 min', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null },
+        { ejercicio: 'Yoga Básico', series: '1', reps: '20 min', weight: 'Corporal', tools: 'Esterilla', focus: 'CORE', imageFile: null, imagePreview: null }
+      ] 
+    }
+  ];
+
+  const handleInsertTextTemplate = (templateText) => {
     setResponse(prev => prev + (prev ? '\n\n' : '') + templateText);
+  };
+
+  const handleAddRoutineTemplate = (templateDataArray) => {
+    setRoutine([...routine, ...templateDataArray]);
+  };
+
+  const handleAddRoutineItem = () => {
+    setRoutine([...routine, { ejercicio: '', series: '', reps: '', weight: '', tools: '', focus: 'FUERZA', imageFile: null, imagePreview: null }]);
+  };
+
+  const handleUpdateRoutineItem = (index, field, value) => {
+    const newRoutine = [...routine];
+    newRoutine[index][field] = value;
+    setRoutine(newRoutine);
+  };
+
+  const handleRemoveRoutineItem = (index) => {
+    setRoutine(routine.filter((_, i) => i !== index));
+  };
+
+  const handleExerciseImageChange = (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const newRoutine = [...routine];
+      newRoutine[index].imageFile = file;
+      newRoutine[index].imagePreview = URL.createObjectURL(file);
+      setRoutine(newRoutine);
+    }
+  };
+
+  const fetchCustomTemplates = async () => {
+    try {
+      const res = await axios.get('/api/trainer-templates');
+      setCustomTemplates(res.data);
+    } catch (err) {
+      console.error('Error fetching templates', err);
+    }
+  };
+
+  const handleOpenSaveTemplateModal = () => {
+    if (routine.length === 0) return;
+    setNewTemplateName('');
+    setShowSaveTemplateModal(true);
+  };
+
+  const handleConfirmSaveTemplate = async () => {
+    if (!newTemplateName.trim()) return;
+
+    setSavingTemplate(true);
+    const routineDataForJson = routine.map(item => {
+      const { imageFile, imagePreview, ...rest } = item;
+      return rest;
+    });
+
+    try {
+      const response = await axios.post('/api/trainer-templates', {
+        name: newTemplateName.trim(),
+        data: routineDataForJson
+      });
+      setCustomTemplates([...customTemplates, response.data]);
+      setShowSaveTemplateModal(false);
+    } catch (error) {
+      console.error(error);
+      alert("Error al guardar la plantilla");
+    } finally {
+      setSavingTemplate(false);
+    }
   };
 
   useEffect(() => {
     fetchPlans();
+    fetchCustomTemplates();
   }, []);
 
   const fetchPlans = async () => {
@@ -67,11 +178,36 @@ export default function MisPlanesEntrenador() {
 
   const handleSubmitResponse = async (e) => {
     e.preventDefault();
-    if (!response.trim() && images.length === 0) return;
+    if (responseMode === 'text' && !response.trim() && images.length === 0) return;
+    if (responseMode === 'routine' && routine.length === 0 && !motivation.trim()) return;
     
     setSubmitting(true);
+    
+    let finalResponse = response;
+    if (responseMode === 'routine') {
+      const routineDataForJson = routine.map(item => {
+        const { imageFile, imagePreview, ...rest } = item;
+        return rest;
+      });
+
+      finalResponse = JSON.stringify({
+        is_structured_routine: true,
+        motivation: motivation,
+        routine: routineDataForJson
+      });
+    }
+
     const formData = new FormData();
-    formData.append('response', response);
+    formData.append('response', finalResponse);
+    
+    if (responseMode === 'routine') {
+      routine.forEach((item, index) => {
+        if (item.imageFile) {
+          formData.append(`routine_images_${index}`, item.imageFile);
+        }
+      });
+    }
+
     images.forEach(img => {
       formData.append('images[]', img);
     });
@@ -183,33 +319,127 @@ export default function MisPlanesEntrenador() {
 
                   {activePlan.status === 'pending' ? (
                     <div>
-                      <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Tu Respuesta y Plan</h3>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Tu Respuesta y Plan</h3>
+                        <div className="bg-slate-100 p-1 rounded-xl flex gap-1">
+                          <button type="button" onClick={() => setResponseMode('text')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${responseMode === 'text' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Texto</button>
+                          <button type="button" onClick={() => setResponseMode('routine')} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${responseMode === 'routine' ? 'bg-white text-[#38C1A3] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Rutina Visual</button>
+                        </div>
+                      </div>
+
                       <form onSubmit={handleSubmitResponse} className="space-y-4">
                         
-                        <div className="mb-4 bg-slate-50 border border-slate-100 rounded-2xl p-4">
-                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3"><i className="fa-solid fa-bolt text-indigo-400 mr-1"></i> Plantillas Rápidas (Haz clic para insertar):</p>
-                          <div className="flex flex-wrap gap-2">
-                            {exerciseTemplates.map((tpl, i) => (
-                              <button 
-                                key={i}
-                                type="button"
-                                onClick={() => handleInsertTemplate(tpl.text)}
-                                className="text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl bg-white text-indigo-600 hover:bg-indigo-600 hover:text-white hover:shadow-lg transition-all border border-indigo-100 active:scale-95"
-                              >
-                                {tpl.name} <i className="fa-solid fa-plus opacity-50 ml-1"></i>
-                              </button>
-                            ))}
-                          </div>
-                          <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Sustituye los [XX] por el peso deseado tras insertar la plantilla.</p>
-                        </div>
+                        {responseMode === 'text' ? (
+                          <>
+                            <div className="mb-4 bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3"><i className="fa-solid fa-bolt text-indigo-400 mr-1"></i> Plantillas de Texto:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {textTemplates.map((tpl, i) => (
+                                  <button key={i} type="button" onClick={() => handleInsertTextTemplate(tpl.text)} className="text-[10px] font-black uppercase tracking-widest px-3 py-2 rounded-xl bg-white text-indigo-600 hover:bg-indigo-600 hover:text-white hover:shadow-lg transition-all border border-indigo-100">
+                                    {tpl.name} <i className="fa-solid fa-plus opacity-50 ml-1"></i>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <textarea
+                              required
+                              value={response}
+                              onChange={(e) => setResponse(e.target.value)}
+                              placeholder="Escribe la rutina, consejos o el plan de acción aquí..."
+                              className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[300px] resize-y text-sm leading-relaxed"
+                            />
+                          </>
+                        ) : (
+                          <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-6 space-y-6">
+                            <div>
+                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Mensaje / Motivación</label>
+                              <textarea value={motivation} onChange={(e) => setMotivation(e.target.value)} placeholder="Ej: Has tenido una carga proteica elevada hoy; aprovechemos..." className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 text-sm font-medium italic resize-none h-20" />
+                            </div>
+                            
+                            <div>
+                              <div className="flex justify-between items-center mb-3">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ejercicios del Circuito</label>
+                                <div className="flex gap-2 flex-wrap justify-end">
+                                  {routineTemplates.map((tpl, i) => (
+                                    <button key={i} type="button" onClick={() => handleAddRoutineTemplate(tpl.data)} className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-teal-50 text-teal-600 hover:bg-teal-100 transition-all border border-teal-100">
+                                      + {tpl.name}
+                                    </button>
+                                  ))}
+                                  {customTemplates.map((tpl, i) => (
+                                    <button key={`custom-${i}`} type="button" onClick={() => handleAddRoutineTemplate(tpl.data)} className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-100">
+                                      + {tpl.name}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-4">
+                                {routine.map((item, idx) => (
+                                  <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative group">
+                                    <div className="flex gap-4 items-start">
+                                      {/* Image Uploader */}
+                                      <div className="shrink-0 w-24 h-24 bg-slate-50 rounded-xl border border-dashed border-slate-300 relative overflow-hidden flex items-center justify-center group/img cursor-pointer">
+                                        {item.imagePreview ? (
+                                          <img src={item.imagePreview} className="w-full h-full object-cover" />
+                                        ) : (
+                                          <div className="text-center">
+                                            <i className="fa-solid fa-camera text-slate-300 text-xl mb-1"></i>
+                                            <p className="text-[8px] font-black uppercase text-slate-400">Añadir<br/>Foto</p>
+                                          </div>
+                                        )}
+                                        <input type="file" accept="image/*" onChange={(e) => handleExerciseImageChange(idx, e)} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                        {item.imagePreview && (
+                                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
+                                            <i className="fa-solid fa-pen text-white"></i>
+                                          </div>
+                                        )}
+                                      </div>
 
-                        <textarea
-                          required
-                          value={response}
-                          onChange={(e) => setResponse(e.target.value)}
-                          placeholder="Escribe la rutina, consejos o el plan de acción aquí..."
-                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-2xl px-4 py-4 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[300px] resize-y text-sm leading-relaxed"
-                        />
+                                      {/* Fields */}
+                                      <div className="flex-1 space-y-3">
+                                        <div className="flex gap-3">
+                                          <input type="text" value={item.ejercicio} onChange={(e) => handleUpdateRoutineItem(idx, 'ejercicio', e.target.value)} placeholder="Nombre del Ejercicio (Ej: Sentadillas)" className="flex-1 bg-slate-50 border border-slate-100 text-xs font-black uppercase rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-teal-200" />
+                                          <select value={item.focus} onChange={(e) => handleUpdateRoutineItem(idx, 'focus', e.target.value)} className="w-28 bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-500 rounded-xl px-2 py-2 outline-none appearance-none">
+                                            <option value="FUERZA">Fuerza</option>
+                                            <option value="CARDIO">Cardio</option>
+                                            <option value="CORE">Core</option>
+                                          </select>
+                                        </div>
+                                        <div className="grid grid-cols-4 gap-3">
+                                          <div>
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Series</label>
+                                            <input type="text" value={item.series} onChange={(e) => handleUpdateRoutineItem(idx, 'series', e.target.value)} placeholder="Ej: 4" className="w-full bg-slate-50 border border-slate-100 text-xs font-bold text-slate-700 px-3 py-2 rounded-lg outline-none focus:bg-white" />
+                                          </div>
+                                          <div>
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Repeticiones</label>
+                                            <input type="text" value={item.reps} onChange={(e) => handleUpdateRoutineItem(idx, 'reps', e.target.value)} placeholder="Ej: 10-12" className="w-full bg-slate-50 border border-slate-100 text-xs font-bold text-slate-700 px-3 py-2 rounded-lg outline-none focus:bg-white" />
+                                          </div>
+                                          <div>
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Peso</label>
+                                            <input type="text" value={item.weight} onChange={(e) => handleUpdateRoutineItem(idx, 'weight', e.target.value)} placeholder="Ej: 20kg" className="w-full bg-slate-50 border border-slate-100 text-xs font-bold text-slate-700 px-3 py-2 rounded-lg outline-none focus:bg-white" />
+                                          </div>
+                                          <div>
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Herramientas</label>
+                                            <input type="text" value={item.tools} onChange={(e) => handleUpdateRoutineItem(idx, 'tools', e.target.value)} placeholder="Ej: Mancuernas" className="w-full bg-slate-50 border border-slate-100 text-xs font-bold text-slate-700 px-3 py-2 rounded-lg outline-none focus:bg-white" />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <button type="button" onClick={() => handleRemoveRoutineItem(idx)} className="absolute -right-3 -top-3 w-8 h-8 bg-white border border-rose-100 text-rose-500 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-sm hover:bg-rose-50"><i className="fa-solid fa-times"></i></button>
+                                  </div>
+                                ))}
+                                <div className="flex gap-4">
+                                  <button type="button" onClick={() => handleAddRoutineItem()} className="flex-1 py-3 border-2 border-dashed border-slate-200 rounded-2xl text-xs font-black text-slate-400 uppercase tracking-widest hover:bg-slate-100 hover:text-slate-600 hover:border-slate-300 transition-all">
+                                    <i className="fa-solid fa-plus mr-2"></i> Añadir Ejercicio Manual
+                                  </button>
+                                  <button type="button" onClick={handleOpenSaveTemplateModal} disabled={routine.length === 0} className="px-6 py-3 border-2 border-indigo-100 bg-indigo-50 text-indigo-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all disabled:opacity-50">
+                                    <i className="fa-solid fa-save mr-2"></i> Guardar Plantilla
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                         <div>
                           <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2 block">Adjuntar Fotos (Opcional)</label>
                           <input 
@@ -234,7 +464,71 @@ export default function MisPlanesEntrenador() {
                     <div>
                       <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Respuesta Enviada</h3>
                       <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-2xl text-emerald-900">
-                        <p className="whitespace-pre-wrap text-sm">{activePlan.trainer_response}</p>
+                        {(() => {
+                            let isStructured = false;
+                            let structuredData = null;
+                            try {
+                                const p = JSON.parse(activePlan.trainer_response);
+                                if (p.is_structured_routine) {
+                                    isStructured = true;
+                                    structuredData = p;
+                                }
+                            } catch(e) {}
+
+                            if (isStructured) {
+                                return (
+                                    <div className="bg-white border border-emerald-100 rounded-[2rem] p-6">
+                                        {structuredData.motivation && (
+                                            <p className="text-sm font-bold italic text-slate-700 mb-6 text-center">"{structuredData.motivation}"</p>
+                                        )}
+                                        {structuredData.routine && structuredData.routine.length > 0 && (
+                                            <div className="space-y-6">
+                                                {structuredData.routine.map((ex, i) => (
+                                                    <div key={i} className="bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-sm relative overflow-hidden">
+                                                        <div className="flex gap-6 relative z-10">
+                                                            {ex.image_url && (
+                                                                <div className="shrink-0 w-28 h-28 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+                                                                    <img src={ex.image_url} alt={ex.ejercicio} className="w-full h-full object-cover" />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1">
+                                                                <div className="flex justify-between items-start mb-4">
+                                                                    <div>
+                                                                        <h4 className="text-sm font-black text-slate-800 uppercase">{ex.ejercicio}</h4>
+                                                                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1">{ex.focus}</p>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                                    <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
+                                                                        <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Series</span>
+                                                                        <span className="font-bold text-slate-700">{ex.series || '-'}</span>
+                                                                    </div>
+                                                                    <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
+                                                                        <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Repeticiones</span>
+                                                                        <span className="font-bold text-slate-700">{ex.reps || '-'}</span>
+                                                                    </div>
+                                                                    <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
+                                                                        <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Peso</span>
+                                                                        <span className="font-bold text-slate-700">{ex.weight || '-'}</span>
+                                                                    </div>
+                                                                    <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
+                                                                        <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Material</span>
+                                                                        <span className="font-bold text-slate-700">{ex.tools || '-'}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            } else {
+                                return <p className="whitespace-pre-wrap text-sm">{activePlan.trainer_response}</p>;
+                            }
+                        })()}
                         {activePlan.trainer_images && activePlan.trainer_images.length > 0 && (
                           <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
                             {activePlan.trainer_images.map((img, i) => (
@@ -260,6 +554,52 @@ export default function MisPlanesEntrenador() {
           </div>
         </div>
       </main>
+      {/* Modal Guardar Plantilla */}
+      {showSaveTemplateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6">
+              <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mb-4 text-indigo-500 mx-auto">
+                <i className="fa-solid fa-save text-xl"></i>
+              </div>
+              <h3 className="text-center text-slate-800 font-black text-lg mb-2">Guardar Plantilla</h3>
+              <p className="text-center text-slate-500 text-xs font-medium mb-6">Esta rutina se guardará en tu cuenta para que puedas insertarla rápidamente en el futuro.</p>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Nombre de la Plantilla</label>
+                  <input 
+                    type="text" 
+                    autoFocus
+                    placeholder="Ej: Glúteos y Pierna Nivel 2"
+                    value={newTemplateName}
+                    onChange={(e) => setNewTemplateName(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 font-bold rounded-2xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-slate-50 p-4 border-t border-slate-100 flex gap-3">
+              <button 
+                type="button" 
+                onClick={() => setShowSaveTemplateModal(false)}
+                className="flex-1 py-3 text-slate-600 font-black text-xs uppercase tracking-widest hover:bg-slate-200 rounded-xl transition-all"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                onClick={handleConfirmSaveTemplate}
+                disabled={savingTemplate || !newTemplateName.trim()}
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest py-3 rounded-xl shadow-lg shadow-indigo-200 transition-all disabled:opacity-50 flex items-center justify-center"
+              >
+                {savingTemplate ? <i className="fa-solid fa-spinner fa-spin"></i> : "Guardar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

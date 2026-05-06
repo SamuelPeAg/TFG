@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import PhysicalProgress from '../components/PhysicalProgress';
 import AlertModal from '../components/AlertModal';
+import ConfirmModal from '../components/ConfirmModal';
 import PageHeader from '../components/PageHeader';
 
 export default function MisComidas() {
@@ -20,7 +21,11 @@ export default function MisComidas() {
     const [altura, setAltura] = useState('');
     const [measurements, setMeasurements] = useState([]);
     const [submittingProgress, setSubmittingProgress] = useState(false);
+    const [senzuMode, setSenzuMode] = useState(false);
+    
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+    const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+    
     const showAlert = (message, isError = false, title = isError ? "Error" : "Éxito") => {
         setAlertConfig({ isOpen: true, title, message, isError });
     };
@@ -178,11 +183,33 @@ export default function MisComidas() {
             });
             setComidas([data.meal, ...comidas]);
             setMealText('');
+            
+            if (data.is_senzu) {
+                setSenzuMode(true);
+                setTimeout(() => setSenzuMode(false), 5000);
+            }
         } catch (err) {
             setError(err.response?.data?.error || 'Ocurrió un error con la IA.');
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleDeleteMeal = (mealId) => {
+        setConfirmConfig({
+            isOpen: true,
+            title: "Eliminar Registro",
+            message: "¿Seguro que quieres eliminar esta comida de tu diario? No se podrá recuperar.",
+            onConfirm: async () => {
+                try {
+                    await axios.delete(`/nutricion/log/${mealId}`);
+                    setComidas(comidas.filter(m => m.id !== mealId));
+                    showAlert('Comida eliminada.');
+                } catch (err) {
+                    showAlert('Error al eliminar la comida.', true);
+                }
+            }
+        });
     };
 
     const handleProgressSave = async (e) => {
@@ -232,7 +259,7 @@ export default function MisComidas() {
                 <PageHeader 
                     title="Nutrición & Evolución"
                     subtitle="Control inteligente de macros y físico"
-                    icon="🍎"
+                    icon={<span>🍕</span>}
                     onMenuClick={() => setIsSidebarOpen(true)}
                 />
 
@@ -247,7 +274,7 @@ export default function MisComidas() {
                                     <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50"></div>
                                     <div className="relative z-10">
                                         <div className="flex items-center gap-4 mb-8">
-                                            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl shadow-inner"><i className="fa-solid fa-pizza-slice"></i></div>
+                                            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl shadow-inner">🍕</div>
                                             <div>
                                                 <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">¿Qué has comido hoy?</h2>
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">La IA desglosará tus macros automáticamente</p>
@@ -361,7 +388,11 @@ export default function MisComidas() {
                                                     <div className="flex justify-between items-start mb-6 relative z-10">
                                                         <div className="flex items-center gap-4">
                                                             <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl shadow-inner">
-                                                                <i className={`fa-solid ${meal.meal_type === 'desayuno' ? 'fa-mug-hot' : meal.meal_type === 'almuerzo' ? 'fa-bowl-food' : meal.meal_type === 'cena' ? 'fa-moon' : 'fa-cookie-bite'}`}></i>
+                                                                <span>
+                                                                    {meal.meal_type === 'desayuno' ? '☕' : 
+                                                                     meal.meal_type === 'almuerzo' ? '🥗' : 
+                                                                     meal.meal_type === 'cena' ? '🌙' : '🍎'}
+                                                                </span>
                                                             </div>
                                                             <div>
                                                                 <span className="text-sm font-black uppercase text-slate-800 tracking-tight">{meal.meal_type}</span>
@@ -373,9 +404,14 @@ export default function MisComidas() {
                                                                 <span className="block text-xl font-black leading-none">{meal.calories_est || 0}</span>
                                                                 <span className="block text-[9px] font-black uppercase text-teal-400 tracking-widest mt-1">Kcal</span>
                                                             </div>
-                                                            <button onClick={() => handleEditClick(meal)} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#38C1A3] transition-colors flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 opacity-0 group-hover:opacity-100">
-                                                                <i className="fa-solid fa-pen"></i> Editar
-                                                            </button>
+                                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                                                <button onClick={() => handleEditClick(meal)} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#38C1A3] transition-colors flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                                                                    <i className="fa-solid fa-pen"></i> Editar
+                                                                </button>
+                                                                <button onClick={() => handleDeleteMeal(meal.id)} className="text-[10px] font-black uppercase tracking-widest text-rose-300 hover:text-rose-500 transition-colors flex items-center justify-center w-8 h-8 bg-rose-50 rounded-lg border border-rose-100">
+                                                                    <i className="fa-solid fa-trash-can"></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <p className="text-base text-slate-600 font-bold mb-8 px-2 leading-relaxed relative z-10 italic">"{meal.meal_description}"</p>
@@ -402,7 +438,7 @@ export default function MisComidas() {
                                 {/* Plan de Acción & Rutina */}
                                 <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/20 border border-slate-100 relative overflow-hidden">
                                     <div className="flex items-center gap-4 mb-8">
-                                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl shadow-inner"><i className="fa-solid fa-dumbbell"></i></div>
+                                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl shadow-inner">🏋️</div>
                                         <div>
                                             <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Plan de Acción</h2>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Obtén tu rutina basada en tus comidas</p>
@@ -474,8 +510,74 @@ export default function MisComidas() {
                                                             <p className="text-sm text-slate-600 font-bold italic mb-4">"{plan.goal_message}"</p>
                                                             {plan.trainer_response && (
                                                                 <div className="bg-indigo-50/50 rounded-2xl p-5 mt-4">
-                                                                    <div className="flex items-center gap-2 mb-3 text-indigo-500 text-xs font-black uppercase tracking-widest"><i className="fa-solid fa-reply"></i> Respuesta</div>
-                                                                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{plan.trainer_response}</p>
+                                                                    <div className="flex items-center gap-2 mb-3 text-indigo-500 text-xs font-black uppercase tracking-widest"><i className="fa-solid fa-reply"></i> Respuesta del Entrenador</div>
+                                                                    
+                                                                    {(() => {
+                                                                        let isStructured = false;
+                                                                        let structuredData = null;
+                                                                        try {
+                                                                            const p = JSON.parse(plan.trainer_response);
+                                                                            if (p.is_structured_routine) {
+                                                                                isStructured = true;
+                                                                                structuredData = p;
+                                                                            }
+                                                                        } catch(e) {}
+
+                                                                        if (isStructured) {
+                                                                            return (
+                                                                                <div className="bg-white border border-indigo-100 rounded-[2rem] p-6 mt-2">
+                                                                                    {structuredData.motivation && (
+                                                                                        <p className="text-sm font-bold italic text-slate-700 mb-6 text-center">"{structuredData.motivation}"</p>
+                                                                                    )}
+                                                                                    {structuredData.routine && structuredData.routine.length > 0 && (
+                                                                                        <div className="space-y-6">
+                                                                                            {structuredData.routine.map((ex, i) => (
+                                                                                                <div key={i} className="bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-sm relative overflow-hidden">
+                                                                                                    <div className="flex gap-6 relative z-10">
+                                                                                                        {ex.image_url && (
+                                                                                                            <div className="shrink-0 w-28 h-28 rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white">
+                                                                                                                <img src={ex.image_url} alt={ex.ejercicio} className="w-full h-full object-cover" />
+                                                                                                            </div>
+                                                                                                        )}
+                                                                                                        <div className="flex-1">
+                                                                                                            <div className="flex justify-between items-start mb-4">
+                                                                                                                <div>
+                                                                                                                    <h4 className="text-sm font-black text-slate-800 uppercase">{ex.ejercicio}</h4>
+                                                                                                                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1">{ex.focus}</p>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                            
+                                                                                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                                                                                <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
+                                                                                                                    <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Series</span>
+                                                                                                                    <span className="font-bold text-slate-700">{ex.series || '-'}</span>
+                                                                                                                </div>
+                                                                                                                <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
+                                                                                                                    <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Repeticiones</span>
+                                                                                                                    <span className="font-bold text-slate-700">{ex.reps || '-'}</span>
+                                                                                                                </div>
+                                                                                                                <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
+                                                                                                                    <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Peso</span>
+                                                                                                                    <span className="font-bold text-slate-700">{ex.weight || '-'}</span>
+                                                                                                                </div>
+                                                                                                                <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
+                                                                                                                    <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Material</span>
+                                                                                                                    <span className="font-bold text-slate-700">{ex.tools || '-'}</span>
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                            );
+                                                                        } else {
+                                                                            return <p className="text-sm text-slate-700 whitespace-pre-wrap">{plan.trainer_response}</p>;
+                                                                        }
+                                                                    })()}
+
                                                                     {plan.trainer_images && plan.trainer_images.length > 0 && (
                                                                         <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
                                                                             {plan.trainer_images.map((img, idx) => (
@@ -617,6 +719,26 @@ export default function MisComidas() {
                 title={alertConfig.title} 
                 message={alertConfig.message} 
                 isError={alertConfig.isError} 
+            />
+
+            {/* Easter Egg Senzu Mode */}
+            {senzuMode && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none bg-yellow-500/40 animate-pulse mix-blend-color-dodge">
+                    <div className="animate-bounce scale-150 transform transition-transform duration-75">
+                        <h1 className="text-6xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 drop-shadow-[0_0_30px_rgba(250,204,21,0.8)] italic text-center">
+                            ¡IT'S OVER 9000!
+                        </h1>
+                    </div>
+                </div>
+            )}
+            <ConfirmModal 
+                isOpen={confirmConfig.isOpen}
+                onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+                onConfirm={confirmConfig.onConfirm}
+                title={confirmConfig.title}
+                message={confirmConfig.message}
+                confirmText="Eliminar"
+                isDestructive={true}
             />
         </div>
     );
