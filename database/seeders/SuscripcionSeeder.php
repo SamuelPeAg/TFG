@@ -27,7 +27,11 @@ class SuscripcionSeeder extends Seeder
             ['nombre' => 'Crédito Estándar'],
             ['id_centro' => null]
         );
-        $tipoCredito->sesiones()->syncWithoutDetaching([$tipoSesionId]);
+        // Vincular el crédito estándar a TODOS los tipos de sesión existentes
+        $todosLosTipos = TipoSesion::all();
+        if ($todosLosTipos->isNotEmpty()) {
+            $tipoCredito->sesiones()->syncWithoutDetaching($todosLosTipos->pluck('id')->toArray());
+        }
 
         $s1 = Suscripcion::updateOrCreate(
             ['nombre' => 'Suscripción Mensual'],

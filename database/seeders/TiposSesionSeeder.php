@@ -84,11 +84,17 @@ class TiposSesionSeeder extends Seeder
             ],
         ];
 
-        foreach ($tipos as $tipo) {
-            TipoSesion::updateOrCreate(
-                ['slug' => $tipo['slug']],
-                $tipo
+        $tipoCredito = \App\Models\TipoCredito::where('nombre', 'Crédito Estándar')->first();
+
+        foreach ($tipos as $tipoData) {
+            $ts = TipoSesion::updateOrCreate(
+                ['slug' => $tipoData['slug']],
+                $tipoData
             );
+
+            if ($tipoCredito) {
+                $ts->tiposCredito()->syncWithoutDetaching([$tipoCredito->id]);
+            }
         }
     }
 }
