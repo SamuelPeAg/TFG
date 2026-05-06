@@ -91,7 +91,21 @@ class ActionPlanController extends Controller
             }
         }
 
-        $plan->trainer_response = $request->response;
+        $responseData = json_decode($request->response, true);
+        if (json_last_error() === JSON_ERROR_NONE && isset($responseData['is_structured_routine'])) {
+            if (isset($responseData['routine'])) {
+                foreach ($responseData['routine'] as $index => &$exercise) {
+                    if ($request->hasFile("routine_images_{$index}")) {
+                        $path = $request->file("routine_images_{$index}")->store('action_plans/exercises', 'public');
+                        $exercise['image_url'] = '/storage/' . $path;
+                    }
+                }
+            }
+            $plan->trainer_response = json_encode($responseData);
+        } else {
+            $plan->trainer_response = $request->response;
+        }
+
         if (!empty($imagePaths)) {
             $plan->trainer_images = $imagePaths;
         }

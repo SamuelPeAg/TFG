@@ -24,7 +24,7 @@ export default function PhysicalProgress({
             <div className="flex items-center justify-between relative z-10">
                 <div className="flex items-center gap-5">
                     <div className="w-14 h-14 rounded-3xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-2xl shadow-inner">
-                        <i className="fa-solid fa-gauge-high"></i>
+                        📈
                     </div>
                     <div>
                         <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Evolución Física</h3>

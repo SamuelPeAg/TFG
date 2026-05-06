@@ -21,7 +21,11 @@ const PageHeader = ({
                 <div className="flex items-center gap-3">
                     {icon && (
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-[#38C1A3]/20 to-[#38C1A3]/10 flex items-center justify-center flex-shrink-0 shadow-sm border border-[#38C1A3]/10 animate-in fade-in slide-in-from-left-4 duration-500">
-                            {typeof icon === 'string' ? <i className={`${icon} text-[#38C1A3] text-lg md:text-xl`}></i> : icon}
+                            {typeof icon === 'string' && (icon.startsWith('fa-') || icon.startsWith('fas ') || icon.startsWith('fab ')) ? (
+                                <i className={`${icon} text-[#38C1A3] text-lg md:text-xl`}></i>
+                            ) : (
+                                <span className="text-lg md:text-xl">{icon}</span>
+                            )}
                         </div>
                     )}
                     <div className="animate-in fade-in slide-in-from-left-4 duration-500 delay-150">
