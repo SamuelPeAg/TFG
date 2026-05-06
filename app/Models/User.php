@@ -10,6 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
+    
+    protected $appends = ['photo'];
 
     protected $fillable = [
         'name',
@@ -73,5 +75,10 @@ class User extends Authenticatable
     public function measurements()
     {
         return $this->hasMany(UserMeasurement::class);
+    }
+
+    public function getPhotoAttribute()
+    {
+        return $this->foto_de_perfil ? asset('storage/' . $this->foto_de_perfil) : null;
     }
 }

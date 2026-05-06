@@ -75,9 +75,8 @@ export default function Configuracion() {
           setFormData(data);
           setInitialData(data);
           
-          if (user.foto_de_perfil) {
-              const baseUrl = window.AppConfig?.baseUrl || '/';
-              setPhotoPreview(`${baseUrl}storage/${user.foto_de_perfil}`);
+          if (user.photo) {
+              setPhotoPreview(user.photo);
           }
       } catch (error) {
           console.error('Error fetching user config:', error);
@@ -151,10 +150,9 @@ export default function Configuracion() {
           setInitialData({ ...formData, current_password: '', password: '', password_confirmation: '' });
           setTimeout(() => setShowSuccess(false), 5000);
           
-          if (res.data.user && res.data.user.foto_de_perfil) {
+          if (res.data.user && res.data.user.photo) {
               if (window.AppConfig && window.AppConfig.user) {
-                  const baseUrl = window.AppConfig?.baseUrl || '/';
-                  window.AppConfig.user.photo = `${baseUrl}storage/${res.data.user.foto_de_perfil}`;
+                  window.AppConfig.user.photo = res.data.user.photo;
                   window.dispatchEvent(new CustomEvent('user-updated'));
               }
           }

@@ -10,6 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 class Entrenador extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
+    
+    protected $appends = ['photo'];
 
     protected $table = 'entrenadores';
     protected $guard_name = 'staff'; // Forzar la guardia para Spatie
@@ -65,5 +67,10 @@ class Entrenador extends Authenticatable
     public function notificaciones()
     {
         return $this->hasMany(NotificacionEntrenador::class, 'entrenador_id');
+    }
+
+    public function getPhotoAttribute()
+    {
+        return $this->foto_de_perfil ? asset('storage/' . $this->foto_de_perfil) : null;
     }
 }

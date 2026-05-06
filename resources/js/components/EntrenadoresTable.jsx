@@ -34,9 +34,9 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                       <div 
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#38C1A3] flex items-center justify-center text-white font-black text-xs sm:text-sm relative overflow-hidden shadow-sm flex-shrink-0"
                       >
-                        {entrenador.foto_de_perfil ? (
+                        {entrenador.photo ? (
                           <img 
-                            src={`/storage/${entrenador.foto_de_perfil}`} 
+                            src={entrenador.photo} 
                             alt={entrenador.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -45,7 +45,7 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                             }}
                           />
                         ) : null}
-                        <span className={entrenador.foto_de_perfil ? 'hidden' : ''}>
+                        <span className={entrenador.photo ? 'hidden' : ''}>
                           {entrenador.name ? entrenador.name.trim().charAt(0).toUpperCase() : '?'}
                         </span>
                       </div>
@@ -114,9 +114,9 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                     <div 
                       className="w-10 h-10 rounded-full bg-[#38C1A3] flex items-center justify-center text-white font-black text-sm relative overflow-hidden shadow-sm flex-shrink-0"
                     >
-                      {entrenador.foto_de_perfil ? (
+                      {entrenador.photo ? (
                         <img 
-                          src={`/storage/${entrenador.foto_de_perfil}`} 
+                          src={entrenador.photo} 
                           alt={entrenador.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
@@ -125,7 +125,7 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                           }}
                         />
                       ) : null}
-                      <span className={entrenador.foto_de_perfil ? 'hidden' : ''}>
+                      <span className={entrenador.photo ? 'hidden' : ''}>
                         {entrenador.name ? entrenador.name.trim().charAt(0).toUpperCase() : '?'}
                       </span>
                     </div>

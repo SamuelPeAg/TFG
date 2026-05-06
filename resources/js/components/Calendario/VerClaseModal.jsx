@@ -157,7 +157,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
             nombre: user.name,
             pago: 'Pendiente',
             coste: 0,
-            foto: user.photo || null
+            photo: user.photo || null
         };
         setLocalProps({
             ...localProps,
@@ -544,8 +544,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                               <div key={alum.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 shadow-sm rounded-2xl group hover:border-[#38b2ac]/30 hover:shadow-lg transition-all">
                                   <div className="flex items-center gap-3">
                                       <div className="w-11 h-11 shrink-0 rounded-2xl overflow-hidden bg-slate-100 ring-2 ring-white shadow-sm">
-                                          {alum.foto ? (
-                                              <img src={alum.foto} className="w-full h-full object-cover" />
+                                          {alum.photo ? (
+                                              <img src={alum.photo} className="w-full h-full object-cover" />
                                           ) : (
                                               <div className="w-full h-full flex items-center justify-center bg-teal-50 text-[#38b2ac] font-black text-xs">
                                                   {alum.nombre.charAt(0).toUpperCase()}
@@ -614,8 +614,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                                >
                                                    <div className="flex items-center gap-3">
                                                        <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-slate-100 shadow-sm bg-slate-100">
-                                                           {u.foto ? (
-                                                               <img src={u.foto} className="w-full h-full object-cover" />
+                                                           {u.photo ? (
+                                                               <img src={u.photo} className="w-full h-full object-cover" />
                                                            ) : (
                                                                <div className="w-full h-full flex items-center justify-center text-slate-400 font-black text-xs">
                                                                    {u.name.charAt(0).toUpperCase()}
@@ -662,8 +662,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                             <div key={t.id} className="flex items-center justify-between p-3.5 bg-white border border-slate-100 rounded-2xl shadow-sm group/trainer hover:border-[#38b2ac]/30 transition-all duration-300">
                                 <div className="flex items-center gap-3">
                                     <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-100 shadow-sm shrink-0">
-                                        {t.foto ? (
-                                            <img src={t.foto} className="w-full h-full object-cover" />
+                                        {t.photo ? (
+                                            <img src={t.photo} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full bg-[#f1f5f9] text-[#64748b] flex items-center justify-center font-black text-xs">
                                                 {t.initial || t.name.charAt(0).toUpperCase()}
@@ -715,8 +715,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                                 onClick={() => handleAddTrainer(t)}
                                             >
                                                 <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-100 shadow-sm shrink-0">
-                                                    {t.foto_de_perfil ? (
-                                                        <img src={t.foto_de_perfil} className="w-full h-full object-cover" />
+                                                    {t.photo ? (
+                                                        <img src={t.photo} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <div className="w-full h-full bg-[#f1f5f9] text-[#64748b] flex items-center justify-center font-black text-[10px]">
                                                             {t.name.charAt(0).toUpperCase()}

@@ -176,7 +176,7 @@ const SwapClassModal = ({ isOpen, onClose, originalSession, onSwapSuccess }) => 
                                                 <div className="flex -space-x-3 overflow-hidden p-0.5 shrink-0 hidden sm:flex">
                                                     {session.alumnos.slice(0, 3).map((alum, i) => (
                                                         <div key={i} className="inline-block w-8 h-8 rounded-full ring-2 ring-white bg-slate-100 overflow-hidden shadow-sm" title={alum.nombre}>
-                                                            <img src={alum.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(alum.nombre)}&background=random`} className="w-full h-full object-cover" />
+                                                            <img src={alum.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(alum.nombre)}&background=random`} className="w-full h-full object-cover" />
                                                         </div>
                                                     ))}
                                                     {session.alumnos.length > 3 && (

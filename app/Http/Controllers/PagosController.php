@@ -119,7 +119,7 @@ class PagosController extends Controller
                     'nombre' => $p->user->name ?? 'Usuario',
                     'pago' => $p->metodo_pago,
                     'coste' => (float) $p->importe,
-                    'foto' => ($p->user && $p->user->foto_de_perfil) ? \Storage::url($p->user->foto_de_perfil) : null
+                    'photo' => $p->user ? $p->user->photo : null
                 ];
             })->values();
 
@@ -133,7 +133,7 @@ class PagosController extends Controller
                                 'id' => $t->id,
                                 'name' => $t->name,
                                 'initial' => strtoupper(substr($t->name, 0, 1)),
-                                'foto' => $t->foto_de_perfil ? \Storage::url($t->foto_de_perfil) : null
+                                'photo' => $t->photo
                             ];
                         }
                     }

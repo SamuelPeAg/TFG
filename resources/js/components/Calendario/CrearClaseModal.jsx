@@ -496,10 +496,10 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                             const isSelected = formData.trainers.some(t => t.id === coach.id);
                                             return (
                                                 <label key={coach.id} className="cursor-pointer">
-                                                    <input type="checkbox" className="hidden" checked={isSelected} onChange={() => toggleTrainer(coach.id, coach.name, coach.foto_de_perfil || coach.profile_photo_path)} />
+                                                    <input type="checkbox" className="hidden" checked={isSelected} onChange={() => toggleTrainer(coach.id, coach.name, coach.photo)} />
                                                     <div className={`border p-3 rounded-xl flex items-center gap-3 transition-all ${isSelected ? 'border-[#38C1A3] bg-teal-50/50' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
                                                         <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-xs text-slate-500 overflow-hidden shrink-0">
-                                                            {coach.profile_photo_path || coach.foto_de_perfil ? <img src={`/storage/${coach.profile_photo_path || coach.foto_de_perfil}`} className="w-full h-full object-cover"/> : coach.name.charAt(0).toUpperCase()}
+                                                            {coach.photo ? <img src={coach.photo} className="w-full h-full object-cover"/> : coach.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="flex flex-col overflow-hidden">
                                                             <span className="text-xs font-bold truncate text-slate-800">{coach.name}</span>
