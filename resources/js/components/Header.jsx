@@ -30,7 +30,7 @@ export default function Header() {
           <img 
             src={user.photo} 
             alt="Avatar" 
-            className={`${sizeClasses} rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm`}
+            className={`${sizeClasses} rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm bg-white`}
             onError={() => setImgError(true)}
           />
         );
@@ -86,7 +86,7 @@ export default function Header() {
                     to={user.role === 'admin' ? "/estadisticas" : (user.role === 'cliente' ? "/calendario" : "/calendario")} 
                     className="bg-[#38C1A3] hover:bg-teal-500 text-white px-3 lg:px-5 py-2 lg:py-2.5 rounded-full font-bold text-sm transition shadow-md hover:shadow-lg whitespace-nowrap"
                   >
-                    {user.role === 'cliente' ? 'MI ÁREA' : 'Dashboard'}
+                    {user.role === 'cliente' ? 'MI ÁREA' : (user.role === 'entrenador' ? 'Calendario' : 'Dashboard')}
                   </Link>
                 </>
               ) : (
@@ -148,7 +148,7 @@ export default function Header() {
                     className="block w-full bg-[#38C1A3] hover:bg-teal-500 text-white px-4 py-2.5 rounded-lg font-bold text-sm text-center transition shadow-md hover:shadow-lg"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {user.role === 'cliente' ? 'MI ÁREA' : 'Dashboard'}
+                    {user.role === 'cliente' ? 'MI ÁREA' : (user.role === 'entrenador' ? 'Calendario' : 'Dashboard')}
                   </Link>
                 </>
               ) : (

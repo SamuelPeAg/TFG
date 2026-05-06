@@ -545,7 +545,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                   <div className="flex items-center gap-3">
                                       <div className="w-11 h-11 shrink-0 rounded-2xl overflow-hidden bg-slate-100 ring-2 ring-white shadow-sm">
                                           {alum.photo ? (
-                                              <img src={alum.photo} className="w-full h-full object-cover" />
+                                              <img src={alum.photo} className="w-full h-full object-cover bg-white" />
                                           ) : (
                                               <div className="w-full h-full flex items-center justify-center bg-teal-50 text-[#38b2ac] font-black text-xs">
                                                   {alum.nombre.charAt(0).toUpperCase()}
@@ -663,7 +663,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                 <div className="flex items-center gap-3">
                                     <div className="w-9 h-9 rounded-xl overflow-hidden border border-slate-100 shadow-sm shrink-0">
                                         {t.photo ? (
-                                            <img src={t.photo} className="w-full h-full object-cover" />
+                                            <img src={t.photo} className="w-full h-full object-cover bg-white" />
                                         ) : (
                                             <div className="w-full h-full bg-[#f1f5f9] text-[#64748b] flex items-center justify-center font-black text-xs">
                                                 {t.initial || t.name.charAt(0).toUpperCase()}

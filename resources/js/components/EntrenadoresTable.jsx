@@ -38,7 +38,7 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                           <img 
                             src={entrenador.photo} 
                             alt={entrenador.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover bg-white"
                             onError={(e) => {
                               e.target.style.display = 'none';
                               e.target.nextSibling.style.display = 'flex';
@@ -118,7 +118,7 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                         <img 
                           src={entrenador.photo} 
                           alt={entrenador.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover bg-white"
                           onError={(e) => {
                             e.target.style.display = 'none';
                             e.target.nextSibling.style.display = 'flex';
