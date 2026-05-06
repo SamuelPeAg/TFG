@@ -339,7 +339,6 @@ export default function MisComidas() {
                     -moz-appearance: textfield;
                 }
             `}} />
-            </main>
 
             <AlertModal 
                 isOpen={alertConfig.isOpen} 
