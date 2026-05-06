@@ -125,13 +125,13 @@ export default function PermissionsModal({ isOpen, onClose, entrenador }) {
 
                   <button 
                     onClick={() => handleToggle(perm.id)}
-                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none shrink-0 ${
                       assigned.includes(perm.id) ? 'bg-indigo-500 shadow-inner' : 'bg-slate-200 shadow-inner'
                     }`}
                   >
                     <span 
                       className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${
-                        assigned.includes(perm.id) ? 'translate-x-6' : 'translate-x-1'
+                        assigned.includes(perm.id) ? 'translate-x-[22px]' : 'translate-x-0.5'
                       }`}
                     />
                   </button>

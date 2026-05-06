@@ -70,8 +70,17 @@ export default function Login() {
         window.location.href = response.data.redirect;
       }
     } catch (err) {
-      console.error('Login error:', err.response?.data)
-      if (err.response?.data?.errors) {
+      console.error('Login error:', err.response);
+      
+      if (err.response?.status === 419) {
+        setErrors({ 
+          general: [
+            <span>
+              Tu sesión ha caducado o ya has iniciado sesión. Por favor, <button onClick={() => window.location.reload()} className="underline font-bold hover:text-red-900">recarga la página</button> para continuar.
+            </span>
+          ] 
+        });
+      } else if (err.response?.data?.errors) {
         setErrors(err.response.data.errors)
       } else if (err.response?.data?.message) {
         setErrors({ general: [err.response.data.message] })

@@ -26,6 +26,7 @@ export default function Calendario() {
   // States for filtering VistaTarjetas
   const [centroFiltro, setCentroFiltro] = useState('');
   const [userFiltro, setUserFiltro] = useState('');
+  const [onlyMyClasses, setOnlyMyClasses] = useState(false);
 
   // 1. Fetch initialization data
   useEffect(() => {
@@ -148,11 +149,12 @@ export default function Calendario() {
   useEffect(() => {
     if (window.calendar && viewMode === 'calendar') {
         const timer = setTimeout(() => {
+            window.ONLY_MY_CLASSES = onlyMyClasses;
             window.calendar.refetchEvents();
         }, 100);
         return () => clearTimeout(timer);
     }
-  }, [centroFiltro, userFiltro, viewMode]);
+  }, [centroFiltro, userFiltro, onlyMyClasses, viewMode]);
 
   // FIX: Force calendar to update size when switching from 'cards' to 'calendar' view
   useEffect(() => {
@@ -259,6 +261,21 @@ export default function Calendario() {
                     <div id="search_user_suggestions" className="suggestions" hidden></div>
                   </div>
                 </div>
+
+                {/* Filtro Mis Clases (Solo Entrenadores) */}
+                {user?.role === 'entrenador' && (
+                  <button
+                    onClick={() => setOnlyMyClasses(!onlyMyClasses)}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border transition-all duration-300 font-bold text-xs uppercase tracking-wider shrink-0 ${
+                      onlyMyClasses 
+                        ? 'bg-[#38C1A3] border-[#38C1A3] text-white shadow-lg shadow-[#38C1A3]/20' 
+                        : 'bg-white border-slate-100 text-slate-500 hover:border-[#38C1A3]/30 hover:text-[#38C1A3]'
+                    }`}
+                  >
+                    <i className={`fa-solid ${onlyMyClasses ? 'fa-user-check' : 'fa-user'}`}></i>
+                    <span>Mis Clases</span>
+                  </button>
+                )}
               </div>
 
               {/* Botón TOGGLE */}
@@ -300,6 +317,7 @@ export default function Calendario() {
              <VistaTarjetas 
                  centroFiltro={centroFiltro} 
                  userFiltro={userFiltro} 
+                 onlyMyClasses={onlyMyClasses}
                  onClickEvent={(ev) => {
                      setSelectedEventParaVer({
                          start: new Date(ev.start),

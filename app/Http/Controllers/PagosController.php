@@ -17,8 +17,16 @@ class PagosController extends Controller
         $centro = $request->input('centro');
         $start = $request->input('start');
         $end = $request->input('end');
+        $onlyMy = $request->input('only_my_classes') === '1';
 
         $query = Pago::with(['user', 'entrenadores', 'suscripciones', 'tiposCredito']);
+
+        if ($onlyMy && auth()->check()) {
+            $trainerId = auth()->id();
+            $query->whereHas('entrenadores', function($q) use ($trainerId) {
+                $q->where('entrenadores.id', $trainerId);
+            });
+        }
 
         if ($start) {
             try {

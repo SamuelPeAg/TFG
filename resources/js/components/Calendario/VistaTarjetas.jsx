@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function VistaTarjetas({ centroFiltro, userFiltro, onClickEvent }) {
+export default function VistaTarjetas({ centroFiltro, userFiltro, onlyMyClasses, onClickEvent }) {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -18,6 +18,7 @@ export default function VistaTarjetas({ centroFiltro, userFiltro, onClickEvent }
         let url = `${baseUrl}usuarios/Pagos?start=${start}&end=${end}`;
         if (centroFiltro) url += `&centro=${encodeURIComponent(centroFiltro)}`;
         if (userFiltro) url += `&q=${encodeURIComponent(userFiltro)}`;
+        if (onlyMyClasses) url += `&only_my_classes=1`;
 
         axios.get(url)
             .then(res => {
@@ -25,7 +26,7 @@ export default function VistaTarjetas({ centroFiltro, userFiltro, onClickEvent }
             })
             .catch(console.error)
             .finally(() => setLoading(false));
-    }, [centroFiltro, userFiltro]);
+    }, [centroFiltro, userFiltro, onlyMyClasses]);
 
     if(loading) {
         return (
