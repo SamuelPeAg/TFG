@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string("direccion")->nullable();
             $table->string("cp")->nullable();
             $table->string("ciudad")->nullable();
+            $table->string("color_hex")->nullable()->default("#38b2ac");
             $table->foreignId('empresa_id')->nullable()->constrained('empresas')->nullOnDelete();
             $table->text("google_maps_link")->nullable();
             $table->timestamps();

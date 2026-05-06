@@ -5,13 +5,13 @@ import Button from './Button';
 export default function CentroTable({ centros, empresas, onUpdate }) {
     const [editMode, setEditMode] = useState(null);
     const [formData, setFormData] = useState({
-        nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: ''
+        nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac'
     });
 
     const handleAdd = async () => {
         try {
             await axios.post('/api/admin/centros', formData);
-            setFormData({ nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '' });
+            setFormData({ nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac' });
             onUpdate();
         } catch (e) { alert('Error al añadir centro'); }
     };
@@ -52,6 +52,7 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                         <tr>
                             <th className="pb-3 px-2">Centro</th>
                             <th className="pb-3 px-2">CIF/NIF</th>
+                            <th className="pb-3 px-2">Color</th>
                             <th className="pb-3 px-2">Empresa Default</th>
                             <th className="pb-3 px-2">Ciudad</th>
                             <th className="pb-3 px-2 text-right">Acciones</th>
@@ -62,6 +63,9 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                             <tr key={c.id} className="text-sm hover:bg-slate-50/50 transition-colors">
                                 <td className="py-4 px-2 font-black text-slate-700">{c.nombre}</td>
                                 <td className="py-4 px-2 text-slate-500 font-medium">{c.cif || '---'}</td>
+                                <td className="py-4 px-2">
+                                    <div className="w-8 h-4 rounded-full shadow-sm" style={{ backgroundColor: c.color_hex || '#38b2ac' }}></div>
+                                </td>
                                 <td className="py-4 px-2">
                                     <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-lg font-black italic text-xs">
                                         {c.empresa?.nombre || 'Sin empresa'}
@@ -100,6 +104,29 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                 <input type="text" placeholder="Ciudad" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none" value={formData.ciudad} onChange={e => setFormData({...formData, ciudad: e.target.value})} />
                             </div>
                             <input type="text" placeholder="Enlace Google Maps" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none" value={formData.google_maps_link} onChange={e => setFormData({...formData, google_maps_link: e.target.value})} />
+                            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block">Color del Centro en Calendario</label>
+                                <div className="flex flex-wrap gap-3">
+                                    {['#38b2ac', '#e11d48', '#0ea5e9', '#8b5cf6', '#f59e0b', '#10b981', '#6366f1', '#475569'].map(c => (
+                                        <button 
+                                            key={c}
+                                            type="button"
+                                            onClick={() => setFormData({...formData, color_hex: c})}
+                                            className={`w-8 h-8 rounded-full transition-all duration-300 transform hover:scale-125 hover:shadow-lg ${formData.color_hex === c ? 'ring-4 ring-white shadow-md scale-110' : 'opacity-70 hover:opacity-100'}`}
+                                            style={{ backgroundColor: c }}
+                                        />
+                                    ))}
+                                    <div className="relative flex items-center gap-2 ml-auto">
+                                        <input 
+                                            type="color" 
+                                            className="w-8 h-8 rounded-lg border-none bg-transparent cursor-pointer" 
+                                            value={formData.color_hex || '#38b2ac'} 
+                                            onChange={e => setFormData({...formData, color_hex: e.target.value})} 
+                                        />
+                                        <span className="text-[10px] font-bold text-slate-400">Personalizado</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div className="flex gap-3 mt-8">
                             <button onClick={() => setEditMode(null)} className="flex-1 py-3 font-black text-slate-400 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors uppercase text-xs tracking-widest">CANCELAR</button>

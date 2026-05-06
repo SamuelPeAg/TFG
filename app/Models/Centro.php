@@ -19,6 +19,7 @@ class Centro extends Model
         "direccion",
         "cp",
         "ciudad",
+        "color_hex",
         "empresa_id",
         "google_maps_link"
     ];

@@ -276,6 +276,29 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
             };
             const response = await axios.post('/Pagos', payload);
             if (response.data.success) {
+                // Reset Form
+                setFormData({
+                    centro: '',
+                    nombre_clase: '',
+                    tipo_clase: tiposSesion.length > 0 ? tiposSesion[0].slug : '',
+                    capacidad: '',
+                    capacidad_maxima: tiposSesion.length > 0 ? tiposSesion[0].capacidad_personas.toString() : '1',
+                    fecha_hora: getCurrentLocalTime(),
+                    precio_base: tiposSesion.length > 0 ? (tiposSesion[0].precio_base || '0.00') : '0.00',
+                    is_recurring: false,
+                    recurrence_end: '',
+                    trainers: [],
+                    participants: [],
+                    suscripciones_permitidas: [],
+                    tipos_credito_permitidos: tiposSesion.length > 0 ? (tiposSesion[0].tipos_credito_ids || []) : [],
+                    horas_cancelacion: tiposSesion.length > 0 ? tiposSesion[0].horas_cancelacion_default.toString() : '0'
+                });
+                setCurrentStep(1);
+                setErrors({});
+                setSearchQuery('');
+                setTrainerSearchQuery('');
+                setSusSearchQuery('');
+                
                 onSuccess();
                 onClose();
             } else {
@@ -311,8 +334,14 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 {/* SIDEBAR WIZARD (Left) */}
                 <div className="w-full md:w-72 bg-slate-50 border-r border-slate-100 p-8 flex flex-col shrink-0">
                     <div className="flex items-center gap-3 mb-10">
-                        <img src="/img/logopng.png" alt="Logo" className="w-8 h-8 drop-shadow-sm" />
-                        <span className="font-extrabold text-slate-900 tracking-tight text-lg uppercase">Factomove</span>
+                        <div className="flex items-center gap-2 group cursor-pointer">
+                            <img 
+                                src={`${window.AppConfig?.baseUrl || '/'}img/logopng.png`} 
+                                alt="Factomove Logo" 
+                                className="w-9 h-9 drop-shadow-md transition-transform group-hover:scale-110" 
+                            />
+                            <span className="font-black text-slate-900 tracking-tighter text-xl uppercase italic">Factomove</span>
+                        </div>
                     </div>
 
                     <div className="flex flex-col gap-6 flex-1">

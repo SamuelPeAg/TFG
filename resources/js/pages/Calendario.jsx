@@ -53,13 +53,15 @@ export default function Calendario() {
     window.BASE_URL = window.AppConfig?.baseUrl || '/';
 
     const loadScript = (src) => new Promise((resolve, reject) => {
-      // Ensure absolute path with baseUrl if needed
-      const fullSrc = (src.startsWith('http') || src.startsWith('//')) ? src : (window.BASE_URL + src.replace(/^\//, ''));
+      // Bypassing browser cache with a unique version for critical CSS/JS updates
+      const isLocal = !src.startsWith('http') && !src.startsWith('//');
+      const version = isLocal ? `?v=2.1.0_fix` : '';
+      const fullSrc = isLocal 
+        ? (window.BASE_URL + src.replace(/^\//, '') + version)
+        : src;
       
-      if (document.querySelector(`script[src="${fullSrc}"]`) || document.querySelector(`link[href="${fullSrc}"]`)) {
-        resolve(); // already exists
-        return;
-      }
+      // If it's a local file, we want to reload it even if it exists to ensure cache is bypassed
+      // but only if it's the first time in this session or we handle it via the version
       let element;
       if (src.endsWith('.css')) {
           element = document.createElement('link');

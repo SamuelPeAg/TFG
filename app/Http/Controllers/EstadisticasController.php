@@ -257,7 +257,8 @@ class EstadisticasController extends Controller
             'cp' => 'nullable',
             'ciudad' => 'nullable',
             'empresa_id' => 'nullable|exists:empresas,id',
-            'google_maps_link' => 'nullable'
+            'google_maps_link' => 'nullable',
+            'color_hex' => 'nullable|string|max:7'
         ]);
         $centro = Centro::create($data);
         return response()->json($centro);
@@ -271,7 +272,8 @@ class EstadisticasController extends Controller
             'cp' => 'nullable',
             'ciudad' => 'nullable',
             'empresa_id' => 'nullable|exists:empresas,id',
-            'google_maps_link' => 'nullable'
+            'google_maps_link' => 'nullable',
+            'color_hex' => 'nullable|string|max:7'
         ]);
         $centro->update($data);
         return response()->json($centro);

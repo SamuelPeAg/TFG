@@ -93,6 +93,9 @@ class PagosController extends Controller
                 ->toArray();
         }
 
+        // Obtener centros para mapear sus colores
+        $centrosColors = \App\Models\Centro::pluck('color_hex', 'nombre')->toArray();
+        
         $events = [];
         foreach ($grouped as $key => $grupo) {
             $first = $grupo->first();
@@ -138,25 +141,24 @@ class PagosController extends Controller
             }
             $entrenadoresList = array_values($entrenadoresMap);
 
-            // Colores por Centro (Mejorado)
-            $centroUpper = strtoupper($first->centro);
-            $color = '#cbd5e1'; // Default slate-300
-            $textColor = '#1e293b';
-            
-            if (str_contains($centroUpper, 'AIRA')) {
-                $color = '#38b2ac'; // teal-500
-                $textColor = '#ffffff';
-            } elseif (str_contains($centroUpper, 'CLINICA')) {
-                $color = '#e11d48'; // rose-600
-                $textColor = '#ffffff';
-            } elseif (str_contains($centroUpper, 'ARENA')) {
-                $color = '#0ea5e9'; // sky-500
-                $textColor = '#ffffff';
-            }
-
-            // Color del Tipo de Sesión
+            // Colores Dinámicos (Prioridad: Tipo de Sesión -> Centro -> Default)
+            $centroNombre = trim($first->centro);
             $tipoObj = $tiposSesion->get($tipoClase);
             $tipoColor = $tipoObj ? $tipoObj->color_hex : null;
+
+            // Búsqueda insensible de color de centro
+            $centroColor = null;
+            foreach ($centrosColors as $name => $cHex) {
+                if (strcasecmp(trim($name), $centroNombre) === 0) {
+                    $centroColor = $cHex;
+                    break;
+                }
+            }
+
+            // Lógica de color final: El fondo será el del Tipo de Sesión si existe, 
+            // si no, el del Centro. Si no, el azul por defecto.
+            $color = $tipoColor ?? ($centroColor ?? '#38b2ac');
+            $textColor = '#ffffff';
 
             $classSubIds = $first->suscripciones->pluck('id')->toArray();
 
@@ -189,6 +191,7 @@ class PagosController extends Controller
                     'clase_nombre' => $first->nombre_clase,
                     'tipo_clase' => $tipoClase,
                     'tipo_color' => $tipoColor,
+                    'centro_color' => $centroColor,
                     'capacidad_maxima' => $capacidadMaxima,
                     'alumnos_count' => $count,
                     'alumnos' => $alumnos,

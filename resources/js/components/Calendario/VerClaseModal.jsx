@@ -57,9 +57,10 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       setEditCentro(p.centro || '');
       setEditTipo(p.tipo_clase || '');
       
-      // Handle date formatting for datetime-local
+      // Handle date formatting
       if (p.session_key && p.session_key.fecha_hora) {
-          setEditFecha(p.session_key.fecha_hora.replace(' ', 'T'));
+          const dt = p.session_key.fecha_hora.replace(' ', 'T');
+          setEditFecha(dt);
       } else if (selectedEvent.start) {
           const d = selectedEvent.start;
           const pad = (n) => String(n).padStart(2, '0');
@@ -364,14 +365,62 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
                                   <label className="text-[11px] font-black uppercase text-slate-400 tracking-widest mb-2 block">Fecha y Hora</label>
-                                  <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 focus-within:border-[#38b2ac] transition-all">
-                                      <i className="fa-solid fa-calendar-day text-[#38b2ac]"></i>
-                                      <input 
-                                          type="datetime-local" 
-                                          value={editFecha} 
-                                          onChange={(e) => setEditFecha(e.target.value)}
-                                          className="w-full bg-transparent outline-none font-bold text-slate-700 text-sm"
-                                      />
+                                  <div className="space-y-3">
+                                      {/* Selector de Fecha */}
+                                      <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 focus-within:border-[#38b2ac] transition-all">
+                                          <i className="fa-solid fa-calendar-day text-[#38b2ac]"></i>
+                                          <input 
+                                              type="date" 
+                                              value={editFecha.split('T')[0]} 
+                                              onChange={(e) => {
+                                                  const time = editFecha.split('T')[1] || '00:00';
+                                                  setEditFecha(`${e.target.value}T${time}`);
+                                              }}
+                                              className="w-full bg-transparent outline-none font-bold text-slate-700 text-sm cursor-pointer"
+                                          />
+                                      </div>
+                                      {/* Selector de Hora con controles rápidos */}
+                                      <div className="flex items-center gap-2">
+                                          <div className="flex-1 flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100 focus-within:border-[#38b2ac] transition-all">
+                                              <i className="fa-solid fa-clock text-[#38b2ac]"></i>
+                                              <input 
+                                                  type="time" 
+                                                  value={editFecha.split('T')[1]?.substring(0, 5) || '00:00'} 
+                                                  onChange={(e) => {
+                                                      const date = editFecha.split('T')[0];
+                                                      setEditFecha(`${date}T${e.target.value}`);
+                                                  }}
+                                                  className="w-full bg-transparent outline-none font-bold text-slate-700 text-sm cursor-pointer"
+                                              />
+                                          </div>
+                                          {/* Botones de ajuste rápido (+/- 15 min) */}
+                                          <div className="flex flex-col gap-1">
+                                              <button 
+                                                  onClick={() => {
+                                                      const d = new Date(editFecha);
+                                                      d.setMinutes(d.getMinutes() + 15);
+                                                      const pad = (n) => String(n).padStart(2, '0');
+                                                      setEditFecha(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+                                                  }}
+                                                  className="w-8 h-6 bg-slate-100 hover:bg-[#38b2ac] hover:text-white rounded-t-lg flex items-center justify-center text-[10px] transition-colors"
+                                                  title="+15 min"
+                                              >
+                                                  <i className="fa-solid fa-plus"></i>
+                                              </button>
+                                              <button 
+                                                  onClick={() => {
+                                                      const d = new Date(editFecha);
+                                                      d.setMinutes(d.getMinutes() - 15);
+                                                      const pad = (n) => String(n).padStart(2, '0');
+                                                      setEditFecha(`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+                                                  }}
+                                                  className="w-8 h-6 bg-slate-100 hover:bg-rose-500 hover:text-white rounded-b-lg flex items-center justify-center text-[10px] transition-colors"
+                                                  title="-15 min"
+                                              >
+                                                  <i className="fa-solid fa-minus"></i>
+                                              </button>
+                                          </div>
+                                      </div>
                                   </div>
                               </div>
                               <div>

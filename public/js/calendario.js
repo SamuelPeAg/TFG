@@ -70,12 +70,16 @@ window.initCalendarioVanilla = () => {
         slotMaxTime: '23:00:00',
         allDaySlot: false,
         height: 'auto',
+        dayMaxEvents: true,
+        fixedWeekCount: false,
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
+        buttonText: { today: 'Hoy', month: 'Cuadrícula', week: 'Semana', day: 'Día' },
+        eventDisplay: 'block',
+        eventDisplay: 'block',
 
         // Dynamic events source with dual filters
         events: function (info, successCallback, failureCallback) {
@@ -107,11 +111,24 @@ window.initCalendarioVanilla = () => {
             const trainer = p.entrenadores && p.entrenadores.length > 0 ? p.entrenadores[0] : null;
             const bgColor = arg.event.backgroundColor || '#38b2ac';
             const textColor = arg.event.textColor || '#ffffff';
+            const isMonthView = arg.view.type === 'dayGridMonth';
             
             // Renderizado Premium de Celda
+            if (isMonthView) {
+                // Versión ULTRA-compacta para Mes (Estilo punto + nombre)
+                return {
+                    html: `
+                        <div style="display: flex; align-items: center; gap: 4px; width: 100%;">
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background: white; flex-shrink: 0; opacity: 0.8;"></div>
+                            <span style="font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; font-size: 10px;">${p.clase_nombre}</span>
+                        </div>
+                    `
+                };
+            }
+
             const html = `
-                <div class="custom-event-card" style="background-color: ${bgColor}; color: ${textColor}">
-                    ${p.tipo_clase ? `<span class="event-type-badge" style="border-left: 3px solid ${p.tipo_color || bgColor}">${p.tipo_clase}</span>` : ''}
+                <div class="premium-event-inner" style="display: flex; flex-direction: column; gap: 2px; height: 100%; position: relative;">
+                    ${p.tipo_clase ? `<span class="event-type-badge" style="border-left: 3px solid ${p.centro_color || '#ffffff'}">${p.tipo_clase}</span>` : ''}
                     <div class="event-header">
                         <div class="event-trainer-avatar">
                             ${(trainer && trainer.foto) 
