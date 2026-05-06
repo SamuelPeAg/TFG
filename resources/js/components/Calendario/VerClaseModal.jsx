@@ -760,27 +760,56 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                     ) : (
                         <div className="animate-in fade-in duration-700">
                              {(() => {
-                               const isJoined = (localProps.alumnos || []).some(a => String(a.id) === String(window.AppConfig?.user?.id));
-                               if (isJoined) {
-                                   return (
-                                       <button 
-                                          onClick={() => handleRemoveClient(window.AppConfig?.user?.id)}
-                                          disabled={isSubmitting}
-                                          className="w-full py-4 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white bg-rose-500 hover:bg-rose-600 rounded-2xl shadow-xl shadow-rose-500/20 transition-all active:scale-95 disabled:opacity-50"
-                                       >
-                                           <i className="fa-solid fa-user-xmark mr-2"></i> CANCELAR CLASE
-                                       </button>
-                                   );
+                               const currentUser = window.AppConfig?.user;
+                               const isTrainerRole = currentUser?.role === 'entrenador';
+                               
+                               if (isTrainerRole) {
+                                   const isAssigned = (localProps.entrenadores || []).some(e => String(e.id) === String(currentUser?.id));
+                                   if (isAssigned) {
+                                       return (
+                                           <button 
+                                              onClick={() => handleRemoveTrainer(currentUser?.id)}
+                                              disabled={isSubmitting}
+                                              className="w-full py-4 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white bg-rose-500 hover:bg-rose-600 rounded-2xl shadow-xl shadow-rose-500/20 transition-all active:scale-95 disabled:opacity-50"
+                                           >
+                                               <i className="fa-solid fa-user-xmark mr-2"></i> SALIR DEL EQUIPO
+                                           </button>
+                                       );
+                                   } else {
+                                       return (
+                                           <button 
+                                              onClick={() => handleAddTrainer(currentUser)}
+                                              disabled={isSubmitting}
+                                              className="w-full py-4 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white bg-[#38b2ac] hover:bg-teal-600 rounded-2xl shadow-xl shadow-teal-500/20 transition-all active:scale-95 disabled:opacity-50"
+                                           >
+                                               <i className="fa-solid fa-user-plus mr-2"></i> UNIRME AL EQUIPO
+                                           </button>
+                                       );
+                                   }
                                } else {
-                                   return (
-                                       <button 
-                                          onClick={() => handleAddClient(window.AppConfig?.user)}
-                                          disabled={isSubmitting}
-                                          className="w-full py-4 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white bg-[#0f172a] hover:bg-slate-800 rounded-2xl shadow-xl shadow-slate-900/20 transition-all active:scale-95 disabled:opacity-50"
-                                       >
-                                           <i className="fa-solid fa-check mr-2"></i> INSCRIBIRME
-                                       </button>
-                                   );
+                                   // Lógica normal para clientes
+                                   const isJoined = (localProps.alumnos || []).some(a => String(a.id) === String(currentUser?.id));
+                                   if (isJoined) {
+                                       return (
+                                           <button 
+                                              onClick={() => handleRemoveClient(currentUser?.id)}
+                                              disabled={isSubmitting}
+                                              className="w-full py-4 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white bg-rose-500 hover:bg-rose-600 rounded-2xl shadow-xl shadow-rose-500/20 transition-all active:scale-95 disabled:opacity-50"
+                                           >
+                                               <i className="fa-solid fa-user-xmark mr-2"></i> CANCELAR CLASE
+                                           </button>
+                                       );
+                                   } else {
+                                       return (
+                                           <button 
+                                              onClick={() => handleAddClient(currentUser)}
+                                              disabled={isSubmitting}
+                                              className="w-full py-4 text-center text-[11px] font-black uppercase tracking-[0.2em] text-white bg-[#0f172a] hover:bg-slate-800 rounded-2xl shadow-xl shadow-slate-900/20 transition-all active:scale-95 disabled:opacity-50"
+                                           >
+                                               <i className="fa-solid fa-check mr-2"></i> INSCRIBIRME
+                                           </button>
+                                       );
+                                   }
                                }
                             })()}
                         </div>
