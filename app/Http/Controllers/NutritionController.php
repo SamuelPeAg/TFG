@@ -46,10 +46,12 @@ class NutritionController extends Controller
         $prompt = "Actúa como un nutricionista deportivo experto. El usuario (con objetivo de optimizar su cuerpo y salud) acaba de comer lo siguiente en su " . $request->meal_type . ": \"" . $description . "\". 
 Analiza esta comida y devuelve EXCLUSIVAMENTE un objeto JSON válido con la siguiente estructura (sin formato Markdown adicional ni etiquetas como ```json):
 {
-  \"calories\": numero_entero (estimacion),
-  \"protein\": numero_entero_en_gramos,
-  \"carbs\": numero_entero_en_gramos,
-  \"fats\": numero_entero_en_gramos,
+  \"is_food\": booleano_true_si_es_comida_false_si_es_absurdo_o_no_comestible,
+  \"error_message\": \"Solo si is_food es false, explica brevemente por qué de forma amistosa y graciosa (ej. '¡Un coche no tiene macros, intenta comer comida real!'). Si es true, déjalo vacío.\",
+  \"calories\": numero_entero (estimacion, 0 si no es comida),
+  \"protein\": numero_entero_en_gramos (0 si no es comida),
+  \"carbs\": numero_entero_en_gramos (0 si no es comida),
+  \"fats\": numero_entero_en_gramos (0 si no es comida),
   \"feedback\": \"Un mensaje corto (max 2 oraciones) alentador o recomendación rápida.\"
 }";
 
@@ -68,6 +70,14 @@ Analiza esta comida y devuelve EXCLUSIVAMENTE un objeto JSON válido con la sigu
 
             $result = $response->json();
             
+            if (isset($result['error'])) {
+                Log::error('Error de Gemini API', ['response' => $result]);
+                if (isset($result['error']['code']) && $result['error']['code'] == 503) {
+                    return response()->json(['error' => 'La IA está experimentando mucha demanda ahora mismo. Por favor, inténtalo de nuevo en unos minutos.'], 503);
+                }
+                return response()->json(['error' => 'Error en la IA: ' . ($result['error']['message'] ?? 'Desconocido')], 500);
+            }
+            
             if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
                 $aiText = $result['candidates'][0]['content']['parts'][0]['text'];
                 
@@ -76,8 +86,15 @@ Analiza esta comida y devuelve EXCLUSIVAMENTE un objeto JSON válido con la sigu
                 if (!empty($matches)) {
                     $aiData = json_decode($matches[0], true);
 
-                    if (json_last_error() === JSON_ERROR_NONE && isset($aiData['calories'])) {
+                    if (json_last_error() === JSON_ERROR_NONE) {
                         
+                        if (isset($aiData['is_food']) && $aiData['is_food'] === false) {
+                            return response()->json([
+                                'error' => $aiData['error_message'] ?? 'Lo que has introducido no parece ser una comida válida.'
+                            ], 400);
+                        }
+
+                        if (isset($aiData['calories'])) {
                         $targetDate = $request->input('target_date');
                         $loggedAt = $targetDate ? \Carbon\Carbon::parse($targetDate)->format('Y-m-d H:i:s') : now();
 
@@ -102,10 +119,11 @@ Analiza esta comida y devuelve EXCLUSIVAMENTE un objeto JSON válido con la sigu
                     }
                 }
             }
-            Log::error('Error parseando respuesta de Gemini', ['response' => $result]);
-            return response()->json(['error' => 'No se pudo generar la recomendación. Revisa tu registro.'], 500);
+        }
+        Log::error('Error parseando respuesta de Gemini', ['response' => $result]);
+        return response()->json(['error' => 'No se pudo procesar la respuesta de la IA. Revisa la descripción o intenta de nuevo.'], 500);
 
-        } catch (\Exception $e) {
+    } catch (\Exception $e) {
             Log::error('Error de red al llamar a Gemini', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Error de conexión: ' . $e->getMessage()], 500);
         }
@@ -169,5 +187,31 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con este formato exacto (sin form
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error de conexión: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'calories_est' => 'required|numeric',
+            'protein' => 'required|numeric',
+            'carbs' => 'required|numeric',
+            'fats' => 'required|numeric',
+        ]);
+
+        $user = Auth::user();
+        $meal = MealLog::where('user_id', $user->id)->findOrFail($id);
+
+        $meal->calories_est = $request->calories_est;
+        $meal->macros_est = [
+            'protein' => $request->protein,
+            'carbs' => $request->carbs,
+            'fats' => $request->fats,
+        ];
+        $meal->save();
+
+        return response()->json([
+            'success' => true,
+            'meal' => $meal
+        ]);
     }
 }

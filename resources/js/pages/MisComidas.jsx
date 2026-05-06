@@ -25,13 +25,120 @@ export default function MisComidas() {
         setAlertConfig({ isOpen: true, title, message, isError });
     };
 
+    // Plan de Acción & Rutinas IA
+    const [activeTab, setActiveTab] = useState('ia');
+    const [aiGoal, setAiGoal] = useState('Perder Grasa');
+    const [aiRoutine, setAiRoutine] = useState(null);
+    const [generatingRoutine, setGeneratingRoutine] = useState(false);
+    
+    const [trainers, setTrainers] = useState([]);
+    const [selectedTrainer, setSelectedTrainer] = useState('');
+    const [trainerMessage, setTrainerMessage] = useState('');
+    const [sendingPlan, setSendingPlan] = useState(false);
+    const [actionPlans, setActionPlans] = useState([]);
+
+    const fetchTrainers = async () => {
+        try {
+            const { data } = await axios.get('/api/client/trainers');
+            setTrainers(data || []);
+            if (data?.length > 0) setSelectedTrainer(data[0].id);
+        } catch (err) {
+            console.error('Error fetching trainers', err);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'entrenador' && trainers.length === 0) {
+            fetchTrainers();
+        }
+    }, [activeTab]);
+
+    const handleGenerateRoutine = async () => {
+        if (comidas.length === 0) {
+            showAlert('Registra al menos una comida para generar una rutina.', true);
+            return;
+        }
+        setGeneratingRoutine(true);
+        try {
+            const { data } = await axios.post('/nutricion/routine', {
+                date: selectedDate,
+                goal: aiGoal
+            });
+            setAiRoutine(data.plan);
+        } catch (err) {
+            showAlert(err.response?.data?.error || 'Error al generar la rutina.', true);
+        } finally {
+            setGeneratingRoutine(false);
+        }
+    };
+
+    const handleSendToTrainer = async (e) => {
+        e.preventDefault();
+        if (!selectedTrainer || !trainerMessage.trim()) return;
+        setSendingPlan(true);
+        try {
+            const { data } = await axios.post('/api/action-plans', {
+                trainer_id: selectedTrainer,
+                target_date: selectedDate,
+                goal_message: trainerMessage
+            });
+            setActionPlans([data, ...actionPlans]);
+            setTrainerMessage('');
+            showAlert('Solicitud enviada a tu entrenador correctamente.');
+        } catch (err) {
+            showAlert('Error al enviar la solicitud.', true);
+        } finally {
+            setSendingPlan(false);
+        }
+    };
+
+    // Edición de macros
+    const [editingMealId, setEditingMealId] = useState(null);
+    const [editForm, setEditForm] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 });
+
+    const handleEditClick = (meal) => {
+        setEditingMealId(meal.id);
+        setEditForm({
+            calories: meal.calories_est || 0,
+            protein: meal.macros_est?.protein || 0,
+            carbs: meal.macros_est?.carbs || 0,
+            fats: meal.macros_est?.fats || 0
+        });
+    };
+
+    const handleEditSave = async (mealId) => {
+        try {
+            const { data } = await axios.put(`/nutricion/log/${mealId}`, {
+                calories_est: editForm.calories,
+                protein: editForm.protein,
+                carbs: editForm.carbs,
+                fats: editForm.fats
+            });
+            setComidas(comidas.map(m => m.id === mealId ? data.meal : m));
+            setEditingMealId(null);
+            showAlert('Macros actualizados correctamente.');
+        } catch (err) {
+            showAlert('Error al actualizar los macros.', true);
+        }
+    };
+
     // Calorías
     const [maintenanceCalories, setMaintenanceCalories] = useState(2500);
 
     useEffect(() => {
         fetchMeals();
         fetchFicha();
+        fetchActionPlans();
     }, [selectedDate]);
+
+    const fetchActionPlans = async () => {
+        try {
+            const { data } = await axios.get('/api/action-plans?date=' + selectedDate);
+            setActionPlans(data || []);
+        } catch (err) {
+            console.error('Error fetching action plans', err);
+        }
+    };
 
     const fetchMeals = async () => {
         setLoading(true);
@@ -153,7 +260,7 @@ export default function MisComidas() {
                                                     <select 
                                                         value={mealType} 
                                                         onChange={(e) => setMealType(e.target.value)} 
-                                                        className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-black focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none text-slate-700 shadow-inner appearance-none cursor-pointer transition-all"
+                                                        className="select2-ignore w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-black focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none text-slate-700 shadow-inner appearance-none cursor-pointer transition-all"
                                                     >
                                                         <option value="desayuno">Desayuno</option>
                                                         <option value="almuerzo">Almuerzo</option>
@@ -215,7 +322,39 @@ export default function MisComidas() {
                                         </div>
                                     ) : (
                                         <div className="grid gap-8">
-                                            {comidas.map(meal => (
+                                            {comidas.map(meal => editingMealId === meal.id ? (
+                                                <div key={meal.id} className="bg-white p-8 rounded-[3rem] shadow-xl shadow-slate-200/40 border border-[#38C1A3]/30 flex flex-col relative">
+                                                    <div className="flex justify-between items-center mb-6">
+                                                        <h4 className="font-black text-slate-800 uppercase tracking-widest text-sm"><i className="fa-solid fa-pen-to-square text-[#38C1A3] mr-2"></i> Editar Macros</h4>
+                                                        <button onClick={() => setEditingMealId(null)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center transition-colors"><i className="fa-solid fa-times"></i></button>
+                                                    </div>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Calorías Totales (Kcal)</label>
+                                                            <input type="number" value={editForm.calories} onChange={e => setEditForm({...editForm, calories: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:bg-white focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/10 font-black text-slate-700 transition-all" />
+                                                        </div>
+                                                        <div className="grid grid-cols-3 gap-4">
+                                                            <div>
+                                                                <label className="text-[10px] font-black uppercase text-rose-500 tracking-widest block mb-2">Proteínas (g)</label>
+                                                                <input type="number" value={editForm.protein} onChange={e => setEditForm({...editForm, protein: e.target.value})} className="w-full bg-rose-50/50 border border-rose-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-400/10 font-black text-slate-700 transition-all text-center" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] font-black uppercase text-[#38C1A3] tracking-widest block mb-2">Carbos (g)</label>
+                                                                <input type="number" value={editForm.carbs} onChange={e => setEditForm({...editForm, carbs: e.target.value})} className="w-full bg-teal-50/50 border border-teal-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/10 font-black text-slate-700 transition-all text-center" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] font-black uppercase text-amber-500 tracking-widest block mb-2">Grasas (g)</label>
+                                                                <input type="number" value={editForm.fats} onChange={e => setEditForm({...editForm, fats: e.target.value})} className="w-full bg-amber-50/50 border border-amber-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 font-black text-slate-700 transition-all text-center" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="pt-4 flex justify-end">
+                                                            <button onClick={() => handleEditSave(meal.id)} className="bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 transition-all active:scale-95 flex items-center gap-2">
+                                                                <i className="fa-solid fa-check text-[#38C1A3]"></i> Guardar Cambios
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
                                                 <div key={meal.id} className="bg-white p-8 rounded-[3rem] shadow-xl shadow-slate-200/40 border border-slate-100 flex flex-col hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative">
                                                     <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-[4rem] transition-all group-hover:bg-teal-50"></div>
                                                     
@@ -229,9 +368,14 @@ export default function MisComidas() {
                                                                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{new Date(meal.logged_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-xl shadow-slate-900/20 text-center">
-                                                            <span className="block text-xl font-black leading-none">{meal.calories_est || 0}</span>
-                                                            <span className="block text-[9px] font-black uppercase text-teal-400 tracking-widest mt-1">Kcal</span>
+                                                        <div className="flex flex-col items-end gap-2">
+                                                            <div className="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-xl shadow-slate-900/20 text-center relative">
+                                                                <span className="block text-xl font-black leading-none">{meal.calories_est || 0}</span>
+                                                                <span className="block text-[9px] font-black uppercase text-teal-400 tracking-widest mt-1">Kcal</span>
+                                                            </div>
+                                                            <button onClick={() => handleEditClick(meal)} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-[#38C1A3] transition-colors flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 opacity-0 group-hover:opacity-100">
+                                                                <i className="fa-solid fa-pen"></i> Editar
+                                                            </button>
                                                         </div>
                                                     </div>
                                                     <p className="text-base text-slate-600 font-bold mb-8 px-2 leading-relaxed relative z-10 italic">"{meal.meal_description}"</p>
@@ -251,6 +395,100 @@ export default function MisComidas() {
                                                     </div>
                                                 </div>
                                             ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Plan de Acción & Rutina */}
+                                <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/20 border border-slate-100 relative overflow-hidden">
+                                    <div className="flex items-center gap-4 mb-8">
+                                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl shadow-inner"><i className="fa-solid fa-dumbbell"></i></div>
+                                        <div>
+                                            <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Plan de Acción</h2>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Obtén tu rutina basada en tus comidas</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 mb-8 p-1 bg-slate-50 rounded-2xl">
+                                        <button onClick={() => setActiveTab('ia')} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'ia' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>IA Rápida</button>
+                                        <button onClick={() => setActiveTab('entrenador')} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'entrenador' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>Mi Entrenador</button>
+                                    </div>
+
+                                    {activeTab === 'ia' ? (
+                                        <div className="space-y-6">
+                                            <div className="flex gap-4">
+                                                <select value={aiGoal} onChange={(e) => setAiGoal(e.target.value)} className="select2-ignore flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-black focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 outline-none text-slate-700 appearance-none">
+                                                    <option value="Perder Grasa">Perder Grasa</option>
+                                                    <option value="Ganar Masa Muscular">Ganar Masa Muscular</option>
+                                                    <option value="Mantenimiento y Salud">Mantenimiento y Salud</option>
+                                                </select>
+                                            </div>
+                                            <button onClick={handleGenerateRoutine} disabled={generatingRoutine} className="w-full bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 transition-all flex justify-center items-center gap-3 disabled:opacity-50">
+                                                {generatingRoutine ? <i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i> : <i className="fa-solid fa-wand-magic-sparkles text-[#38C1A3]"></i>} 
+                                                Generar Circuito IA
+                                            </button>
+
+                                            {aiRoutine && (
+                                                <div className="mt-6 bg-teal-50/50 border border-teal-100 rounded-[2rem] p-8">
+                                                    <p className="text-sm font-bold italic text-slate-700 mb-6 text-center">"{aiRoutine.motivation}"</p>
+                                                    <div className="space-y-4">
+                                                        {aiRoutine.routine?.map((ex, i) => (
+                                                            <div key={i} className="bg-white rounded-2xl p-4 flex items-center justify-between border border-teal-50 shadow-sm">
+                                                                <div>
+                                                                    <h4 className="text-xs font-black text-slate-800 uppercase">{ex.ejercicio}</h4>
+                                                                    <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1">{ex.focus}</p>
+                                                                </div>
+                                                                <span className="bg-teal-100 text-teal-700 px-4 py-2 rounded-xl text-xs font-black uppercase">{ex.series}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-6">
+                                            {trainers.length === 0 ? (
+                                                <div className="text-center p-6 bg-slate-50 rounded-2xl"><p className="text-xs font-black uppercase text-slate-400">No hay entrenadores disponibles</p></div>
+                                            ) : (
+                                                <>
+                                                    <select value={selectedTrainer} onChange={(e) => setSelectedTrainer(e.target.value)} className="select2-ignore w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-black focus:bg-white outline-none text-slate-700 appearance-none">
+                                                        {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                                    </select>
+                                                    <textarea value={trainerMessage} onChange={(e) => setTrainerMessage(e.target.value)} placeholder="Ej: Hoy he comido menos de lo habitual, ¿qué me recomiendas hacer en el gimnasio?" rows="3" className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-7 text-sm font-bold text-slate-700 focus:bg-white outline-none resize-none shadow-inner" />
+                                                    <button onClick={handleSendToTrainer} disabled={sendingPlan || !trainerMessage.trim()} className="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20 transition-all flex justify-center items-center gap-3 disabled:opacity-50">
+                                                        {sendingPlan ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-paper-plane"></i>} 
+                                                        Solicitar Plan
+                                                    </button>
+                                                </>
+                                            )}
+                                            
+                                            {/* Historial de Planes */}
+                                            {actionPlans.length > 0 && (
+                                                <div className="mt-8 space-y-6">
+                                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Respuestas del Entrenador</h3>
+                                                    {actionPlans.map(plan => (
+                                                        <div key={plan.id} className="bg-white border border-slate-100 rounded-[2rem] p-6 shadow-sm">
+                                                            <div className="flex justify-between items-center mb-4 border-b border-slate-50 pb-4">
+                                                                <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg ${plan.status === 'completed' ? 'bg-teal-50 text-teal-600' : 'bg-amber-50 text-amber-600'}`}>{plan.status === 'completed' ? 'Respondido' : 'Pendiente'}</span>
+                                                            </div>
+                                                            <p className="text-sm text-slate-600 font-bold italic mb-4">"{plan.goal_message}"</p>
+                                                            {plan.trainer_response && (
+                                                                <div className="bg-indigo-50/50 rounded-2xl p-5 mt-4">
+                                                                    <div className="flex items-center gap-2 mb-3 text-indigo-500 text-xs font-black uppercase tracking-widest"><i className="fa-solid fa-reply"></i> Respuesta</div>
+                                                                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{plan.trainer_response}</p>
+                                                                    {plan.trainer_images && plan.trainer_images.length > 0 && (
+                                                                        <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                                                                            {plan.trainer_images.map((img, idx) => (
+                                                                                <img key={idx} src={img} className="w-24 h-24 object-cover rounded-xl border border-indigo-100 shadow-sm" alt="Trainer attachment" />
+                                                                            ))}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
