@@ -780,6 +780,5 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
           isError={alertConfig.isError}
         />
       </div>
-    </div>
   );
 }
