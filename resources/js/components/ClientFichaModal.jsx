@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Button from './Button';
 import ConfirmModal from './ConfirmModal';
@@ -36,10 +36,73 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         const style = document.createElement('style');
         style.id = 'ficha-modal-styles';
         style.innerHTML = `
-            .ficha-modal-select {
-                -webkit-appearance: none !important;
-                -moz-appearance: none !important;
-                appearance: none !important;
+            /* ESTILOS PREMIUM PARA SELECT2 */
+            .select2-container--default .select2-selection--single {
+                background-color: white !important;
+                border: 1px solid #f1f5f9 !important;
+                border-radius: 1.25rem !important;
+                height: 3.5rem !important;
+                display: flex !important;
+                items-center: center !important;
+                padding: 0 1rem !important;
+                transition: all 0.3s !important;
+                outline: none !important;
+            }
+            .select2-container--default.select2-container--focus .select2-selection--single {
+                border-color: #38C1A3 !important;
+                box-shadow: 0 0 0 4px rgba(56, 193, 163, 0.05) !important;
+            }
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                color: #334155 !important;
+                font-weight: 900 !important;
+                font-size: 10px !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.1em !important;
+                line-height: 3.5rem !important;
+                padding-left: 1rem !important;
+            }
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 3.5rem !important;
+                right: 1rem !important;
+            }
+            .select2-container--default .select2-selection--single .select2-selection__arrow b {
+                border-color: #cbd5e1 transparent transparent transparent !important;
+            }
+            .select2-dropdown {
+                border: 1px solid #f1f5f9 !important;
+                border-radius: 1.5rem !important;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+                overflow: hidden !important;
+                margin-top: 10px !important;
+                padding: 5px !important;
+            }
+            .select2-search--dropdown {
+                padding: 10px !important;
+            }
+            .select2-search--dropdown .select2-search__field {
+                border: 1px solid #f1f5f9 !important;
+                border-radius: 0.75rem !important;
+                padding: 10px 15px !important;
+                outline: none !important;
+                background-color: #f8fafc !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+            }
+            .select2-results__option {
+                padding: 12px 15px !important;
+                font-size: 10px !important;
+                font-weight: 800 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.05em !important;
+                border-radius: 0.75rem !important;
+                margin: 2px 0 !important;
+            }
+            .select2-container--default .select2-results__option--highlighted[aria-selected] {
+                background-color: #38C1A3 !important;
+            }
+            .select2-container--default .select2-results__option[aria-selected="true"] {
+                background-color: #f1f5f9 !important;
+                color: #38C1A3 !important;
             }
             .ficha-modal-select::-ms-expand {
                 display: none !important;
@@ -63,6 +126,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
 
   const [profileData, setProfileData] = useState({
     dni: '',
+    iban: '',
+    country: 'ES',
     direccion: '',
     codigo_postal: '',
     ciudad: '',
@@ -120,6 +185,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         const data = res.data.user;
         setProfileData({
             dni: data.dni || '',
+            iban: data.iban || '',
             direccion: data.direccion || '',
             codigo_postal: data.codigo_postal || '',
             ciudad: data.ciudad || '',
@@ -176,6 +242,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     } else if (name === 'codigo_postal') {
         newValue = value.replace(/[^0-9]/g, '').slice(0, 5);
+    } else if (name === 'iban') {
+        newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
     }
 
     setProfileData(prev => ({ ...prev, [name]: newValue }));
@@ -493,6 +561,24 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                     </div>
                                 </div>
                             ))}
+
+                            {/* Campo IBAN único */}
+                            <div className="md:col-span-2 space-y-2 group">
+                                <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">IBAN (Cuenta Bancaria)</label>
+                                <div className="relative">
+                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-11 flex justify-center text-slate-300 group-focus-within:text-teal-400 transition-colors">
+                                        <i className="fa-solid fa-building-columns"></i>
+                                    </div>
+                                    <input 
+                                        type="text" 
+                                        name="iban"
+                                        value={profileData.iban} 
+                                        onChange={handleProfileChange}
+                                        className="w-full pl-11 pr-5 py-4 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-slate-700 font-bold transition-all"
+                                        placeholder="Introduce IBAN..."
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -1135,34 +1221,26 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Vincular Nueva Suscripción</h4>
                         </div>
                         
-                        <div className="bg-slate-50/50 p-2 rounded-[2rem] border border-slate-100/50 flex flex-col sm:flex-row items-stretch gap-2 transition-all focus-within:bg-white focus-within:shadow-xl focus-within:shadow-slate-200/40">
-                            <div className="flex-1 relative flex items-center">
-                                <div className="absolute left-6 text-slate-300 group-focus-within:text-[#38C1A3]">
-                                    <i className="fa-solid fa-search text-[10px]"></i>
-                                </div>
-                                <select 
-                                    value={selectedSuscripcionId}
-                                    onChange={(e) => setSelectedSuscripcionId(e.target.value)}
-                                    className="ficha-modal-select w-full h-14 pl-14 pr-10 bg-transparent outline-none text-[10px] font-black text-slate-700 appearance-none cursor-pointer tracking-widest"
-                                >
-                                    <option value="">SELECCIONA UN CATÁLOGO DE PLANES...</option>
-                                    {availableSubscriptions.map(s => (
-                                        <option key={s.id} value={s.id}>
-                                            {(s.nombre || 'PLAN').toUpperCase()} — {s.creditos_por_periodo} CRÉDITOS ({s.periodo || 'PACK'})
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-6 pointer-events-none text-slate-300 group-focus-within:text-[#38C1A3]">
-                                    <i className="fa-solid fa-chevron-down text-[8px]"></i>
-                                </div>
-                            </div>
+                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                            <select 
+                                value={selectedSuscripcionId}
+                                onChange={(e) => setSelectedSuscripcionId(e.target.value)}
+                                className="ficha-modal-select flex-1 w-full"
+                            >
+                                <option value="">SELECCIONA UN CATÁLOGO DE PLANES...</option>
+                                {availableSubscriptions.map(s => (
+                                    <option key={s.id} value={s.id}>
+                                        {(s.nombre || 'PLAN').toUpperCase()} — {s.creditos_por_periodo} CRÉDITOS ({s.periodo || 'PACK'})
+                                    </option>
+                                ))}
+                            </select>
 
                             <button 
                                 onClick={handleAssignSubscription}
                                 disabled={!selectedSuscripcionId || saving}
-                                className="h-14 px-10 bg-[#38C1A3] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#2eaa8f] transition-all active:scale-[0.98] shadow-lg shadow-teal-500/10 disabled:opacity-20 flex items-center justify-center gap-3 shrink-0"
+                                className="h-14 px-10 bg-[#38C1A3] text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-[0.2em] hover:bg-[#2eaa8f] transition-all active:scale-[0.98] shadow-xl shadow-teal-500/10 disabled:opacity-20 flex items-center justify-center gap-3 shrink-0"
                             >
-                                {saving ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-check-circle"></i>}
+                                {saving ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-bolt"></i>}
                                 ACTIVAR PLAN
                             </button>
                         </div>

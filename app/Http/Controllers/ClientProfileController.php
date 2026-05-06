@@ -74,6 +74,7 @@ class ClientProfileController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'dni' => $user->dni,
+                'iban' => $user->iban,
                 'direccion' => $user->direccion,
                 'codigo_postal' => $user->codigo_postal,
                 'ciudad' => $user->ciudad,
@@ -183,16 +184,12 @@ class ClientProfileController extends Controller
         }
 
         $validated = $request->validate([
-            'dni' => 'nullable|string|regex:/^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i',
+            'dni' => 'nullable|string',
+            'iban' => 'nullable|string|max:34',
             'direccion' => 'nullable|string|max:255',
-            'codigo_postal' => 'nullable|string|regex:/^[0-9]{5}$/',
+            'codigo_postal' => 'nullable|string|max:10',
             'ciudad' => 'nullable|string|max:100',
             'additional_attributes' => 'nullable|array'
-        ], [
-            'dni.regex' => 'El DNI/NIE no tiene un formato válido (8 números + letra).',
-            'direccion.max' => 'La dirección es demasiado larga (máx. 255).',
-            'codigo_postal.regex' => 'El código postal debe tener exactamente 5 dígitos.',
-            'ciudad.max' => 'El nombre de la ciudad es demasiado largo.',
         ]);
 
         $user->update($validated);
