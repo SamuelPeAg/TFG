@@ -70,19 +70,17 @@ class SuscripcionSeeder extends Seeder
                 'id_usuario' => $cliente->id,
                 'id_suscripcion' => $plan->id,
                 'estado' => 'activo',
-                'fecha_inicio' => now(),
-                'fecha_fin' => now()->addMonth(),
-                'proxima_renovacion' => now()->addMonth(),
-                'metodo_pago' => 'Transferencia',
+                'fecha_vencimiento_suscripcion' => now()->addMonth(),
+                'dia_recarga' => now()->day,
             ]);
 
             // Darle los créditos iniciales
             foreach ($plan->creditos as $c) {
                 $userSub->lotes()->create([
                     'tipo_credito_id' => $c->tipo_credito_id,
-                    'cantidad_total' => $c->cantidad,
-                    'cantidad_disponible' => $c->cantidad,
-                    'fecha_caducidad' => now()->addDays($c->dias_caducidad),
+                    'cantidad_inicial' => $c->cantidad,
+                    'cantidad_actual' => $c->cantidad,
+                    'fecha_vencimiento' => now()->addDays($c->dias_caducidad),
                 ]);
             }
         }
