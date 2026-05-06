@@ -625,9 +625,12 @@ class PagosController extends Controller
         $fechaStart = $fecha->copy()->startOfMinute();
         $fechaEnd = $fecha->copy()->endOfMinute();
 
+        $nombreClase = trim($request->nombre_clase);
+        $centro = trim($request->centro);
+
         $pago = Pago::whereBetween('fecha_registro', [$fechaStart, $fechaEnd])
-            ->where('nombre_clase', $request->nombre_clase)
-            ->where('centro', $request->centro)
+            ->whereRaw('LOWER(TRIM(nombre_clase)) = ?', [strtolower($nombreClase)])
+            ->whereRaw('LOWER(TRIM(centro)) = ?', [strtolower($centro)])
             ->where('user_id', $request->user_id)
             ->first();
 
