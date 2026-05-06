@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import PhysicalProgress from '../components/PhysicalProgress';
 import AlertModal from '../components/AlertModal';
+import PageHeader from '../components/PageHeader';
 
 export default function MisComidas() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -121,20 +122,12 @@ export default function MisComidas() {
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-                <header className="px-10 py-8 flex items-center justify-between bg-white border-b border-slate-100 shrink-0">
-                    <div className="flex items-center gap-6">
-                        <button className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3]" onClick={() => setIsSidebarOpen(true)}>
-                            <i className="fa-solid fa-bars text-xl"></i>
-                        </button>
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#38C1A3] to-teal-600 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-teal-100/50">
-                            🍎
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Nutrición <span className="text-[#38C1A3]">&amp; Evolución</span></h1>
-                            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-0.5">Control inteligente de macros y físico</p>
-                        </div>
-                    </div>
-                </header>
+                <PageHeader 
+                    title="Nutrición & Evolución"
+                    subtitle="Control inteligente de macros y físico"
+                    icon="🍎"
+                    onMenuClick={() => setIsSidebarOpen(true)}
+                />
 
                 <div className="flex-1 overflow-auto p-6 lg:p-10 space-y-12">
                     <div className="max-w-7xl mx-auto">

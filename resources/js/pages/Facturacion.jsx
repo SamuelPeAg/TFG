@@ -4,6 +4,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import FacturasMatrixTable from '../components/FacturasMatrixTable';
+import PageHeader from '../components/PageHeader';
 import FacturacionModal from '../components/FacturacionModal';
 import PosTickarModal from '../components/PosTickarModal';
 import ExportXmlModal from '../components/ExportXmlModal';
@@ -112,22 +113,12 @@ export default function Facturacion() {
       )}
 
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-        <header className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <button 
-              className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3] rounded-lg hover:bg-slate-100 transition-colors"
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <i className="fa-solid fa-bars text-xl"></i>
-            </button>
-            <div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
-                    Gestión de Facturación
-                </h1>
-                <p className="text-slate-400 mt-1 font-medium text-sm">Administración y control de recibos</p>
-            </div>
-          </div>
-        </header>
+        <PageHeader 
+            title="Gestión de Facturación"
+            subtitle="Administración y control de recibos"
+            icon="fa-solid fa-file-invoice-dollar"
+            onMenuClick={() => setIsSidebarOpen(true)}
+        />
         
         <div className="flex-1 overflow-auto p-4 sm:p-8">
           <div className="max-w-full mx-auto space-y-6">

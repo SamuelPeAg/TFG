@@ -6,6 +6,7 @@ import CrearClaseModal from '../components/Calendario/CrearClaseModal';
 import VerClaseModal from '../components/Calendario/VerClaseModal';
 import VistaTarjetas from '../components/Calendario/VistaTarjetas';
 import Button from '../components/Button';
+import PageHeader from '../components/PageHeader';
 
 export default function Calendario() {
   const [data, setData] = useState(null);
@@ -181,37 +182,27 @@ export default function Calendario() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
         
-        {/* Top Header Controls */}
-        <header className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <button 
-              className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3] rounded-lg hover:bg-slate-100 transition-colors"
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <i className="fa-solid fa-bars text-xl"></i>
-            </button>
-            <div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
-                    Calendario de Clases
-                </h1>
-                <p className="text-slate-400 mt-1 font-medium text-sm">Planificación y gestión de eventos</p>
-            </div>
-          </div>
-
-          {!loading && data && (user?.role === 'admin' || (user?.role === 'entrenador' && user?.permissions?.includes('crear_clases'))) && (
-              <Button 
-                variant="primary"
-                icon="fa-solid fa-plus"
-                className="btn-design"
-                onClick={() => {
-                   setSelectedDateForNewClass(null);
-                   setIsCrearModalOpen(true);
-                }}
-              >
-                NUEVA CLASE
-              </Button>
-          )}
-        </header>
+        <PageHeader 
+            title="Calendario de Clases"
+            subtitle="Planificación y gestión de eventos"
+            icon="fa-solid fa-calendar-alt"
+            onMenuClick={() => setIsSidebarOpen(true)}
+            actions={
+                !loading && data && (user?.role === 'admin' || (user?.role === 'entrenador' && user?.permissions?.includes('crear_clases'))) && (
+                    <Button 
+                        variant="primary"
+                        icon="fa-solid fa-plus"
+                        className="btn-design"
+                        onClick={() => {
+                            setSelectedDateForNewClass(null);
+                            setIsCrearModalOpen(true);
+                        }}
+                    >
+                        NUEVA CLASE
+                    </Button>
+                )
+            }
+        />
 
         {/* Calendar Body */}
         <section className={`flex-1 overflow-auto p-4 sm:p-6 pb-10 ${viewMode === 'calendar' ? 'bg-slate-50/50' : 'bg-transparent'}`}>

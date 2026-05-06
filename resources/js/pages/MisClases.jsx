@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
 import ConfirmModal from '../components/ConfirmModal';
+import PageHeader from '../components/PageHeader';
 
 export default function MisClases() {
     const navigate = useNavigate();
@@ -69,20 +70,12 @@ export default function MisClases() {
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-                <header className="px-10 py-8 flex items-center justify-between bg-white border-b border-slate-100 shrink-0">
-                    <div className="flex items-center gap-6">
-                        <button className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3]" onClick={() => setIsSidebarOpen(true)}>
-                            <i className="fa-solid fa-bars text-xl"></i>
-                        </button>
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#38C1A3] to-[#2D9B82] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-teal-100/50">
-                            <i className="fa-solid fa-calendar-days"></i>
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Mis Actividades</h1>
-                            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-0.5">Gestión de clases y suscripciones</p>
-                        </div>
-                    </div>
-                </header>
+                <PageHeader 
+                    title="Mis Actividades"
+                    subtitle="Gestión de clases y suscripciones"
+                    icon="fa-solid fa-calendar-days"
+                    onMenuClick={() => setIsSidebarOpen(true)}
+                />
 
                 <div className="flex-1 overflow-auto p-6 lg:p-10 space-y-12">
                     {loading ? (

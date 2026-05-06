@@ -9,6 +9,7 @@ import Pagination from '../components/Pagination';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
 import AlertModal from '../components/AlertModal';
+import PageHeader from '../components/PageHeader';
 
 export default function Clientes() {
   const [users, setUsers] = useState([]);
@@ -181,67 +182,56 @@ export default function Clientes() {
       )}
 
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-        {/* Dashboard Header */}
-        <header className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/50 backdrop-blur-sm border-b border-slate-100/50 sticky top-0 z-20">
-          <div className="flex items-center gap-4">
-            <button 
-              className="lg:hidden p-3 text-slate-500 hover:text-[#38C1A3] rounded-2xl hover:bg-white transition-all shadow-sm"
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <i className="fa-solid fa-bars text-xl"></i>
-            </button>
-            <div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight leading-none">
-                    Gestión de Clientes
-                </h1>
-                <p className="text-slate-400 mt-2 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-[#38C1A3] rounded-full animate-pulse"></div> Administrando padrón de alumnos
-                </p>
-            </div>
-          </div>
+        <PageHeader 
+            title="Gestión de Clientes"
+            subtitle="Administrando padrón de alumnos"
+            icon="fa-solid fa-users"
+            onMenuClick={() => setIsSidebarOpen(true)}
+            actions={
+                <>
+                    {selectedIds.length > 0 && (
+                        <button 
+                            onClick={handleBulkActivation}
+                            disabled={isSendingBulk}
+                            className="h-[45px] px-4 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl shadow-lg shadow-amber-500/20 transition-all text-xs shrink-0"
+                            title="Enviar correo de activación/aviso"
+                        >
+                            {isSendingBulk ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-paper-plane"></i>}
+                            <span>ENVIAR ({selectedIds.length})</span>
+                        </button>
+                    )}
+                    
+                    <div className="relative group flex-1 sm:flex-none" style={{ maxWidth: '300px' }}>
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:translate-x-1">
+                            <i className="fa-solid fa-magnifying-glass text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                        </div>
+                        <input 
+                            type="text" 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Buscar cliente..." 
+                            className="pl-11 pr-5 py-3 w-full sm:w-72 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/5 focus:border-[#38C1A3] outline-none transition-all font-black text-slate-600 placeholder:text-slate-300 text-xs shadow-sm shadow-slate-200/50"
+                        />
+                    </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-             {selectedIds.length > 0 && (
-                <button 
-                  onClick={handleBulkActivation}
-                  disabled={isSendingBulk}
-                  className="px-6 py-3 bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 active:scale-95 shrink-0 disabled:opacity-50"
-                  title="Enviar correo de activación/aviso"
-                >
-                  <i className={`fas ${isSendingBulk ? 'fa-spinner fa-spin' : 'fa-paper-plane'}`}></i>
-                  ENVIAR ({selectedIds.length})
-                </button>
-             )}
-             {/* Search Box */}
-             <div className="relative group flex-1 sm:flex-none">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:translate-x-1">
-                    <i className="fa-solid fa-magnifying-glass text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                </div>
-                <input 
-                  type="text" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar cliente..." 
-                  className="pl-11 pr-5 py-3 w-full sm:w-72 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/5 focus:border-[#38C1A3] outline-none transition-all font-black text-slate-600 placeholder:text-slate-300 text-xs shadow-sm shadow-slate-200/50"
-                />
-              </div>
+                    <button 
+                        onClick={() => setImportModalOpen(true)}
+                        className="h-[45px] px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-xl shadow-lg shadow-slate-800/20 transition-all flex items-center gap-2 text-xs shrink-0"
+                    >
+                        <i className="fa-solid fa-file-excel"></i>
+                        <span>IMPORTAR</span>
+                    </button>
 
-              <button 
-                onClick={() => setImportModalOpen(true)}
-                className="px-8 py-3 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-100 transition-all shadow-lg shadow-indigo-100 flex items-center gap-2 active:scale-95 shrink-0"
-              >
-                <i className="fas fa-file-excel"></i>
-                IMPORTAR
-              </button>
-              <button 
-                onClick={handleCreate}
-                className="px-8 py-3 bg-[#38C1A3] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#2eaa8f] transition-all shadow-lg shadow-teal-100 flex items-center gap-2 active:scale-95 shrink-0"
-              >
-                <i className="fas fa-plus"></i>
-                NUEVO ALUMNO
-              </button>
-          </div>
-        </header>
+                    <button 
+                        onClick={handleCreate}
+                        className="h-[45px] px-6 py-3 bg-[#38C1A3] text-white rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[#2eaa8f] transition-all shadow-lg shadow-teal-100 flex items-center gap-2 active:scale-95 shrink-0"
+                    >
+                        <i className="fa-solid fa-plus"></i>
+                        <span>NUEVO</span>
+                    </button>
+                </>
+            }
+        />
         
         {toast && (
             <div className="px-8 py-4 bg-emerald-50 border-y border-emerald-100 text-emerald-600 text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-4">

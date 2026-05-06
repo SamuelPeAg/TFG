@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
+import PageHeader from '../components/PageHeader';
 
 export default function Configuracion() {
   const [loading, setLoading] = useState(true);
@@ -204,18 +205,12 @@ export default function Configuracion() {
                     </div>
                 )}
 
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div className="flex items-center gap-5">
-                        <button className="lg:hidden p-3 bg-white shadow-sm rounded-2xl text-slate-500 hover:text-[#38C1A3] transition-all" onClick={() => setIsSidebarOpen(true)}>
-                            <i className="fa-solid fa-bars-staggered text-xl"></i>
-                        </button>
-                        <div>
-                            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900">Ajustes de Perfil</h1>
-                            <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-wider">Control total sobre tu identidad y seguridad</p>
-                        </div>
-                    </div>
-                </div>
+                <PageHeader 
+                    title="Ajustes de Perfil"
+                    subtitle="Control total sobre tu identidad y seguridad"
+                    icon="fa-solid fa-user-gear"
+                    onMenuClick={() => setIsSidebarOpen(true)}
+                />
 
                 {loading ? (
                     <div className="py-32 flex flex-col items-center justify-center space-y-4">

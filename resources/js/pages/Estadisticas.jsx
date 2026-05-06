@@ -6,6 +6,7 @@ import EmpresaTable from '../components/EmpresaTable';
 import CentroTable from '../components/CentroTable';
 import TiposSesionTable from '../components/TiposSesionTable';
 import TiposCreditoTable from '../components/TiposCreditoTable';
+import PageHeader from '../components/PageHeader';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -189,18 +190,12 @@ export default function Estadisticas() {
       )}
 
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72 text-[0.85rem]">
-        {/* Header */}
-        <header className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div className="flex items-center gap-3">
-            <button className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3] rounded-lg hover:bg-slate-100 transition-colors" onClick={() => setIsSidebarOpen(true)}>
-              <i className="fa-solid fa-bars text-xl"></i>
-            </button>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Panel de Estadísticas</h1>
-              <p className="text-slate-400 mt-1 font-medium text-sm">Resumen general y métricas del gimnasio</p>
-            </div>
-          </div>
-        </header>
+        <PageHeader 
+            title="Panel de Estadísticas"
+            subtitle="Resumen general y métricas del gimnasio"
+            icon="fa-solid fa-chart-line"
+            onMenuClick={() => setIsSidebarOpen(true)}
+        />
 
         {/* Content */}
         <div className="flex-1 overflow-auto px-6 sm:px-8 pb-8">

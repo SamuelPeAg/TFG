@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import ConfirmModal from '../components/ConfirmModal';
+import PageHeader from '../components/PageHeader';
 
 export default function MisVacaciones() {
   const [vacations, setVacations] = useState([]);
@@ -67,24 +68,12 @@ export default function MisVacaciones() {
       )}
 
       <main className="flex-1 lg:pl-72 flex flex-col min-h-screen overflow-hidden">
-        <header className="bg-white border-b border-slate-200 sticky top-0 z-20">
-            <div className="px-4 sm:px-8 h-16 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <button className="lg:hidden p-2.5 text-slate-500 hover:text-[#38C1A3] rounded-xl hover:bg-slate-100 transition-all" onClick={() => setIsSidebarOpen(true)}>
-                        <i className="fa-solid fa-bars text-lg"></i>
-                    </button>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#38C1A3]/20 to-[#38C1A3]/10 flex items-center justify-center">
-                            <i className="fa-solid fa-umbrella-beach text-[#38C1A3] text-lg"></i>
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-slate-800 tracking-tight">Mis Vacaciones</h1>
-                            <p className="text-xs font-medium text-slate-500">Gestiona tus días de descanso</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <PageHeader 
+            title="Mis Vacaciones"
+            subtitle="Gestiona tus días de descanso"
+            icon="fa-solid fa-umbrella-beach"
+            onMenuClick={() => setIsSidebarOpen(true)}
+        />
 
         <div className="p-4 sm:p-8 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

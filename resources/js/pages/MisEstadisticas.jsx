@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import PageHeader from '../components/PageHeader';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -227,20 +228,12 @@ export default function MisEstadisticas() {
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-                <header className="px-10 py-8 flex items-center justify-between bg-white border-b border-slate-100 shrink-0">
-                    <div className="flex items-center gap-6">
-                        <button className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3]" onClick={() => setIsSidebarOpen(true)}>
-                            <i className="fa-solid fa-bars text-xl"></i>
-                        </button>
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6366F1] to-[#4F46E5] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-indigo-100">
-                            <i className="fa-solid fa-chart-simple"></i>
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Mis Estadísticas</h1>
-                            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-0.5">Análisis de rendimiento y actividad</p>
-                        </div>
-                    </div>
-                </header>
+                <PageHeader 
+                    title="Mis Estadísticas"
+                    subtitle="Análisis de rendimiento y actividad"
+                    icon="fa-solid fa-chart-simple"
+                    onMenuClick={() => setIsSidebarOpen(true)}
+                />
 
                 <div className="flex-1 overflow-auto p-6 lg:p-10">
                     {loading ? (

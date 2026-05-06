@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
+import PageHeader from '../components/PageHeader';
 
 export default function Notificaciones() {
     const user = window.AppConfig?.user;
@@ -91,20 +92,12 @@ export default function Notificaciones() {
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-                <header className="px-6 sm:px-8 py-6 flex justify-between items-center bg-white border-b border-slate-100 shrink-0">
-                    <div className="flex items-center gap-3">
-                        <button 
-                            className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3] rounded-lg hover:bg-slate-100 transition-colors"
-                            onClick={() => setIsSidebarOpen(true)}
-                        >
-                            <i className="fa-solid fa-bars text-xl"></i>
-                        </button>
-                        <div>
-                            <h1 className="text-2xl font-black text-slate-800 tracking-tight">Centro de Mensajería</h1>
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-0.5">Comunícate con el equipo</p>
-                        </div>
-                    </div>
-                </header>
+                <PageHeader 
+                    title="Centro de Mensajería"
+                    subtitle="Comunícate con el equipo"
+                    icon="fa-solid fa-comments"
+                    onMenuClick={() => setIsSidebarOpen(true)}
+                />
 
                 <div className="flex-1 overflow-auto p-4 sm:p-8">
                     <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">

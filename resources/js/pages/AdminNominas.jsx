@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AdminNominasSummaryCards from '../components/AdminNominasSummaryCards';
+import PageHeader from '../components/PageHeader';
 import { BorradoresTable, HistorialTable } from '../components/AdminNominasTables';
 import { GenerarNomiModal, RevisarNominaModal, DetalleNominaModal, PdfPreviewModal } from '../components/AdminNominasModals';
 import ConfirmModal from '../components/ConfirmModal';
@@ -143,29 +144,21 @@ export default function AdminNominas() {
       )}
 
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:ml-72 w-full">
-        <header className="px-6 sm:px-8 pt-8 pb-4">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                <div className="flex items-center gap-3">
-                    <button 
-                        className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3] rounded-lg hover:bg-slate-100 transition-colors"
-                        onClick={() => setIsSidebarOpen(true)}
-                    >
-                        <i className="fa-solid fa-bars text-xl"></i>
-                    </button>
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
-                            Gestión de Nóminas
-                        </h1>
-                        <p className="text-slate-400 mt-1 font-medium text-sm">Supervisión y control de pagos a entrenadores</p>
-                    </div>
-                </div>
-
+        <PageHeader 
+            title="Gestión de Nóminas"
+            subtitle="Supervisión y control de pagos a entrenadores"
+            icon="fa-solid fa-file-invoice"
+            onMenuClick={() => setIsSidebarOpen(true)}
+            actions={
                 <button onClick={() => openModal('generar')}
                         className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#38C1A3] hover:bg-teal-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-teal-100 hover:shadow-teal-200 transition-all active:scale-95">
                     <i className="fas fa-bolt"></i> 
                     <span className="whitespace-nowrap uppercase tracking-wider text-xs">Generar Nóminas</span>
                 </button>
-            </div>
+            }
+        />
+
+        <div className="px-6 sm:px-8 pb-4">
 
             <div className="flex flex-col md:flex-row items-center gap-4 bg-white/50 p-4 rounded-3xl border border-slate-100 shadow-sm">
                 {/* Periodo Filter */}

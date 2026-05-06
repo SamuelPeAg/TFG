@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import { DetalleNominaModal, PdfPreviewModal } from '../components/AdminNominasModals';
+import PageHeader from '../components/PageHeader';
 
 export default function MisNominas() {
   const [nominas, setNominas] = useState([]);
@@ -70,47 +71,37 @@ export default function MisNominas() {
       )}
 
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72 w-full">
-        {/* Header Section */}
-        <header className="px-6 sm:px-10 py-8 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 bg-white/50 backdrop-blur-md border-b border-slate-200/60">
-            <div className="flex items-center gap-4">
-                <button className="lg:hidden p-2.5 text-slate-500 hover:text-[#38C1A3] rounded-xl hover:bg-slate-100 transition-all shadow-sm" onClick={() => setIsSidebarOpen(true)}>
-                    <i className="fa-solid fa-bars-staggered text-xl"></i>
-                </button>
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className="w-2 h-6 bg-[#38C1A3] rounded-full"></div>
-                        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Mis Nóminas</h1>
+        <PageHeader 
+            title="Mis Nóminas"
+            subtitle="Consulta y descarga tus recibos mensuales."
+            icon="fa-solid fa-receipt"
+            onMenuClick={() => setIsSidebarOpen(true)}
+            actions={
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                    <div className="relative w-full sm:w-36 group">
+                         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                             <i className="fa-solid fa-calendar text-slate-400 text-xs"></i>
+                         </div>
+                         <select 
+                            value={selectedYear} 
+                            onChange={e => setSelectedYear(e.target.value)}
+                            className="pl-9 pr-4 py-2.5 w-full bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-600 text-sm shadow-sm appearance-none cursor-pointer"
+                         >
+                            <option value="todos">Todos los años</option>
+                            {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+                         </select>
                     </div>
-                    <p className="text-slate-400 font-semibold text-sm ml-4">Consulta y descarga tus recibos mensuales.</p>
-                </div>
-            </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
-                {/* Year Filter */}
-                <div className="relative w-full sm:w-36 group">
-                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                         <i className="fa-solid fa-calendar text-slate-400 text-xs"></i>
-                     </div>
-                     <select 
-                        value={selectedYear} 
-                        onChange={e => setSelectedYear(e.target.value)}
-                        className="pl-9 pr-4 py-2.5 w-full bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-600 text-sm shadow-sm appearance-none cursor-pointer"
-                     >
-                        <option value="todos">Todos los años</option>
-                        {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
-                     </select>
+                    <div className="relative w-full sm:w-72 group">
+                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                             <i className="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-[#38C1A3] text-sm transition-colors"></i>
+                         </div>
+                         <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar por concepto..." 
+                               className="pl-11 pr-4 py-2.5 w-full bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-600 placeholder:text-slate-400 text-sm shadow-sm" />
+                    </div>
                 </div>
-
-                {/* Search Input */}
-                <div className="relative w-full sm:w-72 group">
-                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                         <i className="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-[#38C1A3] text-sm transition-colors"></i>
-                     </div>
-                     <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Buscar por concepto..." 
-                           className="pl-11 pr-4 py-2.5 w-full bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-600 placeholder:text-slate-400 text-sm shadow-sm" />
-                </div>
-            </div>
-        </header>
+            }
+        />
 
         <div className="flex-1 overflow-auto p-6 sm:p-10 scrollbar-hide">
                 {/* Summary Cards with Premium Aesthetic */}

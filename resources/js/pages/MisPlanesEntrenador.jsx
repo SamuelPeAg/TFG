@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import PageHeader from '../components/PageHeader';
 
 export default function MisPlanesEntrenador() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -86,20 +87,12 @@ export default function MisPlanesEntrenador() {
       )}
 
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-        <header className="px-10 py-8 flex items-center justify-between bg-white border-b border-slate-100 shrink-0">
-            <div className="flex items-center gap-6">
-                <button className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3]" onClick={() => setIsSidebarOpen(true)}>
-                    <i className="fa-solid fa-bars text-xl"></i>
-                </button>
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 text-2xl font-black shadow-inner">
-                    <i className="fa-solid fa-clipboard-list"></i>
-                </div>
-                <div>
-                    <h1 className="text-xl font-black text-slate-800 tracking-tight">Solicitudes de Planes</h1>
-                    <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-0.5">Asignación de Rutinas y Feedback</p>
-                </div>
-            </div>
-        </header>
+        <PageHeader 
+            title="Solicitudes de Planes"
+            subtitle="Asignación de Rutinas y Feedback"
+            icon="fa-solid fa-clipboard-list"
+            onMenuClick={() => setIsSidebarOpen(true)}
+        />
 
         <div className="flex-1 overflow-auto p-6 lg:p-10">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">

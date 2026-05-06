@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import AlertModal from '../components/AlertModal';
+import PageHeader from '../components/PageHeader';
 
 
 const METROS_RESET = [
@@ -240,42 +241,37 @@ export default function Suscripciones() {
             )}
 
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-                {/* Header */}
-                <header className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center gap-3">
-                        <button className="lg:hidden p-2 text-slate-500 hover:text-[#38C1A3] rounded-lg hover:bg-slate-100 transition-colors" onClick={() => setIsSidebarOpen(true)}>
-                            <i className="fa-solid fa-bars text-xl"></i>
-                        </button>
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Suscripciones</h1>
-                            <p className="text-slate-400 mt-1 font-medium text-sm">Gestión de bonos y paquetes de créditos</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3 w-full sm:w-auto flex-1 max-w-[400px]">
-                        {/* Buscador */}
-                        <div className="relative flex-1 w-full" style={{ maxWidth: '400px' }}>
-                            <div className="absolute inset-y-0 left-0 pl-[15px] flex items-center pointer-events-none">
-                                <i className="fa-solid fa-magnifying-glass text-[#9CA3AF]"></i>
+                <PageHeader 
+                    title="Suscripciones"
+                    subtitle="Gestión de bonos y paquetes de créditos"
+                    icon="fa-solid fa-ticket-alt"
+                    onMenuClick={() => setIsSidebarOpen(true)}
+                    actions={
+                        <>
+                            <div className="relative flex-1 w-full" style={{ maxWidth: '400px' }}>
+                                <div className="absolute inset-y-0 left-0 pl-[15px] flex items-center pointer-events-none">
+                                    <i className="fa-solid fa-magnifying-glass text-[#9CA3AF]"></i>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Buscar por nombre..."
+                                    className="w-full pl-[45px] pr-4 h-[45px] bg-white border outline-none transition-colors text-sm text-slate-700 font-medium placeholder:text-slate-400"
+                                    style={{ borderRadius: '12px', border: '1px solid #E5E7EB', outline: 'none', transition: 'border-color 0.2s' }}
+                                    onFocus={(e) => e.target.style.borderColor = '#4BB7AE'}
+                                    onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
+                                />
                             </div>
-                            <input
-                                type="text"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Buscar por nombre..."
-                                className="w-full pl-[45px] pr-4 h-[45px] bg-white border outline-none transition-colors text-sm text-slate-700 font-medium placeholder:text-slate-400"
-                                style={{ borderRadius: '12px', border: '1px solid #E5E7EB', outline: 'none', transition: 'border-color 0.2s' }}
-                                onFocus={(e) => e.target.style.borderColor = '#4BB7AE'}
-                                onBlur={(e) => e.target.style.borderColor = '#E5E7EB'}
-                            />
-                        </div>
-                        <button 
-                            onClick={openCreate}
-                            className="h-[45px] px-6 flex items-center justify-center gap-2 whitespace-nowrap bg-[#38C1A3] hover:bg-teal-500 text-white font-black rounded-xl shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all"
-                        >
-                            <i className="fas fa-plus pointer-events-none"></i> <span className="pointer-events-none">Añadir Suscripción</span>
-                        </button>
-                    </div>
-                </header>
+                            <button 
+                                onClick={openCreate}
+                                className="h-[45px] px-6 flex items-center justify-center gap-2 whitespace-nowrap bg-[#38C1A3] hover:bg-teal-500 text-white font-black rounded-xl shadow-lg shadow-teal-500/20 hover:shadow-teal-500/30 hover:-translate-y-0.5 transition-all"
+                            >
+                                <i className="fas fa-plus pointer-events-none"></i> <span className="pointer-events-none whitespace-nowrap">Añadir Suscripción</span>
+                            </button>
+                        </>
+                    }
+                />
 
                 {/* Table Area */}
                 <section className="flex-1 overflow-auto px-6 sm:px-8 pb-8">

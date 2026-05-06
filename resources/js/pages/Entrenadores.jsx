@@ -5,6 +5,7 @@ import EntrenadorModals from '../components/EntrenadorModals';
 import Pagination from '../components/Pagination';
 import Sidebar from '../components/Sidebar';
 import PermissionsModal from '../components/PermissionsModal';
+import PageHeader from '../components/PageHeader';
 
 export default function Entrenadores() {
   const [entrenadores, setEntrenadores] = useState([]);
@@ -106,48 +107,35 @@ export default function Entrenadores() {
 
       <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
         {/* Dashboard Header */}
-        <header className="px-6 sm:px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/50 backdrop-blur-sm border-b border-slate-100/50 sticky top-0 z-20">
-          <div className="flex items-center gap-4">
-            <button 
-              className="lg:hidden p-3 text-slate-500 hover:text-[#38C1A3] rounded-2xl hover:bg-white transition-all shadow-sm"
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <i className="fa-solid fa-bars text-xl"></i>
-            </button>
-            <div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight leading-none">
-                    Gestión de Entrenadores
-                </h1>
-                <p className="text-slate-400 mt-2 font-bold text-xs uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-[#38C1A3] rounded-full animate-pulse"></div> Administrando el equipo técnico
-                </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-             {/* Search Box */}
-             <div className="relative group flex-1 sm:flex-none">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:translate-x-1">
-                    <i className="fa-solid fa-magnifying-glass text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                </div>
-                <input 
-                  type="text" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar entrenador..." 
-                  className="pl-11 pr-5 py-3 w-full sm:w-72 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/5 focus:border-[#38C1A3] outline-none transition-all font-black text-slate-600 placeholder:text-slate-300 text-xs shadow-sm shadow-slate-200/50"
-                />
-              </div>
-
-              <button 
-                onClick={handleCreate}
-                className="px-8 py-3 bg-[#38C1A3] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-[#2eaa8f] transition-all shadow-lg shadow-teal-100 flex items-center gap-2 active:scale-95 shrink-0"
-              >
-                <i className="fas fa-plus"></i>
-                NUEVO ENTRENADOR
-              </button>
-          </div>
-        </header>
+        <PageHeader 
+            title="Gestión de Entrenadores"
+            subtitle="Administrando el equipo técnico"
+            icon="fa-solid fa-user-tie"
+            onMenuClick={() => setIsSidebarOpen(true)}
+            actions={
+                <>
+                    <div className="relative group flex-1 sm:flex-none">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-transform group-focus-within:translate-x-1">
+                            <i className="fa-solid fa-magnifying-glass text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
+                        </div>
+                        <input 
+                            type="text" 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Buscar entrenador..." 
+                            className="pl-11 pr-5 py-3 w-full sm:w-72 bg-white border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/5 focus:border-[#38C1A3] outline-none transition-all font-black text-slate-600 placeholder:text-slate-300 text-xs shadow-sm shadow-slate-200/50"
+                        />
+                    </div>
+                    <button 
+                        onClick={handleCreate}
+                        className="h-[45px] px-6 flex items-center justify-center gap-2 bg-[#38C1A3] hover:bg-teal-500 text-white font-black rounded-xl shadow-lg shadow-teal-500/20 transition-all text-xs"
+                    >
+                        <i className="fa-solid fa-plus"></i>
+                        <span>Nuevo Entrenador</span>
+                    </button>
+                </>
+            }
+        />
         
         <div className="flex-1 overflow-auto p-4 sm:p-10 scrollbar-hide">
           <div className="w-full mx-auto space-y-8">
