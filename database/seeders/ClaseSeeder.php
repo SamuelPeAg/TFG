@@ -18,21 +18,21 @@ class ClaseSeeder extends Seeder
 
         $clases = [
             [
-                'nombre' => 'Yoga para principiantes',
+                'nombre' => 'Yoga',
                 'descripcion' => 'Clase de yoga básica para todos los niveles.',
                 'duracion_minutos' => 60,
                 'nivel' => 'facil',
                 'id_centro' => $centros->random()->id,
             ],
             [
-                'nombre' => 'Pilates intermedio',
+                'nombre' => 'Pilates',
                 'descripcion' => 'Pilates centrado en fortalecer el core y flexibilidad.',
                 'duracion_minutos' => 60,
                 'nivel' => 'medio',
                 'id_centro' => $centros->random()->id,
             ],
             [
-                'nombre' => 'Crossfit avanzado',
+                'nombre' => 'Crossfit',
                 'descripcion' => 'WOD de alta intensidad para usuarios experimentados.',
                 'duracion_minutos' => 60,
                 'nivel' => 'dificil',

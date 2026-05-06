@@ -12,7 +12,6 @@ class PagoSeeder extends Seeder
 {
     public function run()
     {
-        // Obtener todos los entrenadores y admins
         $entrenadores = Entrenador::role('entrenador')->get();
         $admins = Entrenador::role('admin')->get();
         $profesores = $entrenadores->concat($admins);
@@ -26,40 +25,62 @@ class PagoSeeder extends Seeder
         if ($centros->isEmpty() || $clases->isEmpty()) return;
 
         foreach ($profesores as $profe) {
-            $this->crearPagos($profe, Carbon::now(), $clientes, $centros, $clases);
-            $this->crearPagos($profe, Carbon::now()->subMonth(), $clientes, $centros, $clases);
+            $this->crearPagosSemanales($profe, $clientes, $centros, $clases);
         }
     }
 
-    private function crearPagos($entrenador, $fechaBase, $clientes, $centros, $clases)
+    private function crearPagosSemanales($entrenador, $clientes, $centros, $clases)
     {
-        $tipoCredito = \App\Models\TipoCredito::first();
+        $tipoCredito = \App\Models\TipoCredito::where('nombre', 'Crédito Estándar')->first();
+        
+        // Crear 3-4 clases diarias para los próximos 7 días para que el calendario esté lleno
+        for ($i = -2; $i < 8; $i++) { // Desde hace 2 días hasta dentro de una semana
+            $fechaBase = Carbon::now()->addDays($i);
+            
+            for ($j = 0; $j < 3; $j++) { // 3 sesiones por día
+                $centro = $centros->random();
+                $clase = $clases->random();
+                $hora = 9 + ($j * 4); // Clases a las 9:00, 13:00, 17:00 aprox
 
-        // 8 sesiones aleatorias por mes
-        for ($i = 0; $i < 8; $i++) {
-            $esSesionVacia = rand(0, 1) === 0;
-            $cliente = (!$esSesionVacia && $clientes->isNotEmpty()) ? $clientes->random() : null;
-            $centro = $centros->random();
-            $clase = $clases->random();
+                $pago = Pago::create([
+                    'user_id' => null, // Sesión abierta
+                    'entrenador_id' => $entrenador->id,
+                    'centro' => $centro->nombre,
+                    'nombre_clase' => $clase->nombre,
+                    'tipo_clase' => $clase->nombre,
+                    'metodo_pago' => 'Sesión Calendario',
+                    'iban' => $entrenador->iban ?? 'ES0000000000000000000000',
+                    'importe' => 0,
+                    'fecha_registro' => $fechaBase->copy()->hour($hora)->minute(0)->second(0),
+                    'capacidad_maxima' => 15,
+                    'horas_cancelacion' => 12
+                ]);
 
-            $pago = Pago::create([
-                'user_id' => $cliente ? $cliente->id : null,
-                'entrenador_id' => $entrenador->id,
-                'centro' => $centro->nombre,
-                'nombre_clase' => $clase->nombre,
-                'tipo_clase' => $clase->nombre,
-                'metodo_pago' => $esSesionVacia ? 'Sesión Calendario' : collect(['Tarjeta', 'Efectivo', 'Transferencia'])->random(),
-                'iban' => $entrenador->iban ?? 'ES0000000000000000000000',
-                'importe' => $esSesionVacia ? 0 : rand(20, 60),
-                'fecha_registro' => $fechaBase->copy()->day(rand(1, 28))->hour(rand(8, 20))->minute(0),
-                'capacidad_maxima' => 15,
-                'horas_cancelacion' => 12
-            ]);
+                $pago->entrenadores()->sync([$entrenador->id]);
+                if ($tipoCredito) $pago->tiposCredito()->sync([$tipoCredito->id]);
 
-            // Sincronizar entrenador en la pivot (INDISPENSABLE PARA PODER ELIMINARLO)
-            $pago->entrenadores()->sync([$entrenador->id]);
-            // Sincronizar créditos para que sea canjeable
-            if ($tipoCredito) $pago->tiposCredito()->sync([$tipoCredito->id]);
+                // Añadir algunos alumnos a algunas clases para que no todas estén vacías
+                if (rand(0, 1) === 0 && $clientes->isNotEmpty()) {
+                    $asistentes = $clientes->random(rand(1, 4));
+                    foreach ($asistentes as $ast) {
+                        $pAst = Pago::create([
+                            'user_id' => $ast->id,
+                            'entrenador_id' => $entrenador->id,
+                            'centro' => $centro->nombre,
+                            'nombre_clase' => $clase->nombre,
+                            'tipo_clase' => $clase->nombre,
+                            'metodo_pago' => 'Bono',
+                            'iban' => $ast->iban,
+                            'importe' => 20,
+                            'fecha_registro' => $pago->fecha_registro,
+                            'capacidad_maxima' => 15,
+                            'horas_cancelacion' => 12
+                        ]);
+                        $pAst->entrenadores()->sync([$entrenador->id]);
+                        if ($tipoCredito) $pAst->tiposCredito()->sync([$tipoCredito->id]);
+                    }
+                }
+            }
         }
     }
 }

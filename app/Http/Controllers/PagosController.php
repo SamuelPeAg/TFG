@@ -648,6 +648,10 @@ class PagosController extends Controller
             ->first();
 
         if ($pago) {
+            $isSelf = ($request->user()->id == $request->user_id);
+            $mainMessage = $isSelf ? 'Te has dado de baja de la clase.' : 'El cliente ha sido dado de baja de la clase.';
+            $messageSuffix = '';
+
             // 3. LOGICA RE-ABONO (CRÉDITOS)
             $diffHours = now()->diffInHours($fecha, false); 
             $horasCancelacion = $pago->horas_cancelacion ?? 0;
@@ -656,12 +660,8 @@ class PagosController extends Controller
                 ->orWhere('slug', strtolower($pago->tipo_clase))
                 ->orWhere('slug', $pago->tipo_clase)
                 ->first();
-            $tipoSesionId = $tipoInfo ? $tipoInfo->id : null;
 
             if ($diffHours >= $horasCancelacion) {
-                // Re-abonar crédito: buscamos el último lote consumido de este tipo o simplemente añadimos uno nuevo de devolución
-                // Para simplificar y no romper la trazabilidad, usamos el refund del servicio si existe o creamos un lote de "Devolución"
-                
                 $allowedCreditIds = $pago->tiposCredito->pluck('id')->toArray();
                 if (empty($allowedCreditIds) && $tipoInfo) {
                     $allowedCreditIds = $tipoInfo->tiposCredito->pluck('id')->toArray();
@@ -672,17 +672,16 @@ class PagosController extends Controller
                     ->first();
                 
                 if ($userSub && !empty($allowedCreditIds)) {
-                    // Devolvemos al primer tipo de crédito permitido
                     $tipoCreditoId = $allowedCreditIds[0];
                     app(\App\Services\CreditService::class)->allocate($userSub, $tipoCreditoId, 1, 30, $pago->id);
-                    $messageSuffix = ' El crédito ha sido devuelto a tu cuenta (Lote de devolución).';
+                    $messageSuffix = $isSelf ? ' El crédito ha sido devuelto a tu cuenta.' : ' El crédito ha sido devuelto a la cuenta del cliente.';
                 }
             } else {
                 $messageSuffix = ' Cancelación fuera de plazo: no se ha devuelto el crédito.';
             }
 
             $pago->delete();
-            return response()->json(['success' => true, 'message' => 'Te has dado de baja de la clase.' . $messageSuffix]);
+            return response()->json(['success' => true, 'message' => $mainMessage . $messageSuffix]);
         } else {
             return response()->json(['error' => 'No se encontró el registro para eliminar'], 404);
         }
