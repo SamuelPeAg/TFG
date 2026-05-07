@@ -145,6 +145,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   const [subscriptionPayments, setSubscriptionPayments] = useState([]);
   const [editingMeasurementId, setEditingMeasurementId] = useState(null);
   const [editingPayment, setEditingPayment] = useState(null); // {id, importe, metodo_pago, fecha_registro}
+  const [fieldAlerts, setFieldAlerts] = useState({}); // { iban: true, dni: false }
 
   const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
@@ -200,10 +201,43 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         setUserSubscriptions(res.data.subscriptions || []);
         setSubscriptionPayments(res.data.subscriptionPayments || []);
         setMeasurements(res.data.measurements || []);
+        
+        // Cargar alertas activas
+        fetchFieldAlerts(user.id);
     } catch (error) {
         console.error("Error fetching ficha:", error);
     } finally {
         setLoading(false);
+    }
+  };
+
+  const fetchFieldAlerts = async (userId) => {
+    try {
+        const res = await axios.get(`/api/user-notifications?user_id=${userId}`);
+        const alerts = {};
+        res.data.notifications.forEach(n => {
+            if (n.type === 'field_alert') {
+                alerts[n.field] = true;
+            }
+        });
+        setFieldAlerts(alerts);
+    } catch (error) {
+        console.error("Error fetching alerts:", error);
+    }
+  };
+
+  const toggleFieldAlert = async (field) => {
+    try {
+        const res = await axios.post('/api/user-notifications/toggle-field-alert', {
+            user_id: user.id,
+            field: field
+        });
+        setFieldAlerts(prev => ({
+            ...prev,
+            [field]: res.data.action === 'created'
+        }));
+    } catch (error) {
+        showAlert(error.response?.data?.message || 'Error al procesar alerta', true);
     }
   };
 
@@ -554,8 +588,17 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                 { label: 'Código Postal', key: 'codigo_postal', icon: 'fa-location-arrow' },
                                 { label: 'Ciudad', key: 'ciudad', icon: 'fa-city' }
                             ].map(field => (
-                                <div key={field.key} className="space-y-2 group">
-                                    <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">{field.label}</label>
+                                <div key={field.key} className="space-y-2 group relative">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">{field.label}</label>
+                                        <button 
+                                            onClick={() => toggleFieldAlert(field.key)}
+                                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all border ${fieldAlerts[field.key] ? 'bg-rose-500 text-white border-rose-400 shadow-lg shadow-rose-200' : 'bg-slate-100 text-slate-400 border-slate-200 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100'}`}
+                                            title={fieldAlerts[field.key] ? "Quitar alerta al cliente" : "Avisar al cliente que actualice este dato"}
+                                        >
+                                            <i className={`fa-solid fa-bell-exclamation text-[11px] ${fieldAlerts[field.key] ? 'animate-bounce' : ''}`}></i>
+                                        </button>
+                                    </div>
                                     <div className="relative">
                                         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-11 flex justify-center text-slate-300 group-focus-within:text-teal-400 transition-colors">
                                             <i className={`fa-solid ${field.icon}`}></i>
@@ -576,8 +619,17 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                             <div className="md:col-span-2 pt-4 border-t border-slate-100 mt-4">
                                 <label className="text-[10px] font-black text-[#38C1A3] uppercase tracking-widest mb-4 block">Configuración Bancaria SEPA</label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="space-y-2 group">
-                                        <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">IBAN (Cuenta Bancaria)</label>
+                                    <div className="space-y-2 group relative">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">IBAN (Cuenta Bancaria)</label>
+                                            <button 
+                                                onClick={() => toggleFieldAlert('iban')}
+                                                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all border ${fieldAlerts['iban'] ? 'bg-rose-500 text-white border-rose-400 shadow-lg shadow-rose-200' : 'bg-slate-100 text-slate-400 border-slate-200 hover:text-rose-500 hover:bg-rose-50 hover:border-rose-100'}`}
+                                                title={fieldAlerts['iban'] ? "Quitar alerta al cliente" : "Avisar al cliente que actualice este dato"}
+                                            >
+                                                <i className={`fa-solid fa-bell-exclamation text-[11px] ${fieldAlerts['iban'] ? 'animate-bounce' : ''}`}></i>
+                                            </button>
+                                        </div>
                                         <div className="relative">
                                             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-11 flex justify-center text-slate-300 group-focus-within:text-teal-400 transition-colors">
                                                 <i className="fa-solid fa-building-columns"></i>

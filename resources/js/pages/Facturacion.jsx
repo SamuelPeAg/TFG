@@ -28,6 +28,9 @@ export default function Facturacion() {
     cliente_id: ''
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
@@ -75,7 +78,22 @@ export default function Facturacion() {
 
   const handleApplyFilters = (e) => {
     if (e) e.preventDefault();
+    setCurrentPage(1); // Reset to page 1 on new filter
     fetchData();
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      centro: 'todos',
+      anio: currentYear.toString(),
+      mes: '',
+      entrenador_id: '',
+      cliente_id: ''
+    });
+    setCurrentPage(1);
+    // Opcional: recargar datos inmediatamente tras limpiar
+    setLoading(true);
+    setTimeout(() => fetchData(), 100); 
   };
 
   const openModal = (clienteId, entrenadorId, clienteData, entrenadorData) => {
@@ -189,10 +207,18 @@ export default function Facturacion() {
                   />
                 </div>
 
-                <div className="flex-shrink-0">
-                  <button type="submit" disabled={loading} className="w-full px-8 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-slate-200 hover:shadow-slate-300 border border-transparent disabled:opacity-50 disabled:cursor-not-allowed">
+                <div className="flex-shrink-0 flex gap-2">
+                  <button type="submit" disabled={loading} className="flex-1 px-4 py-2.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-slate-200 hover:shadow-slate-300 border border-transparent disabled:opacity-50 disabled:cursor-not-allowed">
                     {loading ? <i className="fas fa-spinner fa-spin text-[10px]"></i> : <i className="fas fa-filter text-[10px]"></i>}
                     Filtros
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={handleClearFilters}
+                    className="px-4 py-2.5 bg-white text-slate-400 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center justify-center border border-slate-100 active:scale-95"
+                    title="Limpiar filtros"
+                  >
+                    <i className="fa-solid fa-trash-can"></i>
                   </button>
                 </div>
               </form>
@@ -217,11 +243,70 @@ export default function Facturacion() {
 
               <div className="bg-white p-1 rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <FacturasMatrixTable 
-                    data={data} 
+                    data={{
+                      ...data,
+                      clientes: data.clientes.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    }} 
                     loading={loading} 
                     onCellClick={openModal} 
                 />
               </div>
+
+              {/* Pagination Controls */}
+              {!loading && data.clientes.length > itemsPerPage && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 py-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, data.clientes.length)} de {data.clientes.length} Clientes
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
+                    >
+                      <i className="fa-solid fa-chevron-left"></i>
+                    </button>
+                    
+                    {[...Array(Math.ceil(data.clientes.length / itemsPerPage))].map((_, i) => {
+                      const page = i + 1;
+                      // Mostrar solo algunas páginas si hay muchas
+                      if (
+                        page === 1 || 
+                        page === Math.ceil(data.clientes.length / itemsPerPage) || 
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-10 h-10 flex items-center justify-center rounded-xl font-black text-[10px] transition-all active:scale-95 shadow-sm ${
+                              currentPage === page 
+                                ? 'bg-slate-900 text-white' 
+                                : 'bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-300'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      } else if (
+                        page === currentPage - 2 || 
+                        page === currentPage + 2
+                      ) {
+                        return <span key={page} className="text-slate-300">...</span>;
+                      }
+                      return null;
+                    })}
+
+                    <button 
+                      onClick={() => setCurrentPage(prev => Math.min(Math.ceil(data.clientes.length / itemsPerPage), prev + 1))}
+                      disabled={currentPage === Math.ceil(data.clientes.length / itemsPerPage)}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-slate-900 hover:border-slate-300 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95 shadow-sm"
+                    >
+                      <i className="fa-solid fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>

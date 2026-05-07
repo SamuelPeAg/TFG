@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -544,6 +545,17 @@ class UserController extends Controller
             'firma_digital' => $validated['firma_digital'] ?? $user->firma_digital,
             'email' => $user->email,
         ];
+
+        // Limpiar alertas de campo si se han actualizado
+        $fields = ['dni', 'direccion', 'ciudad', 'codigo_postal', 'iban'];
+        foreach ($fields as $field) {
+            if (isset($validated[$field]) && $validated[$field] !== $user->$field) {
+                UserNotification::where('user_id', $user->id)
+                    ->where('type', 'field_alert')
+                    ->where('field', $field)
+                    ->delete();
+            }
+        }
 
         // Manejo de la subida de la imagen
         if ($request->hasFile('foto_de_perfil')) {

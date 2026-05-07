@@ -9,6 +9,7 @@ use App\Models\CreditoLote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class BookingSwapController extends Controller
@@ -29,8 +30,18 @@ class BookingSwapController extends Controller
                 $q->where('nombre', $pago->centro);
             })->first();
 
+        // Fallback 1: Si no se encuentra por centro (por inconsistencia de datos), buscar solo por nombre
         if (!$claseBase) {
-            return response()->json(['error' => 'No se pudo encontrar la configuración de la clase original.'], 404);
+            $claseBase = Clase::where('nombre', $pago->nombre_clase)->first();
+        }
+
+        // Fallback 2: Búsqueda flexible (trim y minúsculas) por si hay espacios o diferencias de caja
+        if (!$claseBase) {
+            $claseBase = Clase::whereRaw('LOWER(TRIM(nombre)) = ?', [strtolower(trim($pago->nombre_clase))])->first();
+        }
+
+        if (!$claseBase) {
+            return response()->json(['error' => 'No se pudo encontrar la configuración para la actividad: ' . ($pago->nombre_clase ?: 'Sin Nombre') . ' (' . ($pago->centro ?: 'Sin Centro') . ')'], 404);
         }
 
         // 2. Obtener los tipos de crédito permitidos para la clase original
@@ -51,7 +62,7 @@ class BookingSwapController extends Controller
             ->where('fecha_registro', '>', $now)
             ->where('centro', $pago->centro)
             ->where('tipo_clase', $pago->tipo_clase) // Misma familia de clase
-            ->where('nombre_clase', '!=', $pago->nombre_clase) // Evitar la misma clase (opcional, podría ser otra fecha)
+            // Eliminamos el filtro de != nombre_clase para permitir swaps a la misma actividad en otro horario
             ->whereHas('tiposCredito', function($q) use ($allowedCreditTypeIds) {
                 $q->whereIn('tipo_credito_id', $allowedCreditTypeIds);
             })
@@ -64,8 +75,17 @@ class BookingSwapController extends Controller
 
         $candidates = [];
 
-        foreach ($grouped as $key => $grupo) {
-            $first = $grupo->first();
+        foreach ($grouped as $key => $pagos) {
+            $first = $pagos->first();
+
+            // 1. Omitir la sesión actual (misma fecha, nombre y centro)
+            if ($first->fecha_registro->eq($pago->fecha_registro) && 
+                $first->nombre_clase === $pago->nombre_clase && 
+                $first->centro === $pago->centro) {
+                continue;
+            }
+
+            $capacidad = $first->capacidad_maxima ?? 0;
             
             // Verificar nivel de la clase candidata
             $claseCand = Clase::where('nombre', $first->nombre_clase)
@@ -73,12 +93,16 @@ class BookingSwapController extends Controller
                     $q->where('nombre', $first->centro);
                 })->first();
 
+            if (!$claseCand) {
+                $claseCand = Clase::where('nombre', $first->nombre_clase)->first();
+            }
+
             if (!$claseCand || $claseCand->nivel !== $claseBase->nivel) {
                 continue;
             }
 
             // Verificar capacidad
-            $count = $grupo->filter(fn($p) => $p->user_id !== null)->count();
+            $count = $pagos->filter(fn($p) => $p->user_id !== null)->count();
             $capacidad = $first->capacidad_maxima ?? 0;
             
             if ($capacidad > 0 && $count >= $capacidad) {
@@ -86,12 +110,12 @@ class BookingSwapController extends Controller
             }
 
             // Verificar si el usuario ya está apuntado
-            $alreadyBooked = $grupo->contains('user_id', Auth::id());
+            $alreadyBooked = $pagos->contains('user_id', Auth::id());
             if ($alreadyBooked) continue;
 
             // Recopilar datos para el frontend
             $entrenadores = [];
-            foreach ($grupo as $p) {
+            foreach ($pagos as $p) {
                 if ($p->entrenadores) {
                     foreach ($p->entrenadores as $t) {
                         $entrenadores[$t->id] = [
@@ -103,7 +127,7 @@ class BookingSwapController extends Controller
                 }
             }
 
-            $alumnos = $grupo->filter(fn($p) => $p->user_id !== null)->map(function ($p) {
+            $alumnos = $pagos->filter(fn($p) => $p->user_id !== null)->map(function ($p) {
                 return [
                     'id' => $p->user_id,
                     'nombre' => $p->user->name ?? 'Usuario',
