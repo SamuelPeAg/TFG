@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
@@ -12,6 +12,7 @@ import PageHeader from '../components/PageHeader';
 export default function Calendario() {
   const navigate = useNavigate();
   const location = useLocation();
+  const redirectedRef = useRef(false);
   const [data, setData] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -174,15 +175,11 @@ export default function Calendario() {
   
   // 4. Handle Redirection from "Mis Clases" or other parts of the app
   useEffect(() => {
-    console.log("Check Redirección - State:", location.state, "Loading:", loading, "HasData:", !!data);
-    
-    if (location.state?.openSession && !loading && data) {
-        console.log("¡Condiciones cumplidas! Iniciando timer de 3s para abrir modal...");
-        
+    if (location.state?.openSession && !loading && data && !redirectedRef.current) {
+        redirectedRef.current = true;
         const session = location.state.openSession;
         
         const timer = setTimeout(() => {
-            // Map session data to match the format expected by VerClaseModal
             setSelectedEventParaVer({
                 start: new Date(session.fecha_registro),
                 extendedProps: {
@@ -212,14 +209,11 @@ export default function Calendario() {
             if (location.state.goToDate && window.calendar && viewMode === 'calendar') {
                 window.calendar.gotoDate(location.state.goToDate);
             }
-            
-            // Limpiar el estado usando navigate para que no se reabra al refrescar
-            navigate(location.pathname, { replace: true, state: {} });
-        }, 3000); // Delay de 3 segundos para asegurar que todo esté cargado
+        }, 500); 
 
         return () => clearTimeout(timer);
     }
-  }, [location.state, loading, data]);
+  }, [location.state, loading, data]);]);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-slate-900">

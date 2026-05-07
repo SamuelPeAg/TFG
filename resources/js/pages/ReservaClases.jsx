@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -13,6 +13,7 @@ export default function ReservaClases() {
   
   const user = window.AppConfig?.user;
   const [viewMode, setViewMode] = useState('calendar'); // For clients, we can default to calendar or cards. User wants "calendario aparte".
+  const redirectedRef = useRef(false);
 
   const [isVerModalOpen, setIsVerModalOpen] = useState(false);
   const [selectedEventParaVer, setSelectedEventParaVer] = useState(null);
@@ -89,14 +90,17 @@ export default function ReservaClases() {
     };
 
     window.addEventListener('openVerClaseReact', handleOpenVerReactModal);
+    return () => window.removeEventListener('openVerClaseReact', handleOpenVerReactModal);
+  }, [data, user]);
 
-    // Lógica para saltar a fecha y abrir sesión si venimos de Mis Clases
-    if (location.state?.openSession && !loading && data) {
-        console.log("ReservaClases: Detectada redirección desde Mis Clases", location.state.openSession);
+  // 3. Lógica para saltar a fecha y abrir sesión si venimos de Mis Clases
+  useEffect(() => {
+    if (location.state?.openSession && !loading && data && !redirectedRef.current) {
+        redirectedRef.current = true;
+        console.log("ReservaClases: Redirección iniciada...");
         const session = location.state.openSession;
         
         const timer = setTimeout(() => {
-            // Mapeamos los datos directamente al modal sin depender de que FullCalendar encuentre el evento
             setSelectedEventParaVer({
                 start: new Date(session.fecha_registro),
                 extendedProps: {
@@ -126,16 +130,11 @@ export default function ReservaClases() {
             if (location.state.goToDate && window.calendar) {
                 window.calendar.gotoDate(new Date(location.state.goToDate));
             }
-            
-            // Limpiamos el estado
-            window.history.replaceState({}, document.title);
-        }, 500); // Pequeño delay para estabilidad
+        }, 500); 
 
         return () => clearTimeout(timer);
     }
-
-    return () => window.removeEventListener('openVerClaseReact', handleOpenVerReactModal);
-  }, [data, user, loading, location.state]);
+  }, [data, loading, location.state]);
 
   useEffect(() => {
     if (viewMode === 'calendar' && window.calendar && !loading) {
