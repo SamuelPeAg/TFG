@@ -24,159 +24,173 @@ class EstadisticasController extends Controller
     public function data(Request $request)
     {
         try {
-        // 1. KPIs Generales
-            $totalClientes = 0;
-            try {
-                $totalClientes = User::role('cliente', 'web')
-                    ->where('activo', true)
-                    ->count();
-            } catch (\Exception $e) { \Log::error("Error clientes: " . $e->getMessage()); }
+            $now = Carbon::now();
+            $startOfMonth = $now->copy()->startOfMonth();
+            $endOfMonth = $now->copy()->endOfMonth();
 
-            $totalEntrenadores = 0;
-            try {
-                $totalEntrenadores = \App\Models\Entrenador::role('entrenador', 'staff')
-                    ->where('activo', true)
-                    ->count();
-            } catch (\Exception $e) { \Log::error("Error entrenadores: " . $e->getMessage()); }
-            
-            $startOfMonth = Carbon::now()->startOfMonth();
-            $endOfMonth = Carbon::now()->endOfMonth();
-            
-            $ingresosMes = 0;
-            try {
-                $ingresosMes = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])->sum('importe');
-            } catch (\Exception $e) { }
-            
-            $sesionesMesCount = 0;
-            try {
-                $sesionesMesCount = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])->count();
-            } catch (\Exception $e) { }
+            // 1. KPIs Generales (Corregidos)
+            $totalClientes = User::role('cliente', 'web')->count();
+            $totalEntrenadores = \App\Models\Entrenador::count();
+            $ingresosMes = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])->sum('importe');
+            $sesionesMesCount = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])
+                ->where('tipo_clase', '!=', 'Suscripción')
+                ->count();
 
-            // 2. Gráfico de Ingresos (Últimos 6 meses)
-            $ingresos6Meses = [];
+            // 2. Análisis de Churn (Altas vs Bajas por Inactividad)
+            $churnData = [];
             $mesesNombres = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            
+            // Obtener última actividad de todos los clientes
+            $lastActivities = DB::table('pagos')
+                ->select('user_id', DB::raw('MAX(fecha_registro) as last_date'))
+                ->whereNotNull('user_id')
+                ->groupBy('user_id')
+                ->get();
+
             for ($i = 5; $i >= 0; $i--) {
-                $mes = Carbon::now()->subMonths($i);
-                $total = 0;
-                try {
-                    $total = Pago::whereYear('fecha_registro', $mes->year)
-                                ->whereMonth('fecha_registro', $mes->month)
-                                ->sum('importe');
-                } catch (\Exception $e) { \Log::error("Error ingresos mes: " . $e->getMessage()); }
-                $ingresos6Meses[] = [
-                    'mes'   => $mesesNombres[$mes->month - 1] . ' ' . $mes->format('y'),
-                    'total' => $total
+                $mesDate = $now->copy()->subMonths($i);
+                $mStart = $mesDate->copy()->startOfMonth();
+                $mEnd = $mesDate->copy()->endOfMonth();
+
+                // Altas: Nuevos registros
+                $altas = User::role('cliente', 'web')
+                    ->whereBetween('created_at', [$mStart, $mEnd])
+                    ->count();
+
+                // Bajas: Usuarios cuya ÚLTIMA actividad fue en este mes
+                // Y han pasado más de 30 días desde entonces (para meses pasados)
+                $bajas = $lastActivities->filter(function($act) use ($mStart, $mEnd) {
+                    $date = Carbon::parse($act->last_date);
+                    return $date->between($mStart, $mEnd);
+                })->count();
+
+                $churnData[] = [
+                    'mes' => $mesesNombres[$mesDate->month - 1] . ' ' . $mesDate->format('y'),
+                    'altas' => $altas,
+                    'bajas' => $bajas
                 ];
             }
 
-            // 3. Clases populares (Doughnut)
-            $clasesPopulares = collect();
-            try {
-                $clasesPopulares = Pago::selectRaw('nombre_clase, COUNT(*) as total')
-                    ->whereNotNull('nombre_clase')
-                    ->where('nombre_clase', '!=', '')
-                    ->where('tipo_clase', '!=', 'Suscripción') // Excluir abonos de suscripciones
-                    ->groupBy('nombre_clase')
-                    ->orderByDesc('total')
-                    ->limit(5)
-                    ->get()
-                    ->map(function($p) {
-                        return [
-                            'nombre_clase' => $p->nombre_clase,
-                            'total' => $p->total
-                        ];
-                    });
-            } catch (\Exception $e) { \Log::error("Error clasesPopulares: " . $e->getMessage()); }
-
-            // 4. Sesiones por Centro (Bar)
+            // 3. Ingresos Multi-Centro (Líneas comparativas)
             $centros = Centro::all();
-            
-            // 4. Sesiones por Centro (Bar)
-            $sesionesPorCentro = $centros->map(function ($centro) {
-                return [
+            $multiCenterRevenue = [];
+            foreach ($centros as $centro) {
+                $series = [];
+                for ($i = 5; $i >= 0; $i--) {
+                    $mesDate = $now->copy()->subMonths($i);
+                    $total = Pago::where('centro', $centro->nombre)
+                        ->whereYear('fecha_registro', $mesDate->year)
+                        ->whereMonth('fecha_registro', $mesDate->month)
+                        ->sum('importe');
+                    
+                    $series[] = [
+                        'mes' => $mesesNombres[$mesDate->month - 1],
+                        'total' => (float)$total
+                    ];
+                }
+                $multiCenterRevenue[] = [
                     'centro' => $centro->nombre,
-                    'total' => Pago::where('centro', $centro->nombre)->count()
+                    'color' => $centro->color_hex ?? '#38C1A3',
+                    'data' => $series
                 ];
-            });
+            }
 
-            // 5. Clientes por Centro
-            $clientesPorCentro = $centros->map(function ($centro) {
-                $count = User::role('cliente', 'web')
-                    ->where('activo', true)
-                    ->where(function($q) use ($centro) {
-                        $q->where('centro_id', $centro->id)
-                          ->orWhereIn('id', function($sub) use ($centro) {
-                              $sub->select('user_id')
-                                  ->from('pagos')
-                                  ->where('centro', $centro->nombre);
-                          });
-                    })
-                    ->count();
+            // 4. Eficiencia de Clases (Ratio de Ocupación)
+            // Agrupamos por sesión real
+            $occupancyByClass = Pago::where('tipo_clase', '!=', 'Suscripción')
+                ->whereNotNull('nombre_clase')
+                ->where('capacidad_maxima', '>', 0)
+                ->select('nombre_clase', 'fecha_registro', 'centro', 'capacidad_maxima', DB::raw('COUNT(*) as inscritos'))
+                ->groupBy('nombre_clase', 'fecha_registro', 'centro', 'capacidad_maxima')
+                ->get()
+                ->groupBy('nombre_clase')
+                ->map(function($sesiones, $clase) {
+                    $avg = $sesiones->avg(function($s) {
+                        return ($s->inscritos / $s->capacidad_maxima) * 100;
+                    });
+                    return [
+                        'nombre' => $clase,
+                        'ratio' => round($avg, 1)
+                    ];
+                })
+                ->sortByDesc('ratio')
+                ->take(6)
+                ->values();
 
-                return [
-                    'centro' => $centro->nombre,
-                    'total' => $count
-                ];
-            });
+            // 5. Clientes en Riesgo (Abandono Inminente: 14-30 días sin venir)
+            // Excluimos a los que solo han venido 1 vez o nunca
+            $atRiskUsers = [];
+            $twoWeeksAgo = $now->copy()->subDays(14);
+            $oneMonthAgo = $now->copy()->subDays(30);
 
-            // 6. Ingresos por Centro
-            $ingresosPorCentro = $centros->map(function ($centro) {
-                return [
-                    'centro' => $centro->nombre,
-                    'total' => Pago::where('centro', $centro->nombre)->sum('importe')
-                ];
-            });
+            $usersWithActivityCount = DB::table('pagos')
+                ->select('user_id', DB::raw('COUNT(*) as total_clases'), DB::raw('MAX(fecha_registro) as last_date'))
+                ->whereNotNull('user_id')
+                ->groupBy('user_id')
+                ->having('total_clases', '>', 1) // Más de 1 clase en su vida
+                ->get();
 
-            // 7. Últimos movimientos (Tabla)
-            $ultimosPagos = Pago::with('user')
+            foreach ($usersWithActivityCount as $activity) {
+                $lastDate = Carbon::parse($activity->last_date);
+                if ($lastDate->between($oneMonthAgo, $twoWeeksAgo)) {
+                    $u = User::find($activity->user_id);
+                    if ($u) {
+                        $atRiskUsers[] = [
+                            'id' => $u->id,
+                            'name' => $u->name,
+                            'last_attendance' => $lastDate->diffForHumans(),
+                            'total_clases' => $activity->total_clases,
+                            'foto' => $u->foto_de_perfil ? Storage::url($u->foto_de_perfil) : null
+                        ];
+                    }
+                }
+            }
+
+            // 6. Últimos Pagos (Enriquecidos)
+            $ultimosPagos = Pago::with('user:id,name,foto_de_perfil')
                 ->orderBy('fecha_registro', 'desc')
-                ->take(5)
+                ->take(6)
                 ->get()
                 ->map(function ($pago) {
                     return [
                         'id' => $pago->id,
-                        'fecha' => Carbon::parse($pago->fecha_registro)->format('d/m H:i'),
+                        'fecha' => $pago->fecha_registro?->format('d M, H:i'),
                         'cliente' => $pago->user ? $pago->user->name : 'N/A',
+                        'foto' => $pago->user && $pago->user->foto_de_perfil ? Storage::url($pago->user->foto_de_perfil) : null,
                         'clase' => $pago->nombre_clase,
-                        'importe' => $pago->importe
+                        'importe' => $pago->importe,
+                        'metodo' => $pago->metodo_pago ?? 'Efectivo'
                     ];
                 });
 
-            $centrosList = collect();
-            try { $centrosList = Centro::all(); } catch (\Exception $e) { \Log::error("Error centrosList: " . $e->getMessage()); }
-
-
-            // 9. Notificaciones de Entrenadores
-            $notificaciones = collect();
-            try {
-                $notificaciones = \App\Models\NotificacionEntrenador::with('entrenador')
-                    ->whereNull('destinatario_id')
-                    ->orderBy('created_at', 'desc')
-                    ->take(20)
-                    ->get();
-            } catch (\Exception $e) { \Log::error('Error notificaciones: ' . $e->getMessage()); }
-
+            // 7. Notificaciones (Mantenido)
+            $notificaciones = \App\Models\NotificacionEntrenador::with('entrenador')
+                ->whereNull('destinatario_id')
+                ->orderBy('created_at', 'desc')
+                ->take(15)
+                ->get();
 
             return response()->json([
                 'kpis' => [
-                    'totalClientes'     => $totalClientes,
+                    'totalClientes' => $totalClientes,
                     'totalEntrenadores' => $totalEntrenadores,
-                    'ingresosMes'       => $ingresosMes,
-                    'sesionesMes'       => $sesionesMesCount
+                    'ingresosMes' => $ingresosMes,
+                    'sesionesMes' => $sesionesMesCount,
+                    'avgOccupancy' => count($occupancyByClass) > 0 ? round($occupancyByClass->avg('ratio'), 1) : 0,
+                    'atRiskCount' => count($atRiskUsers)
                 ],
-                'ingresos6Meses'    => $ingresos6Meses,
-                'popularidadClases' => $clasesPopulares,
-                'sesionesPorCentro' => $sesionesPorCentro,
-                'clientesPorCentro' => $clientesPorCentro,
-                'ingresosPorCentro' => $ingresosPorCentro,
-                'ultimosPagos'      => $ultimosPagos,
-                'notificaciones'    => $notificaciones,
-                'centros_list'      => $centrosList,
+                'churnData' => $churnData,
+                'multiCenterRevenue' => $multiCenterRevenue,
+                'occupancyByClass' => $occupancyByClass,
+                'atRiskUsers' => array_slice($atRiskUsers, 0, 5),
+                'ultimosPagos' => $ultimosPagos,
+                'notificaciones' => $notificaciones,
+                'centros_list' => $centros,
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('EstadisticasController@data FATAL: ' . $e->getMessage() . ' en ' . $e->getFile() . ':' . $e->getLine());
-            return response()->json(['error' => 'Error interno al cargar estadísticas.'], 500);
+            \Log::error('EstadisticasController@data REWORK ERROR: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

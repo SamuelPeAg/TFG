@@ -38,7 +38,6 @@ export default function Estadisticas() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
   
-  // Responder a notificaciones
   const [replyModal, setReplyModal] = useState({ open: false, notifId: null, text: '' });
   const [replyLoading, setReplyLoading] = useState(false);
 
@@ -78,386 +77,313 @@ export default function Estadisticas() {
 
   const colors = {
     turquesa: '#4BB7AE',
-    rosa: '#EF5D7A',
+    rojo: '#EF5D7A',
     verdeClaro: '#A5EFE2',
-    gris: '#959697',
-    texto: '#53565A',
-    amarillo: '#FFCE56'
+    gris: '#53565A',
+    texto: '#1e293b',
+    fondo: '#f8fafc'
   };
 
+  // 1. Gráfica Multi-Centro Revenue
   const revenueChartData = {
-    labels: data?.ingresos6Meses?.map(d => d.mes) || [],
-    datasets: [{
-      label: 'Ingresos (€)',
-      data: data?.ingresos6Meses?.map(d => d.total) || [],
-      borderColor: colors.turquesa,
-      backgroundColor: 'rgba(75, 183, 174, 0.1)',
-      fill: true,
+    labels: data?.multiCenterRevenue?.[0]?.data?.map(d => d.mes) || [],
+    datasets: data?.multiCenterRevenue?.map((c, idx) => ({
+      label: c.centro,
+      data: c.data.map(d => d.total),
+      borderColor: [colors.turquesa, colors.rojo, '#3b82f6', colors.gris][idx % 4],
+      backgroundColor: 'transparent',
+      fill: false,
       tension: 0.4,
       borderWidth: 3,
-      pointBackgroundColor: colors.turquesa
+      pointRadius: 4,
+      pointHoverRadius: 6
+    })) || []
+  };
+
+  // 2. Gráfica Churn (Nuevos vs Inactivos)
+  const churnChartData = {
+    labels: data?.churnData?.map(d => d.mes) || [],
+    datasets: [
+      {
+        label: 'Nuevos Clientes',
+        data: data?.churnData?.map(d => d.altas) || [],
+        borderColor: colors.turquesa,
+        backgroundColor: colors.turquesa + '20',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 3
+      },
+      {
+        label: 'Inactividad Detectada',
+        data: data?.churnData?.map(d => d.bajas) || [],
+        borderColor: colors.rojo,
+        backgroundColor: 'transparent',
+        borderDash: [5, 5],
+        fill: false,
+        tension: 0.4,
+        borderWidth: 2
+      }
+    ]
+  };
+
+  // 3. Eficiencia de Ocupación
+  const occupancyChartData = {
+    labels: data?.occupancyByClass?.map(d => d.nombre) || [],
+    datasets: [{
+      label: 'Ocupación (%)',
+      data: data?.occupancyByClass?.map(d => d.ratio) || [],
+      backgroundColor: data?.occupancyByClass?.map(d => 
+        d.ratio > 80 ? colors.turquesa : (d.ratio > 50 ? colors.verdeClaro : colors.gris + '40')
+      ),
+      borderRadius: 12
     }]
   };
 
-  const revenueChartOptions = {
+  const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false },
-      tooltip: { bodyFont: { size: 14 }, titleFont: { size: 16 } }
-    },
-    scales: {
-      y: { beginAtZero: true, ticks: { color: colors.gris, font: { size: 12 } } },
-      x: { ticks: { color: colors.gris, font: { size: 12 } } }
-    }
-  };
-
-  const classesChartData = {
-    labels: data?.popularidadClases?.map(d => d.nombre_clase) || [],
-    datasets: [{
-      data: data?.popularidadClases?.map(d => d.total) || [],
-      backgroundColor: [colors.turquesa, colors.rosa, colors.verdeClaro, colors.gris, colors.amarillo],
-      borderWidth: 0
-    }]
-  };
-
-  const classesChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'bottom', labels: { color: colors.texto, font: { size: 14, weight: 'bold' }, padding: 20 } },
-      tooltip: { bodyFont: { size: 14 } }
-    }
-  };
-
-  const sesionesChartData = {
-    labels: data?.sesionesPorCentro?.map(d => d.centro) || [],
-    datasets: [{
-      label: 'Sesiones',
-      data: data?.sesionesPorCentro?.map(d => d.total) || [],
-      backgroundColor: [colors.turquesa, colors.rosa, colors.verdeClaro],
-      borderRadius: 8
-    }]
-  };
-
-  const clientesChartData = {
-    labels: data?.clientesPorCentro?.map(d => d.centro) || [],
-    datasets: [{
-      label: 'Clientes',
-      data: data?.clientesPorCentro?.map(d => d.total) || [],
-      backgroundColor: [colors.turquesa, colors.rosa, colors.verdeClaro],
-      borderRadius: 8
-    }]
-  };
-
-  const ingresosChartData = {
-    labels: data?.ingresosPorCentro?.map(d => d.centro) || [],
-    datasets: [{
-      label: 'Ingresos (€)',
-      data: data?.ingresosPorCentro?.map(d => d.total) || [],
-      backgroundColor: [colors.turquesa, colors.rosa, colors.verdeClaro],
-      borderRadius: 8
-    }]
-  };
-
-  const centerChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { 
-      legend: { display: false }, 
+      legend: { position: 'top', labels: { font: { size: 10, weight: '900' }, usePointStyle: true, boxWidth: 6, color: '#64748b' } },
       tooltip: { 
-        bodyFont: { size: 12 },
-        callbacks: {
-          label: (context) => ` ${context.dataset.label}: ${context.raw}`
-        }
-      } 
+        padding: 12, 
+        backgroundColor: '#1e293b', 
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
+        cornerRadius: 12
+      }
     },
     scales: {
-      y: { beginAtZero: true, ticks: { font: { size: 10 }, stepSize: 1 } },
-      x: { ticks: { color: colors.gris, font: { size: 11 } } }
+      y: { grid: { display: true, color: '#f1f5f9' }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
+      x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94a3b8' } }
     }
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-slate-900">
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
       
       {isSidebarOpen && (
         <div className="fixed inset-0 bg-slate-900/50 z-30 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
       )}
 
-      <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72 text-[0.85rem]">
+      <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
         <PageHeader 
-            title="Panel de Estadísticas"
-            subtitle="Resumen general y métricas del gimnasio"
-            icon="fa-solid fa-chart-line"
+            title="Panel de Gestión"
+            subtitle="Estadísticas generales y rendimiento de centros"
+            icon="fa-solid fa-chart-simple"
             onMenuClick={() => setIsSidebarOpen(true)}
         />
 
-        {/* Content */}
-        <div className="flex-1 overflow-auto px-6 sm:px-8 pb-8">
+        <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 pb-12 pt-6 space-y-8">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-400">
-              <i className="fa-solid fa-spinner fa-spin text-3xl text-[#4BB7AE]"></i>
-              <p className="font-medium animate-pulse">Cargando estadísticas...</p>
-            </div>
+             <div className="flex flex-col items-center justify-center py-32 gap-4">
+                <div className="w-12 h-12 border-4 border-teal-100 border-t-teal-500 rounded-full animate-spin"></div>
+                <p className="text-sm font-black text-slate-400 uppercase tracking-widest animate-pulse">Cargando métricas...</p>
+             </div>
           ) : errorMsg ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-3 text-red-500">
-              <i className="fa-solid fa-triangle-exclamation text-3xl"></i>
-              <p className="font-medium text-center max-w-md">No se pudieron cargar las estadísticas.</p>
-              <p className="text-xs text-red-400 font-mono bg-red-50 px-4 py-2 rounded-lg max-w-xl text-center break-all">{errorMsg}</p>
-              <button onClick={fetchData} className="mt-4 px-4 py-2 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">Reintentar</button>
-            </div>
-          ) : !data ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-3 text-red-500">
-              <i className="fa-solid fa-triangle-exclamation text-3xl"></i>
-              <p className="font-medium">No se pudieron cargar las estadísticas. Verifica la base de datos o las migraciones.</p>
-              <button onClick={fetchData} className="mt-4 px-4 py-2 bg-red-100 rounded-lg hover:bg-red-200 transition-colors">Reintentar</button>
-            </div>
+             <div className="bg-white p-12 rounded-[3rem] text-center shadow-xl shadow-slate-200/50 border border-slate-100 max-w-2xl mx-auto">
+                <i className="fa-solid fa-triangle-exclamation text-5xl text-rose-500 mb-6"></i>
+                <h3 className="text-xl font-black text-slate-800 mb-2">Error de Sincronización</h3>
+                <button onClick={fetchData} className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all">Reintentar</button>
+             </div>
           ) : (
-            <div className="w-full space-y-5">
-              
-              {/* KPIs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                
-                <Link to="/clientes" className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3 border-l-4 hover:-translate-y-1 transition-transform border-[#4BB7AE]">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg bg-[#4BB7AE]">
-                    <i className="fa-solid fa-users"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-xs uppercase text-[#959697] m-0">Clientes Totales</h3>
-                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data?.kpis?.totalClientes || 0}</p>
-                  </div>
-                </Link>
-
-                <Link to="/entrenadores" className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3 border-l-4 hover:-translate-y-1 transition-transform border-[#EF5D7A]">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg bg-[#EF5D7A]">
-                    <i className="fa-solid fa-dumbbell"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-xs uppercase text-[#959697] m-0">Entrenadores</h3>
-                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data?.kpis?.totalEntrenadores || 0}</p>
-                  </div>
-                </Link>
-
-                <Link to="/facturas" className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3 border-l-4 hover:-translate-y-1 transition-transform border-[#A5EFE2]">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[#53565A] text-lg bg-[#A5EFE2]">
-                    <i className="fa-solid fa-euro-sign"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-xs uppercase text-[#959697] m-0">Ingresos del Mes</h3>
-                    <p className="text-lg font-extrabold text-[#53565A] m-0">
-                      {parseFloat(data?.kpis?.ingresosMes || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })}€
-                    </p>
-                  </div>
-                </Link>
-
-                <Link to="/calendario" className="bg-white p-4 rounded-2xl shadow-sm flex items-center gap-3 border-l-4 hover:-translate-y-1 transition-transform border-[#959697]">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg bg-[#959697]">
-                    <i className="fa-solid fa-calendar-check"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-xs uppercase text-[#959697] m-0">Sesiones del Mes</h3>
-                    <p className="text-lg font-extrabold text-[#53565A] m-0">{data?.kpis?.sesionesMes || 0}</p>
-                  </div>
-                </Link>
+            <>
+              {/* KPIs Section */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { label: 'Clientes Totales', value: data.kpis.totalClientes, icon: 'fa-users', color: 'bg-[#4BB7AE]', link: '/clientes' },
+                  { label: 'Staff / Coaches', value: data.kpis.totalEntrenadores, icon: 'fa-dumbbell', color: 'bg-[#A5EFE2] !text-[#53565A]', link: '/entrenadores' },
+                  { label: 'Ingresos del Mes', value: `${parseFloat(data.kpis.ingresosMes).toLocaleString()}€`, icon: 'fa-euro-sign', color: 'bg-[#53565A]', link: '/facturas' },
+                  { label: 'Sesiones Totales', value: data.kpis.sesionesMes, icon: 'fa-calendar-check', color: 'bg-[#EF5D7A]', link: '/calendario' }
+                ].map((kpi, idx) => (
+                  <Link to={kpi.link} key={idx} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between group hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={`w-12 h-12 ${kpi.color} text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-inherit/20`}>
+                        <i className={`fa-solid ${kpi.icon}`}></i>
+                      </div>
+                      <i className="fa-solid fa-chevron-right text-slate-200 group-hover:text-slate-400 transition-colors"></i>
+                    </div>
+                    <div>
+                      <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-tighter mb-1">{kpi.label}</h3>
+                      <p className="text-3xl font-black text-[#53565A] tracking-tighter">{kpi.value}</p>
+                    </div>
+                  </Link>
+                ))}
               </div>
 
-              {/* Gráficos 1 */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="bg-white p-4 rounded-2xl shadow-sm lg:col-span-2 flex flex-col h-[400px]">
-                  <h2 className="text-base font-bold text-[#53565A] mb-4 flex items-center gap-2">
-                    <i className="fa-solid fa-chart-line text-[#4BB7AE]"></i> Ingresos Mensuales (Últimos 6 meses)
-                  </h2>
+              {/* Main Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Revenue Comparison */}
+                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px]">
+                  <div className="mb-8">
+                    <h3 className="text-lg font-black text-slate-800 tracking-tight">Ingresos por Centro</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Comparativa histórica de facturación</p>
+                  </div>
                   <div className="flex-1 relative">
-                    <Line data={revenueChartData} options={revenueChartOptions} />
+                    <Line data={revenueChartData} options={commonOptions} />
                   </div>
                 </div>
 
-                <div className="bg-white p-4 rounded-2xl shadow-sm h-[400px] flex flex-col">
-                  <h2 className="text-base font-bold text-[#53565A] mb-4 flex items-center gap-2">
-                    <i className="fa-solid fa-chart-pie text-[#EF5D7A]"></i> Clases Populares
-                  </h2>
+                {/* Churn Analysis */}
+                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px]">
+                  <div className="mb-8">
+                    <h3 className="text-lg font-black text-slate-800 tracking-tight">Evolución de Clientes</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Análisis de retención y nuevos usuarios</p>
+                  </div>
                   <div className="flex-1 relative">
-                    <Doughnut data={classesChartData} options={classesChartOptions} />
+                    <Line data={churnChartData} options={commonOptions} />
                   </div>
                 </div>
               </div>
 
-              {/* Métricas por Centro */}
-              <div className="bg-white p-6 rounded-2xl shadow-sm space-y-6">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <h2 className="text-xl font-black text-slate-800 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">
-                      <i className="fa-solid fa-layer-group"></i>
-                    </div>
-                    Rendimiento por Sede
-                  </h2>
+              {/* Occupancy and Customer Care */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Occupancy Bar */}
+                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[500px] lg:col-span-2">
+                  <div className="mb-8">
+                    <h3 className="text-lg font-black text-slate-800 tracking-tight">Ocupación de Clases</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Clases con mayor ratio de asistencia</p>
+                  </div>
+                  <div className="flex-1 relative">
+                    <Bar data={occupancyChartData} options={{...commonOptions, indexAxis: 'y'}} />
+                  </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {/* Sesiones por Centro */}
-                  <div className="bg-slate-50/50 p-4 rounded-xl space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Sesiones Totales</h3>
-                      <i className="fa-solid fa-calendar-check text-[#4BB7AE]"></i>
-                    </div>
-                    <div className="h-44 relative">
-                      <Bar data={sesionesChartData} options={centerChartOptions} />
-                    </div>
-                  </div>
 
-                  {/* Clientes por Centro */}
-                  <div className="bg-slate-50/50 p-4 rounded-xl space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Clientes Activos</h3>
-                      <i className="fa-solid fa-users text-[#EF5D7A]"></i>
-                    </div>
-                    <div className="h-44 relative">
-                      <Bar data={clientesChartData} options={centerChartOptions} />
-                    </div>
+                {/* Anonymous Customer Care Section */}
+                <div className="bg-[#53565A] p-8 rounded-[3rem] shadow-xl text-white flex flex-col h-[500px] relative overflow-hidden">
+                  <div className="relative z-10 mb-8">
+                    <h3 className="text-lg font-black tracking-tight">Atención al Cliente</h3>
+                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">Resumen de ausencias (14-30 días)</p>
                   </div>
-
-                  {/* Ingresos por Centro */}
-                  <div className="bg-slate-50/50 p-4 rounded-xl space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Ingresos Acumulados</h3>
-                      <i className="fa-solid fa-euro-sign text-[#A5EFE2]"></i>
-                    </div>
-                    <div className="h-44 relative">
-                      <Bar data={ingresosChartData} options={centerChartOptions} />
-                    </div>
+                  
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-white/5 rounded-[2.5rem] border border-white/5">
+                    {data.kpis.atRiskCount === 0 ? (
+                      <>
+                        <div className="w-20 h-20 bg-[#4BB7AE]/20 rounded-full flex items-center justify-center mb-6">
+                           <i className="fa-solid fa-check text-4xl text-[#4BB7AE]"></i>
+                        </div>
+                        <h4 className="text-xl font-black mb-2">Todo en orden</h4>
+                        <p className="text-xs text-slate-400 font-bold max-w-[180px]">No hay clientes con ausencias prolongadas en este momento.</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-7xl font-black text-[#A5EFE2] mb-4 tracking-tighter">
+                          {data.kpis.atRiskCount}
+                        </div>
+                        <h4 className="text-xl font-black mb-2">Clientes Inactivos</h4>
+                        <p className="text-xs text-slate-400 font-bold max-w-[200px]">
+                          Hay {data.kpis.atRiskCount} personas que no han registrado actividad en los últimos 15 días.
+                        </p>
+                        
+                        <div className="mt-8 w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-[#EF5D7A]" 
+                            style={{ width: `${Math.min((data.kpis.atRiskCount / data.kpis.totalClientes) * 100, 100)}%` }}
+                          ></div>
+                        </div>
+                        <p className="mt-2 text-[10px] font-black uppercase text-slate-500 tracking-widest">
+                          {((data.kpis.atRiskCount / data.kpis.totalClientes) * 100).toFixed(1)}% de la base total
+                        </p>
+                      </>
+                    )}
                   </div>
+                  
+                  <Link to="/clientes" className="mt-6 w-full py-4 bg-white/10 text-slate-300 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all border border-white/5 text-center">
+                    Gestionar Clientes
+                  </Link>
                 </div>
               </div>
 
-              {/* Tablas Inferiores: Movimientos y Notificaciones */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  {/* Últimos Movimientos */}
-                  <div className="bg-white p-5 rounded-2xl shadow-sm h-[450px] flex flex-col overflow-hidden border border-slate-100">
-                    <h2 className="text-base font-bold text-[#53565A] mb-4 flex items-center gap-2">
-                      <i className="fa-solid fa-clock-rotate-left text-[#959697]"></i> Últimos Pagos Registrados
-                    </h2>
+              {/* Transactions and Coach Messages */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Last Transactions */}
+                  <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[500px]">
+                    <div className="flex justify-between items-center mb-8">
+                      <h3 className="text-lg font-black text-[#53565A] tracking-tight">Últimos Pagos</h3>
+                      <Link to="/facturas" className="text-[10px] font-black text-[#4BB7AE] uppercase tracking-widest hover:underline transition-colors">Historial</Link>
+                    </div>
                     <div className="overflow-x-auto flex-1">
-                        <table className="w-full text-left">
-                          <thead className="border-b border-slate-100 text-[10px] text-[#959697] uppercase tracking-wider font-black">
-                            <tr>
-                              <th className="py-2 px-3">Fecha</th>
-                              <th className="py-2 px-3">Cliente</th>
-                              <th className="py-2 px-3">Clase</th>
-                              <th className="py-2 px-3">Importe</th>
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <th className="px-4 py-4">Cliente</th>
+                            <th className="px-4 py-4">Clase</th>
+                            <th className="px-4 py-4 text-right">Importe</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {data.ultimosPagos.map(pago => (
+                            <tr key={pago.id} className="group hover:bg-slate-50 transition-colors">
+                              <td className="px-4 py-5">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200">
+                                    {pago.foto ? <img src={pago.foto} className="w-full h-full object-cover" /> : pago.cliente.charAt(0)}
+                                  </div>
+                                  <span className="text-xs font-bold text-[#53565A]">{pago.cliente}</span>
+                                </div>
+                              </td>
+                              <td className="px-4 py-5">
+                                <span className="px-3 py-1 bg-slate-50 text-slate-500 border border-slate-200 rounded-lg text-[10px] font-black uppercase">{pago.clase}</span>
+                              </td>
+                              <td className="px-4 py-5 text-right">
+                                 <span className="text-sm font-black text-[#4BB7AE]">+{parseFloat(pago.importe).toFixed(2)}€</span>
+                              </td>
                             </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-50 text-[13px]">
-                            {data?.ultimosPagos?.length === 0 && (
-                              <tr><td colSpan="4" className="text-center py-10 text-slate-400 font-medium italic">Sin movimientos recientes</td></tr>
-                            )}
-                            {data?.ultimosPagos?.map(pago => (
-                              <tr key={pago.id} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="py-2.5 px-3 font-bold text-slate-500">{pago.fecha}</td>
-                                <td className="py-2.5 px-3 font-semibold text-slate-700">{pago.cliente}</td>
-                                <td className="py-2.5 px-3">
-                                  <span className="bg-[#4BB7AE]/10 text-[#4BB7AE] px-2 py-0.5 rounded-md font-bold text-[11px] uppercase">
-                                      {pago.clase}
-                                  </span>
-                                </td>
-                                <td className="py-2.5 px-3 font-black text-slate-800">
-                                  {parseFloat(pago.importe).toLocaleString('es-ES', { minimumFractionDigits: 2 })}€
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
 
-                  {/* Notificaciones de Entrenadores */}
-                  <div className="bg-white p-5 rounded-2xl shadow-sm h-[450px] flex flex-col overflow-hidden border border-slate-100">
-                    <h2 className="text-base font-bold text-[#53565A] mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <i className="fa-solid fa-paper-plane text-blue-500"></i> Mensajes de Entrenadores
-                      </div>
-                      {data?.notificaciones?.filter(n => !n.leido).length > 0 && (
-                        <span className="bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full animate-bounce">
-                          {data.notificaciones.filter(n => !n.leido).length} pendientes
+                  {/* Coach Messages (REINSTATED) */}
+                  <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[500px]">
+                    <div className="flex justify-between items-center mb-8">
+                      <h3 className="text-lg font-black text-[#53565A] tracking-tight">Mensajes del Staff</h3>
+                      {data.notificaciones?.filter(n => !n.leido).length > 0 && (
+                        <span className="bg-[#4BB7AE] text-white text-[10px] px-2 py-0.5 rounded-full">
+                          {data.notificaciones.filter(n => !n.leido).length} nuevos
                         </span>
                       )}
-                    </h2>
-                    <div className="overflow-y-auto pr-1 space-y-3 flex-1 custom-scrollbar pb-2">
-                      {data?.notificaciones?.length === 0 && (
-                        <div className="text-center py-20 text-slate-400 font-medium italic">No hay notificaciones registradas.</div>
-                      )}
-                      {data?.notificaciones?.map(notif => (
-                        <div key={notif.id} className={`p-4 rounded-2xl border transition-all ${notif.leido ? 'bg-slate-50 border-slate-100 opacity-70' : 'bg-white border-blue-100 shadow-sm shadow-blue-50 hover:border-blue-200'}`}>
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${
-                                notif.tipo === 'incidencia' ? 'bg-rose-100 text-rose-600' : 
-                                notif.tipo === 'clase' ? 'bg-amber-100 text-amber-600' : 
-                                'bg-blue-100 text-blue-600'
-                              }`}>
-                                {notif.tipo}
-                              </span>
-                              <span className="text-[10px] text-slate-400 font-bold">{new Date(notif.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="overflow-y-auto space-y-4 pr-1 custom-scrollbar">
+                      {data.notificaciones?.length === 0 ? (
+                        <div className="text-center py-20 text-slate-400 text-sm font-bold italic">No hay mensajes recientes</div>
+                      ) : (
+                        data.notificaciones.map(notif => (
+                          <div key={notif.id} className={`p-5 rounded-3xl border transition-all ${notif.leido ? 'bg-slate-50 border-slate-100 opacity-60' : 'bg-white border-[#A5EFE2] shadow-sm shadow-blue-50'}`}>
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(notif.created_at).toLocaleDateString()}</span>
+                                {!notif.leido && <div className="w-2 h-2 rounded-full bg-[#4BB7AE]"></div>}
                             </div>
-                            {!notif.leido && (
-                              <div className="w-2 h-2 rounded-full bg-blue-500 shadow-lg shadow-blue-200"></div>
-                            )}
-                          </div>
-                          <h4 className="text-sm font-black text-slate-800 mb-1">{notif.titulo}</h4>
-                          <p className="text-xs text-slate-600 leading-relaxed mb-3 line-clamp-2 hover:line-clamp-none transition-all">{notif.mensaje}</p>
-                          <div className="flex items-center justify-between border-t border-slate-50 pt-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-extrabold text-slate-500">
-                                {notif.entrenador?.name?.charAt(0).toUpperCase()}
-                              </div>
-                              <span className="text-[11px] font-bold text-slate-500">{notif.entrenador?.name}</span>
-                            </div>
-                            {!notif.leido ? (
-                              <div className="flex gap-2">
-                                <button 
-                                  onClick={() => setReplyModal({ open: true, notifId: notif.id, text: '' })}
-                                  className="text-[10px] font-black uppercase text-blue-500 hover:text-blue-700 hover:underline decoration-2 underline-offset-4"
-                                >
-                                  Contestar
-                                </button>
-                                <button 
-                                  onClick={async () => {
-                                    try {
-                                      await axios.post(`/api/admin/notificaciones/${notif.id}/read`);
-                                      fetchData();
-                                    } catch (e) { console.error(e); }
-                                  }}
-                                  className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-600"
-                                >
-                                  Marcar leída
-                                </button>
-                              </div>
-                            ) : (
+                            <h4 className="text-sm font-black text-[#53565A] mb-1">{notif.titulo}</h4>
+                            <p className="text-xs text-slate-500 line-clamp-2 mb-4">{notif.mensaje}</p>
+                            <div className="flex items-center justify-between pt-4 border-t border-slate-50">
                                 <div className="flex items-center gap-2">
-                                    {notif.respuesta && (
-                                        <span className="text-[9px] font-black bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-md uppercase">Respondido</span>
-                                    )}
-                                    <span className="text-[9px] font-bold text-slate-400 italic">Leído</span>
+                                  <div className="w-6 h-6 rounded-lg bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-500">
+                                    {notif.entrenador?.name?.charAt(0)}
+                                  </div>
+                                  <span className="text-[11px] font-black text-slate-500">{notif.entrenador?.name}</span>
                                 </div>
-                            )}
+                                {!notif.leido && (
+                                  <button 
+                                    onClick={() => setReplyModal({ open: true, notifId: notif.id, text: '' })}
+                                    className="text-[10px] font-black uppercase text-[#4BB7AE] hover:underline"
+                                  >
+                                    Responder
+                                  </button>
+                                )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
               </div>
-
-              {/* Mapa de Sedes */}
-              <div className="pt-4 pb-8">
-                  <MapaEstadisticas centers={data?.centros_list || []} />
-              </div>
-
-            </div>
+            </>
           )}
         </div>
 
-        {/* Modal de Respuesta */}
+        {/* Modal de Respuesta (Mantenido) */}
         {replyModal.open && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                 <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setReplyModal({ ...replyModal, open: false })}></div>
@@ -480,13 +406,13 @@ export default function Estadisticas() {
                                 required
                                 rows="5"
                                 placeholder="Escribe aquí tu respuesta para el entrenador..."
-                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-slate-300 resize-none"
+                                className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-[#4BB7AE]/10 focus:border-[#4BB7AE] outline-none transition-all placeholder:text-slate-300 resize-none"
                             ></textarea>
                         </div>
                         <button 
                             type="submit" 
                             disabled={replyLoading}
-                            className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full py-4 bg-[#4BB7AE] hover:bg-[#3da199] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-teal-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             {replyLoading ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-paper-plane"></i>}
                             Enviar Respuesta

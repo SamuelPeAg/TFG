@@ -70,8 +70,8 @@ class UserController extends Controller
             // Password: Solo obligatoria si se envía + max 64
             'password'      => 'nullable|string|min:6|max:64',
             
-            // iban: Opcional + Texto + Único + Mínimo 8 caracteres (validez básica)
-            'iban'          => 'nullable|string|unique:users,iban|min:8|max:34|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4,30}$/i',
+            // iban: Opcional + Texto + Único + Mínimo 16 caracteres (validez básica)
+            'iban'          => 'nullable|string|unique:users,iban|min:16|max:34|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{12,30}$/i',
             
             // Firma: Opcional + Texto + Máximo 1000
             'firma_digital' => 'nullable|string|max:1000',

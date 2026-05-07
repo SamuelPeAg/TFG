@@ -93,6 +93,11 @@ export default function UserModals({
       errs.codigo_postal = ['El Código Postal debe tener 5 números.'];
     }
 
+    const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{12,30}$/i;
+    if (formData.iban && !ibanRegex.test(formData.iban)) {
+      errs.iban = ['El IBAN no tiene un formato válido (Ej: ES21... min. 16 caracteres).'];
+    }
+
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return false;

@@ -6,7 +6,29 @@
     <title>Factomove - Conecta tu movimiento</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
+    <!-- Tailwind CDN para config rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Tailwind Config -->
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              brandTeal: '#4BB7AE',
+              brandCoral: '#EF5D7A',
+              brandAqua: '#A5EFE2',
+              darkText: '#2D3748',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
 
     <!-- Dark mode script -->
     <script>

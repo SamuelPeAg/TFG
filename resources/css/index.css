@@ -11,7 +11,8 @@
   --brand-teal: #4BB7AE;
   --brand-coral: #EF5D7A;
   --brand-aqua: #A5EFE2;
-  --dark-text: #2D3748;
+  --brand-gray: #53565A;
+  --dark-text: #53565A;
 }
 
 html {
@@ -21,7 +22,7 @@ html {
 body {
   font-family: 'Inter', sans-serif;
   background-color: white;
-  color: #1f2937;
+  color: var(--brand-gray);
   transition: background-color 0.3s, color 0.3s;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -107,7 +108,7 @@ html, body {
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #4BB7AE 0%, #EF5D7A 100%);
+  background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-coral) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -132,7 +133,7 @@ html, body {
 }
 
 .btn-gradient {
-  background: linear-gradient(to right, #4BB7AE, #EF5D7A);
+  background: linear-gradient(to right, var(--brand-teal), var(--brand-coral));
 }
 
 /* --- RESPONSIVE TABLES (.facto-table) --- */

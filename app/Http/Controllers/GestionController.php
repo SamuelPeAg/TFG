@@ -126,18 +126,28 @@ class GestionController extends Controller
     // Gestion de Centros
     public function storeCentro(Request $request) {
         $data = $request->validate([
-            'nombre' => 'required',
-            'cif' => 'nullable',
-            'direccion' => 'nullable',
-            'cp' => 'nullable',
-            'ciudad' => 'nullable',
-            'empresa_id' => 'nullable|exists:empresas,id',
-            'google_maps_link' => 'nullable',
-            'color_hex' => 'nullable|string|max:7',
-            'lat' => 'nullable|numeric',
-            'lng' => 'nullable|numeric',
-            'tag' => 'nullable|string|max:100',
-            'icon' => 'nullable|string|max:50'
+            'nombre'           => 'required|string|min:3|max:255',
+            'cif'              => 'required|string|regex:/^[0-9ABCDEFGHJKLMNPQRSUVW][0-9]{7}[0-9A-Z]$/i',
+            'direccion'        => 'required|string|max:255',
+            'cp'               => 'required|digits:5',
+            'ciudad'           => 'required|string|max:255',
+            'empresa_id'       => 'required|exists:empresas,id',
+            'google_maps_link' => 'nullable|string',
+            'color_hex'        => 'nullable|string|max:7',
+            'lat'              => 'nullable|numeric',
+            'lng'              => 'nullable|numeric',
+            'tag'              => 'nullable|string|max:100',
+            'icon'             => 'nullable|string|max:50'
+        ], [
+            'nombre.required'     => 'El nombre del centro es obligatorio.',
+            'nombre.min'          => 'El nombre debe tener al menos 3 caracteres.',
+            'cif.required'        => 'El CIF/NIF es obligatorio.',
+            'cif.regex'           => 'El formato del CIF/NIF no es válido.',
+            'direccion.required'  => 'La dirección es obligatoria.',
+            'cp.required'         => 'El código postal es obligatorio.',
+            'cp.digits'           => 'El código postal debe tener exactamente 5 dígitos.',
+            'ciudad.required'     => 'La ciudad es obligatoria.',
+            'empresa_id.required' => 'Debes seleccionar una empresa asociada.'
         ]);
 
         if (empty($data['lat']) || empty($data['lng'])) {
@@ -157,18 +167,28 @@ class GestionController extends Controller
 
     public function updateCentro(Request $request, Centro $centro) {
         $data = $request->validate([
-            'nombre' => 'required',
-            'cif' => 'nullable',
-            'direccion' => 'nullable',
-            'cp' => 'nullable',
-            'ciudad' => 'nullable',
-            'empresa_id' => 'nullable|exists:empresas,id',
-            'google_maps_link' => 'nullable',
-            'color_hex' => 'nullable|string|max:7',
-            'lat' => 'nullable|numeric',
-            'lng' => 'nullable|numeric',
-            'tag' => 'nullable|string|max:100',
-            'icon' => 'nullable|string|max:50'
+            'nombre'           => 'required|string|min:3|max:255',
+            'cif'              => 'required|string|regex:/^[0-9ABCDEFGHJKLMNPQRSUVW][0-9]{7}[0-9A-Z]$/i',
+            'direccion'        => 'required|string|max:255',
+            'cp'               => 'required|digits:5',
+            'ciudad'           => 'required|string|max:255',
+            'empresa_id'       => 'required|exists:empresas,id',
+            'google_maps_link' => 'nullable|string',
+            'color_hex'        => 'nullable|string|max:7',
+            'lat'              => 'nullable|numeric',
+            'lng'              => 'nullable|numeric',
+            'tag'              => 'nullable|string|max:100',
+            'icon'             => 'nullable|string|max:50'
+        ], [
+            'nombre.required'     => 'El nombre del centro es obligatorio.',
+            'nombre.min'          => 'El nombre debe tener al menos 3 caracteres.',
+            'cif.required'        => 'El CIF/NIF es obligatorio.',
+            'cif.regex'           => 'El formato del CIF/NIF no es válido.',
+            'direccion.required'  => 'La dirección es obligatoria.',
+            'cp.required'         => 'El código postal es obligatorio.',
+            'cp.digits'           => 'El código postal debe tener exactamente 5 dígitos.',
+            'ciudad.required'     => 'La ciudad es obligatoria.',
+            'empresa_id.required' => 'Debes seleccionar una empresa asociada.'
         ]);
 
         if (empty($data['lat']) || empty($data['lng'])) {
