@@ -94,11 +94,13 @@ class GestionController extends Controller
     // Gestion de Empresas
     public function storeEmpresa(Request $request) {
         $data = $request->validate([
-            'nombre' => 'required',
-            'cif_dni' => 'required|unique:empresas,cif_dni',
-            'direccion' => 'nullable',
-            'cp' => 'nullable',
-            'ciudad' => 'nullable',
+            'nombre'           => 'required|string|max:255',
+            'cif_dni'          => 'required|unique:empresas,cif_dni',
+            'sepa_creditor_id' => 'nullable|string|max:50',
+            'sepa_bic'         => 'nullable|string|max:11',
+            'direccion'        => 'nullable|string|max:255',
+            'cp'               => 'nullable|string|max:10',
+            'ciudad'           => 'nullable|string|max:255',
             'iva_configurable' => 'nullable|numeric'
         ]);
         $empresa = Empresa::create($data);
@@ -107,11 +109,13 @@ class GestionController extends Controller
 
     public function updateEmpresa(Request $request, Empresa $empresa) {
         $data = $request->validate([
-            'nombre' => 'required',
-            'cif_dni' => 'required|unique:empresas,cif_dni,'.$empresa->id,
-            'direccion' => 'nullable',
-            'cp' => 'nullable',
-            'ciudad' => 'nullable',
+            'nombre'           => 'required|string|max:255',
+            'cif_dni'          => 'required|unique:empresas,cif_dni,'.$empresa->id,
+            'sepa_creditor_id' => 'nullable|string|max:50',
+            'sepa_bic'         => 'nullable|string|max:11',
+            'direccion'        => 'nullable|string|max:255',
+            'cp'               => 'nullable|string|max:10',
+            'ciudad'           => 'nullable|string|max:255',
             'iva_configurable' => 'nullable|numeric'
         ]);
         $empresa->update($data);
@@ -132,6 +136,7 @@ class GestionController extends Controller
             'cp'               => 'required|digits:5',
             'ciudad'           => 'required|string|max:255',
             'empresa_id'       => 'required|exists:empresas,id',
+            'serie_facturacion'=> 'nullable|string|max:10',
             'google_maps_link' => 'nullable|string',
             'color_hex'        => 'nullable|string|max:7',
             'lat'              => 'nullable|numeric',
@@ -173,6 +178,7 @@ class GestionController extends Controller
             'cp'               => 'required|digits:5',
             'ciudad'           => 'required|string|max:255',
             'empresa_id'       => 'required|exists:empresas,id',
+            'serie_facturacion'=> 'nullable|string|max:10',
             'google_maps_link' => 'nullable|string',
             'color_hex'        => 'nullable|string|max:7',
             'lat'              => 'nullable|numeric',

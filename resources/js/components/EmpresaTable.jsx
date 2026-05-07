@@ -5,14 +5,18 @@ import Button from './Button';
 export default function EmpresaTable({ empresas, onUpdate }) {
     const [editMode, setEditMode] = useState(null);
     const [formData, setFormData] = useState({
-        nombre: '', cif_dni: '', direccion: '', cp: '', ciudad: '', iva_configurable: 21
+        nombre: '', cif_dni: '', direccion: '', cp: '', ciudad: '', iva_configurable: 21,
+        sepa_creditor_id: '', sepa_bic: ''
     });
 
     const handleAdd = async () => {
         try {
             const data = { ...formData, iva_configurable: parseFloat(formData.iva_configurable) || 0 };
             await axios.post('/api/admin/empresas', data);
-            setFormData({ nombre: '', cif_dni: '', direccion: '', cp: '', ciudad: '', iva_configurable: 21 });
+            setFormData({ 
+                nombre: '', cif_dni: '', direccion: '', cp: '', ciudad: '', iva_configurable: 21,
+                sepa_creditor_id: '', sepa_bic: ''
+            });
             onUpdate();
             setEditMode(null);
         } catch (e) { 
@@ -98,6 +102,14 @@ export default function EmpresaTable({ empresas, onUpdate }) {
                             <div className="grid grid-cols-2 gap-4">
                                 <input type="text" placeholder="CP" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none" value={formData.cp} onChange={e => setFormData({...formData, cp: e.target.value})} />
                                 <input type="text" placeholder="Ciudad" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none" value={formData.ciudad} onChange={e => setFormData({...formData, ciudad: e.target.value})} />
+                            </div>
+                            
+                            <div className="pt-2 border-t border-slate-100 mt-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1 mb-2 block">Configuración SEPA</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input type="text" placeholder="ID Acreedor (AT-02)" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none font-bold text-sm" value={formData.sepa_creditor_id || ''} onChange={e => setFormData({...formData, sepa_creditor_id: e.target.value})} />
+                                    <input type="text" placeholder="BIC/SWIFT" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-400 outline-none font-bold text-sm" value={formData.sepa_bic || ''} onChange={e => setFormData({...formData, sepa_bic: e.target.value})} />
+                                </div>
                             </div>
                         </div>
                         <div className="flex gap-3 mt-8">

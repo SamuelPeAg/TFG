@@ -57,16 +57,16 @@
         </table>
         
         <div class="company-info">
-            <div style="margin-top: 8px; font-size: 14px; color: #334155;"><strong>Moverte da Vida S.L.</strong></div>
-            <div style="color: #64748b;">NIF: B-12345678</div>
-            <div style="color: #64748b;">Av. del Deporte, 45, Córdoba</div>
+            <div style="margin-top: 8px; font-size: 14px; color: #334155;"><strong>{{ $pago->centro_rel->empresa->nombre ?? 'Moverte da Vida S.L.' }}</strong></div>
+            <div style="color: #64748b;">NIF: {{ $pago->centro_rel->empresa->cif_dni ?? 'B-12345678' }}</div>
+            <div style="color: #64748b;">{{ $pago->centro_rel->empresa->direccion ?? 'Av. del Deporte, 45' }}, {{ $pago->centro_rel->empresa->ciudad ?? 'Córdoba' }}</div>
             <div style="color: #64748b;">contacto@factomove.es</div>
         </div>
         
         <div class="invoice-title-area">
             <div class="invoice-title">FACTURA</div>
             <div class="invoice-date">
-                Nº Factura: <strong>FCT-{{ date('Y') }}-{{ str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</strong><br>
+                Nº Factura: <strong>{{ $pago->numero_completo ?? 'FCT-'.date('Y').'-'.str_pad($pago->id, 5, '0', STR_PAD_LEFT) }}</strong><br>
                 Fecha de Emisión: <strong>{{ \Carbon\Carbon::parse($pago->fecha_registro)->format('d/m/Y') }}</strong>
             </div>
             <div style="margin-top: 15px;">

@@ -12,6 +12,8 @@ class Empresa extends Model
     protected $fillable = [
         'nombre',
         'cif_dni',
+        'sepa_creditor_id',
+        'sepa_bic',
         'direccion',
         'cp',
         'ciudad',

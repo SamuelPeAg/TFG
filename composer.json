@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
+        "danielmrdev/laravel-spanish-validator": "^2.0",
         "fakerphp/faker": "^1.23",
         "google/apiclient": "^2.19",
         "laravel/framework": "^12.0",

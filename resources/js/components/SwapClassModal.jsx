@@ -22,7 +22,8 @@ const SwapClassModal = ({ isOpen, onClose, originalSession, onSwapSuccess }) => 
             const res = await axios.get(`/booking-swap/${originalSession.id}/candidates`);
             setCandidates(res.data.candidates);
         } catch (err) {
-            setError('No se pudieron cargar las clases alternativas.');
+            console.error("Error fetching swap candidates:", err);
+            setError('No se pudieron cargar las clases alternativas en este momento. Por favor, inténtalo de nuevo más tarde.');
         } finally {
             setLoading(false);
         }

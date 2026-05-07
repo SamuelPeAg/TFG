@@ -91,41 +91,47 @@ export default function ReservaClases() {
     window.addEventListener('openVerClaseReact', handleOpenVerReactModal);
 
     // Lógica para saltar a fecha y abrir sesión si venimos de Mis Clases
-    if (location.state?.goToDate && window.calendar && !loading) {
-        const date = new Date(location.state.goToDate);
-        window.calendar.gotoDate(date);
-
-        if (location.state.openSession) {
-            const checkAndOpen = () => {
-                const events = window.calendar.getEvents();
-                const target = events.find(ev => {
-                    const ep = ev.extendedProps;
-                    const s = location.state.openSession;
-                    return ev.startStr.slice(0, 16) === s.fecha_hora.slice(0, 16) && 
-                           ep.clase_nombre === s.nombre_clase && 
-                           ep.centro === s.centro;
-                });
-                if (target) {
-                    window.dispatchEvent(new CustomEvent('openVerClaseReact', { detail: { event: target } }));
-                } else {
-                    // Si no lo encuentra a la primera, reintentamos una vez tras un pequeño delay (por si los eventos tardan en cargar)
-                    setTimeout(() => {
-                        const eventsRetry = window.calendar.getEvents();
-                        const targetRetry = eventsRetry.find(ev => {
-                            const ep = ev.extendedProps;
-                            const s = location.state.openSession;
-                            return ev.startStr.slice(0, 16) === s.fecha_hora.slice(0, 16) && 
-                                   ep.clase_nombre === s.nombre_clase && 
-                                   ep.centro === s.centro;
-                        });
-                        if (targetRetry) window.dispatchEvent(new CustomEvent('openVerClaseReact', { detail: { event: targetRetry } }));
-                    }, 500);
+    if (location.state?.openSession && !loading && data) {
+        console.log("ReservaClases: Detectada redirección desde Mis Clases", location.state.openSession);
+        const session = location.state.openSession;
+        
+        const timer = setTimeout(() => {
+            // Mapeamos los datos directamente al modal sin depender de que FullCalendar encuentre el evento
+            setSelectedEventParaVer({
+                start: new Date(session.fecha_registro),
+                extendedProps: {
+                    clase_nombre: session.nombre_clase,
+                    centro: session.centro,
+                    tipo_clase: session.tipo_clase,
+                    capacidad_maxima: session.capacidad_maxima,
+                    entrenadores: (session.entrenadores || []).map(t => ({
+                        ...t,
+                        photo: t.foto 
+                    })),
+                    alumnos: (session.alumnos || []).map(a => ({
+                        ...a,
+                        nombre: a.name, 
+                        photo: a.foto   
+                    })),
+                    alumnos_count: (session.alumnos || []).length,
+                    session_key: {
+                        fecha_hora: session.fecha_registro,
+                        nombre_clase: session.nombre_clase,
+                        centro: session.centro
+                    }
                 }
-            };
-            setTimeout(checkAndOpen, 300);
-        }
-        // Limpiamos el estado para no repetir el salto al recargar
-        window.history.replaceState({}, document.title);
+            });
+            setIsVerModalOpen(true);
+
+            if (location.state.goToDate && window.calendar) {
+                window.calendar.gotoDate(new Date(location.state.goToDate));
+            }
+            
+            // Limpiamos el estado
+            window.history.replaceState({}, document.title);
+        }, 500); // Pequeño delay para estabilidad
+
+        return () => clearTimeout(timer);
     }
 
     return () => window.removeEventListener('openVerClaseReact', handleOpenVerReactModal);

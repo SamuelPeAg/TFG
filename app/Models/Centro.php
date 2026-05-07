@@ -15,6 +15,8 @@ class Centro extends Model
 
     protected $fillable = [
         "nombre",
+        "serie_facturacion",
+        "ultimo_numero_factura",
         "cif",
         "direccion",
         "cp",

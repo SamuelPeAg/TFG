@@ -207,6 +207,11 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::get('/api/trainer-templates', [\App\Http\Controllers\TrainerTemplateController::class, 'index']);
     Route::post('/api/trainer-templates', [\App\Http\Controllers\TrainerTemplateController::class, 'store']);
 
+    // --- NOTIFICACIONES DE USUARIO (ALERTAS DE CAMPO) ---
+    Route::post('/api/user-notifications/toggle-field-alert', [\App\Http\Controllers\UserNotificationController::class, 'toggleFieldAlert']);
+    Route::get('/api/user-notifications', [\App\Http\Controllers\UserNotificationController::class, 'getUserNotifications']);
+    Route::post('/api/user-notifications/{id}/read', [\App\Http\Controllers\UserNotificationController::class, 'markAsRead']);
+
 
 
     /*

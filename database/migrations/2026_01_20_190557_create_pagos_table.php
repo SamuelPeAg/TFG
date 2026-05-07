@@ -10,6 +10,9 @@ return new class extends Migration
     {
         Schema::create('pagos', function (Blueprint $table) {
             $table->id();
+            $table->string('serie', 10)->nullable();
+            $table->integer('numero_factura')->nullable();
+            $table->string('numero_completo')->nullable();
 
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('entrenador_id')->nullable()->constrained('entrenadores')->nullOnDelete();

@@ -26,6 +26,7 @@ export default function Configuracion() {
   
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
+  const [fieldAlerts, setFieldAlerts] = useState({});
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
@@ -41,7 +42,23 @@ export default function Configuracion() {
 
   useEffect(() => {
      fetchUser();
+     fetchFieldAlerts();
   }, []);
+
+  const fetchFieldAlerts = async () => {
+    try {
+      const res = await axios.get('/api/user-notifications');
+      const alerts = {};
+      res.data.notifications.forEach(n => {
+        if (n.type === 'field_alert') {
+          alerts[n.field] = n.message || "Por favor, actualiza este dato.";
+        }
+      });
+      setFieldAlerts(alerts);
+    } catch (error) {
+      console.error("Error fetching alerts:", error);
+    }
+  };
 
   useEffect(() => {
     const checkChanges = () => {
@@ -66,6 +83,7 @@ export default function Configuracion() {
               name: user.name || '',
               email: user.email || '',
               iban: user.iban || '',
+              country: user.country || 'ES',
               dni: user.dni || '',
               direccion: user.direccion || '',
               ciudad: user.ciudad || '',
@@ -75,7 +93,7 @@ export default function Configuracion() {
               password_confirmation: ''
           };
           setFormData(data);
-          setInitialData(data);
+          setInitialData({ ...data });
           
           if (user.photo) {
               setPhotoPreview(user.photo);
@@ -292,41 +310,78 @@ export default function Configuracion() {
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">DNI / NIE</label>
-                                            <input type="text" name="dni" value={formData.dni} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner uppercase" placeholder="12345678X" />
+                                            {fieldAlerts.dni && (
+                                              <div className="mx-4 mb-2 p-3 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 animate-pulse">
+                                                <i className="fa-solid fa-triangle-exclamation text-rose-500 text-xs"></i>
+                                                <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.dni}</p>
+                                              </div>
+                                            )}
+                                            <input type="text" name="dni" value={formData.dni} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner uppercase ${fieldAlerts.dni ? 'border-rose-300' : 'border-slate-100'}`} placeholder="12345678X" />
                                         </div>
-                                                                      <div className="space-y-3 group">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em] group-focus-within:text-[#38C1A3] transition-colors">IBAN (Cuenta de Facturación)</label>
-                                        <div className="relative">
-                                        <IbanInput 
-                                            name="iban" 
-                                            value={formData.iban} 
-                                            onChange={handleInputChange} 
-                                            className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" 
-                                            placeholder="Introduce tu IBAN..." 
-                                        />
                                         </div>
-                                        {errors.iban && <p className="text-[10px] text-rose-500 font-black uppercase ml-6 tracking-widest">{errors.iban[0]}</p>}
-                                    </div>
-                                  </div>
 
-                                    <div className="space-y-3 group">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em] group-focus-within:text-[#38C1A3] transition-colors">Dirección de Residencia</label>
-                                        <input type="text" name="direccion" value={formData.direccion} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="Calle, portal, piso..." />
+                                        <div className="space-y-3 group">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em] group-focus-within:text-[#38C1A3] transition-colors">Dirección de Residencia</label>
+                                            {fieldAlerts.direccion && (
+                                              <div className="mx-4 mb-2 p-3 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 animate-pulse">
+                                                <i className="fa-solid fa-triangle-exclamation text-rose-500 text-xs"></i>
+                                                <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.direccion}</p>
+                                              </div>
+                                            )}
+                                            <input type="text" name="direccion" value={formData.direccion} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.direccion ? 'border-rose-300' : 'border-slate-100'}`} placeholder="Calle, portal, piso..." />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-10">
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">Ciudad</label>
+                                                {fieldAlerts.ciudad && (
+                                                  <div className="mx-4 mb-2 p-3 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 animate-pulse">
+                                                    <i className="fa-solid fa-triangle-exclamation text-rose-500 text-xs"></i>
+                                                    <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.ciudad}</p>
+                                                  </div>
+                                                )}
+                                                <input type="text" name="ciudad" value={formData.ciudad} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.ciudad ? 'border-rose-300' : 'border-slate-100'}`} placeholder="Madrid" />
+                                            </div>
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">CP</label>
+                                                {fieldAlerts.codigo_postal && (
+                                                  <div className="mx-4 mb-2 p-3 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 animate-pulse">
+                                                    <i className="fa-solid fa-triangle-exclamation text-rose-500 text-xs"></i>
+                                                    <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.codigo_postal}</p>
+                                                  </div>
+                                                )}
+                                                <input type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.codigo_postal ? 'border-rose-300' : 'border-slate-100'}`} placeholder="28001" />
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-10">
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">Ciudad</label>
-                                            <input type="text" name="ciudad" value={formData.ciudad} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="Madrid" />
+                                    {/* Banking Data Card */}
+                                    <div className="bg-white p-10 md:p-14 rounded-[4rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-12">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 rounded-[2.2rem] bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl shadow-inner"><i className="fa-solid fa-piggy-bank"></i></div>
+                                            <div>
+                                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Datos Bancarios</h3>
+                                                <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-1">Información para facturación y cobros</p>
+                                            </div>
                                         </div>
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">CP</label>
-                                            <input type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="28001" />
+
+                                        <div className="space-y-3 group">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em] group-focus-within:text-indigo-500 transition-colors">IBAN (Cuenta Principal)</label>
+                                            {fieldAlerts.iban && (
+                                              <div className="mx-4 mb-2 p-3 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-3 animate-pulse">
+                                                <i className="fa-solid fa-triangle-exclamation text-rose-500 text-xs"></i>
+                                                <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.iban}</p>
+                                              </div>
+                                            )}
+                                            <div className="relative">
+                                                <input type="text" name="iban" value={formData.iban} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all shadow-inner ${fieldAlerts.iban ? 'border-rose-300' : 'border-slate-100'}`} placeholder="ES00 0000..." />
+                                                <i className="fa-solid fa-building-columns absolute right-8 top-1/2 -translate-y-1/2 text-slate-200"></i>
+                                            </div>
+                                            {errors.iban && <p className="text-[10px] text-rose-500 font-black uppercase ml-6 tracking-widest">{errors.iban[0]}</p>}
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Security & Password Card */}
+                                    {/* Security & Password Card */}
                                 <div className="bg-white p-10 md:p-14 rounded-[4rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-12 relative overflow-hidden group/sec">
                                     <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-9xl text-rose-600 pointer-events-none group-hover/sec:scale-125 transition-transform duration-1000"><i className="fa-solid fa-user-shield"></i></div>
                                     

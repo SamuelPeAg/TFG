@@ -188,16 +188,15 @@ export default function MisClases() {
                                             upcomingSessions.map(session => (
                                                 <div 
                                                     key={session.id} 
-                                                    onClick={() => navigate('/calendario', { 
-                                                        state: { 
-                                                            goToDate: session.fecha_registro,
-                                                            openSession: {
-                                                                fecha_hora: session.fecha_registro,
-                                                                nombre_clase: session.nombre_clase,
-                                                                centro: session.centro
-                                                            }
-                                                        } 
-                                                    })}
+                                                    onClick={() => {
+                                                        console.log("Navegando al calendario con sesión:", session);
+                                                        navigate('/calendario', { 
+                                                            state: { 
+                                                                goToDate: session.fecha_registro,
+                                                                openSession: session
+                                                            } 
+                                                        });
+                                                    }}
                                                     className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-5 hover:border-[#38C1A3]/50 transition-all group relative overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-[#38C1A3]/5 active:scale-[0.98]"
                                                 >
                                                     

@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('cif_dni')->unique();
+            $table->string('sepa_creditor_id')->nullable();
+            $table->string('sepa_bic')->nullable();
             $table->string('direccion')->nullable();
             $table->string('cp')->nullable();
             $table->string('ciudad')->nullable();

@@ -76,55 +76,63 @@ export default function FacturacionModal({ isOpen, onClose, cellData }) {
                 <table className="facto-table w-full text-left text-sm whitespace-nowrap">
                     <thead className="bg-slate-50/80 border-b border-slate-100">
                         <tr>
+                            <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs">Nº Factura</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs">Fecha</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs">Clase</th>
-                            <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs">Centro</th>
-                            <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Método</th>
+                            <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Créditos</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-right">Importe</th>
                             <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Estado</th>
-                            <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">Acciones</th>
+                            <th className="px-4 py-3 font-black text-slate-500 uppercase tracking-wider text-xs text-center">PDF</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
                         {clases.map((clase, idx) => (
                             <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="px-4 py-3 font-medium text-slate-700" data-label="Fecha">
+                                <td className="px-4 py-3 font-bold text-slate-400 text-xs">
+                                    {clase.numero_factura || '---'}
+                                </td>
+                                <td className="px-4 py-3 font-medium text-slate-700">
                                     {clase.fecha ? new Date(clase.fecha).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '---'}
                                 </td>
-                                <td className="px-4 py-3 text-slate-600" data-label="Clase">{clase.nombre_clase || '---'}</td>
-                                <td className="px-4 py-3 text-slate-600" data-label="Centro">{clase.centro || '---'}</td>
-                                <td className="px-4 py-3 text-center" data-label="Método">
-                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-lg truncate max-w-[120px] inline-block">
-                                        {clase.metodo || '---'}
-                                    </span>
+                                <td className="px-4 py-3 text-slate-600">{clase.nombre_clase || '---'}</td>
+                                <td className="px-4 py-3 text-center">
+                                    {clase.creditos > 0 ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 text-amber-600 rounded-lg font-black text-[10px]">
+                                            <i className="fa-solid fa-ticket-alt"></i> {clase.creditos}
+                                        </span>
+                                    ) : (
+                                        <span className="text-slate-200">-</span>
+                                    )}
                                 </td>
-                                <td className="px-4 py-3 text-right" data-label="Importe">
+                                <td className="px-4 py-3 text-right">
                                     {clase.importe !== null ? (
                                         <span className="font-black text-[#38C1A3]">{Number(clase.importe).toFixed(2)} €</span>
                                     ) : (
-                                        <span className="text-slate-400 font-medium">--</span>
+                                        <span className="text-slate-400 font-medium">0.00 €</span>
                                     )}
                                 </td>
-                                <td className="px-4 py-3 text-center" data-label="Estado">
-                                    {clase.source === 'pago' || clase.importe !== null ? (
+                                <td className="px-4 py-3 text-center">
+                                    {clase.source === 'pago' || (clase.importe !== null && clase.importe > 0) ? (
                                         <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase rounded-lg tracking-wider">Pagado</span>
+                                    ) : clase.creditos > 0 ? (
+                                        <span className="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase rounded-lg tracking-wider">Créditos</span>
                                     ) : (
                                         <span className="px-2 py-1 bg-rose-100 text-rose-600 text-[10px] font-black uppercase rounded-lg tracking-wider">Pendiente</span>
                                     )}
                                 </td>
-                                <td className="px-4 py-3 text-center" data-label="Acciones">
+                                <td className="px-4 py-3 text-center">
                                     {clase.pago_id ? (
                                         <a 
                                             href={`/facturas/${clase.pago_id}/pdf`}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 hover:bg-blue-100 text-slate-500 hover:text-blue-600 transition-colors"
-                                            title="Descargar Factura PDF"
+                                            className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 hover:bg-[#38C1A3] hover:text-white text-slate-400 transition-all active:scale-90"
+                                            title="Ver Factura PDF"
                                         >
                                             <i className="fa-solid fa-file-pdf"></i>
                                         </a>
                                     ) : (
-                                        <span className="text-slate-300">-</span>
+                                        <span className="text-slate-200">-</span>
                                     )}
                                 </td>
                             </tr>

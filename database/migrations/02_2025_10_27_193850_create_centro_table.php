@@ -11,6 +11,8 @@ return new class extends Migration
         Schema::create('centros', function (Blueprint $table) {
             $table->id();
             $table->string("nombre");
+            $table->string('serie_facturacion', 10)->nullable();
+            $table->integer('ultimo_numero_factura')->default(0);
             $table->string("cif")->nullable();
             $table->string("direccion")->nullable();
             $table->string("cp")->nullable();

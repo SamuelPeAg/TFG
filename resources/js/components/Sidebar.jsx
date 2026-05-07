@@ -7,6 +7,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const [user, setUser] = useState(window.AppConfig?.user);
   const [loading, setLoading] = useState(!window.AppConfig?.user);
   const [imgError, setImgError] = useState(false);
+  const [hasUnreadAlerts, setHasUnreadAlerts] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -35,7 +36,17 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   useEffect(() => {
     setIsOpen(false);
+    fetchNotifications();
   }, [location.pathname, setIsOpen]);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await axios.get('/api/user-notifications');
+      setHasUnreadAlerts(res.data.notifications.length > 0);
+    } catch (err) {
+      console.error('Error fetching notifications for sidebar:', err);
+    }
+  };
 
   if (loading) return null;
   if (!user) return null;
@@ -164,7 +175,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             {renderAvatar()}
           </div>
           <div className="flex flex-col overflow-hidden min-w-0">
-            <span className="font-extrabold truncate text-white text-sm sm:text-[15px] leading-tight mb-0.5 tracking-tight group-hover:text-emerald-300 transition-colors" title={user.name}>{user.name}</span>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold truncate text-white text-sm sm:text-[15px] leading-tight mb-0.5 tracking-tight group-hover:text-emerald-300 transition-colors" title={user.name}>{user.name}</span>
+              {hasUnreadAlerts && (
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.8)] animate-pulse border border-white/20"></div>
+              )}
+            </div>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></div>
               <span className="text-[9px] text-white/60 uppercase tracking-[0.15em] font-black whitespace-nowrap">{user.role}</span>
@@ -197,6 +213,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <Link to="/configuracion" className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm text-white hover:bg-white/10 transition-colors" onClick={() => setIsOpen(false)}>
             <i className="fa-solid fa-user-gear w-4 text-center text-sm sm:text-lg flex-shrink-0"></i>
             <span className="tracking-wide truncate">MI PERFIL</span>
+            {hasUnreadAlerts && (
+              <div className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)] animate-pulse ml-auto"></div>
+            )}
           </Link>
 
           <button onClick={handleLogout} className="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-black text-xs sm:text-sm text-rose-300 hover:text-white hover:bg-rose-500 transition-all text-left tracking-widest group shadow-sm">

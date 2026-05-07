@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreign('id_horario_clase')->references('id')->on('horarios_clases')->onDelete('cascade');
             
             $table->enum('estado',['pagada','pendiente','confirmado']); 
-            
+            $table->integer('creditos_gastados')->default(0);            
             $table->timestamps();
             $table->softDeletes();
         });
