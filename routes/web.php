@@ -16,6 +16,7 @@ use App\Http\Controllers\PagosController;
 use App\Http\Controllers\NominaAdminController;
 use App\Http\Controllers\ClientProfileController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\GestionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -283,27 +284,33 @@ Route::middleware('auth:web,staff')->group(function () {
         
         // Vista de Estadísticas
         Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'index'])->name('estadisticas.index');
+        
+        // Vista de Gestión
+        Route::get('/gestion', [GestionController::class, 'index'])->name('gestion.index');
 
         // Rutas de Datos / Gestión API
         Route::prefix('api')->group(function () {
             // Datos de Estadísticas
             Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'data'])->name('api.estadisticas.data');
             
+            // Datos de Gestión
+            Route::get('/gestion', [GestionController::class, 'data'])->name('api.gestion.data');
+            
             // Gestión de Empresas
-            Route::post('/admin/empresas', [\App\Http\Controllers\EstadisticasController::class, 'storeEmpresa']);
-            Route::put('/admin/empresas/{empresa}', [\App\Http\Controllers\EstadisticasController::class, 'updateEmpresa']);
-            Route::delete('/admin/empresas/{empresa}', [\App\Http\Controllers\EstadisticasController::class, 'destroyEmpresa']);
+            Route::post('/admin/empresas', [GestionController::class, 'storeEmpresa']);
+            Route::put('/admin/empresas/{empresa}', [GestionController::class, 'updateEmpresa']);
+            Route::delete('/admin/empresas/{empresa}', [GestionController::class, 'destroyEmpresa']);
 
             // Gestión de Centros
-            Route::post('/admin/centros', [\App\Http\Controllers\EstadisticasController::class, 'storeCentro']);
-            Route::put('/admin/centros/{centro}', [\App\Http\Controllers\EstadisticasController::class, 'updateCentro']);
-            Route::delete('/admin/centros/{centro}', [\App\Http\Controllers\EstadisticasController::class, 'destroyCentro']);
+            Route::post('/admin/centros', [GestionController::class, 'storeCentro']);
+            Route::put('/admin/centros/{centro}', [GestionController::class, 'updateCentro']);
+            Route::delete('/admin/centros/{centro}', [GestionController::class, 'destroyCentro']);
 
             // Gestión de Tipos de Sesión
-            Route::get('/admin/tipos-sesion', [\App\Http\Controllers\EstadisticasController::class, 'indexTiposSesion']);
-            Route::post('/admin/tipos-sesion', [\App\Http\Controllers\EstadisticasController::class, 'storeTipoSesion']);
-            Route::put('/admin/tipos-sesion/{tipoSesion}', [\App\Http\Controllers\EstadisticasController::class, 'updateTipoSesion']);
-            Route::delete('/admin/tipos-sesion/{tipoSesion}', [\App\Http\Controllers\EstadisticasController::class, 'destroyTipoSesion']);
+            Route::get('/admin/tipos-sesion', [GestionController::class, 'indexTiposSesion']);
+            Route::post('/admin/tipos-sesion', [GestionController::class, 'storeTipoSesion']);
+            Route::put('/admin/tipos-sesion/{tipoSesion}', [GestionController::class, 'updateTipoSesion']);
+            Route::delete('/admin/tipos-sesion/{tipoSesion}', [GestionController::class, 'destroyTipoSesion']);
 
             // Gestión de Tipos de Crédito
             Route::post('/admin/tipos-credito', [\App\Http\Controllers\TipoCreditoController::class, 'store']);

@@ -166,7 +166,6 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        console.log(`[handleChange] name:${name}, value:${value}, type:${type}`);
         setFormData(prev => {
             const nextState = {
                 ...prev,
@@ -177,7 +176,6 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 const config = getDefaultConfigForType(value);
                 nextState.capacidad_maxima = config ? config.capacidad_personas.toString() : '1';
                 nextState.precio_base = config ? (config.precio_base || '0.00') : '0.00';
-                console.log(`[handleChange] Tipo cambió a: ${value}, capacidad: ${nextState.capacidad_maxima}, precio: ${nextState.precio_base}`);
             }
 
             return nextState;
@@ -327,8 +325,6 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     };
 
     if (!isOpen) return null;
-
-    console.log('[CrearClaseModal] Render - formData.tipo_clase:', formData.tipo_clase, 'capacidad_maxima:', formData.capacidad_maxima, 'currentStep:', currentStep);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 md:p-6 animate-in fade-in duration-200">
@@ -693,7 +689,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                             ) : (
                                                 formData.participants.map(p => (
                                                     <span key={p.id} className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm pl-2 pr-1 py-1 rounded-full">
-                                                        <div className="w-6 h-6 rounded-full bg-[#38C1A3] text-white flex items-center justify-center font-bold text-[10px]">{p.name.charAt(0).toUpperCase()}</div>
+                                                        <div className="w-6 h-6 rounded-full bg-white text-[#38C1A3] flex items-center justify-center font-bold text-[10px] border border-slate-100 shadow-sm">{p.name.charAt(0).toUpperCase()}</div>
                                                         <span className="text-xs font-bold text-slate-700">{p.name}</span>
                                                         <button type="button" onClick={() => removeParticipant(p.id)} className="w-6 h-6 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 flex items-center justify-center">
                                                             <i className="fa-solid fa-xmark"></i>

@@ -18,6 +18,7 @@ class Suscripcion extends Model
         'periodo',
         'limite_acumulacion',
         'meses_reset',
+        'domiciliacion',
     ];
 
     /**

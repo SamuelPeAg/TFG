@@ -65,6 +65,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   const adminLinks = [
     { name: 'ESTADÍSTICAS', path: '/estadisticas', icon: 'fa-solid fa-chart-column text-emerald-300' },
+    { name: 'GESTIÓN', path: '/gestion', icon: 'fa-solid fa-gears text-slate-300' },
     { name: 'ENTRENADORES', path: '/entrenadores', icon: 'fa-solid fa-user-tie text-blue-300' },
     { name: 'CLIENTES', path: '/clientes', icon: 'fa-solid fa-user-group text-amber-300' },
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days text-[#38C1A3]' },

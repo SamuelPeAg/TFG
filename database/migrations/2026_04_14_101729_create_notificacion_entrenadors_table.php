@@ -14,13 +14,17 @@ return new class extends Migration
         Schema::create('notificacion_entrenadors', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('entrenador_id');
+            $table->unsignedBigInteger('destinatario_id')->nullable();
             $table->string('titulo');
             $table->text('mensaje');
+            $table->text('respuesta')->nullable();
+            $table->timestamp('fecha_respuesta')->nullable();
             $table->string('tipo')->default('general'); // incidencia, clase, general
             $table->boolean('leido')->default(false);
             $table->timestamps();
 
             $table->foreign('entrenador_id')->references('id')->on('entrenadores')->onDelete('cascade');
+            $table->foreign('destinatario_id')->references('id')->on('entrenadores')->onDelete('cascade');
         });
     }
 

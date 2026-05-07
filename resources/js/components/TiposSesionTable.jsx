@@ -19,6 +19,8 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
     tipos_credito: []
   });
   const [creditSearchQuery, setCreditSearchQuery] = useState('');
+  const [tableSearchQuery, setTableSearchQuery] = useState('');
+  const [centerFilter, setCenterFilter] = useState('all');
 
   // Auto-generation of slug from nombre
   useEffect(() => {
@@ -115,7 +117,20 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
     }
   };
 
-  const groupedTipos = tipos.reduce((acc, tipo) => {
+  const filteredTiposTable = tipos.filter(tipo => {
+    const matchesSearch = tipo.nombre.toLowerCase().includes(tableSearchQuery.toLowerCase());
+    
+    let matchesCenter = true;
+    if (centerFilter === 'global') {
+      matchesCenter = !tipo.centro_id;
+    } else if (centerFilter !== 'all') {
+      matchesCenter = String(tipo.centro_id) === String(centerFilter);
+    }
+    
+    return matchesSearch && matchesCenter;
+  });
+
+  const groupedTipos = filteredTiposTable.reduce((acc, tipo) => {
     const key = tipo.centro_nombre || 'Global';
     if (!acc[key]) acc[key] = [];
     acc[key].push(tipo);
@@ -130,7 +145,34 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
         <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
           <i className="fa-solid fa-tags" style={{ color: turquesaHex }}></i> Configuración de Tipos de Sesión
         </h3>
-        <Button onClick={() => setEditMode('new')} variant="primary" size="sm" icon="fa-plus">AÑADIR TIPO</Button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <i className="fa-solid fa-filter absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <select 
+              value={centerFilter}
+              onChange={(e) => setCenterFilter(e.target.value)}
+              className="pl-9 pr-8 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-600 focus:ring-2 focus:ring-[#4BB7AE]/10 outline-none transition-all focus:bg-white focus:border-[#4BB7AE] appearance-none cursor-pointer"
+            >
+              <option value="all">Todos los centros</option>
+              <option value="global">Solo Globales</option>
+              {centros.map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+            <i className="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 text-[10px] pointer-events-none"></i>
+          </div>
+          <div className="relative">
+            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input 
+              type="text"
+              placeholder="Buscar sesión..."
+              value={tableSearchQuery}
+              onChange={(e) => setTableSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-600 focus:ring-2 focus:ring-[#4BB7AE]/10 outline-none w-40 sm:w-60 transition-all focus:bg-white focus:border-[#4BB7AE]"
+            />
+          </div>
+          <Button onClick={() => setEditMode('new')} variant="primary" size="sm" icon="fa-plus">AÑADIR TIPO</Button>
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -213,15 +255,20 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Centro Asignado</label>
-                  <select 
-                    ref={selectRef}
-                    className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold text-slate-600" 
-                    value={formData.centro_id} 
-                    onChange={e => setFormData({...formData, centro_id: e.target.value})}
-                  >
-                    <option value="">Global (Todos los centros)</option>
-                    {centros.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                  </select>
+                  <div className="relative group">
+                    <select 
+                      ref={selectRef}
+                      className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold text-slate-600 appearance-none cursor-pointer pr-12 transition-all hover:bg-slate-100 select2-ignore" 
+                      value={formData.centro_id || ''} 
+                      onChange={e => setFormData({...formData, centro_id: e.target.value})}
+                    >
+                      <option value="">Global (Todos los centros)</option>
+                      {centros.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                    </select>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300 group-hover:text-[#4BB7AE] transition-colors">
+                      <i className="fa-solid fa-chevron-down"></i>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -258,7 +305,17 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-2 scrollbar-hide">
                   {tiposCredito
-                    .filter(tc => tc.nombre.toLowerCase().includes(creditSearchQuery.toLowerCase()))
+                    .filter(tc => {
+                      const matchesSearch = tc.nombre.toLowerCase().includes(creditSearchQuery.toLowerCase());
+                      const matchesCenter = !tc.id_centro || String(tc.id_centro) === String(formData.centro_id);
+                      
+                      // Restricción estricta: Solo mostrar créditos que ya tengan esta sesión permitida en su configuración
+                      // Si es un tipo de sesión nuevo, no aplicamos este filtro aún porque no tiene ID
+                      if (editMode === 'new') return matchesSearch && matchesCenter;
+
+                      const hasAccess = tc.sesiones?.some(s => s.id === editMode);
+                      return matchesSearch && matchesCenter && hasAccess;
+                    })
                     .sort((a, b) => {
                       const aChecked = formData.tipos_credito.includes(a.id);
                       const bChecked = formData.tipos_credito.includes(b.id);

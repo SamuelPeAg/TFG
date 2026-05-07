@@ -43,6 +43,7 @@ class SuscripcionController extends Controller
             'creditos.*.tipo_credito_id' => 'required|exists:tipos_credito,id',
             'creditos.*.cantidad'   => 'required|integer|min:1',
             'creditos.*.dias_caducidad' => 'required|integer|min:0',
+            'domiciliacion'         => 'nullable|boolean',
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'precio.numeric' => 'El precio debe ser un número.',
@@ -57,6 +58,7 @@ class SuscripcionController extends Controller
             'periodo' => $data['periodo'],
             'limite_acumulacion' => $data['limite_acumulacion'] ?? 0,
             'meses_reset' => $data['meses_reset'] ?? 1,
+            'domiciliacion' => $data['domiciliacion'] ?? false,
         ]);
 
         foreach ($data['creditos'] as $credito) {
@@ -84,6 +86,7 @@ class SuscripcionController extends Controller
             'creditos.*.tipo_credito_id' => 'required|exists:tipos_credito,id',
             'creditos.*.cantidad'   => 'required|integer|min:1',
             'creditos.*.dias_caducidad' => 'required|integer|min:0',
+            'domiciliacion'         => 'nullable|boolean',
         ], [
             'nombre.required' => 'El nombre es obligatorio.',
             'precio.numeric' => 'El precio debe ser un número.',
@@ -97,6 +100,7 @@ class SuscripcionController extends Controller
             'periodo' => $data['periodo'],
             'limite_acumulacion' => $data['limite_acumulacion'] ?? 0,
             'meses_reset' => $data['meses_reset'] ?? 1,
+            'domiciliacion' => $data['domiciliacion'] ?? false,
         ]);
 
         $suscripcion->creditos()->delete();

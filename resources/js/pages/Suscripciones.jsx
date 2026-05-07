@@ -23,6 +23,7 @@ const EMPTY_FORM = {
     periodo: 'semanal',
     limite_acumulacion: 0,
     meses_reset: 1,
+    domiciliacion: false,
     creditos: [{ tipo_credito_id: '', cantidad: 1, dias_caducidad: 30 }],
 };
 
@@ -123,6 +124,7 @@ export default function Suscripciones() {
             periodo: s.periodo || 'semanal',
             limite_acumulacion: s.limite_acumulacion || 0,
             meses_reset: s.meses_reset ?? 1,
+            domiciliacion: !!s.domiciliacion,
             creditos: s.creditos && s.creditos.length > 0 ? s.creditos.map(c => ({
                 tipo_credito_id: c.tipo_credito_id,
                 cantidad: c.cantidad,
@@ -136,8 +138,8 @@ export default function Suscripciones() {
     const closeModal = () => { setModalOpen(false); };
 
     const handleFormChange = (e) => {
-        const { name, value } = e.target;
-        let newValue = value;
+        const { name, value, type, checked } = e.target;
+        let newValue = type === 'checkbox' ? checked : value;
 
         if (name === 'precio') {
             newValue = value.replace(/[^0-9.]/g, '');
@@ -302,7 +304,16 @@ export default function Suscripciones() {
                                     <tbody className="divide-y divide-slate-50">
                                         {filtered.map(s => (
                                             <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
-                                                <td className="px-6 py-4 font-bold text-slate-800 text-sm" data-label="Nombre">{s.nombre}</td>
+                                                <td className="px-6 py-4 font-bold text-slate-800 text-sm" data-label="Nombre">
+                                                    <div className="flex items-center gap-2">
+                                                        {s.nombre}
+                                                        {s.domiciliacion ? (
+                                                            <span title="Domiciliación Bancaria" className="text-blue-500 hover:scale-110 transition-transform cursor-help">
+                                                                <i className="fa-solid fa-building-columns text-[10px]"></i>
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                </td>
                                                 <td className="px-6 py-4 text-center font-black text-slate-800 text-sm">
                                                     {Number(s.precio || 0).toFixed(2)} €
                                                 </td>
@@ -403,6 +414,29 @@ export default function Suscripciones() {
                                                     <option value="semanal">Semanal</option>
                                                     <option value="mensual">Mensual</option>
                                                 </select>
+                                            </div>
+
+                                            {/* Domiciliación Bancaria */}
+                                            <div className="md:col-span-2 pt-2">
+                                                <label className="flex items-center gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl cursor-pointer hover:bg-white hover:border-blue-200 transition-all group">
+                                                    <div className="relative flex items-center">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            name="domiciliacion" 
+                                                            checked={form.domiciliacion} 
+                                                            onChange={handleFormChange}
+                                                            className="peer h-6 w-6 cursor-pointer appearance-none rounded-lg border border-slate-300 bg-white checked:bg-blue-500 checked:border-blue-500 transition-all"
+                                                        />
+                                                        <i className="fa-solid fa-check absolute opacity-0 peer-checked:opacity-100 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xs pointer-events-none"></i>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-black text-slate-700 group-hover:text-blue-600 transition-colors">Domiciliación Bancaria</span>
+                                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Habilitar cobro automático por remesa bancaria</span>
+                                                    </div>
+                                                    <div className="ml-auto text-blue-100 group-hover:text-blue-500 transition-colors">
+                                                        <i className="fa-solid fa-building-columns text-xl"></i>
+                                                    </div>
+                                                </label>
                                             </div>
                                         </div>
                                     </div>

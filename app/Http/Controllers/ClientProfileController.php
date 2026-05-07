@@ -185,7 +185,7 @@ class ClientProfileController extends Controller
 
         $validated = $request->validate([
             'dni' => 'nullable|string',
-            'iban' => 'nullable|string|max:34',
+            'iban' => ['nullable', 'string', 'regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{12,30}$/i'],
             'direccion' => 'nullable|string|max:255',
             'codigo_postal' => 'nullable|string|max:10',
             'ciudad' => 'nullable|string|max:100',

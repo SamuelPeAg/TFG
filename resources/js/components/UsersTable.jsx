@@ -78,7 +78,7 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                     <div className="flex items-center gap-3">
                       <div className="relative shrink-0">
                         <div 
-                          className="w-10 h-10 rounded-full bg-[#38C1A3] flex items-center justify-center text-white font-black text-sm overflow-hidden border border-slate-100"
+                          className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#38C1A3] font-black text-sm overflow-hidden border border-slate-100 shadow-sm"
                         >
                           {user.foto_de_perfil ? (
                             <img 
@@ -188,7 +188,7 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                     onChange={() => onSelectUser(user.id)}
                     className="w-4 h-4 text-[#38C1A3] bg-white border-slate-300 rounded focus:ring-[#38C1A3]"
                   />
-                  <div className="w-10 h-10 rounded-full bg-[#38C1A3] flex items-center justify-center text-white font-black text-sm overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#38C1A3] font-black text-sm overflow-hidden border border-slate-100 shadow-sm">
                     {user.foto_de_perfil ? (
                       <img src={getImageUrl(user.foto_de_perfil)} alt={user.name} className="w-full h-full object-cover" />
                     ) : (

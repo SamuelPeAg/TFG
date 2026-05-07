@@ -306,6 +306,13 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
         return;
     }
 
+    // Validación IBAN
+    const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{12,30}$/i;
+    if (profileData.iban && !ibanRegex.test(profileData.iban)) {
+        showAlert('El IBAN introducido no es válido (Debe empezar por el código de país y tener entre 16 y 34 caracteres).', true, 'Error de Formato');
+        return;
+    }
+
     setSaving(true);
     try {
         await axios.put(`/client-profile/${user.id}`, profileData);

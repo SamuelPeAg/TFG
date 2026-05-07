@@ -41,9 +41,24 @@ export default function ExportXmlModal({ isOpen, onClose, centros, suscripciones
   };
 
   const toggleSubscription = (id) => {
-      setSelectedSuscripciones(prev => 
-          prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-      );
+      setSelectedSuscripciones(prev => {
+          const isSelected = prev.includes(id);
+          const next = isSelected ? prev.filter(s => s !== id) : [...prev, id];
+          
+          // Cuando se selecciona una suscripción, seleccionar automáticamente a todos sus clientes
+          if (!isSelected) {
+              const clientsOfSub = clientes.filter(c => 
+                  c.suscripciones?.some(s => s.id_suscripcion === id)
+              ).map(c => c.id);
+              
+              setSelectedClientes(prevClients => {
+                  const newSet = new Set([...prevClients, ...clientsOfSub]);
+                  return Array.from(newSet);
+              });
+          }
+          
+          return next;
+      });
   };
 
   const toggleCliente = (id) => {
@@ -105,7 +120,7 @@ export default function ExportXmlModal({ isOpen, onClose, centros, suscripciones
                     Suscripciones a Cobrar <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-2 rounded-xl border border-slate-200 max-h-48 overflow-y-auto custom-scrollbar">
-                    {suscripciones.length > 0 ? suscripciones.map(sub => (
+                    {suscripciones.filter(s => s.domiciliacion).length > 0 ? suscripciones.filter(s => s.domiciliacion).map(sub => (
                         <label key={sub.id} className="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-slate-100">
                             <input 
                                 type="checkbox" 
@@ -119,7 +134,7 @@ export default function ExportXmlModal({ isOpen, onClose, centros, suscripciones
                             </div>
                         </label>
                     )) : (
-                        <div className="col-span-full text-center text-sm font-medium text-slate-400 p-4">No hay suscripciones disponibles</div>
+                        <div className="col-span-full text-center text-sm font-medium text-slate-400 p-4">No hay suscripciones con domiciliación habilitada</div>
                     )}
                 </div>
             </div>

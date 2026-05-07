@@ -21,7 +21,11 @@ class Centro extends Model
         "ciudad",
         "color_hex",
         "empresa_id",
-        "google_maps_link"
+        "google_maps_link",
+        "lat",
+        "lng",
+        "tag",
+        "icon"
     ];
 
     public function empresa()
