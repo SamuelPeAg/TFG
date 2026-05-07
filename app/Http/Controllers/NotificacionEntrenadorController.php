@@ -48,11 +48,20 @@ class NotificacionEntrenadorController extends Controller
         $user = Auth::guard('staff')->user();
         if (!$user) return response()->json([], 401);
 
-        $entrenadores = \App\Models\Entrenador::where('id', '!=', $user->id)
-            ->where('activo', true)
-            ->get(['id', 'name', 'email']);
+        $entrenadores = \App\Models\Entrenador::with('roles')
+            ->where('id', '!=', $user->id)
+            ->get();
 
-        return response()->json($entrenadores);
+        $data = $entrenadores->map(function($e) {
+            $roleNames = $e->roles->pluck('name')->map(fn($n) => strtoupper($n))->implode(', ');
+            return [
+                'id' => $e->id,
+                'name' => $e->name . ($roleNames ? " ({$roleNames})" : ""),
+                'email' => $e->email
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**

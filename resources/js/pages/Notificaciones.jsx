@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import PageHeader from '../components/PageHeader';
+import SearchSelect from '../components/SearchSelect';
 
 export default function Notificaciones() {
     const user = window.AppConfig?.user;
@@ -152,19 +153,19 @@ export default function Notificaciones() {
                                         )}
 
                                         {(!sendToAdmin || isAdmin) && (
-                                            <div className="animate-in slide-in-from-top-2 duration-300">
-                                                <select 
+                                            <div className="animate-in slide-in-from-top-2 duration-300 relative z-[60]">
+                                                <SearchSelect 
                                                     name="destinatario_id"
+                                                    options={trainers.map(t => ({ value: t.id, label: t.name }))}
                                                     value={form.destinatario_id}
-                                                    onChange={handleChange}
-                                                    required={!sendToAdmin || isAdmin}
-                                                    className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 outline-none transition-all"
-                                                >
-                                                    <option value="">Seleccionar entrenador...</option>
-                                                    {trainers.map(t => (
-                                                        <option key={t.id} value={t.id}>{t.name}</option>
-                                                    ))}
-                                                </select>
+                                                    onChange={(e) => setForm(prev => ({ ...prev, destinatario_id: e.target.value }))}
+                                                    placeholder={loadingTrainers ? "Cargando..." : "Seleccionar entrenador..."}
+                                                    icon="fa-solid fa-user-tie"
+                                                    className="w-full"
+                                                />
+                                                {trainers.length === 0 && !loadingTrainers && (
+                                                    <p className="text-[10px] text-rose-500 font-bold mt-1 ml-1">No se encontraron otros entrenadores.</p>
+                                                )}
                                             </div>
                                         )}
                                     </div>
