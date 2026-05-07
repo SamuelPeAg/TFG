@@ -41,7 +41,7 @@ class BookingSwapController extends Controller
         }
 
         if (!$claseBase) {
-            return response()->json(['error' => 'No se pudo encontrar la configuración para la actividad: ' . ($pago->nombre_clase ?: 'Sin Nombre') . ' (' . ($pago->centro ?: 'Sin Centro') . ')'], 404);
+            return response()->json(['error' => 'No se pudo encontrar la configuración de la clase original.'], 404);
         }
 
         // 2. Obtener los tipos de crédito permitidos para la clase original

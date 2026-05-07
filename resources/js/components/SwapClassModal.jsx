@@ -23,9 +23,7 @@ const SwapClassModal = ({ isOpen, onClose, originalSession, onSwapSuccess }) => 
             setCandidates(res.data.candidates);
         } catch (err) {
             console.error("Error fetching swap candidates:", err);
-            const serverError = err.response?.data?.error || err.response?.data?.message;
-            const msg = serverError ? `${serverError}` : `Error ${err.response?.status || 'desconocido'}: No se pudieron cargar las clases alternativas.`;
-            setError(msg);
+            setError('No se pudieron cargar las clases alternativas en este momento. Por favor, inténtalo de nuevo más tarde.');
         } finally {
             setLoading(false);
         }
