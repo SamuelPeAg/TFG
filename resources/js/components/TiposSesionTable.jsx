@@ -263,7 +263,13 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-2 scrollbar-hide">
                   {tiposCredito
-                    .filter(tc => tc.nombre.toLowerCase().includes(creditSearchQuery.toLowerCase()))
+                    .filter(tc => {
+                      const matchesSearch = tc.nombre.toLowerCase().includes(creditSearchQuery.toLowerCase());
+                      // Filtro por centro: El crédito debe ser Global O del mismo centro que la sesión
+                      // Si la sesión es Global, solo mostramos créditos Globales (o todos? El usuario dijo "dependiendo del centro")
+                      const matchesCenter = !tc.id_centro || String(tc.id_centro) === String(formData.centro_id);
+                      return matchesSearch && matchesCenter;
+                    })
                     .sort((a, b) => {
                       const aChecked = formData.tipos_credito.includes(a.id);
                       const bChecked = formData.tipos_credito.includes(b.id);

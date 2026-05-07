@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('precio', 10, 2)->default(0);
             $table->integer('limite_acumulacion')->nullable()->default(0);
             $table->integer('meses_reset')->nullable()->default(1);
+            $table->boolean('domiciliacion')->default(false);
             $table->timestamps();
         });
 

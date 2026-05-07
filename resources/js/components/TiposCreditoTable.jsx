@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import AlertModal from './AlertModal';
+import ConfirmModal from './ConfirmModal';
 
 export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesion = [], onUpdate }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -7,55 +9,103 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
   const [formData, setFormData] = useState({
     nombre: '',
     id_centro: '',
-    id_centro: ''
+    sesiones: []
   });
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, id: null });
+
+  const showAlert = (message, isError = false, title = isError ? "Error" : "¡Éxito!") => {
+    setAlertConfig({ isOpen: true, title, message, isError });
+  };
 
   const openModal = (credito = null) => {
     if (credito) {
       setEditingCredito(credito);
       setFormData({
         nombre: credito.nombre || '',
-        id_centro: credito.id_centro || ''
+        id_centro: credito.id_centro || '',
+        sesiones: credito.sesiones ? credito.sesiones.map(s => s.id) : []
       });
     } else {
       setEditingCredito(null);
       setFormData({
         nombre: '',
-        id_centro: ''
+        id_centro: '',
+        sesiones: []
       });
     }
+    setSearchTerm('');
     setModalOpen(true);
   };
 
+  const filteredSessions = tiposSesion.filter(s => {
+    // Si hay un centro seleccionado, solo mostrar clases de ese centro
+    const matchesCenter = !formData.id_centro || String(s.centro_id) === String(formData.id_centro);
+    // Filtro por nombre
+    const matchesSearch = s.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCenter && matchesSearch;
+  });
+
+  const handleSessionToggle = (id) => {
+    setFormData(prev => {
+      const isSelected = prev.sesiones.includes(id);
+      if (isSelected) {
+        return { ...prev, sesiones: prev.sesiones.filter(sid => sid !== id) };
+      } else {
+        return { ...prev, sesiones: [...prev.sesiones, id] };
+      }
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    if (formData.sesiones.length === 0) {
+      showAlert('Debes seleccionar al menos un tipo de sesión para este crédito.', true);
+      setLoading(false);
+      return;
+    }
+
     try {
       if (editingCredito) {
-        await axios.put(`/admin/tipos-credito/${editingCredito.id}`, formData);
+        await axios.put(`/api/admin/tipos-credito/${editingCredito.id}`, formData);
+        showAlert('Tipo de crédito actualizado correctamente.');
       } else {
-        await axios.post('/admin/tipos-credito', formData);
+        await axios.post('/api/admin/tipos-credito', formData);
+        showAlert('Nuevo tipo de crédito creado correctamente.');
       }
       setModalOpen(false);
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error('Error guardando tipo de crédito', error);
-      alert(error.response?.data?.message || 'Error guardando datos.');
+      const msg = error.response?.data?.errors 
+        ? Object.values(error.response.data.errors).flat().join(' ')
+        : (error.response?.data?.message || 'Error guardando datos.');
+      showAlert(msg, true);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este Tipo de Crédito? Afectará a los futuros pagos que usen este crédito.')) return;
+  const confirmDelete = (id) => {
+    setConfirmConfig({ isOpen: true, id });
+  };
+
+  const handleDelete = async () => {
+    const id = confirmConfig.id;
+    if (!id) return;
+    
+    setConfirmConfig({ ...confirmConfig, isOpen: false });
     try {
-      await axios.delete(`/admin/tipos-credito/${id}`);
+      await axios.delete(`/api/admin/tipos-credito/${id}`);
+      showAlert('Tipo de crédito eliminado correctamente.');
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error('Error eliminando tipo de crédito', error);
-      alert('Error eliminando el tipo de crédito.');
+      showAlert('No se pudo eliminar el tipo de crédito.', true);
     }
   };
 
@@ -107,7 +157,7 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
                       <i className="fa-solid fa-pen"></i>
                     </button>
                     <button 
-                      onClick={() => handleDelete(t.id)}
+                      onClick={() => confirmDelete(t.id)}
                       className="text-slate-400 hover:text-red-500 transition-colors p-1"
                     >
                       <i className="fa-solid fa-trash"></i>
@@ -151,7 +201,14 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
                   <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Centro Asociado (Opcional)</label>
                   <select
                     value={formData.id_centro}
-                    onChange={(e) => setFormData({...formData, id_centro: e.target.value})}
+                    onChange={(e) => {
+                      const newCentroId = e.target.value;
+                      setFormData({
+                        ...formData, 
+                        id_centro: newCentroId,
+                        sesiones: [] // Limpiar sesiones al cambiar de centro para evitar inconsistencias
+                      });
+                    }}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
                   >
                     <option value="">Global (Válido en cualquier sede)</option>
@@ -159,6 +216,54 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
                       <option key={c.id} value={c.id}>{c.nombre}</option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-end mb-2 ml-1">
+                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest">Sesiones Permitidas</label>
+                    <div className="relative">
+                      <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
+                      <input 
+                        type="text"
+                        placeholder="Buscar clase..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 pr-3 py-1 bg-slate-100 border-none rounded-lg text-[10px] font-bold text-slate-600 focus:ring-2 focus:ring-indigo-500/20 outline-none w-32 sm:w-48 transition-all"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 max-h-[200px] overflow-auto custom-scrollbar space-y-2">
+                    {filteredSessions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-6 text-slate-400">
+                        <i className="fa-solid fa-layer-group mb-2 opacity-20 text-2xl"></i>
+                        <p className="text-[10px] font-medium italic">
+                          {searchTerm ? 'No se encontraron clases con ese nombre.' : 'No hay clases disponibles para este centro.'}
+                        </p>
+                      </div>
+                    ) : (
+                      filteredSessions.map(s => (
+                        <label key={s.id} className="flex items-center gap-3 p-2 hover:bg-white rounded-xl transition-colors cursor-pointer group border border-transparent hover:border-slate-100">
+                          <input
+                            type="checkbox"
+                            checked={formData.sesiones.includes(s.id)}
+                            onChange={() => handleSessionToggle(s.id)}
+                            className="w-4 h-4 rounded-md border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <div className="flex-1">
+                            <p className="text-xs font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">{s.nombre}</p>
+                            <p className="text-[10px] text-slate-400">{s.centro_nombre || 'Global'}</p>
+                          </div>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  {formData.id_centro && (
+                    <p className="text-[9px] text-indigo-500 mt-2 ml-1 font-bold">
+                      <i className="fa-solid fa-filter mr-1"></i> Mostrando solo clases del centro seleccionado.
+                    </p>
+                  )}
+                  <p className="text-[10px] text-slate-400 mt-1 ml-1 italic">Este crédito solo podrá usarse para reservar las sesiones seleccionadas.</p>
                 </div>
 
               </div>
@@ -184,6 +289,24 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
           </div>
         </div>
       )}
+
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        isError={alertConfig.isError}
+      />
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={handleDelete}
+        title="Eliminar Crédito"
+        message="¿Estás seguro de que quieres eliminar este Tipo de Crédito? Esto podría afectar a los usuarios que tengan bonos de este tipo."
+        confirmText="Sí, eliminar"
+        isDestructive={true}
+      />
     </div>
   );
 }
