@@ -213,7 +213,7 @@ export default function Calendario() {
 
         return () => clearTimeout(timer);
     }
-  }, [location.state, loading, data]);]);
+  }, [location.state, loading, data]);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-slate-900">
