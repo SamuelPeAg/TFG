@@ -23,7 +23,9 @@ class Centro extends Model
         "empresa_id",
         "google_maps_link",
         "lat",
-        "lng"
+        "lng",
+        "tag",
+        "icon"
     ];
 
     public function empresa()

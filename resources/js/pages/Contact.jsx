@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import CentroCard from '../components/CentroCard';
 
 export default function Contact() {
   const [centros, setCentros] = useState([]);
@@ -26,26 +27,7 @@ export default function Contact() {
               ? returned.data
               : [];
 
-        setCentros(centroList.length > 0 ? centroList : [
-          {
-            id: 1,
-            nombre: 'Aira Fitness Club',
-            direccion: 'Av. de Rabanales, s/n, Levante, 14007 Córdoba',
-            google_maps_link: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1765324.3289938641!2d-7.2000453!3d37.8926499!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6cdf852e981d07%3A0xf6367ab1c976d7fb!2sAira%20Fitness%20Club!5e1!3m2!1ses!2ses!4v1774127157355!5m2!1ses!2ses'
-          },
-          {
-            id: 2,
-            nombre: 'Open Arena',
-            direccion: 'C. Escritora Maria Goyri, s/n, 14005 Córdoba',
-            google_maps_link: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d110352.01090579458!2d-4.802398!3d37.87981!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6d21986110736b%3A0xd2b686fab1dd9bb5!2sMoverte%20da%20Vida%20-%20Open%20Arena!5e1!3m2!1ses!2ses!4v1774126909735!5m2!1ses!2ses'
-          },
-          {
-            id: 3,
-            nombre: 'Centro de Salud',
-            direccion: 'C. José Dámaso "Pepete", Poniente Sur, 14005 Córdoba',
-            google_maps_link: 'https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d110356.86810429477!2d-4.797538!3d37.876568!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd6d210ee12d99e3%3A0x2e64896407139591!2sMoverte%20da%20vida%20-%20centro%20de%20salud%20y%20ejercicio!5e1!3m2!1ses!2ses!4v1774126923529!5m2!1ses!2ses'
-          }
-        ]);
+        setCentros(centroList);
       } catch (err) {
         console.error('Error fetching centros, loading fallback:', err.message);
         // Fallback data if API fails or is not available
@@ -255,55 +237,12 @@ export default function Contact() {
                    ))
                ) : (
                    centros.map((centro, index) => (
-                       <div key={centro.id} className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/40 border border-slate-100 overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
-                           {/* Map */}
-                           <div className="h-56 relative overflow-hidden bg-slate-100">
-                               <iframe
-                                 className="absolute inset-0 w-full h-[150%] -top-1/4 pointer-events-none grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
-                                 src={centro.google_maps_link?.trim() || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${centro.nombre} ${centro.direccion}`)}`}
-                                 style={{border: '0'}}
-                                 allowFullScreen=""
-                                 loading="lazy"
-                                 title={centro.nombre}
-                               ></iframe>
-                               {/* Overlay shadow for UI contrast */}
-                               <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-slate-900/60 to-transparent flex items-end p-6">
-                                   <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-sm">
-                                       <i className="fa-solid fa-location-dot"></i>
-                                   </div>
-                               </div>
-                           </div>
-                           
-                           {/* Content */}
-                           <div className="p-8 relative">
-                               {/* Decorative accent */}
-                               <div className="absolute top-0 left-8 -translate-y-1/2 w-12 h-1 bg-[#38C1A3] rounded-full shadow-sm"></div>
-
-                               <h3 className="text-xl font-black text-slate-800 mb-2 truncate" title={centro.nombre}>{centro.nombre}</h3>
-                               
-                               <div className="space-y-3 mt-6">
-                                   <div className="flex items-start gap-4 text-slate-600">
-                                       <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 mt-0.5">
-                                           <i className="fa-solid fa-map-pin text-xs text-[#eb567a]"></i>
-                                       </div>
-                                       <p className="font-bold text-sm leading-relaxed pt-1.5">{centro.direccion}</p>
-                                   </div>
-                                   
-                                   <div className="flex items-start gap-4 text-slate-600">
-                                       <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100 mt-0.5">
-                                           <i className={`fa-solid ${icons[index % 3]} text-xs text-[#38C1A3]`}></i>
-                                       </div>
-                                       <p className="font-bold text-sm leading-relaxed pt-1.5">{tags[index % 3]}</p>
-                                   </div>
-                               </div>
-                               
-                               {/* Footer view map button - now properly links to Maps instead of trying to open embed */}
-                               <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(centro.nombre + " " + centro.direccion)}`} target="_blank" rel="noreferrer" className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between text-sm font-black text-slate-400 hover:text-[#38C1A3] transition-colors group/link w-full">
-                                   ABRIR EN MAPS
-                                   <i className="fa-solid fa-arrow-right-long group-hover/link:translate-x-1 transition-transform text-lg"></i>
-                               </a>
-                           </div>
-                       </div>
+                       <CentroCard 
+                            key={centro.id} 
+                            centro={centro} 
+                            tag={centro.tag || tags[index % 3]} 
+                            icon={centro.icon || icons[index % 3]} 
+                        />
                    ))
                )}
            </div>

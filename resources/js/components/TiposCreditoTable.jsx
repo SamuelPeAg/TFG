@@ -13,6 +13,7 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
   });
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [tableSearch, setTableSearch] = useState('');
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
   const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, id: null });
 
@@ -109,6 +110,10 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
     }
   };
 
+  const filteredTipos = tipos.filter(t => 
+    t.nombre.toLowerCase().includes(tableSearch.toLowerCase())
+  );
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[500px]">
       <div className="flex justify-between items-center mb-6">
@@ -118,12 +123,24 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
           </h2>
           <p className="text-xs text-slate-400 mt-1 font-medium">Bolsas de crédito multi-clase para bonos</p>
         </div>
-        <button 
-          onClick={() => openModal()}
-          className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
-        >
-          <i className="fa-solid fa-plus"></i> Nuevo
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input 
+              type="text"
+              placeholder="Buscar crédito..."
+              value={tableSearch}
+              onChange={(e) => setTableSearch(e.target.value)}
+              className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-600 focus:ring-2 focus:ring-indigo-500/10 outline-none w-40 sm:w-60 transition-all focus:bg-white focus:border-indigo-200"
+            />
+          </div>
+          <button 
+            onClick={() => openModal()}
+            className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
+          >
+            <i className="fa-solid fa-plus"></i> Nuevo
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar">
@@ -136,14 +153,14 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50 text-[13px]">
-            {tipos.length === 0 ? (
+            {filteredTipos.length === 0 ? (
               <tr>
                 <td colSpan="3" className="py-8 text-center text-slate-400 font-medium italic">
-                  No hay Tipos de Crédito registrados.
+                  {tableSearch ? 'No se encontraron créditos con ese nombre.' : 'No hay Tipos de Crédito registrados.'}
                 </td>
               </tr>
             ) : (
-              tipos.map(t => (
+              filteredTipos.map(t => (
                 <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="py-3 px-3 font-bold text-slate-700">{t.nombre}</td>
                   <td className="py-3 px-3 hidden md:table-cell text-slate-500">

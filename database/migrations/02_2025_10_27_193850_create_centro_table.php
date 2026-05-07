@@ -20,6 +20,8 @@ return new class extends Migration
             $table->text("google_maps_link")->nullable();
             $table->decimal('lat', 10, 8)->nullable();
             $table->decimal('lng', 11, 8)->nullable();
+            $table->string('tag')->nullable();
+            $table->string('icon')->nullable()->default('fa-heart-pulse');
             $table->timestamps();
             $table->softDeletes();
         });

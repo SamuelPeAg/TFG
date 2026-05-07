@@ -61,10 +61,7 @@ export default function Login() {
     setErrors({})
 
     try {
-      console.log('Intentando login...');
       const response = await axios.post('/login', formData);
-      
-      console.log('Respuesta recibida:', response.data);
 
       if (response.data.success || response.status === 200 || response.status === 204) {
         window.location.href = response.data.redirect;

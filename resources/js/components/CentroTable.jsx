@@ -6,14 +6,14 @@ import MapPicker from './MapPicker';
 export default function CentroTable({ centros, empresas, onUpdate }) {
     const [editMode, setEditMode] = useState(null);
     const [formData, setFormData] = useState({
-        nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: ''
+        nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: '', tag: '', icon: 'fa-heart-pulse'
     });
     const [showMapPicker, setShowMapPicker] = useState(false);
 
     const handleAdd = async () => {
         try {
             await axios.post('/api/admin/centros', formData);
-            setFormData({ nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: '' });
+            setFormData({ nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: '', tag: '', icon: 'fa-heart-pulse' });
             setShowMapPicker(false);
             onUpdate();
         } catch (e) { alert('Error al añadir centro'); }
@@ -108,9 +108,6 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                             <option key={emp.id} value={emp.id}>{emp.nombre}</option>
                                         ))}
                                     </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-emerald-500 transition-colors">
-                                        <i className="fa-solid fa-chevron-down text-xs"></i>
-                                    </div>
                                 </div>
                             </div>
                             <input type="text" placeholder="Dirección" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none" value={formData.direccion} onChange={e => setFormData({...formData, direccion: e.target.value})} />
@@ -119,6 +116,35 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                 <input type="text" placeholder="Ciudad" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none" value={formData.ciudad} onChange={e => setFormData({...formData, ciudad: e.target.value})} />
                             </div>
                             <input type="text" placeholder="Enlace Google Maps o Iframe" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none text-sm" value={formData.google_maps_link} onChange={e => setFormData({...formData, google_maps_link: e.target.value})} />
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Etiqueta (Tag)</label>
+                                    <input type="text" placeholder="Ej: Salud y ejercicio" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold text-sm" value={formData.tag || ''} onChange={e => setFormData({...formData, tag: e.target.value})} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Icono</label>
+                                    <div className="relative group">
+                                        <select 
+                                            className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold text-slate-500 text-sm appearance-none cursor-pointer pr-10 transition-all hover:bg-slate-100 shadow-sm" 
+                                            value={formData.icon || 'fa-heart-pulse'} 
+                                            onChange={e => setFormData({...formData, icon: e.target.value})}
+                                        >
+                                            <option value="fa-heart-pulse">Corazón (Salud)</option>
+                                            <option value="fa-dumbbell">Mancuerna (Fitness)</option>
+                                            <option value="fa-sun">Sol (Outdoor)</option>
+                                            <option value="fa-bolt">Rayo (HIIT)</option>
+                                            <option value="fa-water">Agua (Piscina)</option>
+                                            <option value="fa-users">Usuarios (Grupo)</option>
+                                            <option value="fa-medal">Medalla (Elite)</option>
+                                            <option value="fa-location-dot">Ubicación (Genérico)</option>
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <i className={`fa-solid ${formData.icon || 'fa-chevron-down'} text-xs`}></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div className="space-y-3">
                                 <div className="flex justify-between items-center">

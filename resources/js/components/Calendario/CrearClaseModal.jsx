@@ -166,7 +166,6 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        console.log(`[handleChange] name:${name}, value:${value}, type:${type}`);
         setFormData(prev => {
             const nextState = {
                 ...prev,
@@ -177,7 +176,6 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                 const config = getDefaultConfigForType(value);
                 nextState.capacidad_maxima = config ? config.capacidad_personas.toString() : '1';
                 nextState.precio_base = config ? (config.precio_base || '0.00') : '0.00';
-                console.log(`[handleChange] Tipo cambió a: ${value}, capacidad: ${nextState.capacidad_maxima}, precio: ${nextState.precio_base}`);
             }
 
             return nextState;
@@ -327,8 +325,6 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
     };
 
     if (!isOpen) return null;
-
-    console.log('[CrearClaseModal] Render - formData.tipo_clase:', formData.tipo_clase, 'capacidad_maxima:', formData.capacidad_maxima, 'currentStep:', currentStep);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 md:p-6 animate-in fade-in duration-200">

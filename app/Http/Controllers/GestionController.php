@@ -135,7 +135,9 @@ class GestionController extends Controller
             'google_maps_link' => 'nullable',
             'color_hex' => 'nullable|string|max:7',
             'lat' => 'nullable|numeric',
-            'lng' => 'nullable|numeric'
+            'lng' => 'nullable|numeric',
+            'tag' => 'nullable|string|max:100',
+            'icon' => 'nullable|string|max:50'
         ]);
 
         if (empty($data['lat']) || empty($data['lng'])) {
@@ -164,7 +166,9 @@ class GestionController extends Controller
             'google_maps_link' => 'nullable',
             'color_hex' => 'nullable|string|max:7',
             'lat' => 'nullable|numeric',
-            'lng' => 'nullable|numeric'
+            'lng' => 'nullable|numeric',
+            'tag' => 'nullable|string|max:100',
+            'icon' => 'nullable|string|max:50'
         ]);
 
         if (empty($data['lat']) || empty($data['lng'])) {
