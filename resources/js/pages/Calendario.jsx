@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import CalendarModals from '../components/CalendarModals';
@@ -9,6 +10,8 @@ import Button from '../components/Button';
 import PageHeader from '../components/PageHeader';
 
 export default function Calendario() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [data, setData] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -168,6 +171,55 @@ export default function Calendario() {
        }
     }
   }, [viewMode, loading]);
+  
+  // 4. Handle Redirection from "Mis Clases" or other parts of the app
+  useEffect(() => {
+    console.log("Check Redirección - State:", location.state, "Loading:", loading, "HasData:", !!data);
+    
+    if (location.state?.openSession && !loading && data) {
+        console.log("¡Condiciones cumplidas! Iniciando timer de 3s para abrir modal...");
+        
+        const session = location.state.openSession;
+        
+        const timer = setTimeout(() => {
+            // Map session data to match the format expected by VerClaseModal
+            setSelectedEventParaVer({
+                start: new Date(session.fecha_registro),
+                extendedProps: {
+                    clase_nombre: session.nombre_clase,
+                    centro: session.centro,
+                    tipo_clase: session.tipo_clase,
+                    capacidad_maxima: session.capacidad_maxima,
+                    entrenadores: (session.entrenadores || []).map(t => ({
+                        ...t,
+                        photo: t.foto 
+                    })),
+                    alumnos: (session.alumnos || []).map(a => ({
+                        ...a,
+                        nombre: a.name, 
+                        photo: a.foto   
+                    })),
+                    alumnos_count: (session.alumnos || []).length,
+                    session_key: {
+                        fecha_hora: session.fecha_registro,
+                        nombre_clase: session.nombre_clase,
+                        centro: session.centro
+                    }
+                }
+            });
+            setIsVerModalOpen(true);
+
+            if (location.state.goToDate && window.calendar && viewMode === 'calendar') {
+                window.calendar.gotoDate(location.state.goToDate);
+            }
+            
+            // Limpiar el estado usando navigate para que no se reabra al refrescar
+            navigate(location.pathname, { replace: true, state: {} });
+        }, 3000); // Delay de 3 segundos para asegurar que todo esté cargado
+
+        return () => clearTimeout(timer);
+    }
+  }, [location.state, loading, data]);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden font-sans text-slate-900">
