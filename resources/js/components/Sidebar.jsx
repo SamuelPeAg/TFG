@@ -90,7 +90,6 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const clientLinks = [
     { name: 'CALENDARIO', path: '/calendario', icon: 'fa-solid fa-calendar-days text-[#38C1A3]' },
     { name: 'MIS CLASES', path: '/mis-clases', icon: 'fa-solid fa-person-running text-amber-300' },
-    { name: 'MI FICHA', path: '/mi-ficha', icon: 'fa-solid fa-folder-open text-indigo-300' },
     { name: 'NUTRICIÓN & EVOLUCIÓN', path: '/mis-comidas', icon: 'fa-solid fa-dna text-rose-300' },
     { name: 'ESTADÍSTICAS', path: '/mis-estadisticas', icon: 'fa-solid fa-chart-line text-emerald-200' },
   ];

@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import AlertModal from '../components/AlertModal';
 import PageHeader from '../components/PageHeader';
+import IbanInput from '../components/IbanInput';
 
 export default function Configuracion() {
   const [loading, setLoading] = useState(true);
@@ -90,9 +91,8 @@ export default function Configuracion() {
       const { name, value } = e.target;
       let newValue = value;
 
-      if (name === 'iban') {
-          newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      }
+      // Manual formatting removed for IBAN as IbanInput handles it
+      // if (name === 'iban') { ... }
 
       setFormData(prev => ({ ...prev, [name]: newValue }));
       if (errors[name]) {
@@ -297,15 +297,13 @@ export default function Configuracion() {
                                                                       <div className="space-y-3 group">
                                         <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em] group-focus-within:text-[#38C1A3] transition-colors">IBAN (Cuenta de Facturación)</label>
                                         <div className="relative">
-                                            <input 
-                                                type="text" 
-                                                name="iban" 
-                                                value={formData.iban} 
-                                                onChange={handleInputChange} 
-                                                className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" 
-                                                placeholder="Introduce tu IBAN..." 
-                                            />
-                                            <i className="fa-solid fa-building-columns absolute right-8 top-1/2 -translate-y-1/2 text-slate-200"></i>
+                                        <IbanInput 
+                                            name="iban" 
+                                            value={formData.iban} 
+                                            onChange={handleInputChange} 
+                                            className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" 
+                                            placeholder="Introduce tu IBAN..." 
+                                        />
                                         </div>
                                         {errors.iban && <p className="text-[10px] text-rose-500 font-black uppercase ml-6 tracking-widest">{errors.iban[0]}</p>}
                                     </div>

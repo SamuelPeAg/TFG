@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Button from './Button';
+import IbanInput from './IbanInput';
 
 export default function UserModals({ 
   isOpen, 
@@ -71,9 +72,7 @@ export default function UserModals({
     const { name, value } = e.target;
     let newValue = value;
 
-    if (name === 'iban') {
-      newValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    }
+    // if (name === 'iban') { ... }
 
     setFormData(prev => ({ ...prev, [name]: newValue }));
     if (errors[name]) {
@@ -211,18 +210,13 @@ export default function UserModals({
               <>
                 <div className="space-y-1.5">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">IBAN (Cuenta Bancaria)</label>
-                  <div className="relative group">
-                    <i className="fas fa-credit-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-[#38C1A3] transition-colors"></i>
-                    <input
-                      type="text"
-                      name="iban"
-                      value={formData.iban}
-                      onChange={handleChange}
-                      maxLength={34}
-                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 uppercase font-mono text-xs"
-                      placeholder="ES00 0000 0000 0000 0000 0000"
-                    />
-                  </div>
+                  <IbanInput
+                    name="iban"
+                    value={formData.iban}
+                    onChange={handleChange}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-[#38C1A3]/10 focus:bg-white focus:border-[#38C1A3] outline-none transition-all font-bold text-slate-700 placeholder:text-slate-300 uppercase font-mono text-xs"
+                    placeholder="ES00 0000 0000 0000 0000 0000"
+                  />
                 </div>
               </>
             )}
