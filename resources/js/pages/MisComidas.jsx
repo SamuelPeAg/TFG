@@ -5,6 +5,7 @@ import PhysicalProgress from '../components/PhysicalProgress';
 import AlertModal from '../components/AlertModal';
 import ConfirmModal from '../components/ConfirmModal';
 import PageHeader from '../components/PageHeader';
+import SearchSelect from '../components/SearchSelect';
 
 export default function MisComidas() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -106,14 +107,31 @@ export default function MisComidas() {
     const [editingMealId, setEditingMealId] = useState(null);
     const [editForm, setEditForm] = useState({ calories: 0, protein: 0, carbs: 0, fats: 0 });
 
+    const extractTime = (dateStr) => {
+        if (!dateStr) return '00:00';
+        const match = dateStr.match(/[T\s](\d{2}:\d{2})/);
+        return match ? match[1] : '00:00';
+    };
+
     const handleEditClick = (meal) => {
         setEditingMealId(meal.id);
+        const timeValue = extractTime(meal.logged_at);
         setEditForm({
             calories: meal.calories_est || 0,
             protein: meal.macros_est?.protein || 0,
             carbs: meal.macros_est?.carbs || 0,
-            fats: meal.macros_est?.fats || 0
+            fats: meal.macros_est?.fats || 0,
+            time: timeValue
         });
+    };
+
+    const handleMacroChange = (field, val) => {
+        if (val === '') {
+            setEditForm({ ...editForm, [field]: '' });
+            return;
+        }
+        if (!/^\d*\.?\d*$/.test(val)) return;
+        setEditForm({ ...editForm, [field]: val });
     };
 
     const handleEditSave = async (mealId) => {
@@ -122,7 +140,8 @@ export default function MisComidas() {
                 calories_est: editForm.calories,
                 protein: editForm.protein,
                 carbs: editForm.carbs,
-                fats: editForm.fats
+                fats: editForm.fats,
+                time: editForm.time
             });
             setComidas(comidas.map(m => m.id === mealId ? data.meal : m));
             setEditingMealId(null);
@@ -134,6 +153,21 @@ export default function MisComidas() {
 
     // Calorías
     const [maintenanceCalories, setMaintenanceCalories] = useState(2500);
+
+    const handleMaintenanceChange = (e) => {
+        const val = e.target.value;
+        if (val === '') {
+            setMaintenanceCalories('');
+            return;
+        }
+        if (!/^\d+$/.test(val)) return;
+        const num = parseInt(val, 10);
+        if (num > 6000) {
+            showAlert("El máximo de calorías permitidas es 6000 kcal.", true, "Límite excedido");
+            return;
+        }
+        setMaintenanceCalories(num);
+    };
 
     useEffect(() => {
         fetchMeals();
@@ -169,7 +203,7 @@ export default function MisComidas() {
             const res = await axios.get(`/client-profile/${userId}`);
             setClientProfile(res.data.client);
             setPeso(res.data.client?.peso || '');
-            setAltura(res.data.client?.altura || '');
+            setAltura(res.data.client?.altura ? Math.round(res.data.client.altura * 100) : '');
             setMeasurements(res.data.measurements || []);
             setFiles(res.data.files || []);
             setSpecialistNotes(res.data.client?.notas_especialista || '');
@@ -265,7 +299,7 @@ export default function MisComidas() {
         try {
             const userRes = await axios.get('/configuracion');
             const userId = userRes.data.user.id;
-            await axios.post(`/client-profile/${userId}/progress`, { peso, altura });
+            await axios.post(`/client-profile/${userId}/progress`, { peso, altura: altura / 100 });
             showAlert('¡Genial! Tu evolución física se ha registrado correctamente.');
             fetchFicha();
         } catch (err) {
@@ -324,18 +358,17 @@ export default function MisComidas() {
                                         
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                             <div className="flex flex-col md:flex-row gap-6">
-                                                <div className="relative inline-block w-full md:w-56 group">
-                                                    <select 
-                                                        value={mealType} 
-                                                        onChange={(e) => setMealType(e.target.value)} 
-                                                        className="select2-ignore w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-black focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none text-slate-700 shadow-inner appearance-none cursor-pointer transition-all"
-                                                    >
-                                                        <option value="desayuno">Desayuno</option>
-                                                        <option value="almuerzo">Almuerzo</option>
-                                                        <option value="cena">Cena</option>
-                                                        <option value="snack">Merienda / Snack</option>
-                                                    </select>
-                                                    <i className="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-xs text-slate-400 pointer-events-none group-hover:text-[#38C1A3] transition-colors"></i>
+                                                <div className="relative inline-block w-full md:w-56 group z-50">
+                                                    <SearchSelect
+                                                        options={[
+                                                            { value: 'desayuno', label: 'Desayuno' },
+                                                            { value: 'almuerzo', label: 'Almuerzo' },
+                                                            { value: 'cena', label: 'Cena' },
+                                                            { value: 'snack', label: 'Merienda / Snack' }
+                                                        ]}
+                                                        value={mealType}
+                                                        onChange={(e) => setMealType(e.target.value)}
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="relative">
@@ -397,22 +430,28 @@ export default function MisComidas() {
                                                         <button onClick={() => setEditingMealId(null)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center transition-colors"><i className="fa-solid fa-times"></i></button>
                                                     </div>
                                                     <div className="space-y-4">
-                                                        <div>
-                                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Calorías Totales (Kcal)</label>
-                                                            <input type="number" value={editForm.calories} onChange={e => setEditForm({...editForm, calories: e.target.value})} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:bg-white focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/10 font-black text-slate-700 transition-all" />
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="text-[10px] font-black uppercase text-indigo-500 tracking-widest block mb-2">Hora de comida</label>
+                                                                <input type="time" value={editForm.time} onChange={e => setEditForm({...editForm, time: e.target.value})} className="w-full bg-indigo-50/50 border border-indigo-100 rounded-2xl px-6 py-4 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10 font-black text-slate-700 transition-all text-center" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Calorías Totales (Kcal)</label>
+                                                                <input type="text" inputMode="decimal" value={editForm.calories} onChange={e => handleMacroChange('calories', e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:bg-white focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/10 font-black text-slate-700 transition-all text-center" />
+                                                            </div>
                                                         </div>
                                                         <div className="grid grid-cols-3 gap-4">
                                                             <div>
                                                                 <label className="text-[10px] font-black uppercase text-rose-500 tracking-widest block mb-2">Proteínas (g)</label>
-                                                                <input type="number" value={editForm.protein} onChange={e => setEditForm({...editForm, protein: e.target.value})} className="w-full bg-rose-50/50 border border-rose-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-400/10 font-black text-slate-700 transition-all text-center" />
+                                                                <input type="text" inputMode="decimal" value={editForm.protein} onChange={e => handleMacroChange('protein', e.target.value)} className="w-full bg-rose-50/50 border border-rose-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-rose-400 focus:ring-4 focus:ring-rose-400/10 font-black text-slate-700 transition-all text-center" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-[10px] font-black uppercase text-[#38C1A3] tracking-widest block mb-2">Carbos (g)</label>
-                                                                <input type="number" value={editForm.carbs} onChange={e => setEditForm({...editForm, carbs: e.target.value})} className="w-full bg-teal-50/50 border border-teal-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/10 font-black text-slate-700 transition-all text-center" />
+                                                                <input type="text" inputMode="decimal" value={editForm.carbs} onChange={e => handleMacroChange('carbs', e.target.value)} className="w-full bg-teal-50/50 border border-teal-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/10 font-black text-slate-700 transition-all text-center" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-[10px] font-black uppercase text-amber-500 tracking-widest block mb-2">Grasas (g)</label>
-                                                                <input type="number" value={editForm.fats} onChange={e => setEditForm({...editForm, fats: e.target.value})} className="w-full bg-amber-50/50 border border-amber-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 font-black text-slate-700 transition-all text-center" />
+                                                                <input type="text" inputMode="decimal" value={editForm.fats} onChange={e => handleMacroChange('fats', e.target.value)} className="w-full bg-amber-50/50 border border-amber-100 rounded-2xl px-4 py-3 outline-none focus:bg-white focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 font-black text-slate-700 transition-all text-center" />
                                                             </div>
                                                         </div>
                                                         <div className="pt-4 flex justify-end">
@@ -437,7 +476,7 @@ export default function MisComidas() {
                                                             </div>
                                                             <div>
                                                                 <span className="text-sm font-black uppercase text-slate-800 tracking-tight">{meal.meal_type}</span>
-                                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{new Date(meal.logged_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{extractTime(meal.logged_at)}</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col items-end gap-2">
@@ -493,12 +532,18 @@ export default function MisComidas() {
 
                                     {activeTab === 'ia' ? (
                                         <div className="space-y-6">
-                                            <div className="flex gap-4">
-                                                <select value={aiGoal} onChange={(e) => setAiGoal(e.target.value)} className="select2-ignore flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-black focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 outline-none text-slate-700 appearance-none">
-                                                    <option value="Perder Grasa">Perder Grasa</option>
-                                                    <option value="Ganar Masa Muscular">Ganar Masa Muscular</option>
-                                                    <option value="Mantenimiento y Salud">Mantenimiento y Salud</option>
-                                                </select>
+                                            <div className="flex gap-4 z-40 relative">
+                                                <div className="flex-1">
+                                                    <SearchSelect
+                                                        options={[
+                                                            { value: 'Perder Grasa', label: 'Perder Grasa' },
+                                                            { value: 'Ganar Masa Muscular', label: 'Ganar Masa Muscular' },
+                                                            { value: 'Mantenimiento y Salud', label: 'Mantenimiento y Salud' }
+                                                        ]}
+                                                        value={aiGoal}
+                                                        onChange={(e) => setAiGoal(e.target.value)}
+                                                    />
+                                                </div>
                                             </div>
                                             <button onClick={handleGenerateRoutine} disabled={generatingRoutine} className="w-full bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 transition-all flex justify-center items-center gap-3 disabled:opacity-50">
                                                 {generatingRoutine ? <i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i> : <i className="fa-solid fa-wand-magic-sparkles text-[#38C1A3]"></i>} 
@@ -528,9 +573,14 @@ export default function MisComidas() {
                                                 <div className="text-center p-6 bg-slate-50 rounded-2xl"><p className="text-xs font-black uppercase text-slate-400">No hay entrenadores disponibles</p></div>
                                             ) : (
                                                 <>
-                                                    <select value={selectedTrainer} onChange={(e) => setSelectedTrainer(e.target.value)} className="select2-ignore w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm font-black focus:bg-white outline-none text-slate-700 appearance-none">
-                                                        {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                                                    </select>
+                                                    <div className="z-30 relative mb-6">
+                                                        <SearchSelect
+                                                            options={trainers.map(t => ({ value: t.id, label: t.name }))}
+                                                            value={selectedTrainer}
+                                                            onChange={(e) => setSelectedTrainer(e.target.value)}
+                                                            placeholder="Selecciona un entrenador"
+                                                        />
+                                                    </div>
                                                     <textarea value={trainerMessage} onChange={(e) => setTrainerMessage(e.target.value)} placeholder="Ej: Hoy he comido menos de lo habitual, ¿qué me recomiendas hacer en el gimnasio?" rows="3" className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-7 text-sm font-bold text-slate-700 focus:bg-white outline-none resize-none shadow-inner" />
                                                     <button onClick={handleSendToTrainer} disabled={sendingPlan || !trainerMessage.trim()} className="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20 transition-all flex justify-center items-center gap-3 disabled:opacity-50">
                                                         {sendingPlan ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-paper-plane"></i>} 
@@ -674,10 +724,10 @@ export default function MisComidas() {
                                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Ajustar Mantenimiento</div>
                                             <div className="flex items-center bg-black/20 rounded-2xl p-2 border border-white/5">
                                                 <input 
-                                                    type="number" 
+                                                    type="text" 
                                                     className="w-full bg-transparent text-white text-center font-black text-lg outline-none no-spinner" 
                                                     value={maintenanceCalories} 
-                                                    onChange={(e) => setMaintenanceCalories(e.target.value)} 
+                                                    onChange={handleMaintenanceChange} 
                                                 />
                                                 <span className="pr-4 text-[10px] font-black text-slate-500 uppercase">Kcal</span>
                                             </div>
@@ -698,6 +748,7 @@ export default function MisComidas() {
                                     measurements={measurements}
                                     onSave={handleProgressSave}
                                     isSubmitting={submittingProgress}
+                                    showAlert={showAlert}
                                 />
 
                             </div>
@@ -797,12 +848,6 @@ export default function MisComidas() {
                     font-size: 0.875rem !important;
                 }
 
-                /* 2. Eliminar flecha nativa del navegador */
-                select {
-                    -webkit-appearance: none !important;
-                    -moz-appearance: none !important;
-                    appearance: none !important;
-                }
 
                 /* 3. Eliminar icono nativo del calendario y hacerlo clicable en toda el área */
                 input[type="date"]::-webkit-calendar-picker-indicator {
@@ -846,10 +891,11 @@ export default function MisComidas() {
             {/* Easter Egg Senzu Mode */}
             {senzuMode && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center pointer-events-none bg-yellow-500/40 animate-pulse mix-blend-color-dodge">
-                    <div className="animate-bounce scale-150 transform transition-transform duration-75">
-                        <h1 className="text-6xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 drop-shadow-[0_0_30px_rgba(250,204,21,0.8)] italic text-center">
-                            ¡IT'S OVER 9000!
+                    <div className="animate-bounce scale-150 transform transition-transform duration-75 text-center">
+                        <h1 className="text-6xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600 drop-shadow-[0_0_30px_rgba(250,204,21,0.8)] italic">
+                            ¡MODO SUPERSAIYAN!
                         </h1>
+                        <p className="text-4xl font-black text-yellow-300 drop-shadow-lg mt-4 animate-pulse">9999 KCAL</p>
                     </div>
                 </div>
             )}

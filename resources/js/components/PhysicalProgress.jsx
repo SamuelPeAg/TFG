@@ -8,11 +8,58 @@ export default function PhysicalProgress({
     setAltura, 
     measurements, 
     onSave, 
-    isSubmitting 
+    isSubmitting,
+    showAlert
 }) {
     const weightVal = parseFloat(peso);
-    const heightVal = parseFloat(altura);
+    const heightVal = parseFloat(altura) / 100;
     const currentIMC = (weightVal > 0 && heightVal > 0) ? (weightVal / (heightVal * heightVal)).toFixed(2) : null;
+
+    const handlePesoChange = (e) => {
+        const val = e.target.value;
+        if (val === '') {
+            setPeso('');
+            return;
+        }
+        
+        // Allow integers or decimals (e.g., 75 or 75.5) but not multiple dots
+        if (!/^\d*\.?\d*$/.test(val)) return;
+
+        const num = parseFloat(val);
+        if (num > 250) {
+            if (showAlert) {
+                showAlert("El peso máximo permitido es de 250 kg.", true, "Límite excedido");
+            } else {
+                alert("El peso máximo permitido es de 250 kg.");
+            }
+            return;
+        }
+        
+        setPeso(val);
+    };
+
+    const handleAlturaChange = (e) => {
+        const val = e.target.value;
+        if (val === '') {
+            setAltura('');
+            return;
+        }
+        
+        // Allow integers or decimals (e.g., 175) but not multiple dots
+        if (!/^\d*\.?\d*$/.test(val)) return;
+
+        const num = parseFloat(val);
+        if (num > 250) {
+            if (showAlert) {
+                showAlert("La altura máxima permitida es de 250 cm.", true, "Límite excedido");
+            } else {
+                alert("La altura máxima permitida es de 250 cm.");
+            }
+            return;
+        }
+        
+        setAltura(val);
+    };
 
     return (
         <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-10 relative overflow-hidden group">
@@ -49,28 +96,28 @@ export default function PhysicalProgress({
                         <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Peso (kg)</label>
                         <div className="relative">
                             <input 
-                                step="0.1" 
+                                inputMode="decimal" 
                                 className="w-full px-7 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner no-spinner" 
                                 placeholder="0.0" 
-                                type="number" 
+                                type="text" 
                                 value={peso} 
-                                onChange={(e) => setPeso(e.target.value)} 
+                                onChange={handlePesoChange} 
                             />
                             <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">kg</span>
                         </div>
                     </div>
                     <div className="space-y-2 group">
-                        <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Altura (m)</label>
+                        <label className="text-[10px] font-black text-slate-400 uppercase ml-3 tracking-widest">Altura (cm)</label>
                         <div className="relative">
                             <input 
-                                step="0.01" 
+                                inputMode="decimal" 
                                 className="w-full px-7 py-5 bg-slate-50 border border-slate-100 rounded-[2rem] text-sm font-black text-slate-700 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner no-spinner" 
-                                placeholder="0.00" 
-                                type="number" 
+                                placeholder="0" 
+                                type="text" 
                                 value={altura} 
-                                onChange={(e) => setAltura(e.target.value)} 
+                                onChange={handleAlturaChange} 
                             />
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">m</span>
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">cm</span>
                         </div>
                     </div>
                 </div>

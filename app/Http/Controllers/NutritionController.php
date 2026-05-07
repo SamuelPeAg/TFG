@@ -53,13 +53,13 @@ class NutritionController extends Controller
                 'user_id' => $user->id,
                 'meal_type' => $request->meal_type,
                 'meal_description' => '🌿 Semillas del Ermitaño',
-                'calories_est' => 9001,
+                'calories_est' => 9999,
                 'macros_est' => [
-                    'protein' => 9001,
-                    'carbs' => 9001,
-                    'fats' => 9001,
+                    'protein' => 9999,
+                    'carbs' => 9999,
+                    'fats' => 9999,
                 ],
-                'ai_feedback' => '¡NIVEL DE PODER SUPERANDO LOS 9000! Recuperación muscular al 1000%.',
+                'ai_feedback' => '¡MODO SUPERSAIYAN ACTIVADO! Recuperación muscular al 10000%.',
                 'logged_at' => $loggedAt,
             ]);
 
@@ -247,6 +247,7 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con este formato exacto (sin form
             'protein' => 'required|numeric',
             'carbs' => 'required|numeric',
             'fats' => 'required|numeric',
+            'time' => 'nullable|string', // HH:mm
         ]);
 
         $user = Auth::user();
@@ -258,6 +259,12 @@ Devuelve EXCLUSIVAMENTE un objeto JSON válido con este formato exacto (sin form
             'carbs' => $request->carbs,
             'fats' => $request->fats,
         ];
+        
+        if ($request->filled('time')) {
+            $currentDate = \Carbon\Carbon::parse($meal->logged_at)->format('Y-m-d');
+            $meal->logged_at = $currentDate . ' ' . $request->time . ':00';
+        }
+
         $meal->save();
 
         return response()->json([
