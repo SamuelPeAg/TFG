@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('iban')->nullable()->unique();
+            $table->string('sepa_bic')->nullable();
+            $table->string('sepa_mandate_ref')->nullable();
+            $table->date('sepa_mandate_date')->nullable();
             $table->text('firma_digital')->nullable();
             
             $table->string('google_id')->nullable()->unique();

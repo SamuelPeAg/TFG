@@ -17,6 +17,7 @@ class Reserva extends Model
         'id_usuario',
         'id_horario_clase',
         'estado',
+        'creditos_gastados',
     ];
 
     //Una Reserva pertenece a un User 

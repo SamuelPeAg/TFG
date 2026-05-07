@@ -213,10 +213,7 @@ class FacturacionController extends Controller
                 if (!isset($matrix[$c][$t])) {
                     $matrix[$c][$t] = ['count' => (int) $r->total, 'amount' => 0];
                 } else {
-                    // Si ya hay pagos, comprobamos si el conteo de reservas es mayor (porque algunas reservas pueden no estar pagadas aún)
-                    // O simplemente confiamos en que los pagos ya cubren las reservas. 
-                    // Por lo general, si hay pagos, el conteo de pagos es lo que se "factura".
-                    // Pero el usuario pide "total de clases", así que usaremos el máximo si divergen o simplemente las clases de reservas si no hay pagos.
+                    // Sumamos las clases de reservas si el conteo es mayor al de pagos (algunas pueden ser por créditos)
                     if ($matrix[$c][$t]['count'] < (int) $r->total) {
                         $matrix[$c][$t]['count'] = (int) $r->total;
                     }
@@ -288,6 +285,7 @@ class FacturacionController extends Controller
             'matrix' => $matrix,
             'resumen' => $resumen,
             'clienteTotals' => $clienteTotals,
+            'validation_status' => $this->auditData($clientes),
             'desde' => $desde,
             'hasta' => $hasta,
             'centro' => $centro,
@@ -295,11 +293,6 @@ class FacturacionController extends Controller
             'clienteId' => $clienteId,
             'anio' => $anio,
             'mes' => $mes,
-            'debug' => [
-                'request_cliente_id' => $request->input('cliente_id'),
-                'processed_cliente_id' => $clienteId,
-                'clientes_count' => count($clientes)
-            ]
         ];
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -399,11 +392,13 @@ class FacturacionController extends Controller
                 $metodo = $pago->metodo_pago ?? null;
                 $nombreClase = $pago->nombre_clase ?? $nombreClase;
                 $pagoId = $pago->id;
+                $numeroCompleto = $pago->numero_completo;
             }
 
             $result->push([
                 'source' => 'reserva',
                 'pago_id' => $pagoId ?? null,
+                'numero_factura' => $numeroCompleto ?? null,
                 'cliente' => $cliente,
                 'entrenador' => $entrenador,
                 'fecha' => $fecha,
@@ -411,6 +406,7 @@ class FacturacionController extends Controller
                 'metodo' => $metodo,
                 'nombre_clase' => $nombreClase,
                 'centro' => $centroName,
+                'creditos' => $it->creditos_gastados ?? 0,
             ]);
         }
 
@@ -461,6 +457,7 @@ class FacturacionController extends Controller
             $result->push([
                 'source' => 'pago',
                 'pago_id' => $p->id,
+                'numero_factura' => $p->numero_completo,
                 'cliente' => $p->user?->name ?? null,
                 'entrenador' => $trainerString,
                 'fecha' => $pFecha,
@@ -468,6 +465,7 @@ class FacturacionController extends Controller
                 'metodo' => $p->metodo_pago ?? null,
                 'nombre_clase' => $p->nombre_clase ?? null,
                 'centro' => $p->centro,
+                'creditos' => 0, // Los pagos directos no suelen gastar créditos de suscripción en este flujo
             ]);
         }
 
@@ -585,35 +583,108 @@ class FacturacionController extends Controller
 
             $suscripcionesUsuarios = $query->get();
 
-            $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><remesa_bancaria/>');
-            $xml->addChild('periodo', ($mes ? "Mes $mes - " : "") . "Año $anio");
-            $xml->addChild('centro', htmlspecialchars($centro));
-            $xml->addChild('tipo', 'Domiciliaciones - Suscripciones');
+            // Configuración SEPA de la Empresa (tomamos la primera asociada al centro o una por defecto)
+            $empresa = null;
+            if ($centro !== 'todos' && $centroRecord) {
+                $empresa = $centroRecord->empresa;
+            }
+            if (!$empresa) {
+                $empresa = \App\Models\Empresa::first();
+            }
+
+            $creditorName = htmlspecialchars($empresa->nombre ?? 'Gimnasio');
+            $creditorIBAN = str_replace(' ', '', $empresa->cif_dni ?? ''); // Nota: esto debería ser un IBAN real de la empresa
+            $creditorBIC = $empresa->sepa_bic ?? '';
+            $creditorID = $empresa->sepa_creditor_id ?? ''; // AT-02 identifier
+
+            $msgId = 'REMESA-' . time();
+            $creDtTm = now()->format('Y-m-d\TH:i:s');
             
+            $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>');
+            $cstmrDrctDbtInitn = $xml->addChild('CstmrDrctDbtInitn');
+            
+            // Group Header
+            $grpHdr = $cstmrDrctDbtInitn->addChild('GrpHdr');
+            $grpHdr->addChild('MsgId', $msgId);
+            $grpHdr->addChild('CreDtTm', $creDtTm);
+            $grpHdr->addChild('NbOfTxs', $suscripcionesUsuarios->count());
+            $grpHdr->addChild('CtrlSum', $suscripcionesUsuarios->sum(fn($su) => (float)$su->suscripcion->precio));
+            $initgPty = $grpHdr->addChild('InitgPty');
+            $initgPty->addChild('Nm', $creditorName);
+
+            // Payment Information
+            $pmtInf = $cstmrDrctDbtInitn->addChild('PmtInf');
+            $pmtInf->addChild('PmtInfId', 'PMT-' . time());
+            $pmtInf->addChild('PmtMtd', 'DD'); // Direct Debit
+            $pmtInf->addChild('NbOfTxs', $suscripcionesUsuarios->count());
+            $pmtInf->addChild('CtrlSum', $suscripcionesUsuarios->sum(fn($su) => (float)$su->suscripcion->precio));
+            
+            $pmtTpInf = $pmtInf->addChild('PmtTpInf');
+            $svcLvl = $pmtTpInf->addChild('SvcLvl');
+            $svcLvl->addChild('Cd', 'SEPA');
+            $lclInstrm = $pmtTpInf->addChild('LclInstrm');
+            $lclInstrm->addChild('Cd', 'CORE');
+            $pmtTpInf->addChild('SeqTyp', 'OOFF'); // One-off or RCUR for recurring
+
+            $pmtInf->addChild('ReqdColltnDt', now()->addDays(2)->format('Y-m-d'));
+            
+            $cdtr = $pmtInf->addChild('Cdtr');
+            $cdtr->addChild('Nm', $creditorName);
+            
+            $cdtrAcct = $pmtInf->addChild('CdtrAcct');
+            $id = $cdtrAcct->addChild('Id');
+            $id->addChild('IBAN', $creditorIBAN);
+            
+            $cdtrAgt = $pmtInf->addChild('CdtrAgt');
+            $finInstnId = $cdtrAgt->addChild('FinInstnId');
+            if ($creditorBIC) {
+                $finInstnId->addChild('BIC', $creditorBIC);
+            }
+
+            $cdtrSchmeId = $pmtInf->addChild('CdtrSchmeId');
+            $id = $cdtrSchmeId->addChild('Id');
+            $prvtId = $id->addChild('PrvtId');
+            $othr = $prvtId->addChild('Othr');
+            $othr->addChild('Id', $creditorID);
+            $schmeNm = $othr->addChild('SchmeNm');
+            $schmeNm->addChild('Prtry', 'SEPA');
+
             $total = 0;
             $items_pdf = [];
             foreach ($suscripcionesUsuarios as $su) {
-                $item = $xml->addChild('cargo');
-                $item->addChild('id_suscripcion_usuario', $su->id);
-                $clienteNombre = $su->usuario->name ?? 'N/A';
-                $item->addChild('cliente', htmlspecialchars($clienteNombre));
+                $txInf = $pmtInf->addChild('DrctDbtTxInf');
+                $pmtId = $txInf->addChild('PmtId');
+                $pmtId->addChild('EndToEndId', 'E2E-' . $su->id);
                 
-                $iban = $su->usuario->iban ?? '';
-                if (!$iban && $su->usuario->additional_attributes) {
-                    $attrs = is_array($su->usuario->additional_attributes) 
-                                ? $su->usuario->additional_attributes 
-                                : json_decode($su->usuario->additional_attributes, true);
-                    $iban = $attrs['iban'] ?? '';
-                }
-                $item->addChild('iban', htmlspecialchars($iban));
-                
-                $item->addChild('fecha_emision', now()->toDateString());
                 $precio = (float)($su->suscripcion->precio ?? 0);
-                $item->addChild('importe', $precio);
-                $concepto = $su->suscripcion->nombre ?? 'Suscripción';
-                $item->addChild('concepto', htmlspecialchars($concepto));
-                $total += $precio;
+                $instdAmt = $txInf->addChild('InstdAmt', $precio);
+                $instdAmt->addAttribute('Ccy', 'EUR');
+                
+                $drctDbtTx = $txInf->addChild('DrctDbtTx');
+                $mndtRltdInf = $drctDbtTx->addChild('MndtRltdInf');
+                $mndtRltdInf->addChild('MndtId', $su->usuario->sepa_mandate_ref ?? ('MND-' . $su->usuario->id));
+                $mndtRltdInf->addChild('DtOfSgntr', $su->usuario->sepa_mandate_date ? $su->usuario->sepa_mandate_date : $su->usuario->created_at->format('Y-m-d'));
+                
+                $dbtrAgt = $txInf->addChild('DbtrAgt');
+                $finInstnId = $dbtrAgt->addChild('FinInstnId');
+                if ($su->usuario->sepa_bic) {
+                    $finInstnId->addChild('BIC', $su->usuario->sepa_bic);
+                }
 
+                $dbtr = $txInf->addChild('Dbtr');
+                $clienteNombre = $su->usuario->name ?? 'N/A';
+                $dbtr->addChild('Nm', htmlspecialchars($clienteNombre));
+                
+                $dbtrAcct = $txInf->addChild('DbtrAcct');
+                $id = $dbtrAcct->addChild('Id');
+                $iban = str_replace(' ', '', $su->usuario->iban ?? '');
+                $id->addChild('IBAN', $iban);
+                
+                $rmtInf = $txInf->addChild('RmtInf');
+                $concepto = $su->suscripcion->nombre ?? 'Suscripción';
+                $rmtInf->addChild('Ustrd', htmlspecialchars($concepto));
+
+                $total += $precio;
                 $items_pdf[] = [
                     'Cliente' => $clienteNombre,
                     'IBAN' => $iban ? (substr($iban, 0, 4) . ' **** **** ' . substr($iban, -4)) : 'No definido',
@@ -621,7 +692,7 @@ class FacturacionController extends Controller
                     'Importe' => $precio
                 ];
             }
-            $xml->addChild('total_remesa', $total);
+
             $xmlContent = $xml->asXML();
             $baseFilename = "remesa_sepa_{$centro}_{$anio}_{$mes}";
 
@@ -707,10 +778,51 @@ class FacturacionController extends Controller
 
     public function downloadFacturaPdf($id)
     {
-        $pago = Pago::with(['user', 'entrenadores'])->findOrFail($id);
+        $pago = Pago::with(['user', 'entrenadores', 'centro_rel.empresa'])->findOrFail($id);
         
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.factura', compact('pago'));
         
-        return $pdf->download('factura-' . str_pad($pago->id, 5, '0', STR_PAD_LEFT) . '.pdf');
+        $filename = $pago->numero_completo ? 'factura-' . $pago->numero_completo : 'factura-' . str_pad($pago->id, 5, '0', STR_PAD_LEFT);
+        
+        return $pdf->download($filename . '.pdf');
+    }
+
+    private function auditData($clientes)
+    {
+        $status = [];
+        foreach ($clientes as $c) {
+            $errors = [];
+            
+            // Validar DNI
+            if (!$c->dni) {
+                $errors[] = 'Falta DNI';
+            } else {
+                $validator = \Validator::make(['dni' => $c->dni], ['dni' => 'nif']);
+                if ($validator->fails()) {
+                    $errors[] = 'DNI inválido';
+                }
+            }
+
+            // Validar IBAN
+            if (!$c->iban) {
+                $errors[] = 'Falta IBAN';
+            } else {
+                $cleanIban = str_replace(' ', '', $c->iban);
+                $validator = \Validator::make(['iban' => $cleanIban], ['iban' => 'iban']);
+                if ($validator->fails()) {
+                    $errors[] = 'IBAN inválido';
+                }
+            }
+
+            // Validar Mandato (Opcional pero recomendable si hay IBAN)
+            if ($c->iban && !$c->sepa_mandate_ref) {
+                $errors[] = 'Falta Ref. Mandato';
+            }
+
+            if (!empty($errors)) {
+                $status[$c->id] = $errors;
+            }
+        }
+        return $status;
     }
 }

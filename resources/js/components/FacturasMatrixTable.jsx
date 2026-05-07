@@ -12,7 +12,7 @@ export default function FacturasMatrixTable({ data, loading, onCellClick }) {
     );
   }
 
-  const { clientes, entrenadores, matrix, clienteTotals } = data;
+  const { clientes, entrenadores, matrix, clienteTotals, validation_status } = data;
 
   if (!clientes || clientes.length === 0) {
     return (
@@ -55,7 +55,19 @@ export default function FacturasMatrixTable({ data, loading, onCellClick }) {
                   <div className="flex justify-between items-center gap-2 sm:gap-4">
                     <div className="flex flex-col min-w-0">
                       <span className="font-bold text-slate-700 text-xs sm:text-sm truncate">{c.name}</span>
-                      <span className="text-xs text-slate-400 truncate">{c.email}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-400 truncate">{c.email}</span>
+                        {validation_status && validation_status[c.id] && (
+                          <div className="flex items-center gap-1 group/err relative">
+                            <i className="fa-solid fa-circle-exclamation text-rose-500 text-[10px] animate-pulse"></i>
+                            <div className="absolute left-0 bottom-full mb-2 hidden group-hover/err:block z-50">
+                              <div className="bg-slate-900 text-white text-[10px] py-1 px-2 rounded shadow-xl whitespace-nowrap font-bold">
+                                {validation_status[c.id].join(', ')}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="flex flex-col items-end text-xs flex-shrink-0">
                        <span className="font-bold text-slate-500">{clienteTotals[c.id]?.total_clases || 0}</span>

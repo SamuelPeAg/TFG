@@ -78,6 +78,9 @@ class ClientProfileController extends Controller
                 'direccion' => $user->direccion,
                 'codigo_postal' => $user->codigo_postal,
                 'ciudad' => $user->ciudad,
+                'sepa_bic' => $user->sepa_bic,
+                'sepa_mandate_ref' => $user->sepa_mandate_ref,
+                'sepa_mandate_date' => $user->sepa_mandate_date,
                 'foto_de_perfil' => $user->foto_de_perfil ? \Illuminate\Support\Facades\Storage::url($user->foto_de_perfil) : null,
                 'additional_attributes' => (Auth::user()->hasRole('cliente') && !Auth::user()->hasRole('admin') && !Auth::user()->hasRole('entrenador'))
                     ? collect($user->additional_attributes ?? [])->filter(fn($attr) => ($attr['visibility'] ?? 'public') !== 'private')->values()->toArray()
@@ -189,6 +192,9 @@ class ClientProfileController extends Controller
             'direccion' => 'nullable|string|max:255',
             'codigo_postal' => 'nullable|string|max:10',
             'ciudad' => 'nullable|string|max:100',
+            'sepa_bic' => 'nullable|string|max:11',
+            'sepa_mandate_ref' => 'nullable|string|max:35',
+            'sepa_mandate_date' => 'nullable|date',
             'additional_attributes' => 'nullable|array'
         ]);
 

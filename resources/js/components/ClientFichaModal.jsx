@@ -189,6 +189,9 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             direccion: data.direccion || '',
             codigo_postal: data.codigo_postal || '',
             ciudad: data.ciudad || '',
+            sepa_bic: data.sepa_bic || '',
+            sepa_mandate_ref: data.sepa_mandate_ref || '',
+            sepa_mandate_date: data.sepa_mandate_date || '',
             peso: data.peso || '',
             altura: data.altura || '',
             additional_attributes: Array.isArray(data.additional_attributes) ? data.additional_attributes : []
@@ -569,21 +572,73 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                 </div>
                             ))}
 
-                            {/* Campo IBAN único */}
-                            <div className="md:col-span-2 space-y-2 group">
-                                <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">IBAN (Cuenta Bancaria)</label>
-                                <div className="relative">
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-11 flex justify-center text-slate-300 group-focus-within:text-teal-400 transition-colors">
-                                        <i className="fa-solid fa-building-columns"></i>
+                            {/* Campos SEPA */}
+                            <div className="md:col-span-2 pt-4 border-t border-slate-100 mt-4">
+                                <label className="text-[10px] font-black text-[#38C1A3] uppercase tracking-widest mb-4 block">Configuración Bancaria SEPA</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-2 group">
+                                        <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">IBAN (Cuenta Bancaria)</label>
+                                        <div className="relative">
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-11 flex justify-center text-slate-300 group-focus-within:text-teal-400 transition-colors">
+                                                <i className="fa-solid fa-building-columns"></i>
+                                            </div>
+                                            <input 
+                                                type="text" 
+                                                name="iban"
+                                                value={profileData.iban} 
+                                                onChange={handleProfileChange}
+                                                className="w-full pl-11 pr-5 py-4 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-slate-700 font-bold transition-all"
+                                                placeholder="ES00 0000..."
+                                            />
+                                        </div>
                                     </div>
-                                    <input 
-                                        type="text" 
-                                        name="iban"
-                                        value={profileData.iban} 
-                                        onChange={handleProfileChange}
-                                        className="w-full pl-11 pr-5 py-4 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-slate-700 font-bold transition-all"
-                                        placeholder="Introduce IBAN..."
-                                    />
+                                    <div className="space-y-2 group">
+                                        <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">BIC / SWIFT</label>
+                                        <div className="relative">
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-11 flex justify-center text-slate-300 group-focus-within:text-teal-400 transition-colors">
+                                                <i className="fa-solid fa-globe"></i>
+                                            </div>
+                                            <input 
+                                                type="text" 
+                                                name="sepa_bic"
+                                                value={profileData.sepa_bic} 
+                                                onChange={handleProfileChange}
+                                                className="w-full pl-11 pr-5 py-4 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-slate-700 font-bold transition-all"
+                                                placeholder="BIC del banco..."
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 group">
+                                        <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">Referencia del Mandato</label>
+                                        <div className="relative">
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-11 flex justify-center text-slate-300 group-focus-within:text-teal-400 transition-colors">
+                                                <i className="fa-solid fa-file-signature"></i>
+                                            </div>
+                                            <input 
+                                                type="text" 
+                                                name="sepa_mandate_ref"
+                                                value={profileData.sepa_mandate_ref} 
+                                                onChange={handleProfileChange}
+                                                className="w-full pl-11 pr-5 py-4 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-slate-700 font-bold transition-all"
+                                                placeholder="Ref. del mandato..."
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 group">
+                                        <label className="text-[10px] font-black text-slate-400 ml-1 uppercase tracking-tighter group-focus-within:text-teal-500 transition-colors">Fecha de Firma del Mandato</label>
+                                        <div className="relative">
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-11 flex justify-center text-slate-300 group-focus-within:text-teal-400 transition-colors">
+                                                <i className="fa-solid fa-calendar-check"></i>
+                                            </div>
+                                            <input 
+                                                type="date" 
+                                                name="sepa_mandate_date"
+                                                value={profileData.sepa_mandate_date} 
+                                                onChange={handleProfileChange}
+                                                className="w-full pl-11 pr-5 py-4 bg-white border border-slate-100 rounded-[1.25rem] shadow-sm outline-none focus:border-teal-300 focus:ring-4 focus:ring-teal-500/5 text-slate-700 font-bold transition-all"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

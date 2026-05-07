@@ -6,7 +6,8 @@ import MapPicker from './MapPicker';
 export default function CentroTable({ centros, empresas, onUpdate }) {
     const [editMode, setEditMode] = useState(null);
     const [formData, setFormData] = useState({
-        nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: '', tag: '', icon: 'fa-heart-pulse'
+        nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: '', tag: '', icon: 'fa-heart-pulse',
+        serie_facturacion: '', ultimo_numero_factura: 0
     });
     const [showMapPicker, setShowMapPicker] = useState(false);
     const [errors, setErrors] = useState({});
@@ -30,7 +31,10 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
         if (!validate()) return;
         try {
             await axios.post('/api/admin/centros', formData);
-            setFormData({ nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: '', tag: '', icon: 'fa-heart-pulse' });
+            setFormData({ 
+                nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: '', tag: '', icon: 'fa-heart-pulse',
+                serie_facturacion: '', ultimo_numero_factura: 0
+            });
             setErrors({});
             setShowMapPicker(false);
             onUpdate();
@@ -83,7 +87,7 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                         <tr>
                             <th className="pb-3 px-2">Centro</th>
                             <th className="pb-3 px-2">CIF/NIF</th>
-                            <th className="pb-3 px-2">Color</th>
+                            <th className="pb-3 px-2">SERIE</th>
                             <th className="pb-3 px-2">Empresa Default</th>
                             <th className="pb-3 px-2">Ciudad</th>
                             <th className="pb-3 px-2 text-right">Acciones</th>
@@ -95,7 +99,10 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                 <td className="py-4 px-2 font-black text-slate-700">{c.nombre}</td>
                                 <td className="py-4 px-2 text-slate-500 font-medium">{c.cif || '---'}</td>
                                 <td className="py-4 px-2">
-                                    <div className="w-8 h-4 rounded-full shadow-sm" style={{ backgroundColor: c.color_hex || '#38b2ac' }}></div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color_hex || '#38b2ac' }}></div>
+                                        <span className="font-black text-slate-800 text-xs tracking-widest">{c.serie_facturacion || '---'}</span>
+                                    </div>
                                 </td>
                                 <td className="py-4 px-2">
                                     <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-lg font-black italic text-xs">
@@ -132,7 +139,7 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                 <div className="space-y-1">
                                     <div className="relative group">
                                         <select 
-                                            className={`w-full px-4 py-3 bg-slate-50 border rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold text-slate-500 text-sm appearance-none cursor-pointer pr-10 transition-all hover:bg-slate-100 shadow-sm select2-ignore ${errors.empresa_id ? 'border-rose-400 bg-rose-50' : 'border-transparent'}`} 
+                                            className={`w-full px-4 py-3 bg-slate-50 border rounded-2xl focus:ring-4 focus:ring-emerald-400/10 focus:border-emerald-400 outline-none font-bold text-slate-600 text-xs appearance-none cursor-pointer pr-10 transition-all hover:bg-slate-100 shadow-sm uppercase tracking-tighter ${errors.empresa_id ? 'border-rose-400 bg-rose-50' : 'border-transparent'}`} 
                                             style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
                                             value={formData.empresa_id || ''} 
                                             onChange={e => setFormData({...formData, empresa_id: e.target.value})}
@@ -142,9 +149,6 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                                 <option key={emp.id} value={emp.id}>{emp.nombre}</option>
                                             ))}
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                            <i className="fa-solid fa-chevron-down text-[10px]"></i>
-                                        </div>
                                     </div>
                                     {errors.empresa_id && <p className="text-[10px] text-rose-500 font-black ml-2 uppercase italic">{errors.empresa_id}</p>}
                                 </div>
@@ -165,6 +169,17 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                     {errors.ciudad && <p className="text-[10px] text-rose-500 font-black ml-2 uppercase italic">{errors.ciudad}</p>}
                                 </div>
                             </div>
+
+                            <div className="pt-2 border-t border-slate-100 mt-2">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1 mb-2 block">Configuración de Facturación</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <input type="text" placeholder="Serie (ej: AIRA)" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold text-sm" value={formData.serie_facturacion || ''} onChange={e => setFormData({...formData, serie_facturacion: e.target.value})} />
+                                    <div className="flex items-center px-4 py-3 bg-slate-100/50 rounded-2xl border-none">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase mr-2">Nº Actual:</span>
+                                        <span className="font-bold text-slate-600">{formData.ultimo_numero_factura || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
                             <input type="text" placeholder="Enlace Google Maps o Iframe" className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none text-sm" value={formData.google_maps_link} onChange={e => setFormData({...formData, google_maps_link: e.target.value})} />
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,7 +191,8 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Icono</label>
                                     <div className="relative group">
                                         <select 
-                                            className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-emerald-400 outline-none font-bold text-slate-500 text-sm appearance-none cursor-pointer pr-10 transition-all hover:bg-slate-100 shadow-sm" 
+                                            className="w-full px-4 py-3 bg-slate-50 border-transparent border rounded-2xl focus:ring-4 focus:ring-emerald-400/10 focus:border-emerald-400 outline-none font-black text-slate-600 text-xs appearance-none cursor-pointer pr-10 transition-all hover:bg-slate-100 shadow-sm uppercase tracking-widest" 
+                                            style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
                                             value={formData.icon || 'fa-heart-pulse'} 
                                             onChange={e => setFormData({...formData, icon: e.target.value})}
                                         >
@@ -189,9 +205,6 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
                                             <option value="fa-medal">Medalla (Elite)</option>
                                             <option value="fa-location-dot">Ubicación (Genérico)</option>
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                            <i className={`fa-solid ${formData.icon || 'fa-chevron-down'} text-xs`}></i>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
