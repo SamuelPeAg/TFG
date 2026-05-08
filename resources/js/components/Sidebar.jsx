@@ -84,6 +84,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     { name: 'NÓMINAS', path: '/admin/nominas', icon: 'fa-solid fa-money-check-dollar text-indigo-300' },
     { name: 'SUSCRIPCIONES', path: '/suscripciones', icon: 'fa-solid fa-credit-card text-purple-300' },
     { name: 'VACACIONES', path: '/admin/vacaciones', icon: 'fa-solid fa-sun text-yellow-300' },
+    { name: 'ERRORES', path: '/admin/errores', icon: 'fa-solid fa-bug text-rose-500' },
   ];
 
   const trainerLinks = [

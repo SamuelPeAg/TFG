@@ -15,6 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->context(function () {
+            $user = auth('web')->user() ?? auth('staff')->user();
+            return array_filter([
+                'user_id' => $user ? $user->id : null,
+                'user_role' => $user ? $user->role : 'invitado',
+                'user_name' => $user ? $user->name : 'Anónimo',
+                'url' => request()->fullUrl(),
+            ]);
+        });
+
         $exceptions->render(function (\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
             if ($request->expectsJson()) {
                 return response()->json([

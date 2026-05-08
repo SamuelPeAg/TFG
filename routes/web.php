@@ -86,6 +86,10 @@ Route::post('/contacto/enviar', function (Request $request) {
     ]);
 })->name('contact.send');
 
+// Registrar errores del frontend en el log del backend
+Route::post('/api/log-client-error', [\App\Http\Controllers\SystemLogController::class, 'logClientError']);
+
+
 
 
 Route::get('/activar-entrenador/{token}', [EntrenadorController::class, 'showActivationForm'])
@@ -327,6 +331,10 @@ Route::middleware('auth:web,staff')->group(function () {
             Route::post('/admin/notificaciones/{id}/read', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'markAsRead']);
             Route::post('/admin/notificaciones/{id}/reply', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'reply']);
             Route::delete('/admin/notificaciones/{id}', [\App\Http\Controllers\NotificacionEntrenadorController::class, 'destroy']);
+
+            // Registro de Errores (Logs del Sistema)
+            Route::get('/admin/errores', [\App\Http\Controllers\SystemLogController::class, 'index']);
+            Route::post('/admin/errores/clear', [\App\Http\Controllers\SystemLogController::class, 'clear']);
         });
 
         // Gestión de Entrenadores

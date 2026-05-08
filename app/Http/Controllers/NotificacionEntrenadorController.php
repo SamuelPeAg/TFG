@@ -69,11 +69,14 @@ class NotificacionEntrenadorController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'mensaje' => 'required|string',
-            'tipo' => 'nullable|string',
+        $validated = $request->validate([
+            'titulo' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9\sñÑáéíóúÁÉÍÓÚüÜ.,!?¿¡()\'"\-=@:;+]+$/'],
+            'mensaje' => ['required', 'string', 'regex:/^[a-zA-Z0-9\sñÑáéíóúÁÉÍÓÚüÜ.,!?¿¡()\'"\-=@:;+\r\n]+$/'],
+            'tipo' => 'nullable|string|in:general,incidencia,clase',
             'destinatario_id' => 'nullable|exists:entrenadores,id'
+        ], [
+            'titulo.regex' => 'El título contiene caracteres no válidos. Evita usar símbolos extraños o de código (<, >, $, %, etc.).',
+            'mensaje.regex' => 'El mensaje contiene caracteres no válidos. Evita usar símbolos extraños o de código (<, >, $, %, etc.).'
         ]);
 
         $user = Auth::guard('staff')->user();
@@ -81,10 +84,10 @@ class NotificacionEntrenadorController extends Controller
 
         $notificacion = NotificacionEntrenador::create([
             'entrenador_id' => $user->id,
-            'destinatario_id' => $request->destinatario_id,
-            'titulo' => $request->titulo,
-            'mensaje' => $request->mensaje,
-            'tipo' => $request->tipo ?? 'general'
+            'destinatario_id' => $validated['destinatario_id'] ?? null,
+            'titulo' => strip_tags(trim($validated['titulo'])),
+            'mensaje' => strip_tags(trim($validated['mensaje'])),
+            'tipo' => $validated['tipo'] ?? 'general'
         ]);
 
         return response()->json([
@@ -110,13 +113,15 @@ class NotificacionEntrenadorController extends Controller
      */
     public function reply(Request $request, $id)
     {
-        $request->validate([
-            'respuesta' => 'required|string'
+        $validated = $request->validate([
+            'respuesta' => ['required', 'string', 'regex:/^[a-zA-Z0-9\sñÑáéíóúÁÉÍÓÚüÜ.,!?¿¡()\'"\-=@:;+\r\n]+$/']
+        ], [
+            'respuesta.regex' => 'La respuesta contiene caracteres no válidos. Evita usar símbolos extraños o de código (<, >, $, %, etc.).'
         ]);
 
         $notificacion = NotificacionEntrenador::findOrFail($id);
         $notificacion->update([
-            'respuesta' => $request->respuesta,
+            'respuesta' => strip_tags(trim($validated['respuesta'])),
             'fecha_respuesta' => now(),
             'leido' => true // Marcar como leída automáticamente al responder
         ]);
