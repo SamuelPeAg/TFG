@@ -212,7 +212,8 @@ class PagosController extends Controller
                     'suscripciones_permitidas' => $classSubIds,
                     'suscripciones_detalles' => $first->suscripciones->map(fn($s) => ['id' => $s->id, 'nombre' => $s->nombre])->toArray(),
                     'tipos_credito_permitidos' => $first->tiposCredito->pluck('id')->toArray(),
-                    'tipos_credito_detalles' => $first->tiposCredito->map(fn($t) => ['id' => $t->id, 'nombre' => $t->nombre])->toArray()
+                    'tipos_credito_detalles' => $first->tiposCredito->map(fn($t) => ['id' => $t->id, 'nombre' => $t->nombre])->toArray(),
+                    'horas_cancelacion' => $first->horas_cancelacion
                 ],
             ];
         }
@@ -660,41 +661,75 @@ class PagosController extends Controller
 
         if ($pago) {
             $isSelf = ($request->user()->id == $request->user_id);
+            $force = $request->input('force', false);
+            
+            $fecha = Carbon::parse($pago->fecha_registro);
+            $diffHours = now()->diffInHours($fecha, false); 
+            $horasCancelacion = $pago->horas_cancelacion ?? 0;
+            $enPlazo = ($diffHours >= $horasCancelacion);
+
+            // Si es cliente y no está en plazo y no ha forzado la cancelación
+            if ($isSelf && !$enPlazo && !$force) {
+                return response()->json([
+                    'success' => false,
+                    'requires_confirmation' => true,
+                    'message' => "Estás a menos de {$horasCancelacion} horas de la clase. Si cancelas ahora, perderás el crédito. ¿Deseas continuar?"
+                ], 422);
+            }
+
             $mainMessage = $isSelf ? 'Te has dado de baja de la clase.' : 'El cliente ha sido dado de baja de la clase.';
             $messageSuffix = '';
 
-            // 3. LOGICA RE-ABONO (CRÉDITOS)
-            $diffHours = now()->diffInHours($fecha, false); 
-            $horasCancelacion = $pago->horas_cancelacion ?? 0;
-            
-            $tipoInfo = \App\Models\TipoSesion::where('nombre', $pago->tipo_clase)
-                ->orWhere('slug', strtolower($pago->tipo_clase))
-                ->orWhere('slug', $pago->tipo_clase)
-                ->first();
+            try {
+                DB::transaction(function () use (&$messageSuffix, $enPlazo, $pago, $request, $isSelf) {
+                    if ($enPlazo) {
+                        $tipoInfo = \App\Models\TipoSesion::where('nombre', $pago->tipo_clase)
+                            ->orWhere('slug', strtolower($pago->tipo_clase))
+                            ->orWhere('slug', $pago->tipo_clase)
+                            ->first();
 
-            if ($diffHours >= $horasCancelacion) {
-                $allowedCreditIds = $pago->tiposCredito->pluck('id')->toArray();
-                if (empty($allowedCreditIds) && $tipoInfo) {
-                    $allowedCreditIds = $tipoInfo->tiposCredito->pluck('id')->toArray();
-                }
+                        $allowedCreditIds = $pago->tiposCredito->pluck('id')->toArray();
+                        if (empty($allowedCreditIds) && $tipoInfo) {
+                            $allowedCreditIds = $tipoInfo->tiposCredito->pluck('id')->toArray();
+                        }
 
-                $userSub = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
-                    ->where('estado', 'activo')
-                    ->first();
-                
-                if ($userSub && !empty($allowedCreditIds)) {
-                    $tipoCreditoId = $allowedCreditIds[0];
-                    app(\App\Services\CreditService::class)->allocate($userSub, $tipoCreditoId, 1, 30, $pago->id);
-                    $messageSuffix = $isSelf ? ' El crédito ha sido devuelto a tu cuenta.' : ' El crédito ha sido devuelto a la cuenta del cliente.';
-                }
-            } else {
-                $messageSuffix = ' Cancelación fuera de plazo: no se ha devuelto el crédito.';
+                        $userSub = \App\Models\SuscripcionUsuario::where('id_usuario', $request->user_id)
+                            ->where('estado', 'activo')
+                            ->first();
+                        
+                        if ($userSub && !empty($allowedCreditIds)) {
+                            $tipoCreditoId = $allowedCreditIds[0];
+                            // Usamos el servicio de créditos para el re-abono
+                            app(\App\Services\CreditService::class)->allocate($userSub, $tipoCreditoId, 1, 30, $pago->id);
+                            $messageSuffix = $isSelf ? ' El crédito ha sido devuelto a tu cuenta.' : ' El crédito ha sido devuelto a la cuenta del cliente.';
+                        } else {
+                            $messageSuffix = ' No se pudo encontrar una suscripción activa para devolver el crédito.';
+                        }
+                    } else {
+                        $messageSuffix = ' Cancelación fuera de plazo: el crédito se ha perdido.';
+                    }
+
+                    // Eliminamos el registro de asistencia
+                    if (!$pago->delete()) {
+                        throw new \Exception("No se pudo eliminar el registro de pago.");
+                    }
+                });
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => $mainMessage . $messageSuffix,
+                    'refunded' => $enPlazo
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error('Error en rollback de clase: ' . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Hubo un error al procesar la baja: ' . $e->getMessage() . '. No se han realizado cambios.'
+                ], 500);
             }
-
-            $pago->delete();
-            return response()->json(['success' => true, 'message' => $mainMessage . $messageSuffix]);
         } else {
-            return response()->json(['error' => 'No se encontró el registro para eliminar'], 404);
+            return response()->json(['success' => false, 'error' => 'No se encontró el registro para eliminar'], 404);
         }
     }
 

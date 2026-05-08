@@ -65,6 +65,7 @@ class ClientProfileController extends Controller
                     'alumnos' => $alumnos,
                     'importe' => $pago->importe,
                     'metodo_pago' => $pago->metodo_pago,
+                    'horas_cancelacion' => $pago->horas_cancelacion ?? 0,
                 ];
             });
 

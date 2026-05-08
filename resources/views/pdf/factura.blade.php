@@ -57,9 +57,9 @@
         </table>
         
         <div class="company-info">
-            <div style="margin-top: 8px; font-size: 14px; color: #334155;"><strong>{{ $pago->centro_rel->empresa->nombre ?? 'Moverte da Vida S.L.' }}</strong></div>
-            <div style="color: #64748b;">NIF: {{ $pago->centro_rel->empresa->cif_dni ?? 'B-12345678' }}</div>
-            <div style="color: #64748b;">{{ $pago->centro_rel->empresa->direccion ?? 'Av. del Deporte, 45' }}, {{ $pago->centro_rel->empresa->ciudad ?? 'Córdoba' }}</div>
+            <div style="margin-top: 8px; font-size: 14px; color: #334155;"><strong>{{ $pago->centro_rel?->empresa?->nombre ?? 'Moverte da Vida S.L.' }}</strong></div>
+            <div style="color: #64748b;">NIF: {{ $pago->centro_rel?->empresa?->cif_dni ?? 'B-12345678' }}</div>
+            <div style="color: #64748b;">{{ $pago->centro_rel?->empresa?->direccion ?? 'Av. del Deporte, 45' }}, {{ $pago->centro_rel?->empresa?->ciudad ?? 'Córdoba' }}</div>
             <div style="color: #64748b;">contacto@factomove.es</div>
         </div>
         

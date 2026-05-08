@@ -43,21 +43,37 @@ export default function MisClases() {
         }
     };
 
-    const executeLeaveSession = async (session) => {
+    const executeLeaveSession = async (session, force = false) => {
         if (!session) return;
         setLeavingSessionId(session.id);
         try {
-            await axios.post('/Pagos/remove-client', {
+            const res = await axios.post('/Pagos/remove-client', {
                 user_id: user.id,
                 fecha_hora: session.fecha_registro,
                 nombre_clase: session.nombre_clase,
-                centro: session.centro
+                centro: session.centro,
+                force: force
             });
-            showAlert('Te has dado de baja correctamente.');
+            showAlert(res.data.message || 'Te has dado de baja correctamente.');
             fetchClientData();
+            setConfirmModal({ isOpen: false, session: null });
         } catch (error) {
-            const message = error.response?.data?.message || 'No se pudo procesar la baja.';
-            showAlert(message, true);
+            const data = error.response?.data;
+            if (data?.requires_confirmation) {
+                // Actualizamos el modal de confirmación con el aviso de crédito
+                setConfirmModal({ 
+                    isOpen: true, 
+                    session: session,
+                    message: data.message,
+                    isWarning: true,
+                    onConfirm: () => executeLeaveSession(session, true)
+                });
+                return false; // Evita que el modal se cierre
+            } else {
+                const message = data?.error || data?.message || 'No se pudo procesar la baja.';
+                showAlert(message, true);
+                return true;
+            }
         } finally {
             setLeavingSessionId(null);
         }
@@ -382,11 +398,11 @@ export default function MisClases() {
             <ConfirmModal
                 isOpen={confirmModal.isOpen}
                 onClose={() => setConfirmModal({ isOpen: false, session: null })}
-                onConfirm={() => executeLeaveSession(confirmModal.session)}
-                title="Baja de Clase"
-                message={`¿Estás seguro de que quieres darte de baja de la clase ${confirmModal.session?.nombre_clase}?`}
+                onConfirm={confirmModal.onConfirm || (() => executeLeaveSession(confirmModal.session))}
+                title={confirmModal.isWarning ? "¡Atención!" : "Baja de Clase"}
+                message={confirmModal.message || `¿Estás seguro de que quieres darte de baja de la clase ${confirmModal.session?.nombre_clase}?`}
                 isDestructive={true}
-                confirmText="Darse de baja"
+                confirmText={confirmModal.isWarning ? "Darse de baja igualmente" : "Darse de baja"}
             />
 
             <SwapClassModal

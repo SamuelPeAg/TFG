@@ -75,4 +75,9 @@ class Pago extends Model
     {
         return $this->belongsToMany(TipoCredito::class, 'pago_tipo_credito', 'pago_id', 'tipo_credito_id');
     }
+
+    public function centro_rel()
+    {
+        return $this->belongsTo(Centro::class, 'centro', 'nombre');
+    }
 }

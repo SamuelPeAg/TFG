@@ -180,10 +180,18 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
     }
   };
 
-  const handleRemoveClient = (userId) => {
+  const handleRemoveClient = (userId, force = false) => {
+    const isSelf = String(window.AppConfig?.user?.id) === String(userId);
+    const confirmTitle = isSelf ? "Cancelar mi clase" : "¿Eliminar asistente?";
+    const confirmMessage = force 
+      ? "Confirmas que quieres cancelar a pesar de perder el crédito?" 
+      : (isSelf 
+          ? "¿Estás seguro de que quieres darte de baja? Se te devolverá el crédito si estás en plazo." 
+          : "¿Estás seguro de que quieres dar a este cliente de baja?");
+
     askConfirmation(
-        "¿Eliminar asistente?",
-        "¿Estás seguro de que quieres dar de baja a este cliente de la sesión? Se le devolverá el crédito si está en plazo.",
+        confirmTitle,
+        confirmMessage,
         async () => {
             setIsSubmitting(true);
             try {
@@ -192,26 +200,45 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
               formData.append('fecha_hora', sessionKey.fecha_hora);
               formData.append('nombre_clase', sessionKey.nombre_clase);
               formData.append('centro', sessionKey.centro);
+              if (force) formData.append('force', '1');
 
               const res = await axios.post('/Pagos/remove-client', formData, {
                 headers: { 'Accept': 'application/json' }
               });
+
               if (res.data.success) {
                   const newAlumnos = (localProps.alumnos || []).filter(a => a.id != userId);
-                  setLocalProps({ ...localProps, alumnos: newAlumnos });
+                  setLocalProps({ 
+                      ...localProps, 
+                      alumnos: newAlumnos,
+                      alumnos_count: Math.max(0, (localProps.alumnos_count || 0) - 1)
+                  });
                   if(onSuccess) onSuccess();
-                  showAlert(res.data.message || "Cliente eliminado correctamente");
+                  showAlert(res.data.message || "Baja procesada correctamente");
               } else {
                   showAlert(res.data.error || "No se pudo eliminar al cliente", true);
               }
             } catch (err) {
-              const serverError = err.response?.data?.error || err.response?.data?.message;
-              showAlert(serverError || "Error al conectar con el servidor", true);
+              const data = err.response?.data;
+              if (data?.requires_confirmation) {
+                  // Volver a preguntar con el mensaje del servidor
+                  askConfirmation(
+                      "Atención: Perderás el crédito",
+                      data.message,
+                      () => handleRemoveClient(userId, true),
+                      true
+                  );
+                  return false;
+              } else {
+                  const serverError = data?.error || data?.message;
+                  showAlert(serverError || "Error al conectar con el servidor", true);
+                  return true;
+              }
             } finally {
               setIsSubmitting(false);
             }
         },
-        true
+        force || !isSelf
     );
   };
 

@@ -27,9 +27,11 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title = "Conf
             {cancelText}
           </button>
           <button 
-            onClick={() => {
-              onConfirm();
-              onClose();
+            onClick={async () => {
+              const result = await onConfirm();
+              if (result !== false) {
+                onClose();
+              }
             }}
             className={`flex-1 py-3 px-4 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95 ${
               isDestructive 
