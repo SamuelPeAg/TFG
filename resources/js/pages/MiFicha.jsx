@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 
 export default function MiFicha() {
     const [client, setClient] = useState(null);
@@ -8,6 +10,10 @@ export default function MiFicha() {
     const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     
+    // Modals state
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, onConfirm: null, message: '', title: '' });
+    const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', title: '', isError: false });
+
     // Specialist notes
     const [specialistNotes, setSpecialistNotes] = useState('');
 
@@ -46,18 +52,34 @@ export default function MiFicha() {
             await axios.post(`/client-profile/${client.user_id}/files`, formData);
             fetchFicha();
         } catch (error) {
-            alert('Error al subir el archivo');
+            setAlertModal({
+                isOpen: true,
+                title: 'Error',
+                message: 'Error al subir el archivo',
+                isError: true
+            });
         }
     };
 
     const deleteFile = async (fileId) => {
-        if (!confirm('¿Seguro que quieres eliminar este archivo?')) return;
-        try {
-            await axios.delete(`/client-profile/files/${fileId}`);
-            fetchFicha();
-        } catch (error) {
-            alert('Error al eliminar');
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: 'Eliminar Archivo',
+            message: '¿Seguro que quieres eliminar este archivo?',
+            onConfirm: async () => {
+                try {
+                    await axios.delete(`/client-profile/files/${fileId}`);
+                    fetchFicha();
+                } catch (error) {
+                    setAlertModal({
+                        isOpen: true,
+                        title: 'Error',
+                        message: 'Error al eliminar el archivo',
+                        isError: true
+                    });
+                }
+            }
+        });
     };
 
     if (loading) {
@@ -167,6 +189,24 @@ export default function MiFicha() {
                     </div>
                 </div>
             </main>
+
+            <ConfirmModal 
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText="SÍ, ELIMINAR"
+                isDestructive={true}
+            />
+
+            <AlertModal 
+                isOpen={alertModal.isOpen}
+                onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+                title={alertModal.title}
+                message={alertModal.message}
+                isError={alertModal.isError}
+            />
         </div>
     );
 }

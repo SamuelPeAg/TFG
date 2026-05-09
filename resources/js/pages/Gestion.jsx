@@ -6,12 +6,26 @@ import CentroTable from '../components/CentroTable';
 import TiposSesionTable from '../components/TiposSesionTable';
 import TiposCreditoTable from '../components/TiposCreditoTable';
 import PageHeader from '../components/PageHeader';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 
 export default function Gestion() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
+
+  // Modals state
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
+  const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
+
+  const handleConfirm = (message, onConfirm, isDestructive = false, title = "Confirmación") => {
+    setConfirmConfig({ isOpen: true, title, message, onConfirm, isDestructive });
+  };
+  
+  const handleAlert = (message, isError = false, title = isError ? "Error" : "Aviso") => {
+    setAlertConfig({ isOpen: true, title, message, isError });
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -73,11 +87,15 @@ export default function Gestion() {
                 <EmpresaTable 
                   empresas={data.empresas || []} 
                   onUpdate={fetchData} 
+                  onAlert={handleAlert}
+                  onConfirm={handleConfirm}
                 />
                 <CentroTable 
                   centros={data.centros_list || []} 
                   empresas={data.empresas || []}
                   onUpdate={fetchData} 
+                  onAlert={handleAlert}
+                  onConfirm={handleConfirm}
                 />
               </div>
 
@@ -87,18 +105,39 @@ export default function Gestion() {
                   centros={data.centros_list || []}
                   tiposCredito={data.tipos_credito || []}
                   onUpdate={fetchData}
+                  onAlert={handleAlert}
+                  onConfirm={handleConfirm}
                 />
                 <TiposCreditoTable
                   tipos={data.tipos_credito || []}
                   centros={data.centros_list || []}
                   tiposSesion={data.tipos_sesion || []}
                   onUpdate={fetchData}
+                  onAlert={handleAlert}
+                  onConfirm={handleConfirm}
                 />
               </div>
             </div>
           )}
         </div>
       </main>
+
+      <ConfirmModal 
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        isDestructive={confirmConfig.isDestructive}
+        onClose={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmConfig.onConfirm}
+      />
+
+      <AlertModal 
+        isOpen={alertConfig.isOpen}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        isError={alertConfig.isError}
+        onClose={() => setAlertConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }

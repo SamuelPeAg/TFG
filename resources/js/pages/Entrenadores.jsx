@@ -6,6 +6,8 @@ import Pagination from '../components/Pagination';
 import Sidebar from '../components/Sidebar';
 import PermissionsModal from '../components/PermissionsModal';
 import PageHeader from '../components/PageHeader';
+import ConfirmModal from '../components/ConfirmModal';
+import AlertModal from '../components/AlertModal';
 
 export default function Entrenadores() {
   const [entrenadores, setEntrenadores] = useState([]);
@@ -18,6 +20,9 @@ export default function Entrenadores() {
   const [selectedEntrenador, setSelectedEntrenador] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [permissionsModalOpen, setPermissionsModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [alertModalOpen, setAlertModalOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState({ title: '', message: '', isError: false });
 
   useEffect(() => {
     fetchEntrenadores();
@@ -54,17 +59,27 @@ export default function Entrenadores() {
     setPermissionsModalOpen(true);
   };
 
-  const handleDelete = async (entrenador) => {
-    if (confirm(`¿Estás seguro de que deseas eliminar a ${entrenador.name}?`)) {
-      try {
-        await axios.delete(`/entrenadores/${entrenador.id}`, {
-            headers: { Accept: 'application/json' }
-        });
-        fetchEntrenadores();
-      } catch (error) {
-        console.error('Error deleting entrenador:', error);
-        alert('No se pudo eliminar al entrenador.');
-      }
+  const handleDeleteClick = (entrenador) => {
+    setSelectedEntrenador(entrenador);
+    setConfirmModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`/entrenadores/${selectedEntrenador.id}`, {
+          headers: { Accept: 'application/json' }
+      });
+      fetchEntrenadores();
+      return true;
+    } catch (error) {
+      console.error('Error deleting entrenador:', error);
+      setAlertMessage({
+        title: 'Error',
+        message: 'No se pudo eliminar al entrenador.',
+        isError: true
+      });
+      setAlertModalOpen(true);
+      return false;
     }
   };
 
@@ -144,7 +159,7 @@ export default function Entrenadores() {
                 entrenadores={currentEntrenadores} 
                 loading={loading} 
                 onEdit={handleEdit}
-                onDelete={handleDelete}
+                onDelete={handleDeleteClick}
                 onPermissions={handlePermissions}
               />
             </div>
@@ -174,6 +189,25 @@ export default function Entrenadores() {
         isOpen={permissionsModalOpen}
         onClose={() => setPermissionsModalOpen(false)}
         entrenador={selectedEntrenador}
+      />
+
+      <ConfirmModal 
+        isOpen={confirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Eliminar Entrenador"
+        message={`¿Estás seguro de que deseas eliminar a ${selectedEntrenador?.name}?`}
+        confirmText="SÍ, ELIMINAR"
+        cancelText="CANCELAR"
+        isDestructive={true}
+      />
+
+      <AlertModal 
+        isOpen={alertModalOpen}
+        onClose={() => setAlertModalOpen(false)}
+        title={alertMessage.title}
+        message={alertMessage.message}
+        isError={alertMessage.isError}
       />
     </div>
   );

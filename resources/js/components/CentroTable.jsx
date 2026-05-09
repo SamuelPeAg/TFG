@@ -3,7 +3,7 @@ import axios from 'axios';
 import Button from './Button';
 import MapPicker from './MapPicker';
 
-export default function CentroTable({ centros, empresas, onUpdate }) {
+export default function CentroTable({ centros, empresas, onUpdate, onAlert, onConfirm }) {
     const [editMode, setEditMode] = useState(null);
     const [formData, setFormData] = useState({
         nombre: '', cif: '', direccion: '', cp: '', ciudad: '', empresa_id: '', google_maps_link: '', color_hex: '#38b2ac', lat: '', lng: '', tag: '', icon: 'fa-heart-pulse',
@@ -40,7 +40,7 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
             onUpdate();
         } catch (e) { 
             if (e.response?.data?.errors) setErrors(e.response.data.errors);
-            else alert('Error al añadir centro'); 
+            else onAlert('Error al añadir centro', true); 
         }
     };
 
@@ -60,16 +60,17 @@ export default function CentroTable({ centros, empresas, onUpdate }) {
             onUpdate();
         } catch (e) { 
             if (e.response?.data?.errors) setErrors(e.response.data.errors);
-            else alert('Error al actualizar'); 
+            else onAlert('Error al actualizar', true); 
         }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('¿Eliminar este centro?')) return;
-        try {
-            await axios.delete(`/api/admin/centros/${id}`);
-            onUpdate();
-        } catch (e) { alert('Error al eliminar'); }
+        onConfirm('¿Eliminar este centro?', async () => {
+            try {
+                await axios.delete(`/api/admin/centros/${id}`);
+                onUpdate();
+            } catch (e) { onAlert('Error al eliminar', true); }
+        }, true, 'Eliminar Centro');
     };
 
     return (

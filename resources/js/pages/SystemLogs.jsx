@@ -3,9 +3,11 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import Button from '../components/Button';
 import PageHeader from '../components/PageHeader';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function SystemLogs() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [logs, setLogs] = useState([]);
     const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
     const [loading, setLoading] = useState(true);
@@ -37,8 +39,6 @@ export default function SystemLogs() {
     };
 
     const handleClearLogs = async () => {
-        if (!confirm('¿Estás seguro de que quieres limpiar todo el registro de errores? Esta acción no se puede deshacer.')) return;
-        
         setClearing(true);
         try {
             const res = await axios.post('/api/admin/errores/clear');
@@ -88,7 +88,7 @@ export default function SystemLogs() {
                             </div>
                             
                             <Button 
-                                onClick={handleClearLogs}
+                                onClick={() => setIsConfirmModalOpen(true)}
                                 disabled={clearing || pagination.total === 0}
                                 className="bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200 disabled:opacity-50"
                             >
@@ -200,6 +200,17 @@ export default function SystemLogs() {
                     </div>
                 </div>
             </main>
+
+            <ConfirmModal 
+                isOpen={isConfirmModalOpen}
+                onClose={() => setIsConfirmModalOpen(false)}
+                onConfirm={handleClearLogs}
+                title="Limpiar Registro de Errores"
+                message="¿Estás seguro de que quieres limpiar todo el registro de errores? Esta acción no se puede deshacer."
+                confirmText="SÍ, LIMPIAR"
+                cancelText="CANCELAR"
+                isDestructive={true}
+            />
         </div>
     );
 }

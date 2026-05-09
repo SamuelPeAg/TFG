@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import Button from './Button';
 
-export default function EmpresaTable({ empresas, onUpdate }) {
+export default function EmpresaTable({ empresas, onUpdate, onAlert, onConfirm }) {
     const [editMode, setEditMode] = useState(null);
     const [formData, setFormData] = useState({
         nombre: '', cif_dni: '', direccion: '', cp: '', ciudad: '', iva_configurable: 21,
@@ -21,7 +21,7 @@ export default function EmpresaTable({ empresas, onUpdate }) {
             setEditMode(null);
         } catch (e) { 
             console.error('Error adding:', e.response?.data);
-            alert('Error al añadir empresa: ' + (e.response?.data?.message || 'CIF/DNI duplicado o datos inválidos')); 
+            onAlert('Error al añadir empresa: ' + (e.response?.data?.message || 'CIF/DNI duplicado o datos inválidos'), true); 
         }
     };
 
@@ -38,16 +38,17 @@ export default function EmpresaTable({ empresas, onUpdate }) {
             onUpdate();
         } catch (e) { 
             console.error('Error editing:', e.response?.data);
-            alert('Error al actualizar: ' + (e.response?.data?.message || 'Error desconocido')); 
+            onAlert('Error al actualizar: ' + (e.response?.data?.message || 'Error desconocido'), true); 
         }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('¿Eliminar esta empresa?')) return;
-        try {
-            await axios.delete(`/api/admin/empresas/${id}`);
-            onUpdate();
-        } catch (e) { alert('Error al eliminar'); }
+        onConfirm('¿Eliminar esta empresa?', async () => {
+            try {
+                await axios.delete(`/api/admin/empresas/${id}`);
+                onUpdate();
+            } catch (e) { onAlert('Error al eliminar', true); }
+        }, true, 'Eliminar Empresa');
     };
 
     return (
