@@ -20,10 +20,12 @@ export default function Facturacion() {
   });
   
   const currentYear = new Date().getFullYear();
+  const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+
   const [filters, setFilters] = useState({
     centro: 'todos',
     anio: currentYear.toString(),
-    mes: '',
+    mes: currentMonth,
     entrenador_id: '',
     cliente_id: ''
   });
@@ -86,7 +88,7 @@ export default function Facturacion() {
     setFilters({
       centro: 'todos',
       anio: currentYear.toString(),
-      mes: '',
+      mes: currentMonth,
       entrenador_id: '',
       cliente_id: ''
     });
