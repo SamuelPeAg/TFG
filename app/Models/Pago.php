@@ -78,6 +78,6 @@ class Pago extends Model
 
     public function centro_rel()
     {
-        return $this->belongsTo(Centro::class, 'centro', 'nombre');
+        return $this->belongsTo(\App\Models\Centro::class, 'centro', 'nombre');
     }
 }

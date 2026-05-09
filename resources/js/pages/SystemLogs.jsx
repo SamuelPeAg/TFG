@@ -7,15 +7,17 @@ import PageHeader from '../components/PageHeader';
 export default function SystemLogs() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [logs, setLogs] = useState([]);
+    const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
     const [loading, setLoading] = useState(true);
     const [clearing, setClearing] = useState(false);
     const [status, setStatus] = useState(null);
 
-    const fetchLogs = async () => {
+    const fetchLogs = async (page = 1) => {
         setLoading(true);
         try {
-            const res = await axios.get('/api/admin/errores');
+            const res = await axios.get(`/api/admin/errores?page=${page}`);
             setLogs(res.data.logs || []);
+            setPagination(res.data.pagination || { current_page: 1, last_page: 1, total: 0 });
         } catch (error) {
             console.error('Error cargando logs:', error);
             setStatus({ success: false, message: 'Error al cargar los registros del sistema.' });
@@ -28,6 +30,12 @@ export default function SystemLogs() {
         fetchLogs();
     }, []);
 
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= pagination.last_page) {
+            fetchLogs(newPage);
+        }
+    };
+
     const handleClearLogs = async () => {
         if (!confirm('¿Estás seguro de que quieres limpiar todo el registro de errores? Esta acción no se puede deshacer.')) return;
         
@@ -37,6 +45,7 @@ export default function SystemLogs() {
             if (res.data.success) {
                 setStatus({ success: true, message: res.data.message });
                 setLogs([]);
+                setPagination({ current_page: 1, last_page: 1, total: 0 });
             }
         } catch (error) {
             console.error('Error limpiando logs:', error);
@@ -70,17 +79,17 @@ export default function SystemLogs() {
                 />
 
                 <div className="flex-1 overflow-auto p-4 sm:p-8">
-                    <div className="max-w-6xl mx-auto space-y-6">
+                    <div className="max-w-6xl mx-auto space-y-6 pb-12">
                         
                         <div className="flex justify-between items-center mb-4">
                             <div>
                                 <h2 className="text-xl font-black text-slate-800 tracking-tight">Logs del Sistema</h2>
-                                <p className="text-slate-500 text-xs mt-1 font-bold uppercase tracking-wider">Últimos {logs.length} errores registrados</p>
+                                <p className="text-slate-500 text-xs mt-1 font-bold uppercase tracking-wider">Total: {pagination.total} errores registrados</p>
                             </div>
                             
                             <Button 
                                 onClick={handleClearLogs}
-                                disabled={clearing || logs.length === 0}
+                                disabled={clearing || pagination.total === 0}
                                 className="bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200 disabled:opacity-50"
                             >
                                 {clearing ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-trash-can mr-2"></i>}
@@ -158,6 +167,33 @@ export default function SystemLogs() {
                                         </div>
                                     </div>
                                 ))}
+
+                                {/* Paginación */}
+                                {pagination.last_page > 1 && (
+                                    <div className="flex justify-center items-center gap-2 mt-8 pt-4 border-t border-slate-200">
+                                        <button 
+                                            onClick={() => handlePageChange(pagination.current_page - 1)}
+                                            disabled={pagination.current_page === 1}
+                                            className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-30 transition-all"
+                                        >
+                                            <i className="fa-solid fa-chevron-left"></i>
+                                        </button>
+                                        
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-xs font-black text-slate-400 px-3 uppercase tracking-widest">
+                                                Página {pagination.current_page} de {pagination.last_page}
+                                            </span>
+                                        </div>
+
+                                        <button 
+                                            onClick={() => handlePageChange(pagination.current_page + 1)}
+                                            disabled={pagination.current_page === pagination.last_page}
+                                            className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center bg-white text-slate-500 hover:bg-slate-50 disabled:opacity-30 transition-all"
+                                        >
+                                            <i className="fa-solid fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                         

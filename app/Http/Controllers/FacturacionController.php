@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pago;
-use App\Models\Sessiones;
 use App\Models\User;
 use App\Models\Centro;
 use Illuminate\Support\Facades\Schema;
@@ -296,7 +295,7 @@ class FacturacionController extends Controller
         ];
 
         if ($request->wantsJson() || $request->ajax()) {
-            return response()->json($data);
+            return response()->json($this->cleanUtf8($data));
         }
 
         return view('app');
@@ -469,7 +468,7 @@ class FacturacionController extends Controller
             ]);
         }
 
-        return response()->json($result->values());
+        return response()->json($this->cleanUtf8($result->values()->toArray()));
     }
 
     /**
@@ -536,10 +535,10 @@ class FacturacionController extends Controller
             }
         }
 
-        return response()->json([
+        return response()->json($this->cleanUtf8([
             'success' => true,
             'message' => 'Cobro registrado correctamente'
-        ]);
+        ]));
     }
 
     public function exportXML(Request $request)
@@ -824,5 +823,27 @@ class FacturacionController extends Controller
             }
         }
         return $status;
+    }
+
+    /**
+     * Recursively clean non-UTF8 characters from data to prevent json_encode errors.
+     */
+    private function cleanUtf8($data)
+    {
+        if (is_string($data)) {
+            // Attempt to convert to UTF-8 and remove invalid sequences
+            return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+        } elseif (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->cleanUtf8($value);
+            }
+        } elseif (is_object($data)) {
+            if ($data instanceof \Illuminate\Database\Eloquent\Model) {
+                return $this->cleanUtf8($data->toArray());
+            } elseif ($data instanceof \Illuminate\Support\Collection) {
+                return $this->cleanUtf8($data->toArray());
+            }
+        }
+        return $data;
     }
 }

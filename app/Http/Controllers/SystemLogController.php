@@ -10,7 +10,7 @@ class SystemLogController extends Controller
     /**
      * Devuelve los últimos errores del archivo laravel.log
      */
-    public function index()
+    public function index(Request $request)
     {
         $logFile = storage_path('logs/laravel.log');
         $logs = [];
@@ -18,19 +18,22 @@ class SystemLogController extends Controller
         if (File::exists($logFile)) {
             $content = File::get($logFile);
             
-            // Expresión regular para encontrar bloques de errores en el log
-            // Formato típico: [2023-10-25 10:00:00] environment.ERROR: message {"context"} 
             $pattern = '/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (.*?)\.(ERROR|CRITICAL|EMERGENCY|WARNING): (.*?)(?=\n^\[|\z)/ms';
             
             preg_match_all($pattern, $content, $matches, PREG_SET_ORDER);
 
-            // Revertir para tener los más recientes primero
             $matches = array_reverse($matches);
 
-            // Limitar a los últimos 100 errores para no saturar
-            $matches = array_slice($matches, 0, 100);
+            // Pagination parameters
+            $page = (int) $request->input('page', 1);
+            $perPage = (int) $request->input('per_page', 20);
+            $total = count($matches);
+            $offset = ($page - 1) * $perPage;
 
-            foreach ($matches as $match) {
+            // Limit and offset
+            $paginatedMatches = array_slice($matches, $offset, $perPage);
+
+            foreach ($paginatedMatches as $match) {
                 $rawMessage = trim($match[4]);
                 
                 $url = null;
@@ -39,10 +42,8 @@ class SystemLogController extends Controller
                 $source = 'BACKEND';
                 $message = $rawMessage;
 
-                // Detectar si es de frontend
                 if (str_starts_with($rawMessage, 'FRONTEND [')) {
                     $source = 'FRONTEND';
-                    // Extraer información usando regex
                     if (preg_match('/FRONTEND \[(.*?)\] \| URL: (.*?) \| Error: (.*?)(?: \| Stack:|$)/s', $rawMessage, $frontMatch)) {
                         $userInfoStr = $frontMatch[1];
                         $url = trim($frontMatch[2]);
@@ -60,14 +61,12 @@ class SystemLogController extends Controller
                         }
                     }
                 } else {
-                    // Es de backend, buscar el contexto JSON si existe al final del mensaje
                     if (preg_match('/(\{.*?"user_role":.*?"url":.*?\})\s*$/s', $rawMessage, $ctxMatch)) {
                         $ctx = json_decode($ctxMatch[1], true);
                         if ($ctx) {
                             $user = $ctx['user_name'] ?? 'Anónimo';
                             $role = $ctx['user_role'] ?? 'invitado';
                             $url = $ctx['url'] ?? null;
-                            // Limpiar el JSON del mensaje principal para que se vea más limpio
                             $message = trim(str_replace($ctxMatch[1], '', $rawMessage));
                         }
                     }
@@ -88,7 +87,13 @@ class SystemLogController extends Controller
 
         return response()->json([
             'success' => true,
-            'logs' => $logs
+            'logs' => $logs,
+            'pagination' => [
+                'total' => $total ?? 0,
+                'per_page' => $perPage,
+                'current_page' => $page,
+                'last_page' => isset($total) ? ceil($total / $perPage) : 1
+            ]
         ]);
     }
 
