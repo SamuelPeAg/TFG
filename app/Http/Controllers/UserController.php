@@ -14,36 +14,6 @@ class UserController extends Controller
      * Array centralizado de mensajes de error en español.
      * Así reutilizamos los mismos textos para crear y actualizar.
      */
-    protected function validationMessages()
-    {
-        return [
-            'name.required'      => 'El nombre es obligatorio.',
-            'name.string'        => 'El nombre debe ser un texto válido.',
-            'name.min'           => 'El nombre debe tener al menos 3 caracteres.',
-            'name.max'           => 'El nombre no puede superar los 255 caracteres.',
-            
-            'email.required'     => 'El correo electrónico es obligatorio.',
-            'email.email'        => 'Introduce una dirección de correo válida.',
-            'email.unique'       => 'Este correo ya está registrado por otro usuario.',
-            
-            'password.required'  => 'La contraseña es obligatoria.',
-            'password.min'       => 'La contraseña debe tener al menos 6 caracteres.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
-            
-            'iban.string'        => 'El iban debe ser un texto.',
-            'iban.unique'        => 'Este iban ya pertenece a otro usuario.',
-            'iban.min'           => 'El iban parece incompleto (mínimo 8 caracteres).',
-            'iban.max'           => 'El IBAN no puede tener más de 34 caracteres.',
-            'iban.regex'         => 'El formato del IBAN no es válido.',
-            
-            'dni.regex'          => 'El DNI/NIE introducido no tiene un formato válido.',
-            'codigo_postal.regex'=> 'El código postal debe tener exactamente 5 dígitos.',
-
-            'firma_digital.string' => 'La firma digital debe ser texto.',
-            'firma_digital.max'    => 'La firma digital es demasiado larga.',
-        ];
-    }
-
     public function index()
     {
         // Mostrar solo clientes en la interfaz de usuarios
@@ -58,36 +28,14 @@ class UserController extends Controller
         return view('app');
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\UserStoreRequest $request)
     {
-        // --- 1. VALIDACIONES ROBUSTAS (Mínimo 2 por campo) ---
-        $request->validate([
-            // Nombre: Obligatorio + Texto + Mínimo 3 letras + Máximo 100
-            'name'          => 'required|string|min:3|max:100',
-            
-            // Email: Obligatorio + Formato email + Único en la tabla + Máximo 150
-            'email'         => 'required|email|max:150|unique:users,email',
-            
-            // Password: Solo obligatoria si se envía + max 64
-            'password'      => 'nullable|string|min:6|max:64',
-            
-            // iban: Opcional + Texto + Único + Mínimo 16 caracteres (validez básica)
-            'iban'          => 'nullable|string|unique:users,iban|min:16|max:34|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{12,30}$/i',
-            
-            // Firma: Opcional + Texto + Máximo 1000
-            'firma_digital' => 'nullable|string|max:1000',
-            'precio_hora'   => 'nullable|numeric|min:0|max:9999',
-            'dni'           => 'nullable|string|regex:/^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i',
-            'codigo_postal' => 'nullable|string|regex:/^[0-9]{5}$/',
-        ], $this->validationMessages());
-
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'iban' => $request->iban,
             'firma_digital' => $request->firma_digital,
-            'precio_hora' => $request->precio_hora ?? 0,
         ]);
 
         // Asignar rol cliente por defecto
@@ -100,56 +48,18 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuario creado correctamente.');
     }
 
-    public function update(Request $request, User $user)
+    public function update(\App\Http\Requests\UserUpdateRequest $request, User $user)
     {
-        // --- VALIDACIONES AL ACTUALIZAR ---
-        $request->validate([
-            'name'          => 'required|string|min:3|max:100',
-            // El email no se actualiza, pero lo validamos por si acaso se envía el mismo
-            'email'         => 'required|email|max:150|unique:users,email,' . $user->id,
-            'iban'          => [
-                'nullable', 
-                'string', 
-                function ($attribute, $value, $fail) use ($user) {
-                    $cleanIban = strtoupper(str_replace(' ', '', $value));
-                    if (str_starts_with($cleanIban, 'ES')) {
-                        if (strlen($cleanIban) !== 24) $fail('El IBAN español debe tener exactamente 24 caracteres (ES + 22 números).');
-                        elseif (!ctype_digit(substr($cleanIban, 2))) $fail('El IBAN español solo debe contener números después de "ES".');
-                    } elseif (strlen($cleanIban) < 15 || strlen($cleanIban) > 34) {
-                        $fail('El IBAN internacional debe tener entre 15 y 34 caracteres.');
-                    }
-                },
-                Rule::unique('users', 'iban')->ignore($user->id)
-            ],
-            'firma_digital' => 'nullable|string|max:1000',
-            'precio_hora'   => 'nullable|numeric|min:0|max:9999',
-            'dni'           => 'nullable|string|regex:/^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i',
-            'codigo_postal' => 'nullable|string|regex:/^[0-9]{5}$/',
-        ], $this->validationMessages());
-
-        $data = [
-            'name' => $request->name,
-            'iban' => $request->iban,
-            'firma_digital' => $request->firma_digital,
-            'precio_hora' => $request->precio_hora,
-            'dni' => $request->dni,
-            'codigo_postal' => $request->codigo_postal,
-        ];
+        $data = $request->only(['name', 'iban', 'firma_digital', 'dni', 'codigo_postal']);
 
         // Solo actualizar contraseña si se ha rellenado
         if ($request->filled('password')) {
-            $request->validate([
-                'password' => 'string|min:6|max:64', // Validamos también aquí max
-            ], $this->validationMessages());
-            
             $data['password'] = Hash::make($request->password);
         }
 
         // Eliminar foto de perfil si se solicita
         if ($request->has('delete_profile_photo') && $request->delete_profile_photo == '1') {
             if ($user->foto_de_perfil) {
-                // Opcional: Eliminar archivo del disco
-                // \Storage::disk('public')->delete($user->foto_de_perfil);
                 $data['foto_de_perfil'] = null;
             }
         }

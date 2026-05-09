@@ -560,6 +560,11 @@ class FacturacionController extends Controller
             $hasta = $anio . '-12-31';
         }
 
+        $centroRecord = null;
+        if ($centro !== 'todos') {
+            $centroRecord = \App\Models\Centro::where('nombre', $centro)->first();
+        }
+
         $xmlContent = '';
         $pdfContent = '';
         $baseFilename = '';
@@ -762,17 +767,24 @@ class FacturacionController extends Controller
         }
 
         // Crear ZIP temporal
-        $zip = new \ZipArchive();
-        $zipFilename = $baseFilename . ".zip";
-        $zipPath = tempnam(sys_get_temp_dir(), 'export_zip');
+        try {
+            $zip = new \ZipArchive();
+            $zipFilename = $baseFilename . ".zip";
+            $zipPath = tempnam(sys_get_temp_dir(), 'export_zip');
 
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE)) {
-            $zip->addFromString($baseFilename . ".xml", $xmlContent);
-            $zip->addFromString($baseFilename . ".pdf", $pdfContent);
-            $zip->close();
+            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE)) {
+                $zip->addFromString($baseFilename . ".xml", $xmlContent);
+                $zip->addFromString($baseFilename . ".pdf", $pdfContent);
+                $zip->close();
+            } else {
+                throw new \Exception("No se pudo crear el archivo ZIP.");
+            }
+
+            return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            \Log::error("Error en exportación de facturación: " . $e->getMessage());
+            return response()->json(['error' => 'Error al generar el archivo de exportación: ' . $e->getMessage()], 500);
         }
-
-        return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(true);
     }
 
     public function downloadFacturaPdf($id)

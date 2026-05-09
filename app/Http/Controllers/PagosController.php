@@ -205,7 +205,7 @@ class PagosController extends Controller
                     'alumnos' => $alumnos,
                     'entrenadores' => $entrenadoresList,
                     'session_key' => [
-                        'fecha_hora' => $first->fecha_registro->format('Y-m-d H:i:s'),
+                        'fecha_hora' => $first->fecha_registro ? $first->fecha_registro->format('Y-m-d H:i:s') : null,
                         'nombre_clase' => $first->nombre_clase,
                         'centro' => $first->centro
                     ],
@@ -598,36 +598,46 @@ class PagosController extends Controller
             return response()->json(['error' => 'No tienes créditos suficientes para esta clase.'], 422);
         }
 
-        // Consumimos del lote específico
-        $loteAConsumir->decrement('cantidad_actual', 1);
+        // 7. Crear el nuevo pago (DENTRO DE TRANSACCIÓN PARA EVITAR PÉRDIDA DE CRÉDITO)
+        try {
+            DB::beginTransaction();
 
-        // 7. Crear el nuevo pago
-        $subNombre = ($activeSub && $activeSub->suscripcion) ? $activeSub->suscripcion->nombre : 'Bono';
-        
-        $newPago = Pago::create([
-            'user_id' => $newUser->id,
-            'entrenador_id' => $existingPago->entrenador_id,
-            'iban' => $newUser->iban,
-            'importe' => $tipoInfo->precio_base ?? $existingPago->importe,
-            'fecha_registro' => $fecha,
-            'centro' => $existingPago->centro,
-            'nombre_clase' => $existingPago->nombre_clase,
-            'tipo_clase' => $existingPago->tipo_clase,
-            'capacidad_maxima' => $existingPago->capacidad_maxima,
-            'horas_cancelacion' => $existingPago->horas_cancelacion,
-            'metodo_pago' => "Bono ($subNombre)",
-        ]);
+            // Consumimos del lote específico
+            $loteAConsumir->decrement('cantidad_actual', 1);
 
-        // Copiar suscripciones (solo la usada), créditos y entrenadores
-        $newPago->suscripciones()->sync([$activeSub->id_suscripcion]);
+            $subNombre = ($activeSub && $activeSub->suscripcion) ? $activeSub->suscripcion->nombre : 'Bono';
+            
+            $newPago = Pago::create([
+                'user_id' => $newUser->id,
+                'entrenador_id' => $existingPago->entrenador_id,
+                'iban' => $newUser->iban,
+                'importe' => $tipoInfo->precio_base ?? $existingPago->importe,
+                'fecha_registro' => $fecha,
+                'centro' => $existingPago->centro,
+                'nombre_clase' => $existingPago->nombre_clase,
+                'tipo_clase' => $existingPago->tipo_clase,
+                'capacidad_maxima' => $existingPago->capacidad_maxima,
+                'horas_cancelacion' => $existingPago->horas_cancelacion,
+                'metodo_pago' => "Bono ($subNombre)",
+            ]);
 
-        $credits = $existingPago->tiposCredito->pluck('id')->toArray();
-        if (!empty($credits)) $newPago->tiposCredito()->sync($credits);
+            // Copiar suscripciones (solo la usada), créditos y entrenadores
+            $newPago->suscripciones()->sync([$activeSub->id_suscripcion]);
 
-        $trainers = $existingPago->entrenadores->pluck('id')->toArray();
-        if (!empty($trainers)) $newPago->entrenadores()->sync($trainers);
+            $credits = $existingPago->tiposCredito->pluck('id')->toArray();
+            if (!empty($credits)) $newPago->tiposCredito()->sync($credits);
 
-        return response()->json(['success' => true, 'message' => 'Cliente añadido y crédito consumido correctamente.']);
+            $trainers = $existingPago->entrenadores->pluck('id')->toArray();
+            if (!empty($trainers)) $newPago->entrenadores()->sync($trainers);
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Cliente añadido y crédito consumido correctamente.']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error en addClientToSession: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al procesar la inscripción: ' . $e->getMessage()], 500);
+        }
     }
 
     // Método para ELIMINAR CLIENTE de una sesión

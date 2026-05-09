@@ -18,6 +18,7 @@ class ActionPlan extends Model
 
     protected $casts = [
         'trainer_images' => 'array',
+        'trainer_response' => 'array',
         'target_date' => 'date'
     ];
 

@@ -106,7 +106,7 @@ class ActionPlanController extends Controller
                     }
                 }
             }
-            $plan->trainer_response = json_encode($responseData);
+            $plan->trainer_response = $responseData;
         } else {
             $plan->trainer_response = $request->response;
         }

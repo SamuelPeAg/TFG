@@ -23,37 +23,28 @@ class EntrenadorController extends Controller
         return view('app');
     }
 
-    public function store(Request $request)
+    public function store(\App\Http\Requests\EntrenadorStoreRequest $request)
     {
-        $request->validate([
-            'nombre' => ['required', 'string', 'min:3', 'max:50'],
-            'email' => ['required', 'email', 'max:191', 'unique:entrenadores,email'],
-        ], [
-            'nombre.required' => 'El nombre es obligatorio.',
-            'nombre.min' => 'El nombre debe tener al menos 3 caracteres.',
-            'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email' => 'El formato del correo no es válido.',
-            'email.unique' => 'Este correo electrónico ya está registrado.',
-        ]);
         $token = Str::random(60);
-        // Crear el usuario entrenador (solo nombre y email)
+        
+        // Crear el usuario entrenador (solo nombre e email inicialmente)
         $user = Entrenador::create([
             'name' => $request->nombre,
             'email' => $request->email,
             'password' => Hash::make(Str::random(24)),
-            'activation_token' => $token
+            'activation_token' => $token,
+            'activo' => false,
         ]);
+
         // Asignar rol
         $user->assignRole('entrenador');
 
-
-
         try {
-             // Enviar el email con el enlace de activación
+            // Enviar el email con el enlace de activación
             Mail::to($user->email)->send(new EntrenadorRegistrationMail($user, $token));
         } catch (\Exception $e) {
             \Log::error('Error sending trainer mail: ' . $e->getMessage());
-            return response()->json(['message' => 'Error al enviar el correo: ' . $e->getMessage()], 500);
+            // No cortamos el flujo, pero avisamos
         }
 
         if ($request->wantsJson() || $request->ajax()) {
@@ -63,53 +54,27 @@ class EntrenadorController extends Controller
         return redirect()->route('entrenadores.index')->with('success', 'Entrenador añadido correctamente. Se ha enviado un enlace al correo para completar el registro.');
     }
 
-
-
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\EntrenadorUpdateRequest $request, $id)
     {
-        $request->validate([
-            'password' => 'nullable|confirmed|min:8|max:64',
-            'iban' => [
-                'nullable', 
-                'string', 
-                function ($attribute, $value, $fail) {
-                    $cleanIban = strtoupper(str_replace(' ', '', $value));
-                    if (str_starts_with($cleanIban, 'ES')) {
-                        if (strlen($cleanIban) !== 24) $fail('El IBAN español debe tener exactamente 24 caracteres (ES + 22 números).');
-                        elseif (!ctype_digit(substr($cleanIban, 2))) $fail('El IBAN español solo debe contener números después de "ES".');
-                    } elseif (strlen($cleanIban) < 15 || strlen($cleanIban) > 34) {
-                        $fail('El IBAN internacional debe tener entre 15 y 34 caracteres.');
-                    }
-                }
-            ],
-        ], [
-            'password.confirmed' => 'Las contraseñas no coinciden.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.max' => 'La contraseña de seguridad no debe exceder 64 caracteres.',
-            'iban.max' => 'El IBAN no puede tener más de 34 caracteres.',
-            'iban.min' => 'El IBAN debe tener al menos 8 caracteres.',
-            'iban.regex' => 'El formato del IBAN no es válido.',
-        ]);
-
         $user = Entrenador::findOrFail($id);
 
-        $data = [
-            'iban' => $request->iban,
-        ];
+        $data = $request->validated();
+
+        // El frontend a veces manda 'nombre' en lugar de 'name'
+        if ($request->has('nombre')) {
+            $data['name'] = $request->nombre;
+        }
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }
 
-        // Eliminar foto de perfil si se solicita
         if ($request->has('delete_profile_photo') && $request->delete_profile_photo == '1') {
             if ($user->foto_de_perfil) {
-                // Opcional: Eliminar archivo del disco
-                // \Storage::disk('public')->delete($user->foto_de_perfil);
                 $data['foto_de_perfil'] = null;
             }
         }
-
+        
         $user->update($data);
 
         if ($request->wantsJson() || $request->ajax()) {
