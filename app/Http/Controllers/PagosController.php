@@ -19,7 +19,8 @@ class PagosController extends Controller
         $end = $request->input('end');
         $onlyMy = $request->input('only_my_classes') === '1';
 
-        $query = Pago::with(['user', 'entrenadores', 'suscripciones', 'tiposCredito']);
+        $query = Pago::select('id', 'user_id', 'entrenador_id', 'fecha_registro', 'nombre_clase', 'tipo_clase', 'centro', 'capacidad_maxima', 'importe', 'metodo_pago', 'horas_cancelacion')
+            ->with(['user:id,name,photo', 'entrenadores:id,name,photo', 'suscripciones:id,nombre', 'tiposCredito:id,nombre']);
 
         if ($onlyMy && auth()->check()) {
             $trainerId = auth()->id();
@@ -218,7 +219,7 @@ class PagosController extends Controller
             ];
         }
 
-        return response()->json(['events' => $events]);
+        return response()->json(['events' => $events], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
     }
 
     public function store(Request $request)
