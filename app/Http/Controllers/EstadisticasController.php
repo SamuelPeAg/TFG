@@ -117,34 +117,14 @@ class EstadisticasController extends Controller
                 ->take(6)
                 ->values();
 
-            // 5. Clientes en Riesgo (Abandono Inminente: 14-30 días sin venir)
-            // Excluimos a los que solo han venido 1 vez o nunca
-            $atRiskUsers = [];
-            $twoWeeksAgo = $now->copy()->subDays(14);
-            $oneMonthAgo = $now->copy()->subDays(30);
-
-            $usersWithActivityCount = DB::table('pagos')
-                ->select('user_id', DB::raw('COUNT(*) as total_clases'), DB::raw('MAX(fecha_registro) as last_date'))
-                ->whereNotNull('user_id')
-                ->groupBy('user_id')
-                ->having('total_clases', '>', 1) // Más de 1 clase en su vida
+            // 5. Popularidad de Planes (Suscripciones Activas por Nombre)
+            $subscriptionPopularity = DB::table('suscripciones_usuarios')
+                ->join('suscripciones', 'suscripciones_usuarios.id_suscripcion', '=', 'suscripciones.id')
+                ->select('suscripciones.nombre', DB::raw('COUNT(*) as total'))
+                ->where('suscripciones_usuarios.estado', 'ACTIVA')
+                ->groupBy('suscripciones.nombre')
+                ->orderBy('total', 'desc')
                 ->get();
-
-            foreach ($usersWithActivityCount as $activity) {
-                $lastDate = Carbon::parse($activity->last_date);
-                if ($lastDate->between($oneMonthAgo, $twoWeeksAgo)) {
-                    $u = User::find($activity->user_id);
-                    if ($u) {
-                        $atRiskUsers[] = [
-                            'id' => $u->id,
-                            'name' => $u->name,
-                            'last_attendance' => $lastDate->diffForHumans(),
-                            'total_clases' => $activity->total_clases,
-                            'foto' => $u->foto_de_perfil ? Storage::url($u->foto_de_perfil) : null
-                        ];
-                    }
-                }
-            }
 
             // 6. Últimos Pagos (Enriquecidos)
             $ultimosPagos = Pago::with('user:id,name,foto_de_perfil')
@@ -177,12 +157,11 @@ class EstadisticasController extends Controller
                     'ingresosMes' => $ingresosMes,
                     'sesionesMes' => $sesionesMesCount,
                     'avgOccupancy' => count($occupancyByClass) > 0 ? round($occupancyByClass->avg('ratio'), 1) : 0,
-                    'atRiskCount' => count($atRiskUsers)
                 ],
                 'churnData' => $churnData,
                 'multiCenterRevenue' => $multiCenterRevenue,
                 'occupancyByClass' => $occupancyByClass,
-                'atRiskUsers' => array_slice($atRiskUsers, 0, 5),
+                'subscriptionPopularity' => $subscriptionPopularity,
                 'ultimosPagos' => $ultimosPagos,
                 'notificaciones' => $notificaciones,
                 'centros_list' => $centros,

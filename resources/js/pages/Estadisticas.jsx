@@ -139,6 +139,17 @@ export default function Estadisticas() {
     }]
   };
 
+  // 4. Popularidad de Planes (Doughnut)
+  const popularityChartData = {
+    labels: data?.subscriptionPopularity?.map(d => d.nombre) || [],
+    datasets: [{
+      data: data?.subscriptionPopularity?.map(d => d.total) || [],
+      backgroundColor: [colors.turquesa, colors.rojo, '#3b82f6', '#f59e0b', '#8b5cf6', colors.gris],
+      borderWidth: 0,
+      hoverOffset: 15
+    }]
+  };
+
   const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -249,48 +260,34 @@ export default function Estadisticas() {
                   </div>
                 </div>
 
-                {/* Anonymous Customer Care Section */}
-                <div className="bg-[#53565A] p-8 rounded-[3rem] shadow-xl text-white flex flex-col h-[500px] relative overflow-hidden">
-                  <div className="relative z-10 mb-8">
-                    <h3 className="text-lg font-black tracking-tight">Atención al Cliente</h3>
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-1">Resumen de ausencias (14-30 días)</p>
+                {/* Subscription Popularity */}
+                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[500px]">
+                  <div className="mb-8">
+                    <h3 className="text-lg font-black text-slate-800 tracking-tight">Distribución de Planes</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Suscripciones más contratadas (Activas)</p>
                   </div>
-                  
-                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-white/5 rounded-[2.5rem] border border-white/5">
-                    {data.kpis.atRiskCount === 0 ? (
-                      <>
-                        <div className="w-20 h-20 bg-[#4BB7AE]/20 rounded-full flex items-center justify-center mb-6">
-                           <i className="fa-solid fa-check text-4xl text-[#4BB7AE]"></i>
-                        </div>
-                        <h4 className="text-xl font-black mb-2">Todo en orden</h4>
-                        <p className="text-xs text-slate-400 font-bold max-w-[180px]">No hay clientes con ausencias prolongadas en este momento.</p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="text-7xl font-black text-[#A5EFE2] mb-4 tracking-tighter">
-                          {data.kpis.atRiskCount}
-                        </div>
-                        <h4 className="text-xl font-black mb-2">Clientes Inactivos</h4>
-                        <p className="text-xs text-slate-400 font-bold max-w-[200px]">
-                          Hay {data.kpis.atRiskCount} personas que no han registrado actividad en los últimos 15 días.
-                        </p>
-                        
-                        <div className="mt-8 w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-[#EF5D7A]" 
-                            style={{ width: `${Math.min((data.kpis.atRiskCount / data.kpis.totalClientes) * 100, 100)}%` }}
-                          ></div>
-                        </div>
-                        <p className="mt-2 text-[10px] font-black uppercase text-slate-500 tracking-widest">
-                          {((data.kpis.atRiskCount / data.kpis.totalClientes) * 100).toFixed(1)}% de la base total
-                        </p>
-                      </>
-                    )}
+                  <div className="flex-1 relative flex items-center justify-center">
+                    <div className="w-full h-full max-h-[250px]">
+                      <Doughnut 
+                        data={popularityChartData} 
+                        options={{
+                          ...commonOptions,
+                          cutout: '70%',
+                          plugins: {
+                            ...commonOptions.plugins,
+                            legend: {
+                              position: 'bottom',
+                              labels: { padding: 20, font: { size: 9, weight: 'bold' } }
+                            }
+                          }
+                        }} 
+                      />
+                    </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-10">
+                       <span className="text-3xl font-black text-slate-800">{data?.subscriptionPopularity?.reduce((a, b) => a + b.total, 0) || 0}</span>
+                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Activas</span>
+                    </div>
                   </div>
-                  
-                  <Link to="/clientes" className="mt-6 w-full py-4 bg-white/10 text-slate-300 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all border border-white/5 text-center">
-                    Gestionar Clientes
-                  </Link>
                 </div>
               </div>
 
