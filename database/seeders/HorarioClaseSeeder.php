@@ -19,19 +19,19 @@ class HorarioClaseSeeder extends Seeder
             return;
         }
 
-        // Crear horarios para los próximos 7 días
-        for ($i = 0; $i < 7; $i++) {
+        // Crear horarios para los próximos 14 días
+        for ($i = 0; $i < 14; $i++) {
             $fecha = now()->addDays($i);
             
-            // 4 sesiones por día
-            for ($j = 0; $j < 4; $j++) {
+            // 8 sesiones por día
+            for ($j = 0; $j < 8; $j++) {
                 $clase = $clases->random();
                 \App\Models\HorarioClase::create([
                     'clase_id' => $clase->id,
                     'entrenador_id' => $entrenadores->random()->id,
-                    'centro_id' => $clase->id_centro, // Usar el centro de la propia clase o uno aleatorio
-                    'fecha_hora_inicio' => $fecha->copy()->hour(rand(9, 21))->minute(0)->second(0),
-                    'capacidad' => rand(10, 20),
+                    'centro_id' => $clase->id_centro,
+                    'fecha_hora_inicio' => $fecha->copy()->hour(rand(7, 22))->minute(rand(0, 59))->second(0),
+                    'capacidad' => rand(8, 25),
                 ]);
             }
         }

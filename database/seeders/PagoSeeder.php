@@ -33,11 +33,11 @@ class PagoSeeder extends Seeder
     {
         $tipoCredito = \App\Models\TipoCredito::where('nombre', 'Crédito Estándar')->first();
         
-        // Crear 3-4 clases diarias para los próximos 7 días para que el calendario esté lleno
-        for ($i = -2; $i < 8; $i++) { // Desde hace 2 días hasta dentro de una semana
+        // Crear 5 clases diarias para los últimos 30 días
+        for ($i = -30; $i < 15; $i++) { // Desde hace 30 días hasta dentro de 2 semanas
             $fechaBase = Carbon::now()->addDays($i);
             
-            for ($j = 0; $j < 3; $j++) { // 3 sesiones por día
+            for ($j = 0; $j < 5; $j++) { // 5 sesiones por día
                 $centro = $centros->random();
                 $clase = $clases->random();
                 $hora = 9 + ($j * 4); // Clases a las 9:00, 13:00, 17:00 aprox

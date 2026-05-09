@@ -20,8 +20,8 @@ class ReservaSeeder extends Seeder
         }
 
         foreach ($horarios as $horario) {
-            // Entre 2 y 8 reservas por sesión
-            $numReservas = rand(2, 8);
+            // Entre 5 y 15 reservas por sesión
+            $numReservas = rand(5, 15);
             $clientesAleatorios = $clientes->random(min($numReservas, $clientes->count()));
 
             foreach ($clientesAleatorios as $cliente) {
