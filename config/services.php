@@ -45,4 +45,8 @@ return [
         'key' => env('GEMINI_API_KEY'),
     ],
 
+    'logging' => [
+        'webhook_url' => env('LOG_WEBHOOK_URL'),
+    ],
+
 ];

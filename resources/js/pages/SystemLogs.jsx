@@ -9,6 +9,7 @@ export default function SystemLogs() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [logs, setLogs] = useState([]);
+    const [levelFilter, setLevelFilter] = useState('ALL');
     const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
     const [loading, setLoading] = useState(true);
     const [clearing, setClearing] = useState(false);
@@ -37,6 +38,10 @@ export default function SystemLogs() {
             fetchLogs(newPage);
         }
     };
+
+    const filteredLogs = levelFilter === 'ALL' 
+        ? logs 
+        : logs.filter(l => l.level === levelFilter);
 
     const handleClearLogs = async () => {
         setClearing(true);
@@ -81,20 +86,38 @@ export default function SystemLogs() {
                 <div className="flex-1 overflow-auto p-4 sm:p-8">
                     <div className="max-w-6xl mx-auto space-y-6 pb-12">
                         
-                        <div className="flex justify-between items-center mb-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                             <div>
                                 <h2 className="text-xl font-black text-slate-800 tracking-tight">Logs del Sistema</h2>
-                                <p className="text-slate-500 text-xs mt-1 font-bold uppercase tracking-wider">Total: {pagination.total} errores registrados</p>
+                                <p className="text-slate-500 text-xs mt-1 font-bold uppercase tracking-wider">Total: {pagination.total} errores registrados hoy</p>
                             </div>
                             
-                            <Button 
-                                onClick={() => setIsConfirmModalOpen(true)}
-                                disabled={clearing || pagination.total === 0}
-                                className="bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200 disabled:opacity-50"
-                            >
-                                {clearing ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-trash-can mr-2"></i>}
-                                LIMPIAR REGISTRO
-                            </Button>
+                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                <div className="relative group min-w-[150px]">
+                                    <select 
+                                        value={levelFilter}
+                                        onChange={(e) => setLevelFilter(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-emerald-400/10 focus:border-emerald-400 outline-none font-bold text-slate-600 text-xs appearance-none cursor-pointer transition-all hover:bg-slate-50 shadow-sm uppercase tracking-widest"
+                                    >
+                                        <option value="ALL">TODOS LOS NIVELES</option>
+                                        <option value="CRITICAL">CRÍTICO</option>
+                                        <option value="ERROR">ERROR</option>
+                                        <option value="WARNING">AVISO</option>
+                                    </select>
+                                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                        <i className="fa-solid fa-filter text-slate-300 text-xs"></i>
+                                    </div>
+                                </div>
+
+                                <Button 
+                                    onClick={() => setIsConfirmModalOpen(true)}
+                                    disabled={clearing || pagination.total === 0}
+                                    className="bg-rose-500 hover:bg-rose-600 text-white shadow-rose-200 disabled:opacity-50"
+                                >
+                                    {clearing ? <i className="fa-solid fa-spinner fa-spin mr-2"></i> : <i className="fa-solid fa-trash-can mr-2"></i>}
+                                    LIMPIAR
+                                </Button>
+                            </div>
                         </div>
 
                         {status && (
@@ -108,17 +131,17 @@ export default function SystemLogs() {
                             <div className="flex justify-center py-20">
                                 <i className="fa-solid fa-spinner fa-spin text-slate-300 text-4xl"></i>
                             </div>
-                        ) : logs.length === 0 ? (
+                        ) : filteredLogs.length === 0 ? (
                             <div className="bg-white p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 text-center flex flex-col items-center">
                                 <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
                                     <i className="fa-solid fa-shield-check text-emerald-400 text-3xl"></i>
                                 </div>
-                                <h3 className="text-lg font-black text-slate-800">Sistema Saludable</h3>
-                                <p className="text-sm text-slate-500 font-bold mt-2">No se han registrado errores recientes en la aplicación.</p>
+                                <h3 className="text-lg font-black text-slate-800">No hay registros</h3>
+                                <p className="text-sm text-slate-500 font-bold mt-2">No se han encontrado errores con el filtro seleccionado.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {logs.map((log, index) => (
+                                {filteredLogs.map((log, index) => (
                                     <div key={index} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-all overflow-hidden relative">
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 border-b border-slate-100 pb-3">
                                             <div className="flex flex-wrap items-center gap-3">
@@ -162,8 +185,18 @@ export default function SystemLogs() {
 
                                         <div className="bg-slate-900 rounded-xl p-4 overflow-x-auto custom-scrollbar">
                                             <pre className="text-xs text-rose-300 font-mono whitespace-pre-wrap word-break">
-                                                {log.message.length > 500 ? `${log.message.substring(0, 500)}... (truncado)` : log.message}
+                                                {log.message}
                                             </pre>
+                                            {log.stack && (
+                                                <div className="mt-3 pt-3 border-t border-slate-800">
+                                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                        <i className="fa-solid fa-code text-indigo-400"></i> Traza Parcial
+                                                    </p>
+                                                    <pre className="text-[10px] text-slate-400 font-mono leading-relaxed italic">
+                                                        {log.stack}
+                                                    </pre>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}

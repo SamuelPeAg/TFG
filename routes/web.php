@@ -86,8 +86,9 @@ Route::post('/contacto/enviar', function (Request $request) {
     ]);
 })->name('contact.send');
 
-// Registrar errores del frontend en el log del backend
-Route::post('/api/log-client-error', [\App\Http\Controllers\SystemLogController::class, 'logClientError']);
+// Registrar errores del frontend en el log del backend (Protegido con rate limit)
+Route::post('/api/log-client-error', [\App\Http\Controllers\SystemLogController::class, 'logClientError'])
+    ->middleware('throttle:10,1');
 
 
 

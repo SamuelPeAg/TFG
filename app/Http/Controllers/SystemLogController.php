@@ -8,43 +8,50 @@ use Illuminate\Support\Facades\File;
 class SystemLogController extends Controller
 {
     /**
-     * Devuelve los últimos errores del archivo laravel.log
+     * Devuelve los últimos errores del archivo de log actual
      */
     public function index(Request $request)
     {
-        $logFile = storage_path('logs/laravel.log');
+        $logChannel = config('logging.default');
+        if ($logChannel === 'daily') {
+            $logFile = storage_path('logs/laravel-' . date('Y-m-d') . '.log');
+        } else {
+            $logFile = storage_path('logs/laravel.log');
+        }
+
         $logs = [];
+        $total = 0;
+        $perPage = (int) $request->input('per_page', 20);
+        $page = (int) $request->input('page', 1);
 
         if (File::exists($logFile)) {
-            $content = File::get($logFile);
+            // Leer el archivo de forma eficiente desde el final
+            $content = $this->readLastEntries($logFile, 500000); // Leer los últimos 500KB para procesar
             
+            // Regex mejorada para capturar el mensaje y opcionalmente el stack trace (primeras líneas)
             $pattern = '/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (.*?)\.(ERROR|CRITICAL|EMERGENCY|WARNING): (.*?)(?=\n^\[|\z)/ms';
             
             preg_match_all($pattern, $content, $matches, PREG_SET_ORDER);
-
             $matches = array_reverse($matches);
 
-            // Pagination parameters
-            $page = (int) $request->input('page', 1);
-            $perPage = (int) $request->input('per_page', 20);
             $total = count($matches);
             $offset = ($page - 1) * $perPage;
-
-            // Limit and offset
             $paginatedMatches = array_slice($matches, $offset, $perPage);
 
             foreach ($paginatedMatches as $match) {
                 $rawMessage = trim($match[4]);
+                $level = $match[3];
                 
                 $url = null;
                 $user = null;
                 $role = null;
                 $source = 'BACKEND';
                 $message = $rawMessage;
+                $stack = null;
 
                 if (str_starts_with($rawMessage, 'FRONTEND [')) {
                     $source = 'FRONTEND';
-                    if (preg_match('/FRONTEND \[(.*?)\] \| URL: (.*?) \| Error: (.*?)(?: \| Stack:|$)/s', $rawMessage, $frontMatch)) {
+                    if (preg_match('/FRONTEND \[(.*?)\] \| URL: (.*?) \| Error: (.*?)(?: \| Stack: (.*))?$/s', $rawMessage, $frontMatch)) {
                         $userInfoStr = $frontMatch[1];
                         $url = trim($frontMatch[2]);
                         
@@ -56,18 +63,24 @@ class SystemLogController extends Controller
                         }
 
                         $message = trim($frontMatch[3]);
-                        if (str_contains($rawMessage, ' | Stack:')) {
-                            $message .= "\n\nStack:\n" . trim(substr($rawMessage, strpos($rawMessage, ' | Stack:') + 10));
-                        }
+                        $stack = isset($frontMatch[4]) ? trim($frontMatch[4]) : null;
                     }
                 } else {
-                    if (preg_match('/(\{.*?"user_role":.*?"url":.*?\})\s*$/s', $rawMessage, $ctxMatch)) {
+                    // Intentar extraer stack trace parcial en backend
+                    if (preg_match('/^(.*?)\nStack trace:\n(.*?)$/s', $rawMessage, $stackMatch)) {
+                        $message = trim($stackMatch[1]);
+                        // Coger solo las primeras 3 líneas del stack trace
+                        $stackLines = explode("\n", $stackMatch[2]);
+                        $stack = implode("\n", array_slice($stackLines, 0, 3));
+                    }
+
+                    if (preg_match('/(\{.*?"user_role":.*?"url":.*?\})\s*$/s', $message, $ctxMatch)) {
                         $ctx = json_decode($ctxMatch[1], true);
                         if ($ctx) {
                             $user = $ctx['user_name'] ?? 'Anónimo';
                             $role = $ctx['user_role'] ?? 'invitado';
                             $url = $ctx['url'] ?? null;
-                            $message = trim(str_replace($ctxMatch[1], '', $rawMessage));
+                            $message = trim(str_replace($ctxMatch[1], '', $message));
                         }
                     }
                 }
@@ -75,12 +88,13 @@ class SystemLogController extends Controller
                 $logs[] = [
                     'date' => $match[1],
                     'environment' => $match[2],
-                    'level' => $match[3],
+                    'level' => $level,
                     'source' => $source,
                     'user' => $user,
                     'role' => $role,
                     'url' => $url,
-                    'message' => $message
+                    'message' => $message,
+                    'stack' => $stack
                 ];
             }
         }
@@ -89,12 +103,30 @@ class SystemLogController extends Controller
             'success' => true,
             'logs' => $logs,
             'pagination' => [
-                'total' => $total ?? 0,
+                'total' => $total,
                 'per_page' => $perPage,
                 'current_page' => $page,
-                'last_page' => isset($total) ? ceil($total / $perPage) : 1
+                'last_page' => max(1, ceil($total / $perPage))
             ]
         ]);
+    }
+
+    /**
+     * Lee los últimos bytes de un archivo para no saturar memoria
+     */
+    private function readLastEntries($path, $bytes)
+    {
+        $size = filesize($path);
+        if ($size <= $bytes) return File::get($path);
+
+        $fp = fopen($path, 'r');
+        fseek($fp, -$bytes, SEEK_END);
+        $data = fread($fp, $bytes);
+        fclose($fp);
+
+        // Asegurarnos de no romper el primer bloque incompleto
+        $firstBracket = strpos($data, '[');
+        return $firstBracket !== false ? substr($data, $firstBracket) : $data;
     }
 
     /**
@@ -102,10 +134,15 @@ class SystemLogController extends Controller
      */
     public function clear()
     {
-        $logFile = storage_path('logs/laravel.log');
+        $logChannel = config('logging.default');
+        if ($logChannel === 'daily') {
+            $logFile = storage_path('logs/laravel-' . date('Y-m-d') . '.log');
+        } else {
+            $logFile = storage_path('logs/laravel.log');
+        }
         
         if (File::exists($logFile)) {
-            File::put($logFile, ''); // Vaciar archivo
+            File::put($logFile, ''); 
         }
 
         return response()->json([
@@ -119,19 +156,19 @@ class SystemLogController extends Controller
      */
     public function logClientError(Request $request)
     {
-        // Intentar obtener el usuario (puede ser cliente o staff)
         $user = auth('web')->user() ?? auth('staff')->user();
         $userInfo = $user ? "Usuario: {$user->name} (Rol: {$user->role}, ID: {$user->id})" : "Visitante Anónimo";
         
         $errorMsg = $request->input('message', 'Error desconocido en frontend');
         $stack = $request->input('stack', '');
         $url = $request->input('url', url()->current());
-        $level = strtoupper($request->input('level', 'ERROR')); // Puede ser WARNING, ERROR, CRITICAL
+        $level = strtoupper($request->input('level', 'ERROR')); 
         
-        $logText = "FRONTEND [{$userInfo}] | URL: {$url} | Error: {$errorMsg} | Stack: " . substr($stack, 0, 300);
+        $logText = "FRONTEND [{$userInfo}] | URL: {$url} | Error: {$errorMsg} | Stack: " . substr($stack, 0, 500);
 
         if ($level === 'CRITICAL') {
             \Illuminate\Support\Facades\Log::critical($logText);
+            $this->notifyCriticalError($logText);
         } else if ($level === 'WARNING') {
             \Illuminate\Support\Facades\Log::warning($logText);
         } else {
@@ -139,5 +176,22 @@ class SystemLogController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Envía una notificación si hay un error crítico
+     */
+    private function notifyCriticalError($message)
+    {
+        $webhookUrl = config('services.logging.webhook_url');
+        if (!$webhookUrl) return;
+
+        try {
+            \Illuminate\Support\Facades\Http::post($webhookUrl, [
+                'content' => "🚨 **CRITICAL ERROR DETECTED**\n" . $message
+            ]);
+        } catch (\Exception $e) {
+            // No queremos que falle el log por un fallo en el webhook
+        }
     }
 }
