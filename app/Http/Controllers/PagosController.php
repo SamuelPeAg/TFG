@@ -59,21 +59,16 @@ class PagosController extends Controller
         }
 
         if ($nombre !== '') {
-            // ... (keep search logic as is)
-            $query->whereIn(DB::raw("(fecha_registro, nombre_clase, centro)"), function($sub) use ($nombre) {
-                $sub->select('fecha_registro', 'nombre_clase', 'centro')
-                    ->from('pagos')
-                    ->where('nombre_clase', 'like', "%{$nombre}%")
-                    ->orWhereExists(function($sq) use ($nombre) {
-                        $sq->select(DB::raw(1))
-                           ->from('users')
-                           ->whereColumn('users.id', 'pagos.user_id')
-                           ->where('name', 'like', "%{$nombre}%");
-                    });
+            $query->where(function($q) use ($nombre) {
+                $q->where('nombre_clase', 'like', "%{$nombre}%")
+                  ->orWhereHas('user', function($sq) use ($nombre) {
+                      $sq->where('name', 'like', "%{$nombre}%");
+                  });
             });
         }
 
         $pagos = $query->orderBy('fecha_registro', 'asc')->get();
+        \Log::info("Pagos encontrados: " . $pagos->count());
         \Log::info("Pagos encontrados: " . $pagos->count());
 
         // Obtener todos los tipos de sesión para mapear colores y datos
