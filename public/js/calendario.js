@@ -87,12 +87,21 @@ window.initCalendarioVanilla = () => {
             const userQ = document.getElementById('search-user')?.value || '';
             const onlyMy = window.ONLY_MY_CLASSES ? '1' : '0';
             const baseUrl = window.AppConfig?.baseUrl || window.BASE_URL || '/';
-            const url = `${baseUrl}api/calendar-events?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}&only_my_classes=${onlyMy}`;
+            const url = `${baseUrl}traer-clases-calendario?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}&only_my_classes=${onlyMy}`;
 
-            fetch(url)
+            fetch(url, { headers: { 'Accept': 'application/json' } })
                 .then(res => {
                     if (!res.ok) throw new Error('Error en el servidor: ' + res.status);
-                    return res.json();
+                    
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        return res.json();
+                    } else {
+                        return res.text().then(text => {
+                            console.error("Respuesta no es JSON (Primeros 100 caracteres):", text.substring(0, 100));
+                            throw new Error("El servidor devolvió un formato incorrecto (no JSON).");
+                        });
+                    }
                 })
                 .then(data => {
                     successCallback(data.events || []);

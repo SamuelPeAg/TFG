@@ -172,7 +172,7 @@ Route::middleware('auth:web,staff')->group(function () {
 
     // Gestión de Pagos / Clases (Acciones del Calendario) para todos los usuarios autenticados
     Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
-    Route::get('/api/calendar-events', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar');
+    Route::get('/traer-clases-calendario', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar');
     Route::post('/Pagos/add-trainer', [PagosController::class, 'addTrainerToSession'])->name('Pagos.addTrainer');
     Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])->name('Pagos.removeTrainer');
     Route::post('/Pagos/add-client', [PagosController::class, 'addClientToSession'])->name('Pagos.addClient');
