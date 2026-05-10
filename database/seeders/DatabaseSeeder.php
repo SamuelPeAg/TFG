@@ -33,22 +33,16 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            // 4. Clases y Horarios
+            // 4. Estructura base de clases y suscripciones
             SuscripcionSeeder::class,
-            ClaseSeeder::class,         // Define los tipos de clase (Yoga, Pilates...)
-            HorarioClaseSeeder::class,  // Crea las clases en el calendario (instancias)
+            ClaseSeeder::class,
+            TiposSesionSeeder::class,
             
-            // 5. Reservas
-            ReservaSeeder::class,       // Usuarios apuntándose a clases
-            
-            // 6. Pagos
-            PagoSeeder::class,
+            // 5. Generar datos dinámicos realistas (Pagos, Reservas, Calendario)
+            RealisticDataSeeder::class,
 
-            // 7. Nóminas
+            // 6. Nóminas
             NominaSeeder::class,
-
-            // 8. Poblado de calendario
-            CalendarioSeeder::class,
         ]);
     }
 }

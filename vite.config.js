@@ -8,7 +8,6 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/main.jsx'],
             refresh: true,
-            hotFile: 'storage/vite.hot',
         }),
         react(),
         tailwindcss(),

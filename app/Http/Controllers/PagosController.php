@@ -22,7 +22,7 @@ class PagosController extends Controller
 
             $query = Pago::select('id', 'user_id', 'fecha_registro', 'nombre_clase', 'tipo_clase', 'centro', 'capacidad_maxima', 'importe', 'metodo_pago')
                 ->with([
-                    'user:id,name,photo', 
+                    'user:id,name,foto_de_perfil', 
                     'entrenadores:id,name', 
                     'tiposCredito:id,nombre',
                     'suscripciones:id,nombre'
