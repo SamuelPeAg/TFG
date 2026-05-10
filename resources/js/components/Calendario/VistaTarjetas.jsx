@@ -78,7 +78,7 @@ export default function VistaTarjetas({ centroFiltro, userFiltro, onlyMyClasses,
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {dayEvents.map(ev => {
                                 const props = ev.extendedProps;
-                                const isJoined = props.alumnos.some(a => a.id === window.AppConfig?.user?.id);
+                                const isJoined = Array.isArray(props.alumnos) && props.alumnos.some(a => a.id === window.AppConfig?.user?.id);
                                 return (
                                     <div key={ev.groupId} 
                                          className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-slate-200 transition-all flex flex-col relative overflow-hidden group cursor-pointer"
@@ -103,17 +103,17 @@ export default function VistaTarjetas({ centroFiltro, userFiltro, onlyMyClasses,
 
                                         <div className="mt-auto pt-4 border-t border-slate-50 flex justify-between items-center">
                                             <div className="flex -space-x-2 relative z-10 w-full max-w-[120px]">
-                                                {props.alumnos.slice(0, 3).map((a, i) => (
+                                                {(Array.isArray(props.alumnos) ? props.alumnos : []).slice(0, 3).map((a, i) => (
                                                     <div key={i} className="w-8 h-8 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[10px] font-black text-slate-600 shadow-sm">
                                                         {a.nombre.charAt(0).toUpperCase()}
                                                     </div>
                                                 ))}
-                                                {props.alumnos.length > 3 && (
+                                                {Array.isArray(props.alumnos) && props.alumnos.length > 3 && (
                                                     <div className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-black text-slate-400 shadow-sm">
                                                         +{props.alumnos.length - 3}
                                                     </div>
                                                 )}
-                                                {props.alumnos.length === 0 && (
+                                                {(!Array.isArray(props.alumnos) || props.alumnos.length === 0) && (
                                                     <span className="text-xs font-semibold text-slate-400 italic">0 asistentes</span>
                                                 )}
                                             </div>

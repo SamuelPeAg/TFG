@@ -283,7 +283,7 @@ export default function Estadisticas() {
                         }} 
                       />
                     </div>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-10">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                        <span className="text-3xl font-black text-slate-800">{data?.subscriptionPopularity?.reduce((a, b) => a + b.total, 0) || 0}</span>
                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Activas</span>
                     </div>
