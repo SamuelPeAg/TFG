@@ -172,6 +172,16 @@ Route::middleware('auth:web,staff')->group(function () {
 
     // Gestión de Pagos / Clases (Acciones del Calendario) para todos los usuarios autenticados
     Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');
+    Route::get('/limpiar-datos-calendario', function() {
+        if (!auth()->check()) return "No autorizado";
+        $count = \App\Models\Pago::count();
+        \App\Models\Pago::truncate();
+        \DB::table('pago_entrenador')->truncate();
+        \DB::table('pago_tipo_credito')->truncate();
+        \DB::table('pago_suscripcion')->truncate();
+        return "Borradas $count clases. La base de datos ahora está vacía. Prueba el calendario ahora.";
+    });
+
     Route::get('/traer-clases-calendario', [PagosController::class, 'buscarPorUsuario'])->name('Pagos.buscar');
     Route::post('/Pagos/add-trainer', [PagosController::class, 'addTrainerToSession'])->name('Pagos.addTrainer');
     Route::post('/Pagos/remove-trainer', [PagosController::class, 'removeTrainerFromSession'])->name('Pagos.removeTrainer');
