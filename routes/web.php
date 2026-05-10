@@ -175,13 +175,16 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::get('/limpiar-datos-calendario', function() {
         if (!auth()->check()) return "No autorizado";
         try {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
             $count = \App\Models\Pago::count();
             \App\Models\Pago::truncate();
             \DB::table('pago_entrenador')->truncate();
             \DB::table('pago_tipo_credito')->truncate();
             \DB::table('pago_suscripcion')->truncate();
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             return "Borradas $count clases. La base de datos ahora está vacía. Prueba el calendario ahora.";
         } catch (\Exception $e) {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             return "ERROR AL LIMPIAR: " . $e->getMessage();
         }
     });
