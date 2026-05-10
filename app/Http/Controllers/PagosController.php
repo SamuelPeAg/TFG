@@ -32,18 +32,20 @@ class PagosController extends Controller
 
         if ($start) {
             try {
-                $query->where('fecha_registro', '>=', Carbon::parse($start)->format('Y-m-d H:i:s'));
+                $startDate = Carbon::parse($start)->startOfDay();
+                $query->where('fecha_registro', '>=', $startDate);
             } catch (\Exception $e) {
             }
         }
         if ($end) {
             try {
-                $query->where('fecha_registro', '<=', Carbon::parse($end)->format('Y-m-d H:i:s'));
+                $endDate = Carbon::parse($end)->endOfDay();
+                $query->where('fecha_registro', '<=', $endDate);
             } catch (\Exception $e) {
             }
         }
 
-        if ($centro) {
+        if ($centro && $centro !== '') {
             $query->where('centro', $centro);
         }
 
