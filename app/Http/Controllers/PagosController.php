@@ -20,8 +20,15 @@ class PagosController extends Controller
         $end = $request->input('end');
         $onlyMy = $request->input('only_my_classes') === '1';
 
-        $query = Pago::select('id', 'user_id', 'entrenador_id', 'fecha_registro', 'nombre_clase', 'tipo_clase', 'centro', 'capacidad_maxima', 'importe', 'metodo_pago', 'horas_cancelacion')
-            ->with(['user:id,name,photo', 'entrenadores:id,name,photo', 'suscripciones:id,nombre', 'tiposCredito:id,nombre']);
+        $query = Pago::select('id', 'user_id', 'fecha_registro', 'nombre_clase', 'tipo_clase', 'centro', 'capacidad_maxima', 'importe', 'metodo_pago')
+            ->with([
+                'user:id,name,photo', 
+                'entrenadores:id,name,photo', 
+                'tiposCredito:id,nombre',
+                'suscripciones:id,nombre'
+            ]);
+
+        \Log::info("Iniciando búsqueda de eventos para: " . ($start ?? 'N/A') . " a " . ($end ?? 'N/A'));
 
         if ($onlyMy && auth()->check()) {
             $trainerId = auth()->id();
@@ -35,6 +42,7 @@ class PagosController extends Controller
                 $startDate = Carbon::parse($start)->startOfDay();
                 $query->where('fecha_registro', '>=', $startDate);
             } catch (\Exception $e) {
+                \Log::warning("Error parseando fecha start: " . $start);
             }
         }
         if ($end) {
@@ -42,6 +50,7 @@ class PagosController extends Controller
                 $endDate = Carbon::parse($end)->endOfDay();
                 $query->where('fecha_registro', '<=', $endDate);
             } catch (\Exception $e) {
+                \Log::warning("Error parseando fecha end: " . $end);
             }
         }
 
@@ -50,6 +59,7 @@ class PagosController extends Controller
         }
 
         if ($nombre !== '') {
+            // ... (keep search logic as is)
             $query->whereIn(DB::raw("(fecha_registro, nombre_clase, centro)"), function($sub) use ($nombre) {
                 $sub->select('fecha_registro', 'nombre_clase', 'centro')
                     ->from('pagos')
@@ -59,18 +69,12 @@ class PagosController extends Controller
                            ->from('users')
                            ->whereColumn('users.id', 'pagos.user_id')
                            ->where('name', 'like', "%{$nombre}%");
-                    })
-                    ->orWhereExists(function($sq) use ($nombre) {
-                        $sq->select(DB::raw(1))
-                           ->from('pago_entrenador')
-                           ->join('entrenadores', 'entrenadores.id', '=', 'pago_entrenador.entrenador_id')
-                           ->whereColumn('pago_entrenador.pago_id', 'pagos.id')
-                           ->where('entrenadores.name', 'like', "%{$nombre}%");
                     });
             });
         }
 
         $pagos = $query->orderBy('fecha_registro', 'asc')->get();
+        \Log::info("Pagos encontrados: " . $pagos->count());
 
         // Obtener todos los tipos de sesión para mapear colores y datos
         $tiposSesionRaw = \App\Models\TipoSesion::all();
