@@ -121,7 +121,7 @@ class EstadisticasController extends Controller
             $subscriptionPopularity = DB::table('suscripciones_usuarios')
                 ->join('suscripciones', 'suscripciones_usuarios.id_suscripcion', '=', 'suscripciones.id')
                 ->select('suscripciones.nombre', DB::raw('COUNT(*) as total'))
-                ->where('suscripciones_usuarios.estado', 'ACTIVA')
+                ->where('suscripciones_usuarios.estado', 'activo')
                 ->groupBy('suscripciones.nombre')
                 ->orderBy('total', 'desc')
                 ->get();

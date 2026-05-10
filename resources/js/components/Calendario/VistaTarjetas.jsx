@@ -15,7 +15,7 @@ export default function VistaTarjetas({ centroFiltro, userFiltro, onlyMyClasses,
         const end = nextMonth.toISOString().split('T')[0];
         
         const baseUrl = window.AppConfig?.baseUrl || '/';
-        let url = `${baseUrl}usuarios/Pagos?start=${start}&end=${end}`;
+        let url = `${baseUrl}traer-clases-calendario?start=${start}&end=${end}`;
         if (centroFiltro) url += `&centro=${encodeURIComponent(centroFiltro)}`;
         if (userFiltro) url += `&q=${encodeURIComponent(userFiltro)}`;
         if (onlyMyClasses) url += `&only_my_classes=1`;
