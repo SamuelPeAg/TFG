@@ -13,7 +13,8 @@ class PagosController extends Controller
 
     public function buscarPorUsuario(Request $request)
     {
-        $nombre = trim((string) $request->input('q', ''));
+        try {
+            $nombre = trim((string) $request->input('q', ''));
         $centro = $request->input('centro');
         $start = $request->input('start');
         $end = $request->input('end');
@@ -75,10 +76,11 @@ class PagosController extends Controller
 
         // Agrupar pagos por (fecha, nombre_clase, centro, tipo_clase)
         $grouped = $pagos->groupBy(function ($p) {
-            return $p->fecha_registro->format('Y-m-d H:i:s')
+            $fecha = $p->fecha_registro ? $p->fecha_registro->format('Y-m-d H:i:s') : '0000-00-00 00:00:00';
+            return $fecha
                 . '|' . strtoupper(trim($p->tipo_clase ?? ''))
-                . '|' . strtolower(trim($p->nombre_clase))
-                . '|' . $p->centro;
+                . '|' . strtolower(trim($p->nombre_clase ?? 'SIN NOMBRE'))
+                . '|' . ($p->centro ?? 'SIN CENTRO');
         });
 
         // Extraer roles del request
@@ -219,7 +221,36 @@ class PagosController extends Controller
             ];
         }
 
-        return response()->json(['events' => $events], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+        return response()->json($this->cleanUtf8(['events' => $events]), 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+
+        } catch (\Exception $e) {
+            \Log::error("Error en PagosController@buscarPorUsuario: " . $e->getMessage() . " en " . $e->getFile() . ":" . $e->getLine());
+            return response()->json([
+                'error' => 'Error al cargar los eventos',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Recursivamente limpia caracteres no UTF-8 de los datos para evitar errores de json_encode.
+     */
+    private function cleanUtf8($data)
+    {
+        if (is_string($data)) {
+            return mb_convert_encoding($data, 'UTF-8', 'UTF-8');
+        } elseif (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->cleanUtf8($value);
+            }
+        } elseif (is_object($data)) {
+            if ($data instanceof \Illuminate\Database\Eloquent\Model) {
+                return $this->cleanUtf8($data->toArray());
+            } elseif ($data instanceof \Illuminate\Support\Collection) {
+                return $this->cleanUtf8($data->toArray());
+            }
+        }
+        return $data;
     }
 
     public function store(Request $request)
