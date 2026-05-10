@@ -15,221 +15,88 @@ class PagosController extends Controller
     {
         try {
             $nombre = trim((string) $request->input('q', ''));
-        $centro = $request->input('centro');
-        $start = $request->input('start');
-        $end = $request->input('end');
-        $onlyMy = $request->input('only_my_classes') === '1';
+            $centro = $request->input('centro');
+            $start = $request->input('start');
+            $end = $request->input('end');
+            $onlyMy = $request->input('only_my_classes') === '1';
 
-        $query = Pago::select('id', 'user_id', 'fecha_registro', 'nombre_clase', 'tipo_clase', 'centro', 'capacidad_maxima', 'importe', 'metodo_pago')
-            ->with([
-                'user:id,name,photo', 
-                'entrenadores:id,name,photo', 
-                'tiposCredito:id,nombre',
-                'suscripciones:id,nombre'
-            ]);
+            $query = Pago::select('id', 'user_id', 'fecha_registro', 'nombre_clase', 'tipo_clase', 'centro', 'capacidad_maxima', 'importe', 'metodo_pago')
+                ->with([
+                    'user:id,name,photo', 
+                    'entrenadores:id,name,photo', 
+                    'tiposCredito:id,nombre',
+                    'suscripciones:id,nombre'
+                ]);
 
-        \Log::info("Iniciando búsqueda de eventos para: " . ($start ?? 'N/A') . " a " . ($end ?? 'N/A'));
-
-        if ($onlyMy && auth()->check()) {
-            $trainerId = auth()->id();
-            $query->whereHas('entrenadores', function($q) use ($trainerId) {
-                $q->where('entrenadores.id', $trainerId);
-            });
-        }
-
-        if ($start) {
-            try {
-                $startDate = Carbon::parse($start)->startOfDay();
-                $query->where('fecha_registro', '>=', $startDate);
-            } catch (\Exception $e) {
-                \Log::warning("Error parseando fecha start: " . $start);
+            if ($onlyMy && auth()->check()) {
+                $trainerId = auth()->id();
+                $query->whereHas('entrenadores', function($q) use ($trainerId) {
+                    $q->where('entrenadores.id', $trainerId);
+                });
             }
-        }
-        if ($end) {
-            try {
-                $endDate = Carbon::parse($end)->endOfDay();
-                $query->where('fecha_registro', '<=', $endDate);
-            } catch (\Exception $e) {
-                \Log::warning("Error parseando fecha end: " . $end);
+
+            if ($start) {
+                $query->where('fecha_registro', '>=', Carbon::parse($start)->startOfDay());
             }
-        }
+            if ($end) {
+                $query->where('fecha_registro', '<=', Carbon::parse($end)->endOfDay());
+            }
+            if ($centro && $centro !== '') {
+                $query->where('centro', $centro);
+            }
+            if ($nombre !== '') {
+                $query->where(function($q) use ($nombre) {
+                    $q->where('nombre_clase', 'like', "%{$nombre}%")
+                      ->orWhereHas('user', function($sq) use ($nombre) {
+                          $sq->where('name', 'like', "%{$nombre}%");
+                      });
+                });
+            }
 
-        if ($centro && $centro !== '') {
-            $query->where('centro', $centro);
-        }
+            $pagos = $query->orderBy('fecha_registro', 'asc')->get();
 
-        if ($nombre !== '') {
-            $query->where(function($q) use ($nombre) {
-                $q->where('nombre_clase', 'like', "%{$nombre}%")
-                  ->orWhereHas('user', function($sq) use ($nombre) {
-                      $sq->where('name', 'like', "%{$nombre}%");
-                  });
+            // Tipos de sesión para colores
+            $tiposSesionRaw = \App\Models\TipoSesion::all();
+            $tiposSesion = $tiposSesionRaw->keyBy('nombre')->merge($tiposSesionRaw->keyBy('slug'));
+            $centrosColors = \App\Models\Centro::pluck('color_hex', 'nombre')->toArray();
+
+            $grouped = $pagos->groupBy(function ($p) {
+                $fecha = $p->fecha_registro ? $p->fecha_registro->format('Y-m-d H:i:s') : '0000-00-00 00:00:00';
+                return $fecha . '|' . strtoupper(trim($p->tipo_clase ?? '')) . '|' . strtolower(trim($p->nombre_clase ?? '')) . '|' . ($p->centro ?? '');
             });
-        }
 
-        $pagos = $query->orderBy('fecha_registro', 'asc')->get();
-        \Log::info("Pagos encontrados: " . $pagos->count());
-        \Log::info("Pagos encontrados: " . $pagos->count());
-
-        // Obtener todos los tipos de sesión para mapear colores y datos
-        $tiposSesionRaw = \App\Models\TipoSesion::all();
-        $tiposSesion = $tiposSesionRaw->keyBy('nombre')->merge($tiposSesionRaw->keyBy('slug'));
-
-        // Agrupar pagos por (fecha, nombre_clase, centro, tipo_clase)
-        $grouped = $pagos->groupBy(function ($p) {
-            $fecha = $p->fecha_registro ? $p->fecha_registro->format('Y-m-d H:i:s') : '0000-00-00 00:00:00';
-            return $fecha
-                . '|' . strtoupper(trim($p->tipo_clase ?? ''))
-                . '|' . strtolower(trim($p->nombre_clase ?? 'SIN NOMBRE'))
-                . '|' . ($p->centro ?? 'SIN CENTRO');
-        });
-
-        // Extraer roles del request
-        $currentUser = request()->user();
-        $isClientOnly = $currentUser && $currentUser->hasRole('cliente') && !$currentUser->hasRole('admin') && !$currentUser->hasRole('entrenador');
-        $activeCreditTypeIds = [];
-        if ($isClientOnly) {
-            // Obtenemos los IDs de tipos de crédito donde el usuario tiene saldo positivo y no caducado
-            $activeCreditTypeIds = \App\Models\CreditoLote::validos()
-                ->whereHas('suscripcionUsuario', function($q) use ($currentUser) {
-                    $q->where('id_usuario', $currentUser->id);
-                })
-                ->pluck('tipo_credito_id')
-                ->unique()
-                ->toArray();
+            $events = [];
+            foreach ($grouped as $key => $grupo) {
+                $first = $grupo->first();
+                $count = $grupo->filter(fn($p) => $p->user_id !== null)->count();
+                $max = $first->capacidad_maxima ?? 0;
                 
-            // También mantenemos soporte para el mapeo por suscripción si fuera necesario
-            $activeSubIds = $currentUser->suscripciones()
-                ->where('estado', 'activo')
-                ->pluck('id_suscripcion')
-                ->toArray();
-        }
+                $tipoObj = $tiposSesion->get(strtolower($first->nombre_clase));
+                $color = $tipoObj->color_hex ?? ($centrosColors[$first->centro] ?? '#38b2ac');
 
-        // Obtener centros para mapear sus colores
-        $centrosColors = \App\Models\Centro::pluck('color_hex', 'nombre')->toArray();
-        
-        $events = [];
-        foreach ($grouped as $key => $grupo) {
-            $first = $grupo->first();
-            $count = $grupo->filter(fn($p) => $p->user_id !== null)->count();
-
-            $tipoClase = $grupo->pluck('tipo_clase')->filter()->first() ?? $first->tipo_clase;
-            $capacidadMaxima = $grupo->pluck('capacidad_maxima')->filter()->first() ?? $first->capacidad_maxima;
-
-            // Determinar título
-            if ($count === 1) {
-                $userSingle = $grupo->filter(fn($p) => $p->user_id !== null)->first();
-                $title = $first->nombre_clase . ' - ' . ($userSingle->user->name ?? 'Usuario');
-            } else {
-                $title = $first->nombre_clase . ' (' . $count . ')';
-            }
-
-            // Recopilar alumnos
-            $alumnos = $grupo->filter(fn($p) => $p->user_id !== null)->map(function ($p) {
-                return [
-                    'id' => $p->user_id,
-                    'nombre' => $p->user->name ?? 'Usuario',
-                    'pago' => $p->metodo_pago,
-                    'coste' => (float) $p->importe,
-                    'photo' => $p->user ? $p->user->photo : null
+                $events[] = [
+                    'id' => $first->id,
+                    'title' => strtoupper($first->nombre_clase) . " ($count" . ($max ? "/$max" : "") . ")",
+                    'start' => $first->fecha_registro->toIso8601String(),
+                    'backgroundColor' => $color,
+                    'borderColor' => $color,
+                    'textColor' => '#ffffff',
+                    'extendedProps' => [
+                        'clase_nombre' => $first->nombre_clase,
+                        'centro' => $first->centro,
+                        'alumnos_count' => $count,
+                        'capacidad_maxima' => $max,
+                        'entrenadores' => $grupo->flatMap->entrenadores->unique('id')->map(fn($t) => ['id' => $t->id, 'name' => $t->name]),
+                        'alumnos' => $grupo->filter(fn($p) => $p->user_id !== null)->map(fn($p) => ['id' => $p->user_id, 'nombre' => $p->user->name ?? 'Usuario'])
+                    ]
                 ];
-            })->values();
-
-            // Recopilar entrenadores
-            $entrenadoresMap = [];
-            foreach ($grupo as $p) {
-                if ($p->entrenadores) {
-                    foreach ($p->entrenadores as $t) {
-                        if (!isset($entrenadoresMap[$t->id])) {
-                            $entrenadoresMap[$t->id] = [
-                                'id' => $t->id,
-                                'name' => $t->name,
-                                'initial' => strtoupper(substr($t->name, 0, 1)),
-                                'photo' => $t->photo
-                            ];
-                        }
-                    }
-                }
-            }
-            $entrenadoresList = array_values($entrenadoresMap);
-
-            // Colores Dinámicos (Prioridad: Tipo de Sesión -> Centro -> Default)
-            $centroNombre = trim($first->centro);
-            $tipoObj = $tiposSesion->get($tipoClase);
-            $tipoColor = $tipoObj ? $tipoObj->color_hex : null;
-
-            // Búsqueda insensible de color de centro
-            $centroColor = null;
-            foreach ($centrosColors as $name => $cHex) {
-                if (strcasecmp(trim($name), $centroNombre) === 0) {
-                    $centroColor = $cHex;
-                    break;
-                }
             }
 
-            // Lógica de color final: El fondo será el del Tipo de Sesión si existe, 
-            // si no, el del Centro. Si no, el azul por defecto.
-            $color = $tipoColor ?? ($centroColor ?? '#38b2ac');
-            $textColor = '#ffffff';
-
-            $classSubIds = $first->suscripciones->pluck('id')->toArray();
-
-            // Filtrado del lado del cliente: solo ve clases para las que existe una restricción de entrada
-            if ($isClientOnly) {
-                $classSubIds = $first->suscripciones->pluck('id')->toArray();
-                $classCreditIds = $first->tiposCredito->pluck('id')->toArray();
-
-                // Si la clase no tiene ninguna restricción de entrada, es una clase interna/privada de staff
-                if (empty($classSubIds) && empty($classCreditIds)) continue;
-
-                // [CAMBIO] Permitimos que vea la clase aunque no tenga saldo, para que el calendario no salga vacío.
-                // La lógica de "apuntarse" ya se encarga de validar el saldo después.
-                // $hasMatchingSub = !empty(array_intersect($activeSubIds, $classSubIds));
-                // $hasMatchingCredit = !empty(array_intersect($activeCreditTypeIds, $classCreditIds));
-                // if (!$hasMatchingSub && !$hasMatchingCredit) continue;
-            }
-
-            $events[] = [
-                'id' => $first->id,
-                'groupId' => $key,
-                'title' => $title,
-                'start' => $first->fecha_registro ? $first->fecha_registro->toIso8601String() : null,
-                'backgroundColor' => $color,
-                'borderColor' => $color,
-                'textColor' => $textColor,
-                'extendedProps' => [
-                    'hora' => $first->fecha_registro ? $first->fecha_registro->format('H:i') : '',
-                    'centro' => $first->centro,
-                    'clase_nombre' => $first->nombre_clase,
-                    'tipo_clase' => $tipoClase,
-                    'tipo_color' => $tipoColor,
-                    'centro_color' => $centroColor,
-                    'capacidad_maxima' => $capacidadMaxima,
-                    'alumnos_count' => $count,
-                    'alumnos' => $alumnos,
-                    'entrenadores' => $entrenadoresList,
-                    'session_key' => [
-                        'fecha_hora' => $first->fecha_registro ? $first->fecha_registro->format('Y-m-d H:i:s') : null,
-                        'nombre_clase' => $first->nombre_clase,
-                        'centro' => $first->centro
-                    ],
-                    'suscripciones_permitidas' => $classSubIds,
-                    'suscripciones_detalles' => $first->suscripciones->map(fn($s) => ['id' => $s->id, 'nombre' => $s->nombre])->toArray(),
-                    'tipos_credito_permitidos' => $first->tiposCredito->pluck('id')->toArray(),
-                    'tipos_credito_detalles' => $first->tiposCredito->map(fn($t) => ['id' => $t->id, 'nombre' => $t->nombre])->toArray(),
-                    'horas_cancelacion' => $first->horas_cancelacion
-                ],
-            ];
-        }
-
-        return response()->json($this->cleanUtf8(['events' => $events]), 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+            return response()->json(['events' => $events]);
 
         } catch (\Exception $e) {
-            \Log::error("Error en PagosController@buscarPorUsuario: " . $e->getMessage() . " en " . $e->getFile() . ":" . $e->getLine());
-            return response()->json([
-                'error' => 'Error al cargar los eventos',
-                'message' => $e->getMessage()
-            ], 500);
+            \Log::error("Error en PagosController@buscarPorUsuario: " . $e->getMessage());
+            return response()->json(['error' => 'Error interno: ' . $e->getMessage()], 500);
         }
     }
 
