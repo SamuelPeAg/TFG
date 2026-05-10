@@ -88,7 +88,7 @@ window.initCalendarioVanilla = () => {
             const onlyMy = window.ONLY_MY_CLASSES ? '1' : '0';
             const baseUrl = window.AppConfig?.baseUrl || window.BASE_URL || '/';
             // USANDO LA RUTA SEGURA SIN /api/
-            const url = `${baseUrl}traer-clases-calendario?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}&only_my_classes=${onlyMy}`;
+            const url = `${baseUrl}traer-clases-calendario?start=${encodeURIComponent(info.startStr)}&end=${encodeURIComponent(info.endStr)}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}&only_my_classes=${onlyMy}`;
 
             fetch(url, { headers: { 'Accept': 'application/json' } })
                 .then(res => {

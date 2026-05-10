@@ -383,6 +383,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                       type="text" 
                                       value={editNombre} 
                                       onChange={(e) => setEditNombre(e.target.value)}
+                                      maxLength={26}
                                       className="w-full text-3xl font-black text-[#0f172a] border-b-2 border-slate-100 focus:border-[#38b2ac] outline-none pb-2 bg-transparent transition-all"
                                       placeholder="Nombre de la clase"
                                   />

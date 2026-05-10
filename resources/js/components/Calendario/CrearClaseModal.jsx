@@ -450,7 +450,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                         <div className="space-y-6">
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-bold text-slate-600 pl-1">Nombre de la Clase</label>
-                                                <input type="text" name="nombre_clase" value={formData.nombre_clase} onChange={handleChange} placeholder="Ej. Pilates Reformer"
+                                                <input type="text" name="nombre_clase" value={formData.nombre_clase} onChange={handleChange} placeholder="Ej. Pilates Reformer" maxLength={26}
                                                     className={`w-full bg-slate-50 border ${errors.nombre_clase ? 'border-rose-400' : 'border-slate-200'} text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none`} />
                                                 {errors.nombre_clase && <p className="text-xs text-rose-500 font-bold pl-1">{errors.nombre_clase}</p>}
                                             </div>
