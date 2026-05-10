@@ -71,8 +71,8 @@ class PagosController extends Controller
                 $count = $grupo->filter(fn($p) => $p->user_id !== null)->count();
                 $max = $first->capacidad_maxima ?? 0;
                 
-                $tipoObj = $tiposSesion->get(strtolower($first->nombre_clase));
-                $color = $tipoObj->color_hex ?? ($centrosColors[$first->centro] ?? '#38b2ac');
+                $tipoObj = $tiposSesion->get(strtolower($first->tipo_clase));
+                $color = $centrosColors[$first->centro] ?? ($tipoObj->color_hex ?? '#38b2ac');
 
                 $events[] = [
                     'id' => $first->id,

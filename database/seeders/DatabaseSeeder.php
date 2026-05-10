@@ -46,6 +46,9 @@ class DatabaseSeeder extends Seeder
 
             // 7. Nóminas
             NominaSeeder::class,
+
+            // 8. Poblado de calendario
+            CalendarioSeeder::class,
         ]);
     }
 }
