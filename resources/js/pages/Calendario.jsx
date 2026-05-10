@@ -61,7 +61,7 @@ export default function Calendario() {
     const loadScript = (src) => new Promise((resolve, reject) => {
       // Bypassing browser cache with a unique version for critical CSS/JS updates
       const isLocal = !src.startsWith('http') && !src.startsWith('//');
-      const version = isLocal ? `?v=2.1.0_fix` : '';
+      const version = isLocal ? `?v=3.0.0_final` : '';
       const fullSrc = isLocal 
         ? (window.BASE_URL + src.replace(/^\//, '') + version)
         : src;
@@ -88,7 +88,7 @@ export default function Calendario() {
         await loadScript('/css/global.css');
         // Add FullCalendar main CSS just to be sure if the global bundle doesn't inject it fast enough
         await loadScript('https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js');
-        await loadScript('/js/calendario.js');
+        await loadScript('/js/calendario_v3.js');
 
         // Robust initialization: wait for both window.FullCalendar AND the DOM element
         const maxRetries = 15;
