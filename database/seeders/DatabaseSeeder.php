@@ -25,10 +25,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 3. Crear pool de usuarios (Entrenadores y Clientes)
-        Entrenador::factory()->count(15)->entrenador()->create([
+        Entrenador::factory()->count(5)->entrenador()->create([
             'centro_id' => \App\Models\Centro::first()?->id ?? 1
         ]);
-        User::factory()->count(100)->cliente()->create([
+        User::factory()->count(20)->cliente()->create([
             'centro_id' => \App\Models\Centro::first()?->id ?? 1
         ]);
 
