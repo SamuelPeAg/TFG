@@ -86,8 +86,8 @@ window.initCalendarioVanilla = () => {
             const centro = document.getElementById('filter-center')?.value || '';
             const userQ = document.getElementById('search-user')?.value || '';
             const onlyMy = window.ONLY_MY_CLASSES ? '1' : '0';
-            const baseUrl = window.BASE_URL || '/';
-            const url = `${baseUrl}usuarios/Pagos?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}&only_my_classes=${onlyMy}`;
+            const baseUrl = window.AppConfig?.baseUrl || window.BASE_URL || '/';
+            const url = `${baseUrl}api/calendar-events?start=${info.startStr}&end=${info.endStr}&centro=${encodeURIComponent(centro)}&q=${encodeURIComponent(userQ)}&only_my_classes=${onlyMy}`;
 
             fetch(url)
                 .then(res => {
