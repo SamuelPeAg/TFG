@@ -36,7 +36,7 @@ const PageHeader = ({
             </div>
             
             {actions && (
-                <div className="flex items-center gap-3 w-full sm:w-auto flex-1 max-w-[500px] sm:justify-end animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto flex-1 sm:justify-end animate-in fade-in slide-in-from-right-4 duration-500">
                     {actions}
                 </div>
             )}

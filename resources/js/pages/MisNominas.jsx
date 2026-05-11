@@ -180,100 +180,166 @@ export default function MisNominas() {
                         <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">Cargando historial...</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-[40px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden mb-12">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-slate-50/50 border-b border-slate-100">
-                                    <tr>
-                                        <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Periodo</th>
-                                        <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Concepto</th>
-                                        <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Importe</th>
-                                        <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Fecha Pago</th>
-                                        <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Estado</th>
-                                        <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-50">
-                                    {filteredData.length === 0 ? (
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block bg-white rounded-[40px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden mb-12">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="bg-slate-50/50 border-b border-slate-100">
                                         <tr>
-                                            <td colSpan="6" className="py-24 text-center">
-                                                <div className="inline-flex items-center justify-center w-24 h-24 rounded-[32px] bg-slate-50 text-slate-200 mb-6 transition-transform hover:scale-110 duration-500">
-                                                    <i className="fa-solid fa-folder-open text-4xl"></i>
-                                                </div>
-                                                <p className="text-slate-500 font-black text-lg tracking-tight">No se encontraron nóminas</p>
-                                                <p className="text-slate-400 font-medium text-sm mt-1">Prueba a cambiar el año o término de búsqueda.</p>
-                                            </td>
+                                            <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Periodo</th>
+                                            <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Concepto</th>
+                                            <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Importe</th>
+                                            <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Fecha Pago</th>
+                                            <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Estado</th>
+                                            <th className="py-6 px-8 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Acciones</th>
                                         </tr>
-                                    ) : (
-                                        filteredData.map(nomina => (
-                                            <tr key={nomina.id} className="hover:bg-slate-50/50 transition-all group cursor-default">
-                                                <td className="py-6 px-8" data-label="Periodo">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-black text-slate-700">{nomina.mes}/{nomina.anio}</span>
-                                                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{new Date(nomina.anio, nomina.mes-1).toLocaleString('es-ES', { month: 'long' })}</span>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {filteredData.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="6" className="py-24 text-center">
+                                                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-[32px] bg-slate-50 text-slate-200 mb-6 transition-transform hover:scale-110 duration-500">
+                                                        <i className="fa-solid fa-folder-open text-4xl"></i>
                                                     </div>
-                                                </td>
-                                                <td className="py-6 px-8" data-label="Concepto">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#38C1A3]/10 group-hover:text-[#38C1A3] transition-colors duration-300">
-                                                            <i className="fa-solid fa-file-invoice-dollar text-xs"></i>
-                                                        </div>
-                                                        <span className="text-sm font-black text-slate-800 tracking-tight">{nomina.concepto}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="py-6 px-8" data-label="Importe">
-                                                    <div className="flex items-baseline gap-1">
-                                                        <span className="text-lg font-black text-slate-900 tracking-tighter">{Number(nomina.importe).toFixed(2)}</span>
-                                                        <span className="text-sm font-bold text-slate-400">€</span>
-                                                    </div>
-                                                </td>
-                                                <td className="py-6 px-8 text-sm font-bold text-slate-500" data-label="Fecha Pago">
-                                                    {nomina.fecha_pago ? (
-                                                        <div className="flex items-center gap-2">
-                                                            <i className="fa-solid fa-calendar-check text-[#38C1A3] text-xs"></i>
-                                                            {new Date(nomina.fecha_pago).toLocaleDateString('es-ES')}
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-slate-300 italic">Pendiente</span>
-                                                    )}
-                                                </td>
-                                                <td className="py-6 px-8" data-label="Estado">
-                                                    {nomina.estado_nomina === 'pagado' ? (
-                                                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black tracking-[0.1em] uppercase">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                                            Liquidada
-                                                        </div>
-                                                    ) : (
-                                                        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[10px] font-black tracking-[0.1em] uppercase">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
-                                                            Procesada
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="py-6 px-8" data-label="Documento">
-                                                    <div className="flex items-center justify-end gap-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
-                                                        <button 
-                                                            onClick={() => openModal('pdf', nomina)} 
-                                                            className="w-11 h-11 flex items-center justify-center bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white rounded-2xl transition-all shadow-sm hover:shadow-sky-500/20 active:scale-90" 
-                                                            title="Ver PDF"
-                                                        >
-                                                            <i className="fa-solid fa-file-pdf text-lg"></i>
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => openModal('detalle', nomina)} 
-                                                            className="px-5 py-2.5 bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.15em] rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 active:scale-95 flex items-center gap-2"
-                                                        >
-                                                            <i className="fa-solid fa-eye text-xs"></i> Detalle
-                                                        </button>
-                                                    </div>
+                                                    <p className="text-slate-500 font-black text-lg tracking-tight">No se encontraron nóminas</p>
+                                                    <p className="text-slate-400 font-medium text-sm mt-1">Prueba a cambiar el año o término de búsqueda.</p>
                                                 </td>
                                             </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+                                        ) : (
+                                            filteredData.map(nomina => (
+                                                <tr key={nomina.id} className="hover:bg-slate-50/50 transition-all group cursor-default">
+                                                    <td className="py-6 px-8">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-black text-slate-700">{nomina.mes}/{nomina.anio}</span>
+                                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{new Date(nomina.anio, nomina.mes-1).toLocaleString('es-ES', { month: 'long' })}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-6 px-8">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-[#38C1A3]/10 group-hover:text-[#38C1A3] transition-colors duration-300">
+                                                                <i className="fa-solid fa-file-invoice-dollar text-xs"></i>
+                                                            </div>
+                                                            <span className="text-sm font-black text-slate-800 tracking-tight">{nomina.concepto}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-6 px-8">
+                                                        <div className="flex items-baseline gap-1">
+                                                            <span className="text-lg font-black text-slate-900 tracking-tighter">{Number(nomina.importe).toFixed(2)}</span>
+                                                            <span className="text-sm font-bold text-slate-400">€</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-6 px-8 text-sm font-bold text-slate-500">
+                                                        {nomina.fecha_pago ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <i className="fa-solid fa-calendar-check text-[#38C1A3] text-xs"></i>
+                                                                {new Date(nomina.fecha_pago).toLocaleDateString('es-ES')}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-slate-300 italic">Pendiente</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-6 px-8">
+                                                        {nomina.estado_nomina === 'pagado' ? (
+                                                            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black tracking-[0.1em] uppercase">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                                                Liquidada
+                                                            </div>
+                                                        ) : (
+                                                            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100 text-[10px] font-black tracking-[0.1em] uppercase">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                                                                Procesada
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-6 px-8">
+                                                        <div className="flex items-center justify-end gap-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                                                            <button 
+                                                                onClick={() => openModal('pdf', nomina)} 
+                                                                className="w-11 h-11 flex items-center justify-center bg-sky-50 text-sky-600 hover:bg-sky-500 hover:text-white rounded-2xl transition-all shadow-sm hover:shadow-sky-500/20 active:scale-90" 
+                                                                title="Ver PDF"
+                                                            >
+                                                                <i className="fa-solid fa-file-pdf text-lg"></i>
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => openModal('detalle', nomina)} 
+                                                                className="px-5 py-2.5 bg-slate-900 text-white text-[11px] font-black uppercase tracking-[0.15em] rounded-2xl hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 active:scale-95 flex items-center gap-2"
+                                                            >
+                                                                <i className="fa-solid fa-eye text-xs"></i> Detalle
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-4 mb-12">
+                            {filteredData.length === 0 ? (
+                                <div className="bg-white rounded-[2rem] p-12 text-center border border-slate-100">
+                                    <i className="fa-solid fa-folder-open text-3xl text-slate-200 mb-4"></i>
+                                    <p className="text-slate-500 font-black text-sm">No hay nóminas</p>
+                                </div>
+                            ) : (
+                                filteredData.map(nomina => (
+                                    <div key={nomina.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col gap-5">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(nomina.anio, nomina.mes-1).toLocaleString('es-ES', { month: 'long' })} {nomina.anio}</span>
+                                                <h4 className="text-lg font-black text-slate-800 tracking-tight mt-1">{nomina.concepto}</h4>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="flex items-baseline justify-end gap-1">
+                                                    <span className="text-2xl font-black text-slate-900 tracking-tighter">{Number(nomina.importe).toFixed(2)}</span>
+                                                    <span className="text-sm font-black text-[#38C1A3]">€</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between py-4 border-y border-slate-50">
+                                            <div className="flex flex-col">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Estado</span>
+                                                {nomina.estado_nomina === 'pagado' ? (
+                                                    <span className="text-[10px] font-black text-emerald-600 uppercase mt-1 flex items-center gap-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Liquidada
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] font-black text-amber-600 uppercase mt-1 flex items-center gap-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div> Procesada
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Fecha Pago</span>
+                                                <span className="text-[10px] font-black text-slate-600 mt-1">
+                                                    {nomina.fecha_pago ? new Date(nomina.fecha_pago).toLocaleDateString() : 'Pendiente'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-3">
+                                            <button 
+                                                onClick={() => openModal('pdf', nomina)} 
+                                                className="flex-1 py-3 bg-sky-50 text-sky-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 border border-sky-100"
+                                            >
+                                                <i className="fa-solid fa-file-pdf"></i> PDF
+                                            </button>
+                                            <button 
+                                                onClick={() => openModal('detalle', nomina)} 
+                                                className="flex-1 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-slate-900/10"
+                                            >
+                                                <i className="fa-solid fa-eye"></i> Detalle
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </>
                 )}
         </div>
       </main>

@@ -299,36 +299,57 @@ export default function Estadisticas() {
                       <h3 className="text-lg font-black text-[#53565A] tracking-tight">Últimos Pagos</h3>
                       <Link to="/facturas" className="text-[10px] font-black text-[#4BB7AE] uppercase tracking-widest hover:underline transition-colors">Historial</Link>
                     </div>
-                    <div className="overflow-x-auto flex-1">
-                      <table className="w-full text-left">
-                        <thead>
-                          <tr className="border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            <th className="px-4 py-4">Cliente</th>
-                            <th className="px-4 py-4">Clase</th>
-                            <th className="px-4 py-4 text-right">Importe</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {data.ultimosPagos.map(pago => (
-                            <tr key={pago.id} className="group hover:bg-slate-50 transition-colors">
-                              <td className="px-4 py-5">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200">
-                                    {pago.foto ? <img src={pago.foto} className="w-full h-full object-cover" /> : pago.cliente.charAt(0)}
-                                  </div>
-                                  <span className="text-xs font-bold text-[#53565A]">{pago.cliente}</span>
-                                </div>
-                              </td>
-                              <td className="px-4 py-5">
-                                <span className="px-3 py-1 bg-slate-50 text-slate-500 border border-slate-200 rounded-lg text-[10px] font-black uppercase">{pago.clase}</span>
-                              </td>
-                              <td className="px-4 py-5 text-right">
-                                 <span className="text-sm font-black text-[#4BB7AE]">+{parseFloat(pago.importe).toFixed(2)}€</span>
-                              </td>
+                    <div className="flex-1">
+                      {/* Desktop Table */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              <th className="px-4 py-4">Cliente</th>
+                              <th className="px-4 py-4">Clase</th>
+                              <th className="px-4 py-4 text-right">Importe</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-slate-50">
+                            {data.ultimosPagos.map(pago => (
+                              <tr key={pago.id} className="group hover:bg-slate-50 transition-colors">
+                                <td className="px-4 py-5">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-200">
+                                      {pago.foto ? <img src={pago.foto} className="w-full h-full object-cover" /> : pago.cliente.charAt(0)}
+                                    </div>
+                                    <span className="text-xs font-bold text-[#53565A]">{pago.cliente}</span>
+                                  </div>
+                                </td>
+                                <td className="px-4 py-5">
+                                  <span className="px-3 py-1 bg-slate-50 text-slate-500 border border-slate-200 rounded-lg text-[10px] font-black uppercase">{pago.clase}</span>
+                                </td>
+                                <td className="px-4 py-5 text-right">
+                                   <span className="text-sm font-black text-[#4BB7AE]">+{parseFloat(pago.importe).toFixed(2)}€</span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile View */}
+                      <div className="md:hidden space-y-4">
+                        {data.ultimosPagos.map(pago => (
+                          <div key={pago.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-white overflow-hidden flex items-center justify-center text-[11px] font-black text-slate-400 border border-slate-100 shadow-sm">
+                                {pago.foto ? <img src={pago.foto} className="w-full h-full object-cover" /> : pago.cliente.charAt(0)}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-xs font-black text-[#53565A] tracking-tight">{pago.cliente}</span>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{pago.clase}</span>
+                              </div>
+                            </div>
+                            <span className="text-sm font-black text-[#4BB7AE]">+{parseFloat(pago.importe).toFixed(2)}€</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 

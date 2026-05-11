@@ -144,11 +144,12 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar">
-        <table className="w-full text-left">
+        {/* Desktop Table */}
+        <table className="hidden md:table w-full text-left">
           <thead className="sticky top-0 bg-white z-10 border-b border-slate-100">
             <tr className="text-[10px] text-slate-400 uppercase tracking-widest font-black">
               <th className="py-3 px-3">Nombre</th>
-              <th className="py-3 px-3 hidden md:table-cell">Centro</th>
+              <th className="py-3 px-3">Centro</th>
               <th className="py-3 px-3 text-right">Acciones</th>
             </tr>
           </thead>
@@ -163,28 +164,44 @@ export default function TiposCreditoTable({ tipos = [], centros = [], tiposSesio
               filteredTipos.map(t => (
                 <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="py-3 px-3 font-bold text-slate-700">{t.nombre}</td>
-                  <td className="py-3 px-3 hidden md:table-cell text-slate-500">
+                  <td className="py-3 px-3 text-slate-500">
                     {t.id_centro ? centros.find(c => c.id === t.id_centro)?.nombre : 'Global'}
                   </td>
                   <td className="py-3 px-3 text-right space-x-2">
-                    <button 
-                      onClick={() => openModal(t)}
-                      className="text-slate-400 hover:text-indigo-500 transition-colors p-1"
-                    >
-                      <i className="fa-solid fa-pen"></i>
-                    </button>
-                    <button 
-                      onClick={() => confirmDelete(t.id)}
-                      className="text-slate-400 hover:text-red-500 transition-colors p-1"
-                    >
-                      <i className="fa-solid fa-trash"></i>
-                    </button>
+                    <button onClick={() => openModal(t)} className="text-slate-400 hover:text-indigo-500 transition-colors p-1"><i className="fa-solid fa-pen"></i></button>
+                    <button onClick={() => confirmDelete(t.id)} className="text-slate-400 hover:text-red-500 transition-colors p-1"><i className="fa-solid fa-trash"></i></button>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+
+        {/* Mobile List */}
+        <div className="md:hidden space-y-3">
+          {filteredTipos.length === 0 ? (
+            <div className="py-8 text-center text-slate-400 font-medium italic text-xs">
+              No hay tipos de crédito.
+            </div>
+          ) : (
+            filteredTipos.map(t => (
+              <div key={t.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <h4 className="text-sm font-black text-slate-800">{t.nombre}</h4>
+                  <div className="flex gap-2">
+                    <button onClick={() => openModal(t)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 border border-slate-100"><i className="fa-solid fa-pen text-xs"></i></button>
+                    <button onClick={() => confirmDelete(t.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-rose-400 border border-slate-100"><i className="fa-solid fa-trash text-xs"></i></button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${t.id_centro ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-200 text-slate-500'}`}>
+                    {t.id_centro ? centros.find(c => c.id === t.id_centro)?.nombre : 'GLOBAL'}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {modalOpen && (

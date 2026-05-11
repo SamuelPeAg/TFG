@@ -60,7 +60,7 @@ export default function EmpresaTable({ empresas, onUpdate, onAlert, onConfirm })
                 <Button onClick={() => setEditMode('new')} variant="primary" size="sm" icon="fa-plus">AÑADIR</Button>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                     <thead className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-50">
                         <tr>
@@ -86,6 +86,28 @@ export default function EmpresaTable({ empresas, onUpdate, onAlert, onConfirm })
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {empresas.map(emp => (
+                    <div key={emp.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h4 className="text-sm font-black text-slate-800">{emp.nombre}</h4>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">{emp.cif_dni}</p>
+                            </div>
+                            <span className="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-lg text-[10px] font-black">{emp.iva_configurable}%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase">{emp.ciudad}</span>
+                            <div className="flex gap-3">
+                                <button onClick={() => handleEdit(emp)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 border border-slate-100"><i className="fa-solid fa-pencil text-xs"></i></button>
+                                <button onClick={() => handleDelete(emp.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-rose-400 border border-slate-100"><i className="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {editMode && (

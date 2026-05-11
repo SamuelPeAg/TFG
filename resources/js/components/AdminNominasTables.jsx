@@ -22,7 +22,7 @@ export function BorradoresTable({ borradores, onPreview, onRevisar, onDelete }) 
                 <h3 className="text-lg font-black text-slate-700 tracking-tight">Pendientes de Revisión</h3>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto hidden sm:block">
                 <table className="facto-table w-full text-left whitespace-nowrap md:min-w-[700px]">
                     <thead className="bg-slate-50 border-b border-slate-100">
                         <tr>
@@ -78,6 +78,42 @@ export function BorradoresTable({ borradores, onPreview, onRevisar, onDelete }) 
                     </tbody>
                 </table>
             </div>
+
+            {/* Mobile View */}
+            <div className="sm:hidden space-y-3">
+                {borradores.map(nomina => (
+                    <div key={nomina.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 border border-slate-200">
+                                {nomina.entrenador?.foto_de_perfil ? (
+                                    <img src={`/storage/${nomina.entrenador.foto_de_perfil}`} alt={nomina.entrenador.name} className="h-full w-full object-cover" />
+                                ) : (
+                                    nomina.entrenador?.name ? nomina.entrenador.name.charAt(0).toUpperCase() : 'U'
+                                )}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="font-bold text-slate-700 text-sm truncate">{nomina.entrenador?.name}</p>
+                                <p className="text-xs text-slate-400">{nomina.mes}/{nomina.anio}</p>
+                            </div>
+                            <div className="ml-auto text-right">
+                                <p className="font-black text-slate-900 text-sm">{Number(nomina.importe).toFixed(2)} €</p>
+                                <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-100">Borrador</span>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button onClick={() => onPreview(nomina)} className="flex-1 py-2 bg-slate-50 text-[#38C1A3] rounded-xl text-xs font-bold border border-slate-100 flex items-center justify-center gap-2">
+                                <i className="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button onClick={() => onRevisar(nomina)} className="flex-[2] py-2 bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2">
+                                <i className="fas fa-pencil-alt"></i> REVISAR
+                            </button>
+                            <button onClick={() => onDelete(nomina.id)} className="w-10 py-2 bg-rose-50 text-rose-400 rounded-xl flex items-center justify-center border border-rose-100">
+                                <i className="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
@@ -92,7 +128,7 @@ export function HistorialTable({ historial, onPreview, onVerDetalles, onPagar, o
                 <h3 className="text-lg font-black text-slate-700 tracking-tight">Historial de Pagos</h3>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden overflow-x-auto hidden sm:block">
                 <table className="facto-table w-full text-left whitespace-nowrap md:min-w-[700px]">
                     <thead className="bg-slate-50 border-b border-slate-100">
                         <tr>
@@ -158,6 +194,48 @@ export function HistorialTable({ historial, onPreview, onVerDetalles, onPagar, o
                         )}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="sm:hidden space-y-3">
+                {historial.length === 0 ? (
+                     <div className="p-8 text-center text-slate-400 text-xs font-bold uppercase tracking-widest bg-white rounded-2xl border border-slate-100">Sin historial</div>
+                ) : (
+                    historial.map(nomina => (
+                        <div key={nomina.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="min-w-0">
+                                    <p className="font-black text-slate-800 text-sm truncate">{nomina.entrenador?.name}</p>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">{nomina.mes}/{nomina.anio} • {nomina.concepto}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-black text-slate-900 text-sm">{Number(nomina.importe).toFixed(2)} €</p>
+                                    {nomina.estado_nomina === 'pagado' ? (
+                                        <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-100">Pagado</span>
+                                    ) : (
+                                        <span className="inline-block px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-sky-50 text-sky-600 border border-sky-100">Pendiente</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <button onClick={() => onPreview(nomina)} className="w-10 h-10 flex items-center justify-center bg-slate-50 text-[#38C1A3] border border-slate-100 rounded-xl">
+                                    <i className="fas fa-file-pdf"></i>
+                                </button>
+                                <button onClick={() => onVerDetalles(nomina)} className="flex-1 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200">
+                                    Detalles
+                                </button>
+                                {nomina.estado_nomina === 'pendiente_pago' && (
+                                    <button onClick={() => onPagar(nomina.id)} className="flex-1 py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md shadow-emerald-100 flex items-center justify-center gap-2">
+                                        <i className="fas fa-check"></i> PAGAR
+                                    </button>
+                                )}
+                                <button onClick={() => onDelete(nomina.id)} className="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-500 border border-rose-100 rounded-xl">
+                                    <i className="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

@@ -105,43 +105,59 @@ export default function FacturasMatrixTable({ data, loading, onCellClick }) {
         </table>
       </div>
 
-      {/* Mobile View - Card Layout */}
       <div className="sm:hidden divide-y divide-slate-100">
         {clientes.map(c => (
-          <div key={c.id} className="p-4 hover:bg-slate-50 transition-colors">
-            <div className="mb-4 pb-4 border-b border-slate-100">
-              <p className="font-bold text-slate-700 truncate text-sm mb-1">{c.name}</p>
-              <p className="text-xs text-slate-400 truncate mb-2">{c.email}</p>
-              <div className="flex items-center gap-1 text-xs">
-                <span className="font-bold text-slate-500">{clienteTotals[c.id]?.total_clases || 0} clases</span>
-                <span className="text-slate-300">•</span>
-                <span className="font-black text-[#38C1A3]">{Number(clienteTotals[c.id]?.total_coste || 0).toFixed(2)}€</span>
+          <div key={c.id} className="p-5 hover:bg-slate-50 transition-colors">
+            <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-50">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                    <p className="font-black text-slate-800 truncate text-sm">{c.name}</p>
+                    {validation_status && validation_status[c.id] && (
+                        <i className="fa-solid fa-circle-exclamation text-rose-500 text-[10px] animate-pulse"></i>
+                    )}
+                </div>
+                <p className="text-[11px] text-slate-400 truncate">{c.email}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="font-black text-[#38C1A3] text-sm">{Number(clienteTotals[c.id]?.total_coste || 0).toFixed(2)}€</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase">{clienteTotals[c.id]?.total_clases || 0} clases</p>
               </div>
             </div>
-            <div className="space-y-2">
-              {entrenadores.map(e => {
-                const cellData = matrix[c.id]?.[e.id];
-                const count = cellData?.count || 0;
-                const amount = cellData?.amount || 0;
-                
-                return (
-                  <div key={e.id} className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-medium text-slate-600 truncate">{e.name}</span>
-                    {count > 0 ? (
-                      <button 
-                        onClick={() => onCellClick(c.id, e.id, c, e)}
-                        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-teal-50 hover:bg-[#38C1A3] group transition-all cursor-pointer flex-shrink-0"
-                        title="Ver detalles de clases"
-                      >
-                        <span className="font-bold text-[#38C1A3] group-hover:text-white text-xs transition-colors">{count}</span>
-                        <span className="font-bold text-slate-500 group-hover:text-teal-100 text-xs transition-colors">{Number(amount).toFixed(2)}€</span>
-                      </button>
-                    ) : (
-                      <span className="text-xs text-slate-300 px-2 py-1.5">-</span>
-                    )}
-                  </div>
-                );
-              })}
+            
+            <div className="space-y-3">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Desglose por Entrenador</p>
+              <div className="grid grid-cols-1 gap-2">
+                {entrenadores.map(e => {
+                  const cellData = matrix[c.id]?.[e.id];
+                  const count = cellData?.count || 0;
+                  const amount = cellData?.amount || 0;
+                  
+                  if (count === 0) return null;
+
+                  return (
+                    <button 
+                      key={e.id}
+                      onClick={() => onCellClick(c.id, e.id, c, e)}
+                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-[#38C1A3] hover:bg-white transition-all group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-white flex items-center justify-center text-[10px] font-black text-[#38C1A3] border border-slate-100">
+                            {e.name.charAt(0)}
+                        </div>
+                        <span className="text-xs font-bold text-slate-600 truncate">{e.name}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-black text-slate-400">{count} clases</span>
+                        <span className="font-black text-slate-700 text-xs">{Number(amount).toFixed(2)}€</span>
+                        <i className="fa-solid fa-chevron-right text-[10px] text-slate-300 group-hover:text-[#38C1A3]"></i>
+                      </div>
+                    </button>
+                  );
+                })}
+                {entrenadores.every(e => (matrix[c.id]?.[e.id]?.count || 0) === 0) && (
+                    <p className="text-[10px] italic text-slate-300 py-1">Sin actividad registrada</p>
+                )}
+              </div>
             </div>
           </div>
         ))}

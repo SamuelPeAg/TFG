@@ -404,9 +404,11 @@ export default function MisEstadisticas() {
                             </div>
 
                             {/* Credit Batches Detail (linked to DB) */}
-                            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
+                            <div className="bg-white p-6 sm:p-10 rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
                                 <h3 className="text-lg font-black text-slate-800 tracking-tight mb-8">Detalle de mis Créditos (Activos)</h3>
-                                <div className="overflow-x-auto">
+                                
+                                {/* Desktop Table */}
+                                <div className="hidden md:block overflow-x-auto">
                                     <table className="w-full text-left">
                                         <thead>
                                             <tr className="border-b border-slate-100">
@@ -447,6 +449,40 @@ export default function MisEstadisticas() {
                                             )}
                                         </tbody>
                                     </table>
+                                </div>
+
+                                {/* Mobile Cards */}
+                                <div className="md:hidden space-y-3">
+                                    {stats?.creditBatches?.length > 0 ? (
+                                        stats.creditBatches.map(batch => (
+                                            <div key={batch.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-100">#{batch.id}</div>
+                                                        <span className="text-[11px] font-black text-slate-700 uppercase tracking-tighter">Créditos</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-[10px] font-bold text-slate-400 uppercase">Caducidad</p>
+                                                        <p className="text-xs font-black text-slate-700">{new Date(batch.fecha_vencimiento).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-4">
+                                                    <div className="flex-1 bg-white p-3 rounded-xl border border-slate-100">
+                                                        <p className="text-[9px] font-black text-slate-400 uppercase mb-1">Inicial</p>
+                                                        <p className="text-lg font-black text-slate-800">{batch.cantidad_inicial}</p>
+                                                    </div>
+                                                    <div className="flex-1 bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                                                        <p className="text-[9px] font-black text-indigo-400 uppercase mb-1">Disponible</p>
+                                                        <p className="text-lg font-black text-indigo-600">{batch.cantidad_actual}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-10 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                            <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Sin lotes disponibles</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

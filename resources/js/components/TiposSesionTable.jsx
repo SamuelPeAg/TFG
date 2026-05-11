@@ -181,7 +181,7 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest pl-2 flex items-center gap-2">
               <i className="fa-solid fa-location-dot text-slate-300"></i> {centroName}
             </h4>
-            <div className="overflow-x-auto bg-slate-50/30 rounded-3xl p-2">
+            <div className="hidden md:block overflow-x-auto bg-slate-50/30 rounded-3xl p-2">
               <table className="w-full text-left">
                 <thead className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <tr>
@@ -220,6 +220,31 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+              {groupedTipos[centroName].map(tipo => (
+                <div key={tipo.id} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex flex-col gap-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-sm font-black text-slate-800">{tipo.nombre}</h4>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{tipo.capacidad_personas} personas</span>
+                        {tipo.capacidad_fija ? <i className="fa-solid fa-lock text-[9px] text-slate-400"></i> : <i className="fa-solid fa-lock-open text-[9px] text-slate-300"></i>}
+                      </div>
+                    </div>
+                    {tipo.activo ? 
+                      <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-lg font-black text-[9px] uppercase">Activo</span> : 
+                      <span className="bg-rose-50 text-rose-500 px-2 py-0.5 rounded-lg font-black text-[9px] uppercase">Inactivo</span>
+                    }
+                  </div>
+                  <div className="flex justify-end gap-3 pt-2 border-t border-slate-100/50">
+                    <button onClick={() => handleEdit(tipo)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 border border-slate-100"><i className="fa-solid fa-pencil text-xs"></i></button>
+                    <button onClick={() => handleDelete(tipo.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-rose-400 border border-slate-100"><i className="fa-solid fa-trash text-xs"></i></button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}

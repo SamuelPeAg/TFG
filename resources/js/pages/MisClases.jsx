@@ -89,7 +89,7 @@ export default function MisClases() {
         <div className="flex h-screen bg-[#F8FAFC] overflow-hidden font-sans text-slate-900">
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
-            <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
+            <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72 relative">
                 <PageHeader 
                     title="Mis Actividades"
                     subtitle="Gestión de clases y suscripciones"
@@ -97,7 +97,7 @@ export default function MisClases() {
                     onMenuClick={() => setIsSidebarOpen(true)}
                 />
 
-                <div className="flex-1 overflow-auto p-6 lg:p-10 space-y-12">
+                <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-10 space-y-12 pb-24 lg:pb-10">
                     {loading ? (
                         <div className="h-full flex items-center justify-center">
                             <div className="w-12 h-12 border-4 border-[#38C1A3]/20 border-t-[#38C1A3] rounded-full animate-spin"></div>
@@ -112,11 +112,11 @@ export default function MisClases() {
                                     <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Estado de mis Suscripciones</h2>
                                 </div>
                                 
-                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
                                     {data.subscriptions.length > 0 ? (
                                         data.subscriptions.map(subUser => (
                                             <div key={subUser.id} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl hover:shadow-indigo-500/5 transition-all duration-500">
-                                                <div className="p-8 pb-4 flex justify-between items-start">
+                                                <div className="p-6 md:p-8 pb-4 flex justify-between items-start">
                                                     <div>
                                                         <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-tighter mb-2 inline-block">
                                                             {subUser.suscripcion?.periodo || 'Personalizado'}
@@ -138,7 +138,7 @@ export default function MisClases() {
                                                 </div>
 
                                                 {/* Desglose de Lotes / Monedas */}
-                                                <div className="px-8 py-6 bg-slate-50/50 border-y border-slate-50">
+                                                <div className="px-6 md:px-8 py-6 bg-slate-50/50 border-y border-slate-50">
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                                         <i className="fa-solid fa-layer-group"></i> Desglose de Monedas (Caducidad)
                                                     </p>
@@ -169,7 +169,7 @@ export default function MisClases() {
                                                     </div>
                                                 </div>
 
-                                                <div className="p-8 pt-4 bg-white flex items-center justify-between mt-auto">
+                                                <div className="p-6 md:p-8 pt-4 bg-white flex flex-col sm:flex-row items-center justify-between mt-auto gap-4">
                                                     <div className="flex items-center gap-2">
                                                         <i className="fa-solid fa-receipt text-slate-300"></i>
                                                         <span className="text-[10px] font-black text-slate-400 uppercase">PRÓXIMA RECARGA:</span>
@@ -179,7 +179,7 @@ export default function MisClases() {
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="bg-white col-span-full p-20 rounded-[3rem] border border-dashed border-slate-200 text-center">
+                                        <div className="bg-white col-span-full p-10 md:p-20 rounded-[3rem] border border-dashed border-slate-200 text-center">
                                             <i className="fa-solid fa-ban text-slate-200 text-5xl mb-6"></i>
                                             <p className="text-slate-400 font-black uppercase text-sm">No tienes suscripciones activas vinculadas en este momento.</p>
                                         </div>
@@ -213,7 +213,7 @@ export default function MisClases() {
                                                             } 
                                                         });
                                                     }}
-                                                    className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-5 hover:border-[#38C1A3]/50 transition-all group relative overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-[#38C1A3]/5 active:scale-[0.98]"
+                                                    className="bg-white p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col gap-5 hover:border-[#38C1A3]/50 transition-all group relative overflow-hidden cursor-pointer hover:shadow-xl hover:shadow-[#38C1A3]/5 active:scale-[0.98]"
                                                 >
                                                     
                                                     {/* Decorador de Fondo */}
@@ -238,7 +238,7 @@ export default function MisClases() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-5 border-t border-slate-50 relative z-10">
+                                                    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pt-5 border-t border-slate-50 relative z-10">
                                                         
                                                         {/* Team & Participants */}
                                                         <div className="flex items-center gap-6">
@@ -287,7 +287,7 @@ export default function MisClases() {
                                                             )}
                                                         </div>
 
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                                                             <div className="flex flex-col items-end mr-2">
                                                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{session.centro}</span>
                                                                 <span className="text-[11px] font-black text-slate-700">CLÍNICA</span>
@@ -299,7 +299,7 @@ export default function MisClases() {
                                                                 }}
                                                                 className="text-[10px] font-black text-[#38C1A3] uppercase hover:bg-teal-50 px-4 py-2.5 rounded-xl border border-transparent hover:border-teal-100 transition-all active:scale-95"
                                                             >
-                                                                <span className="flex items-center gap-2"><i className="fa-solid fa-right-left"></i>Intercambiar</span>
+                                                                <span className="flex items-center gap-2"><i className="fa-solid fa-right-left"></i><span className="hidden sm:inline">Intercambiar</span><span className="sm:hidden">Cambiar</span></span>
                                                             </button>
                                                             <button 
                                                                 onClick={(e) => {
@@ -310,7 +310,7 @@ export default function MisClases() {
                                                                 className="text-[10px] font-black text-rose-500 uppercase hover:bg-rose-50 px-4 py-2.5 rounded-xl border border-transparent hover:border-rose-100 transition-all active:scale-95 disabled:opacity-50"
                                                             >
                                                                 {leavingSessionId === session.id ? '...' : (
-                                                                    <span className="flex items-center gap-2"><i className="fa-solid fa-user-minus"></i>Darse de baja</span>
+                                                                    <span className="flex items-center gap-2"><i className="fa-solid fa-user-minus"></i><span className="hidden sm:inline">Darse de baja</span><span className="sm:hidden">Baja</span></span>
                                                                 )}
                                                             </button>
                                                         </div>
@@ -318,7 +318,7 @@ export default function MisClases() {
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="bg-slate-50 rounded-[2.5rem] p-16 text-center border border-dashed border-slate-200">
+                                            <div className="bg-slate-50 rounded-[2.5rem] p-10 md:p-16 text-center border border-dashed border-slate-200">
                                                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 text-slate-200 text-2xl shadow-inner">
                                                     <i className="fa-solid fa-calendar-xmark"></i>
                                                 </div>

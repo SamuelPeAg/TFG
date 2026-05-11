@@ -82,7 +82,7 @@ export default function CentroTable({ centros, empresas, onUpdate, onAlert, onCo
                 <Button onClick={() => setEditMode('new')} variant="primary" size="sm" icon="fa-plus">AÑADIR</Button>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left">
                     <thead className="text-[10px] font-black text-slate-900 uppercase tracking-widest border-b border-slate-50">
                         <tr>
@@ -119,6 +119,34 @@ export default function CentroTable({ centros, empresas, onUpdate, onAlert, onCo
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {centros.map(c => (
+                    <div key={c.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color_hex || '#38b2ac' }}></div>
+                                <h4 className="text-sm font-black text-slate-800">{c.nombre}</h4>
+                            </div>
+                            <span className="font-black text-slate-800 text-[10px] tracking-widest">{c.serie_facturacion || '---'}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px]">
+                            <span className="text-slate-500 font-medium">{c.cif || '---'}</span>
+                            <span className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-lg font-black italic">
+                                {c.empresa?.nombre || 'Sin empresa'}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t border-slate-100/50">
+                            <span className="text-[10px] text-slate-400 font-bold uppercase">{c.ciudad || '---'}</span>
+                            <div className="flex gap-3">
+                                <button onClick={() => handleEdit(c)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-slate-400 border border-slate-100"><i className="fa-solid fa-pencil text-xs"></i></button>
+                                <button onClick={() => handleDelete(c.id)} className="w-8 h-8 flex items-center justify-center bg-white rounded-lg text-rose-400 border border-slate-100"><i className="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {editMode && (

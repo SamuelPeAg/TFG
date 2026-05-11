@@ -196,7 +196,7 @@ export default function Configuracion() {
         
         {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/40 z-30 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />}
 
-        <main className="flex-1 lg:ml-72 p-6 md:p-12 transition-all">
+        <main className="flex-1 lg:ml-72 p-4 sm:p-6 md:p-12 transition-all pb-24 md:pb-12">
             <div className="max-w-7xl mx-auto space-y-12">
                 {/* Success Notification */}
                 {showSuccess && (
@@ -240,12 +240,12 @@ export default function Configuracion() {
                             
                             {/* LEFT COLUMN: Avatar & Quick Info */}
                             <div className="xl:col-span-4 space-y-10">
-                                <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 text-center relative overflow-hidden group">
+                                <div className="bg-white p-6 md:p-10 rounded-[2.5rem] md:rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 text-center relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-40 h-40 bg-teal-50/50 rounded-bl-[12rem] -mr-12 -mt-12 transition-all group-hover:bg-teal-100/50"></div>
                                     
                                     <div className="relative z-10 space-y-6">
                                         <div className="relative inline-block">
-                                            <div className="w-40 h-40 rounded-[3.5rem] bg-slate-50 border-4 border-white shadow-2xl flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:rotate-2">
+                                            <div className="w-32 h-32 md:w-40 md:h-40 rounded-[2.5rem] md:rounded-[3.5rem] bg-slate-50 border-4 border-white shadow-2xl flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:rotate-2">
                                                 {photoPreview ? (
                                                     <img src={photoPreview} alt="Perfil" className="w-full h-full object-cover" />
                                                 ) : (
@@ -273,7 +273,7 @@ export default function Configuracion() {
                                         <button 
                                             type="submit" 
                                             disabled={submitting} 
-                                            className="w-full px-10 py-7 bg-[#38C1A3] text-white rounded-[2.5rem] text-[12px] font-black uppercase tracking-[0.2em] hover:bg-teal-500 shadow-2xl shadow-teal-500/20 active:scale-95 transition-all flex items-center justify-center gap-4"
+                                            className="w-full px-6 md:px-10 py-5 md:py-7 bg-[#38C1A3] text-white rounded-[2rem] md:rounded-[2.5rem] text-[11px] md:text-[12px] font-black uppercase tracking-[0.2em] hover:bg-teal-500 shadow-2xl shadow-teal-500/20 active:scale-95 transition-all flex items-center justify-center gap-4"
                                         >
                                             {submitting ? <i className="fa-solid fa-spinner fa-spin"></i> : <><i className="fa-solid fa-cloud-arrow-up text-xl"></i> Guardar Cambios</>}
                                         </button>
@@ -305,7 +305,7 @@ export default function Configuracion() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                         <div className="space-y-3 group">
                                             <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em] group-focus-within:text-[#38C1A3] transition-colors">Nombre de Usuario</label>
-                                            <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="Ej: Juan Pérez" />
+                                            <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border border-slate-100 rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner" placeholder="Ej: Juan Pérez" />
                                             {errors.name && <p className="text-[10px] text-rose-500 font-black uppercase ml-6 tracking-widest animate-pulse">{errors.name[0]}</p>}
                                         </div>
                                         <div className="space-y-3">
@@ -316,7 +316,7 @@ export default function Configuracion() {
                                                 <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.dni}</p>
                                               </div>
                                             )}
-                                            <input type="text" name="dni" value={formData.dni} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner uppercase ${fieldAlerts.dni ? 'border-rose-300' : 'border-slate-100'}`} placeholder="12345678X" />
+                                            <input type="text" name="dni" value={formData.dni} onChange={handleInputChange} className={`w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner uppercase ${fieldAlerts.dni ? 'border-rose-300' : 'border-slate-100'}`} placeholder="12345678X" />
                                         </div>
                                         </div>
 
@@ -328,7 +328,7 @@ export default function Configuracion() {
                                                 <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.direccion}</p>
                                               </div>
                                             )}
-                                            <input type="text" name="direccion" value={formData.direccion} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.direccion ? 'border-rose-300' : 'border-slate-100'}`} placeholder="Calle, portal, piso..." />
+                                            <input type="text" name="direccion" value={formData.direccion} onChange={handleInputChange} className={`w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.direccion ? 'border-rose-300' : 'border-slate-100'}`} placeholder="Calle, portal, piso..." />
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-10">
@@ -340,7 +340,7 @@ export default function Configuracion() {
                                                     <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.ciudad}</p>
                                                   </div>
                                                 )}
-                                                <input type="text" name="ciudad" value={formData.ciudad} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.ciudad ? 'border-rose-300' : 'border-slate-100'}`} placeholder="Madrid" />
+                                                <input type="text" name="ciudad" value={formData.ciudad} onChange={handleInputChange} className={`w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.ciudad ? 'border-rose-300' : 'border-slate-100'}`} placeholder="Madrid" />
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">CP</label>
@@ -350,13 +350,13 @@ export default function Configuracion() {
                                                     <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">{fieldAlerts.codigo_postal}</p>
                                                   </div>
                                                 )}
-                                                <input type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.codigo_postal ? 'border-rose-300' : 'border-slate-100'}`} placeholder="28001" />
+                                                <input type="text" name="codigo_postal" value={formData.codigo_postal} onChange={handleInputChange} className={`w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-[#38C1A3] outline-none transition-all shadow-inner ${fieldAlerts.codigo_postal ? 'border-rose-300' : 'border-slate-100'}`} placeholder="28001" />
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Banking Data Card */}
-                                    <div className="bg-white p-10 md:p-14 rounded-[4rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-12">
+                                    <div className="bg-white p-6 md:p-14 rounded-[2.5rem] md:rounded-[4rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-12">
                                         <div className="flex items-center gap-6">
                                             <div className="w-16 h-16 rounded-[2.2rem] bg-indigo-50 text-indigo-600 flex items-center justify-center text-3xl shadow-inner"><i className="fa-solid fa-piggy-bank"></i></div>
                                             <div>
@@ -374,7 +374,7 @@ export default function Configuracion() {
                                               </div>
                                             )}
                                             <div className="relative">
-                                                <input type="text" name="iban" value={formData.iban} onChange={handleInputChange} className={`w-full px-8 py-6 bg-slate-50 border rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all shadow-inner ${fieldAlerts.iban ? 'border-rose-300' : 'border-slate-100'}`} placeholder="ES00 0000..." />
+                                                <input type="text" name="iban" value={formData.iban} onChange={handleInputChange} className={`w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-indigo-500 outline-none transition-all shadow-inner ${fieldAlerts.iban ? 'border-rose-300' : 'border-slate-100'}`} placeholder="ES00 0000..." />
                                                 <i className="fa-solid fa-building-columns absolute right-8 top-1/2 -translate-y-1/2 text-slate-200"></i>
                                             </div>
                                             {errors.iban && <p className="text-[10px] text-rose-500 font-black uppercase ml-6 tracking-widest">{errors.iban[0]}</p>}
@@ -382,7 +382,7 @@ export default function Configuracion() {
                                     </div>
 
                                     {/* Security & Password Card */}
-                                <div className="bg-white p-10 md:p-14 rounded-[4rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-12 relative overflow-hidden group/sec">
+                                <div className="bg-white p-6 md:p-14 rounded-[2.5rem] md:rounded-[4rem] border border-slate-100 shadow-xl shadow-slate-200/40 space-y-12 relative overflow-hidden group/sec">
                                     <div className="absolute top-0 right-0 p-10 opacity-[0.02] text-9xl text-rose-600 pointer-events-none group-hover/sec:scale-125 transition-transform duration-1000"><i className="fa-solid fa-user-shield"></i></div>
                                     
                                     <div className="flex items-center gap-6">
@@ -396,18 +396,18 @@ export default function Configuracion() {
                                     <div className="space-y-10">
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">Contraseña Actual (Necesaria para cambios)</label>
-                                            <input type="password" name="current_password" value={formData.current_password} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-rose-400 outline-none transition-all shadow-inner" placeholder="••••••••" />
+                                            <input type="password" name="current_password" value={formData.current_password} onChange={handleInputChange} className="w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border border-slate-100 rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-rose-400 outline-none transition-all shadow-inner" placeholder="••••••••" />
                                             {errors.current_password && <p className="text-[10px] text-rose-500 font-black uppercase ml-6 tracking-widest">{errors.current_password[0]}</p>}
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">Nueva Contraseña</label>
-                                                <input type="password" name="password" value={formData.password} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-rose-400 outline-none transition-all shadow-inner" placeholder="••••••••" />
+                                                <input type="password" name="password" value={formData.password} onChange={handleInputChange} className="w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border border-slate-100 rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-rose-400 outline-none transition-all shadow-inner" placeholder="••••••••" />
                                                 {errors.password && <p className="text-[10px] text-rose-500 font-black uppercase ml-6 tracking-widest">{errors.password[0]}</p>}
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-slate-400 uppercase ml-4 tracking-[0.2em]">Repetir Nueva</label>
-                                                <input type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleInputChange} className="w-full px-8 py-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-rose-400 outline-none transition-all shadow-inner" placeholder="••••••••" />
+                                                <input type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleInputChange} className="w-full px-6 md:px-8 py-4 md:py-6 bg-slate-50 border border-slate-100 rounded-[1.5rem] md:rounded-[2.5rem] text-sm font-black text-slate-800 focus:bg-white focus:border-rose-400 outline-none transition-all shadow-inner" placeholder="••••••••" />
                                             </div>
                                         </div>
                                     </div>

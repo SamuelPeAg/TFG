@@ -33,11 +33,19 @@ html.dark body {
   color: #f3f4f6;
 }
 
-/* Prevent overflow on mobile */
+/* Prevent overflow on mobile and improve base typography */
 html, body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 640px) {
+  :root {
+    font-size: 14px;
+  }
 }
 
 /* --- ANIMATIONS --- */
@@ -213,8 +221,97 @@ html, body {
 @media (max-width: 768px) {
   .modal,
   [role="dialog"] {
-    width: 90vw !important;
-    max-width: calc(100vw - 2rem) !important;
-    margin: auto !important;
+    width: 95vw !important;
+    max-width: calc(100vw - 1rem) !important;
+    margin: 1rem auto !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
   }
+}
+
+/* --- UTILITIES FOR RESPONSIVENESS --- */
+.responsive-container {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-container {
+    max-width: 1280px;
+  }
+}
+
+/* Grid adjustments for mobile */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .responsive-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .responsive-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Mobile-friendly padding */
+.p-responsive {
+  padding: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .p-responsive {
+    padding: 2.5rem;
+  }
+}
+
+/* Touch-friendly targets */
+@media (max-width: 768px) {
+  button, 
+  a, 
+  .clickable {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Fix for large headers on mobile */
+@media (max-width: 640px) {
+  h1 { font-size: 2.25rem !important; line-height: 1.1 !important; }
+  h2 { font-size: 1.75rem !important; }
+  h3 { font-size: 1.5rem !important; }
 }

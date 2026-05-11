@@ -32,12 +32,12 @@ export default function Home() {
               <span className="text-xs font-black uppercase tracking-widest text-gray-400">Impulsado por Moverte da Vida</span>
             </div>
 
-            <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter mb-8">
-              Tu centro, <br />
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black leading-[0.95] tracking-tighter mb-8">
+              Tu centro, <br className="hidden sm:block" />
               <span className="text-gradient">sincronizado.</span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-gray-500 font-medium leading-relaxed mb-12 max-w-xl">
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-500 font-medium leading-relaxed mb-10 md:12 max-w-xl">
               Desde el control de sesiones a pie de pista hasta la liquidación final. Una sola herramienta limpia y eficiente.
             </p>
 
@@ -51,7 +51,7 @@ export default function Home() {
               >
                 {window.AppConfig?.user ? (window.AppConfig.user.role === 'cliente' ? 'ENTRAR A MI ÁREA' : 'IR AL PANEL') : 'Acceder al Sistema'} <i className="fa-solid fa-chevron-right text-brandTeal"></i>
               </a>
-              <a href="#solucion" className="px-10 py-5 bg-white border border-gray-200 rounded-2xl font-black text-xl hover:bg-gray-50 text-center transition-all">
+              <a href="#solucion" className="px-8 md:px-10 py-4 md:py-5 bg-white border border-gray-200 rounded-2xl font-black text-lg md:text-xl hover:bg-gray-50 text-center transition-all">
                 ¿Cómo funciona?
               </a>
             </div>
@@ -60,8 +60,8 @@ export default function Home() {
           <div className="relative reveal active" style={{ transitionDelay: '200ms' }}>
             <div style={{ animation: 'float 8s ease-in-out infinite' }}>
               <div className="glass-card p-6 rounded-[3rem] shadow-2xl border-white">
-                <div className="bg-gray-50 rounded-[2.5rem] p-8 overflow-hidden aspect-video relative group border border-gray-100">
-                  <div className="flex justify-between items-start mb-10">
+                <div className="bg-gray-50 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 overflow-hidden aspect-video relative group border border-gray-100">
+                  <div className="flex justify-between items-start mb-6 md:mb-10">
                     <div>
                       <p className="text-brandTeal text-xs font-black uppercase tracking-[0.2em]">Agenda de Hoy</p>
                       <h4 className="text-gray-900 text-2xl font-black">Mis Sesiones</h4>
@@ -88,12 +88,12 @@ export default function Home() {
       </section>
 
       {/* 2. SECCIÓN DEL PROBLEMA AL ÉXITO */}
-      <section id="solucion" className="py-32 relative bg-white">
+      <section id="solucion" className="py-20 md:py-32 relative bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
             <div className="reveal">
               <h2 className="text-brandCoral font-black uppercase tracking-[0.5em] text-xs mb-4">La Transformación</h2>
-              <h3 className="text-4xl md:text-6xl font-black tracking-tighter mb-8 leading-tight">Del caos del Excel a la gestión viva.</h3>
+              <h3 className="text-3xl md:text-6xl font-black tracking-tighter mb-8 leading-tight">Del caos del Excel a la gestión viva.</h3>
               <p className="text-xl text-gray-600 leading-relaxed mb-8 font-medium">
                 Antiguamente, la gestión en <strong>Moverte da Vida</strong> se basaba en el intercambio constante de archivos. Al final de mes, el director recibía <strong>20 archivos distintos</strong>. Un caos de 240 documentos al año donde era imposible cuadrar cobros y horas.
               </p>
@@ -147,17 +147,17 @@ export default function Home() {
       </section>
 
       {/* 3. RESUMEN DE VENTAJAS Y FUNCIONALIDADES */}
-      <section className="py-32 bg-gray-50 rounded-[4rem] mx-4 sm:mx-8 mb-32 relative overflow-hidden border border-gray-100">
+      <section className="py-20 md:py-32 bg-gray-50 rounded-[2.5rem] md:rounded-[4rem] mx-4 sm:mx-8 mb-20 md:mb-32 relative overflow-hidden border border-gray-100">
         <div className="max-w-7xl mx-auto px-10 relative z-10">
           <div className="text-center mb-24 reveal">
             <h2 className="text-brandTeal font-black uppercase tracking-[0.4em] text-xs mb-4">Core Benefits</h2>
-            <h3 className="text-5xl md:text-7xl font-black tracking-tighter text-gray-900">Todo lo que hacemos por ti.</h3>
+            <h3 className="text-3xl md:text-7xl font-black tracking-tighter text-gray-900">Todo lo que hacemos por ti.</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 reveal">
             
             {/* Ventaja 1 */}
-            <div className="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
+            <div className="advantage-box p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
               <div className="w-14 h-14 bg-brandTeal/10 text-brandTeal rounded-2xl flex items-center justify-center text-xl mb-6">
                 <i className="fa-solid fa-hotel"></i>
               </div>
@@ -166,7 +166,7 @@ export default function Home() {
             </div>
 
             {/* Ventaja 2 */}
-            <div className="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
+            <div className="advantage-box p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
               <div className="w-14 h-14 bg-brandCoral/10 text-brandCoral rounded-2xl flex items-center justify-center text-xl mb-6">
                 <i className="fa-solid fa-calculator"></i>
               </div>
@@ -175,7 +175,7 @@ export default function Home() {
             </div>
 
             {/* Ventaja 3 */}
-            <div className="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
+            <div className="advantage-box p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
               <div className="w-14 h-14 bg-brandAqua/20 text-brandTeal rounded-2xl flex items-center justify-center text-xl mb-6">
                 <i className="fa-solid fa-user-check"></i>
               </div>
@@ -184,7 +184,7 @@ export default function Home() {
             </div>
 
             {/* Ventaja 4 */}
-            <div className="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
+            <div className="advantage-box p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center">
               <div className="w-14 h-14 bg-gray-100 text-gray-600 rounded-2xl flex items-center justify-center text-xl mb-6">
                 <i className="fa-solid fa-file-pdf"></i>
               </div>
@@ -193,7 +193,7 @@ export default function Home() {
             </div>
 
             {/* Ventaja 5 */}
-            <div className="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
+            <div className="advantage-box p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
               <div className="w-14 h-14 bg-brandTeal/10 text-brandTeal rounded-2xl flex items-center justify-center text-xl mb-6">
                 <i className="fa-solid fa-lock"></i>
               </div>
@@ -202,7 +202,7 @@ export default function Home() {
             </div>
 
             {/* Ventaja 6 */}
-            <div className="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
+            <div className="advantage-box p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
               <div className="w-14 h-14 bg-brandCoral/10 text-brandCoral rounded-2xl flex items-center justify-center text-xl mb-6">
                 <i className="fa-solid fa-chart-line"></i>
               </div>
@@ -211,7 +211,7 @@ export default function Home() {
             </div>
 
             {/* Ventaja 7 */}
-            <div className="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
+            <div className="advantage-box p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
               <div className="w-14 h-14 bg-brandAqua/20 text-brandTeal rounded-2xl flex items-center justify-center text-xl mb-6">
                 <i className="fa-solid fa-user-shield"></i>
               </div>
@@ -220,7 +220,7 @@ export default function Home() {
             </div>
 
             {/* Ventaja 8 */}
-            <div className="advantage-box p-8 rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
+            <div className="advantage-box p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-sm flex flex-col items-center text-center lg:mt-6">
               <div className="w-14 h-14 bg-gray-100 text-gray-600 rounded-2xl flex items-center justify-center text-xl mb-6">
                 <i className="fa-solid fa-cloud"></i>
               </div>
@@ -235,7 +235,7 @@ export default function Home() {
       {/* 4. FINAL CTA */}
       <section className="py-32 text-center reveal">
         <div className="max-w-4xl mx-auto px-4">
-          <h3 className="text-5xl md:text-7xl font-black tracking-tighter mb-8">Impulsa tu centro hacia el futuro.</h3>
+          <h3 className="text-3xl md:text-7xl font-black tracking-tighter mb-8">Impulsa tu centro hacia el futuro.</h3>
           <p className="text-xl text-gray-500 mb-12 font-medium">
             La digitalización inteligente es la ventaja competitiva para centros de alto rendimiento como <strong>Moverte da Vida</strong>.
           </p>

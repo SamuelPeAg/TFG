@@ -103,80 +103,80 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
         </table>
       </div>
 
-      {/* Mobile View */}
-      <div className="sm:hidden">
+      <div className="sm:hidden divide-y divide-slate-100">
         {entrenadores.length > 0 ? (
-          <div className="divide-y divide-slate-100">
-            {entrenadores.map((entrenador) => (
-              <div key={entrenador.id} className="p-4 hover:bg-slate-50 transition-colors duration-200">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div 
-                      className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#38C1A3] font-black text-sm relative overflow-hidden shadow-sm flex-shrink-0 border border-slate-100"
-                    >
-                      {entrenador.photo ? (
-                        <img 
-                          src={entrenador.photo} 
-                          alt={entrenador.name}
-                          className="w-full h-full object-cover bg-white"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
-                          }}
-                        />
-                      ) : null}
-                      <span className={entrenador.photo ? 'hidden' : ''}>
-                        {entrenador.name ? entrenador.name.trim().charAt(0).toUpperCase() : '?'}
-                      </span>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-slate-700 text-sm truncate">{entrenador.name}</p>
-                      <p className="text-xs text-slate-500 truncate">{entrenador.email}</p>
-                    </div>
+          entrenadores.map((entrenador) => (
+            <div key={entrenador.id} className="p-5 hover:bg-slate-50 transition-colors duration-200">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div 
+                    className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-[#38C1A3] font-black text-base relative overflow-hidden shadow-sm flex-shrink-0 border border-slate-100"
+                  >
+                    {entrenador.photo ? (
+                      <img 
+                        src={entrenador.photo} 
+                        alt={entrenador.name}
+                        className="w-full h-full object-cover bg-white"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <span className={entrenador.photo ? 'hidden' : ''}>
+                      {entrenador.name ? entrenador.name.trim().charAt(0).toUpperCase() : '?'}
+                    </span>
                   </div>
-                  <div className="flex gap-1.5 flex-shrink-0">
-                    <button
-                      onClick={() => onPermissions(entrenador)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all duration-300"
-                      title="Gestionar permisos"
-                    >
-                      <i className="fas fa-shield-alt text-xs"></i>
-                    </button>
-                    <button
-                      onClick={() => onEdit(entrenador)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-teal-50 text-[#38C1A3] hover:bg-[#38C1A3] hover:text-white transition-all duration-300"
-                      title="Editar entrenador"
-                    >
-                      <i className="fas fa-pencil-alt text-xs"></i>
-                    </button>
-                    <button
-                      onClick={() => onDelete(entrenador)}
-                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 text-[#EF5D7A] hover:bg-[#EF5D7A] hover:text-white transition-all duration-300"
-                      title="Eliminar entrenador"
-                    >
-                      <i className="fas fa-trash-alt text-xs"></i>
-                    </button>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-black text-slate-800 text-sm truncate">{entrenador.name}</p>
+                    <p className="text-[11px] text-slate-500 truncate">{entrenador.email}</p>
                   </div>
                 </div>
-                {entrenador.iban && (
-                  <div className="text-xs text-slate-500">
-                    <span className="font-semibold">IBAN:</span> <span className="font-mono">{entrenador.iban}</span>
-                  </div>
-                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onPermissions(entrenador)}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-indigo-50 text-indigo-500 border border-indigo-100 transition-all duration-300"
+                    title="Gestionar permisos"
+                  >
+                    <i className="fas fa-shield-alt text-xs"></i>
+                  </button>
+                  <button
+                    onClick={() => onEdit(entrenador)}
+                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-teal-50 text-[#38C1A3] border border-teal-100 transition-all duration-300"
+                    title="Editar entrenador"
+                  >
+                    <i className="fas fa-pencil-alt text-xs"></i>
+                  </button>
+                </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="p-8 text-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center">
-                <i className="fas fa-users text-slate-200 text-xl"></i>
-              </div>
-              <p className="text-slate-400 font-medium text-xs">No hay entrenadores registrados.</p>
+              
+              {entrenador.iban && (
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 mb-4">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">IBAN de Cobro</p>
+                  <p className="font-mono text-xs text-slate-600 truncate">{entrenador.iban}</p>
+                </div>
+              )}
+
+              <button
+                onClick={() => onDelete(entrenador)}
+                className="w-full py-2.5 bg-rose-50 text-rose-500 border border-rose-100 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+              >
+                <i className="fas fa-trash-alt"></i>
+                Eliminar del Equipo
+              </button>
             </div>
+          ))}
+        </div>
+      ) : (
+        <div className="p-10 text-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center">
+              <i className="fas fa-users text-slate-200 text-xl"></i>
+            </div>
+            <p className="text-slate-400 font-medium text-sm">No hay entrenadores registrados.</p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

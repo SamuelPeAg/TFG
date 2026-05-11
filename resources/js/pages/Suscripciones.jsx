@@ -290,63 +290,112 @@ export default function Suscripciones() {
                                 <p className="text-sm">Crea la primera haciendo clic en "Añadir"</p>
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left facto-table">
-                                    <thead className="bg-slate-50 text-[11px] font-black uppercase tracking-widest text-slate-900 border-b border-slate-100">
-                                        <tr>
-                                            <th className="px-6 py-4">Nombre</th>
-                                            <th className="px-6 py-4 text-center">Precio</th>
-                                            <th className="px-6 py-4 text-center">Créditos / Periodo</th>
-                                            <th className="px-6 py-4 text-center">Límite</th>
-                                            <th className="px-6 py-4 text-center">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {filtered.map(s => (
-                                            <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
-                                                <td className="px-6 py-4 font-bold text-slate-800 text-sm" data-label="Nombre">
-                                                    <div className="flex items-center gap-2">
-                                                        {s.nombre}
-                                                        {s.domiciliacion ? (
-                                                            <span title="Domiciliación Bancaria" className="text-blue-500 hover:scale-110 transition-transform cursor-help">
-                                                                <i className="fa-solid fa-building-columns text-[10px]"></i>
-                                                            </span>
-                                                        ) : null}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-center font-black text-slate-800 text-sm">
-                                                    {Number(s.precio || 0).toFixed(2)} €
-                                                </td>
-                                                <td className="px-6 py-4 text-sm font-bold text-slate-700" data-label="Créditos">
-                                                    <div className="flex flex-col gap-1">
-                                                        {s.creditos && s.creditos.map((c, idx) => {
-                                                            const tipo = tiposCredito.find(t => t.id == c.tipo_credito_id);
-                                                            return (
-                                                                <span key={idx} className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-xs w-max">
-                                                                    {c.cantidad}x {tipo ? tipo.nombre : 'Crédito'} ({c.dias_caducidad > 0 ? c.dias_caducidad + ' días' : 'Sin cad.'})
-                                                                </span>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-center text-sm font-semibold text-slate-600" data-label="Límite">
-                                                    {s.limite_acumulacion ? s.limite_acumulacion : <span className="text-slate-400 text-xs italic">Sin límite</span>}
-                                                </td>
-                                                <td className="px-6 py-4 text-center" data-label="Acciones">
-                                                    <div className="inline-flex gap-2">
-                                                        <button onClick={() => openEdit(s)} className="w-9 h-9 bg-slate-100 hover:bg-teal-50 hover:text-teal-600 text-slate-500 rounded-xl flex items-center justify-center transition-colors shadow-sm">
-                                                            <i className="fas fa-pencil-alt text-sm"></i>
-                                                        </button>
-                                                        <button onClick={() => handleDelete(s.id)} className="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 rounded-xl flex items-center justify-center transition-colors shadow-sm">
-                                                            <i className="fas fa-trash text-sm"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
+                            <>
+                                <div className="hidden md:block overflow-x-auto">
+                                    <table className="w-full text-left facto-table">
+                                        <thead className="bg-slate-50 text-[11px] font-black uppercase tracking-widest text-slate-900 border-b border-slate-100">
+                                            <tr>
+                                                <th className="px-6 py-4">Nombre</th>
+                                                <th className="px-6 py-4 text-center">Precio</th>
+                                                <th className="px-6 py-4 text-center">Créditos / Periodo</th>
+                                                <th className="px-6 py-4 text-center">Límite</th>
+                                                <th className="px-6 py-4 text-center">Acciones</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {filtered.map(s => (
+                                                <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
+                                                    <td className="px-6 py-4 font-bold text-slate-800 text-sm" data-label="Nombre">
+                                                        <div className="flex items-center gap-2">
+                                                            {s.nombre}
+                                                            {s.domiciliacion ? (
+                                                                <span title="Domiciliación Bancaria" className="text-blue-500 hover:scale-110 transition-transform cursor-help">
+                                                                    <i className="fa-solid fa-building-columns text-[10px]"></i>
+                                                                </span>
+                                                            ) : null}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center font-black text-slate-800 text-sm">
+                                                        {Number(s.precio || 0).toFixed(2)} €
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm font-bold text-slate-700" data-label="Créditos">
+                                                        <div className="flex flex-col gap-1">
+                                                            {s.creditos && s.creditos.map((c, idx) => {
+                                                                const tipo = tiposCredito.find(t => t.id == c.tipo_credito_id);
+                                                                return (
+                                                                    <span key={idx} className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-xs w-max">
+                                                                        {c.cantidad}x {tipo ? tipo.nombre : 'Crédito'} ({c.dias_caducidad > 0 ? c.dias_caducidad + ' días' : 'Sin cad.'})
+                                                                    </span>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center text-sm font-semibold text-slate-600" data-label="Límite">
+                                                        {s.limite_acumulacion ? s.limite_acumulacion : <span className="text-slate-400 text-xs italic">Sin límite</span>}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center" data-label="Acciones">
+                                                        <div className="inline-flex gap-2">
+                                                            <button onClick={() => openEdit(s)} className="w-9 h-9 bg-slate-100 hover:bg-teal-50 hover:text-teal-600 text-slate-500 rounded-xl flex items-center justify-center transition-colors shadow-sm">
+                                                                <i className="fas fa-pencil-alt text-sm"></i>
+                                                            </button>
+                                                            <button onClick={() => handleDelete(s.id)} className="w-9 h-9 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-500 rounded-xl flex items-center justify-center transition-colors shadow-sm">
+                                                                <i className="fas fa-trash text-sm"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Mobile View */}
+                                <div className="md:hidden divide-y divide-slate-100">
+                                    {filtered.map(s => (
+                                        <div key={s.id} className="p-5">
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-black text-slate-800 text-base truncate">{s.nombre}</p>
+                                                        {s.domiciliacion && <i className="fa-solid fa-building-columns text-blue-500 text-xs"></i>}
+                                                    </div>
+                                                    <p className="text-lg font-black text-[#38C1A3] mt-1">{Number(s.precio || 0).toFixed(2)} €</p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => openEdit(s)} className="w-10 h-10 bg-teal-50 text-[#38C1A3] rounded-xl flex items-center justify-center border border-teal-100">
+                                                        <i className="fas fa-pencil-alt"></i>
+                                                    </button>
+                                                    <button onClick={() => handleDelete(s.id)} className="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center border border-rose-100">
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="space-y-3">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Beneficios de Crédito</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {s.creditos && s.creditos.map((c, idx) => {
+                                                        const tipo = tiposCredito.find(t => t.id == c.tipo_credito_id);
+                                                        return (
+                                                            <div key={idx} className="bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl flex flex-col">
+                                                                <span className="font-black text-slate-700 text-xs">{c.cantidad}x {tipo ? tipo.nombre : 'Crédito'}</span>
+                                                                <span className="text-[9px] font-bold text-slate-400 uppercase">{c.dias_caducidad > 0 ? c.dias_caducidad + ' días' : 'Sin caducidad'}</span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+
+                                            {s.limite_acumulacion > 0 && (
+                                                <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-2">
+                                                    <i className="fa-solid fa-layer-group text-slate-300 text-xs"></i>
+                                                    <p className="text-[10px] font-bold text-slate-500">Límite de acumulación: <span className="text-slate-800">{s.limite_acumulacion}</span></p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
                         )}
 
                         {/* Footer Count */}

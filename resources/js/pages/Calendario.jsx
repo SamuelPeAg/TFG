@@ -228,7 +228,7 @@ export default function Calendario() {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
+      <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72 relative">
         
         <PageHeader 
             title="Calendario de Clases"
@@ -253,7 +253,7 @@ export default function Calendario() {
         />
 
         {/* Calendar Body */}
-        <section className={`flex-1 overflow-auto p-4 sm:p-6 pb-10 ${viewMode === 'calendar' ? 'bg-slate-50/50' : 'bg-transparent'}`}>
+        <section className={`flex-1 overflow-auto p-4 sm:p-6 lg:p-8 pb-24 lg:pb-10 ${viewMode === 'calendar' ? 'bg-slate-50/50' : 'bg-transparent'}`}>
          
          {!loading && data && (
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
@@ -312,7 +312,7 @@ export default function Calendario() {
                 {user?.role === 'entrenador' && (
                   <button
                     onClick={() => setOnlyMyClasses(!onlyMyClasses)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border transition-all duration-300 font-bold text-xs uppercase tracking-wider shrink-0 ${
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border transition-all duration-300 font-bold text-xs uppercase tracking-wider shrink-0 w-full sm:w-auto justify-center ${
                       onlyMyClasses 
                         ? 'bg-[#38C1A3] border-[#38C1A3] text-white shadow-lg shadow-[#38C1A3]/20' 
                         : 'bg-white border-slate-100 text-slate-500 hover:border-[#38C1A3]/30 hover:text-[#38C1A3]'
@@ -325,15 +325,15 @@ export default function Calendario() {
               </div>
 
               {/* Botón TOGGLE */}
-              <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-100">
+              <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-100 w-full sm:w-auto">
                 <button
-                  className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 ${viewMode === 'calendar' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex-1 sm:flex-none px-4 py-3 sm:py-2 text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 ${viewMode === 'calendar' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
                   onClick={() => setViewMode('calendar')}
                 >
                   <i className="fa-solid fa-calendar-days"></i><span>Calendario</span>
                 </button>
                 <button
-                  className={`px-4 py-2 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 ${viewMode === 'cards' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                  className={`flex-1 sm:flex-none px-4 py-3 sm:py-2 text-[10px] sm:text-[11px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 ${viewMode === 'cards' ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
                   onClick={() => setViewMode('cards')}
                 >
                   <i className="fa-solid fa-table-cells-large"></i><span>Tarjetas</span>
