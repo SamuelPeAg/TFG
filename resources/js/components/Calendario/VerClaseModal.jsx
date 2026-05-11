@@ -44,7 +44,17 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
 
   useEffect(() => {
     if (isOpen && selectedEvent) {
-      setLocalProps(JSON.parse(JSON.stringify(selectedEvent.extendedProps)));
+      const props = JSON.parse(JSON.stringify(selectedEvent.extendedProps));
+      
+      // Defensive: Ensure alumnos and entrenadores are arrays (Laravel sometimes returns objects if keys are non-sequential)
+      if (props.alumnos && !Array.isArray(props.alumnos)) {
+          props.alumnos = Object.values(props.alumnos);
+      }
+      if (props.entrenadores && !Array.isArray(props.entrenadores)) {
+          props.entrenadores = Object.values(props.entrenadores);
+      }
+
+      setLocalProps(props);
       setTrainerSearchTerm('');
       setClientSearchTerm('');
       setShowClientSuggestions(false);

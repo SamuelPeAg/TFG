@@ -108,11 +108,11 @@ export default function ReservaClases() {
                     centro: session.centro,
                     tipo_clase: session.tipo_clase,
                     capacidad_maxima: session.capacidad_maxima,
-                    entrenadores: (session.entrenadores || []).map(t => ({
+                    entrenadores: (Array.isArray(session.entrenadores) ? session.entrenadores : Object.values(session.entrenadores || [])).map(t => ({
                         ...t,
                         photo: t.foto 
                     })),
-                    alumnos: (session.alumnos || []).map(a => ({
+                    alumnos: (Array.isArray(session.alumnos) ? session.alumnos : Object.values(session.alumnos || [])).map(a => ({
                         ...a,
                         nombre: a.name, 
                         photo: a.foto   
