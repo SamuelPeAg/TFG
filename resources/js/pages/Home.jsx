@@ -69,7 +69,7 @@ export default function Home() {
                       <i className="fa-solid fa-calendar-day text-brandCoral text-xl"></i>
                     </div>
                   </div>
-                  <div className="space-y-4">
+                 <div className="space-y-4">
                     <div className="bg-white border border-gray-100 p-4 rounded-2xl flex justify-between items-center group-hover:border-brandTeal transition-all shadow-sm">
                       <span className="text-gray-800 font-bold">10:00 - Yoga Vinyasa</span>
                       <span className="text-xs bg-brandTeal/10 text-brandTeal px-3 py-1 rounded-full font-black">CONFIRMAR</span>
