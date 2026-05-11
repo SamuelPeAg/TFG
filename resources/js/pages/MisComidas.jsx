@@ -706,7 +706,6 @@ export default function MisComidas() {
                                         <div className="flex justify-center mb-10">
                                             <div className="relative w-40 h-40 md:w-48 md:h-48 flex items-center justify-center">
                                                 <svg className="w-full h-full transform -rotate-90 filter drop-shadow-xl">
-                                                    <circle cx="80" cy="80" r="72" className="md:cx-[96] md:cy-[96] md:r-[86]" stroke="rgba(255,255,255,0.05)" strokeWidth="12" fill="none" />
                                                     <circle cx="96" cy="96" r="86" stroke={totals.isDeficit ? "#38C1A3" : "#F35B5B"} strokeWidth="12" strokeLinecap="round" fill="none" strokeDasharray="540" strokeDashoffset={540 - (540 * Math.min(Math.max(0, totals.netCalories) / maintenanceCalories, 1))} className="transition-all duration-1000 ease-out" />
                                                 </svg>
                                                 <div className="absolute text-center flex flex-col items-center">

@@ -361,11 +361,16 @@ export default function MisEstadisticas() {
                                         </div>
                                     </div>
                                     <div className="flex-1 w-full relative">
-                                        <Doughnut data={typesChartData} options={typesChartOptions} />
-                                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-20px]">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase">Total Clases</span>
-                                            <span className="text-3xl font-black text-slate-800">{stats?.sessionTypes?.reduce((acc, curr) => acc + curr.total, 0) || 0}</span>
-                                        </div>
+                                        <Bar 
+                                            data={typesChartData} 
+                                            options={{
+                                                ...attendanceChartOptions,
+                                                plugins: {
+                                                    ...attendanceChartOptions.plugins,
+                                                    legend: { display: false }
+                                                }
+                                            }} 
+                                        />
                                     </div>
                                 </div>
 

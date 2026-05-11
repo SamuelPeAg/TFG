@@ -266,27 +266,30 @@ export default function Estadisticas() {
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Distribución de Planes</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Suscripciones más contratadas (Activas)</p>
                   </div>
-                  <div className="flex-1 relative flex items-center justify-center">
-                    <div className="w-full h-full max-h-[250px]">
-                      <Doughnut 
-                        data={popularityChartData} 
-                        options={{
-                          ...commonOptions,
-                          cutout: '70%',
-                          plugins: {
-                            ...commonOptions.plugins,
-                            legend: {
-                              position: 'bottom',
-                              labels: { padding: 20, font: { size: 9, weight: 'bold' } }
+                  <div className="flex-1 relative">
+                    <Bar 
+                      data={popularityChartData} 
+                      options={{
+                        ...commonOptions,
+                        plugins: {
+                          ...commonOptions.plugins,
+                          legend: { display: false }
+                        },
+                        scales: {
+                          ...commonOptions.scales,
+                          x: {
+                            ...commonOptions.scales.x,
+                            ticks: {
+                              ...commonOptions.scales.x.ticks,
+                              callback: function(value, index) {
+                                const label = popularityChartData.labels[index];
+                                return label?.length > 10 ? label.substring(0, 10) + '...' : label;
+                              }
                             }
                           }
-                        }} 
-                      />
-                    </div>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                       <span className="text-3xl font-black text-slate-800">{data?.subscriptionPopularity?.reduce((a, b) => a + b.total, 0) || 0}</span>
-                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Activas</span>
-                    </div>
+                        }
+                      }} 
+                    />
                   </div>
                 </div>
               </div>
