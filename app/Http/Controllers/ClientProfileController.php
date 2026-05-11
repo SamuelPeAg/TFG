@@ -161,12 +161,39 @@ class ClientProfileController extends Controller
             ->orderBy('measured_at', 'asc')
             ->get();
 
+        // 7. Comparativa Calorías vs Entrenamiento (Últimos 14 días)
+        $nutritionDaily = \App\Models\MealLog::where('user_id', $user->id)
+            ->where('logged_at', '>', now()->subDays(14))
+            ->selectRaw('DATE(logged_at) as fecha, SUM(calories_est) as total_cal')
+            ->groupBy('fecha')
+            ->get()
+            ->pluck('total_cal', 'fecha');
+
+        $trainingDaily = Pago::where('user_id', $user->id)
+            ->where('fecha_registro', '>', now()->subDays(14))
+            ->selectRaw('DATE(fecha_registro) as fecha, COUNT(*) as total_training')
+            ->groupBy('fecha')
+            ->get()
+            ->pluck('total_training', 'fecha');
+
+        $comparison = [];
+        for ($i = 13; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $comparison[] = [
+                'date' => $date,
+                'label' => now()->subDays($i)->format('d M'),
+                'calories' => $nutritionDaily[$date] ?? 0,
+                'training' => ($trainingDaily[$date] ?? 0) > 0 ? 1 : 0, // 1 si entrenó, 0 si no
+            ];
+        }
+
         return response()->json([
             'attendance' => $attendance,
             'sessionTypes' => $sessionTypes,
             'creditBatches' => $creditBatches,
             'subscriptionHistory' => $subscriptionHistory,
             'measurements' => $measurements,
+            'comparison' => $comparison,
             'kpis' => [
                 'clasesMes' => $clasesMes,
                 'totalCredits' => $totalCredits,

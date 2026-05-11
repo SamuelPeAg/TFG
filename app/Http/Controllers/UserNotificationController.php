@@ -19,10 +19,12 @@ class UserNotificationController extends Controller
             'message' => 'nullable|string'
         ]);
 
-        // Verificar permisos (Admin o Coach con permiso)
+        // Verificar permisos (Admin, Coach con permiso, o el propio usuario alertándose a sí mismo)
         $currentUser = Auth::user();
-        if (!$currentUser->hasRole('admin') && !$currentUser->can('alertar_clientes')) {
-            return response()->json(['message' => 'No tienes permiso para alertar a clientes.'], 403);
+        $userId = $request->input('user_id');
+
+        if (!$currentUser->hasRole('admin') && !$currentUser->can('alertar_clientes') && $currentUser->id != $userId) {
+            return response()->json(['message' => 'No tienes permiso para alertar a otros clientes.'], 403);
         }
 
         $userId = $request->input('user_id');

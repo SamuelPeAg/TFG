@@ -86,8 +86,8 @@ class PagosController extends Controller
                         'centro' => $first->centro,
                         'alumnos_count' => $count,
                         'capacidad_maxima' => $max,
-                        'entrenadores' => $grupo->flatMap->entrenadores->unique('id')->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'initial' => strtoupper(substr($t->name, 0, 1))]),
-                        'alumnos' => $grupo->filter(fn($p) => $p->user_id !== null)->map(fn($p) => ['id' => $p->user_id, 'nombre' => $p->user->name ?? 'Usuario'])
+                        'entrenadores' => $grupo->flatMap->entrenadores->unique('id')->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'initial' => strtoupper(substr($t->name, 0, 1))])->values(),
+                        'alumnos' => $grupo->filter(fn($p) => $p->user_id !== null)->map(fn($p) => ['id' => $p->user_id, 'nombre' => $p->user->name ?? 'Usuario'])->values()
                     ]
                 ];
             }
