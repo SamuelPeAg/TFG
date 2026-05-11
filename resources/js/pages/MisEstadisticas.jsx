@@ -131,6 +131,59 @@ export default function MisEstadisticas() {
         }
     };
 
+    // Datos Comparativa Calorías vs Entrenamiento
+    const comparisonChartData = {
+        labels: stats?.comparison?.map(d => d.label) || [],
+        datasets: [
+            {
+                type: 'bar',
+                label: 'Calorías Consumidas',
+                data: stats?.comparison?.map(d => d.calories) || [],
+                backgroundColor: colors.primary + '40',
+                borderColor: colors.primary,
+                borderWidth: 2,
+                borderRadius: 8,
+                order: 2
+            },
+            {
+                type: 'line',
+                label: 'Día de Entrenamiento',
+                data: stats?.comparison?.map(d => d.training ? d.calories + 200 : null) || [],
+                borderColor: '#F59E0B',
+                backgroundColor: '#F59E0B',
+                pointStyle: 'star',
+                pointRadius: 10,
+                pointHoverRadius: 15,
+                showLine: false,
+                order: 1
+            }
+        ]
+    };
+
+    const comparisonChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { 
+                position: 'top',
+                labels: { font: { weight: 'bold' }, usePointStyle: true }
+            },
+            tooltip: {
+                backgroundColor: '#1E293B',
+                callbacks: {
+                    label: (context) => {
+                        if (context.datasetIndex === 0) return ` ${context.parsed.y} kcal`;
+                        return ' ¡Entrenamiento completado! ⚡';
+                    }
+                }
+            }
+        },
+        scales: {
+            y: { beginAtZero: true, grid: { color: '#F1F5F9' }, ticks: { color: '#94A3B8' } },
+            x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+        }
+    };
+
     // Datos Evolución de Peso con Bandas de Salud
     const measurementsX = stats?.measurements?.map(m => new Date(m.measured_at).toLocaleDateString()) || [];
     
@@ -313,6 +366,24 @@ export default function MisEstadisticas() {
                                             <span className="text-[10px] font-black text-slate-400 uppercase">Total Clases</span>
                                             <span className="text-3xl font-black text-slate-800">{stats?.sessionTypes?.reduce((acc, curr) => acc + curr.total, 0) || 0}</span>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Calories vs Training Comparison Chart */}
+                                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-[450px] flex flex-col xl:col-span-2">
+                                    <div className="flex items-center justify-between mb-10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                                                <i className="fa-solid fa-bolt-lightning text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-black text-slate-800 tracking-tight">Equilibrio Energía & Esfuerzo</h3>
+                                                <p className="text-sm text-slate-400 font-bold italic">Calorías vs. Días de Entrenamiento (Últimas 2 semanas)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 min-h-[300px]">
+                                        <Line data={comparisonChartData} options={comparisonChartOptions} />
                                     </div>
                                 </div>
 

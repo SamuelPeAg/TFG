@@ -6,6 +6,7 @@ import AlertModal from '../components/AlertModal';
 import ConfirmModal from '../components/ConfirmModal';
 import PageHeader from '../components/PageHeader';
 import SwapClassModal from '../components/SwapClassModal';
+import Toast from '../components/Toast';
 
 export default function MisClases() {
     const navigate = useNavigate();
@@ -26,6 +27,12 @@ export default function MisClases() {
 
     // Swap Modal Setup
     const [swapModal, setSwapModal] = useState({ isOpen: false, session: null });
+
+    // Toast Setup
+    const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+    const showToast = (message, type = 'success') => {
+        setToast({ show: true, message, type });
+    };
 
     useEffect(() => {
         if (user?.id) fetchClientData();
@@ -54,7 +61,7 @@ export default function MisClases() {
                 centro: session.centro,
                 force: force
             });
-            showAlert(res.data.message || 'Te has dado de baja correctamente.');
+            showToast(res.data.message || 'Te has dado de baja correctamente.', 'info');
             fetchClientData();
             setConfirmModal({ isOpen: false, session: null });
         } catch (error) {
@@ -103,7 +110,8 @@ export default function MisClases() {
                             <div className="w-12 h-12 border-4 border-[#38C1A3]/20 border-t-[#38C1A3] rounded-full animate-spin"></div>
                         </div>
                     ) : (
-                        <div className="max-w-7xl mx-auto space-y-12">
+                        <div className="max-w-7xl mx-auto space-y-10">
+                            
                             
                             {/* SUSCRIPCIONES DINÁMICAS (VINCULADAS A BD) */}
                             <section className="space-y-6">
@@ -410,10 +418,18 @@ export default function MisClases() {
                 onClose={() => setSwapModal({ isOpen: false, session: null })}
                 originalSession={swapModal.session}
                 onSwapSuccess={() => {
-                    showAlert('Clase intercambiada correctamente.');
+                    showToast('¡Clase intercambiada con éxito!', 'success');
                     fetchClientData();
                 }}
             />
+
+            {toast.show && (
+                <Toast 
+                    message={toast.message} 
+                    type={toast.type} 
+                    onClose={() => setToast({ ...toast, show: false })} 
+                />
+            )}
         </div>
     );
 }
