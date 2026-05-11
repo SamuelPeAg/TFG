@@ -186,18 +186,18 @@ REGLA MUY IMPORTANTE: Si el usuario menciona CUALQUIER COSA que no sea comida re
         $totalCalories = $meals->sum('calories_est');
         $mealsSummary = $meals->pluck('meal_description')->join('. ');
         
-        if ($meals->isEmpty()) {
-            return response()->json(['error' => 'No hay comidas registradas para este día.'], 400);
-        }
+        $nutritionContext = $meals->isEmpty() 
+            ? "El cliente aún no ha registrado comidas hoy, así que base su recomendación únicamente en su perfil y objetivo general." 
+            : "Hoy ha consumido un total de $totalCalories kcal repartidas en estas comidas: \"$mealsSummary\".";
 
         $apiKey = config('services.gemini.key');
         if (!$apiKey) return response()->json(['error' => 'API Key no configurada'], 500);
 
-        $prompt = "Actúa como un entrenador personal experto. El cliente tiene el objetivo de '$goal'. Hoy ha consumido un total de $totalCalories kcal repartidas en estas comidas: \"$mealsSummary\".
-Basándote EXACTAMENTE en lo que ha comido y en su objetivo, recomienda un pequeño circuito de 3-4 ejercicios para el día de hoy que le ayude a compensar o potenciar sus resultados.
+        $prompt = "Actúa como un entrenador personal experto. El cliente tiene el objetivo de '$goal'. $nutritionContext
+Basándote en su objetivo, recomienda un pequeño circuito de 3-4 ejercicios para el día de hoy.
 Devuelve EXCLUSIVAMENTE un objeto JSON válido con este formato exacto (sin formato markdown):
 {
-  \"motivation\": \"Una frase motivadora relacionada con su nutrición de hoy\",
+  \"motivation\": \"Una frase motivadora para empezar el día con energía\",
   \"routine\": [
     { \"ejercicio\": \"Nombre del ejercicio\", \"series\": \"3x15 o tiempo\", \"focus\": \"cardio/fuerza\" }
   ]

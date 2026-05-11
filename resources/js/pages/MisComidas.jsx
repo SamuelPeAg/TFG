@@ -65,10 +65,6 @@ export default function MisComidas() {
     }, [activeTab]);
 
     const handleGenerateRoutine = async () => {
-        if (comidas.length === 0) {
-            showAlert('Registra al menos una comida para generar una rutina.', true);
-            return;
-        }
         setGeneratingRoutine(true);
         try {
             const { data } = await axios.post('/nutricion/routine', {
@@ -521,7 +517,7 @@ export default function MisComidas() {
                                         <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl shadow-inner">🏋️</div>
                                         <div>
                                             <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">Plan de Acción</h2>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Obtén tu rutina basada en tus comidas</p>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Obtén tu rutina personalizada en cualquier momento</p>
                                         </div>
                                     </div>
 
@@ -581,7 +577,7 @@ export default function MisComidas() {
                                                             placeholder="Selecciona un entrenador"
                                                         />
                                                     </div>
-                                                    <textarea value={trainerMessage} onChange={(e) => setTrainerMessage(e.target.value)} placeholder="Ej: Hoy he comido menos de lo habitual, ¿qué me recomiendas hacer en el gimnasio?" rows="3" className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-7 text-sm font-bold text-slate-700 focus:bg-white outline-none resize-none shadow-inner" />
+                                                    <textarea value={trainerMessage} onChange={(e) => setTrainerMessage(e.target.value)} placeholder="Ej: Hola, hoy me gustaría enfocarme en pierna, ¿me pasas una rutina?" rows="3" className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-7 text-sm font-bold text-slate-700 focus:bg-white outline-none resize-none shadow-inner" />
                                                     <button onClick={handleSendToTrainer} disabled={sendingPlan || !trainerMessage.trim()} className="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20 transition-all flex justify-center items-center gap-3 disabled:opacity-50">
                                                         {sendingPlan ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-paper-plane"></i>} 
                                                         Solicitar Plan
