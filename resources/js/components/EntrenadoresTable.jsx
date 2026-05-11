@@ -175,7 +175,8 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
             <p className="text-slate-400 font-medium text-sm">No hay entrenadores registrados.</p>
           </div>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
