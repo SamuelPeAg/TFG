@@ -165,10 +165,9 @@ export default function EntrenadoresTable({ entrenadores, onEdit, onDelete, onPe
                 Eliminar del Equipo
               </button>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="p-10 text-center">
+          ))
+        ) : (
+          <div className="p-10 text-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center">
               <i className="fas fa-users text-slate-200 text-xl"></i>
