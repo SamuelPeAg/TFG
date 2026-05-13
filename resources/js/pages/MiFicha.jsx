@@ -139,7 +139,7 @@ export default function MiFicha() {
                                         <i className="fa-solid fa-cloud-arrow-up"></i>
                                     )}
                                     <span className="text-[10px] font-black uppercase tracking-widest">{uploading ? 'Subiendo...' : 'Subir Archivo'}</span>
-                                    <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} accept="image/*,video/*" />
+                                    <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} accept="image/jpeg,image/png,image/gif,image/webp,video/*" />
                                 </label>
                             </div>
 

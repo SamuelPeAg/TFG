@@ -241,7 +241,7 @@ class ClientProfileController extends Controller
         }
 
         $request->validate([
-            'file' => 'required|file|mimes:jpeg,png,jpg,gif,svg,webp,mp4,mov,ogg,qt,webm|max:30720', // 30MB
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,ogg,qt,webm|max:30720', // 30MB
             'is_private' => 'nullable'
         ], [
             'file.mimes' => 'Solo se permiten imágenes (jpg, png, svg...) y vídeos (mp4, mov...).',

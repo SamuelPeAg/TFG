@@ -439,7 +439,7 @@ class UserController extends Controller
                 },
                 Rule::unique($user->getTable(), 'iban')->ignore($user->id)
             ],
-            'foto_de_perfil' => ['nullable', 'image', 'max:2048'],
+            'foto_de_perfil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
             'firma_digital' => ['nullable', 'string', 'max:500'],
             'current_password' => ['nullable', 'string', 'max:64'],
             'password'         => ['nullable', 'string', 'min:6', 'max:64', 'confirmed'],

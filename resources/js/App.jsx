@@ -22,7 +22,6 @@ import MisPlanesEntrenador from './pages/MisPlanesEntrenador'
 import Configuracion from './pages/Configuracion'
 import Suscripciones from './pages/Suscripciones'
 import Estadisticas from './pages/Estadisticas'
-import MiFicha from './pages/MiFicha'
 import MisClases from './pages/MisClases'
 import MisEstadisticas from './pages/MisEstadisticas'
 import ReservaClases from './pages/ReservaClases'
@@ -75,7 +74,6 @@ function App() {
       <Route path="/estadisticas" element={<Estadisticas />} />
       <Route path="/gestion" element={<Gestion />} />
       <Route path="/admin/errores" element={<SystemLogs />} />
-      <Route path="/mi-ficha" element={<MiFicha />} />
       <Route path="/mis-clases" element={<MisClases />} />
       <Route path="/mis-estadisticas" element={<MisEstadisticas />} />
       <Route path="/notificaciones" element={<Notificaciones />} />
