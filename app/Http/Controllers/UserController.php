@@ -443,7 +443,10 @@ class UserController extends Controller
             'firma_digital' => ['nullable', 'string', 'max:500'],
             'current_password' => ['nullable', 'string', 'max:64'],
             'password'         => ['nullable', 'string', 'min:6', 'max:64', 'confirmed'],
-        ], $this->validationMessages());
+        ], [
+            'current_password.required' => 'Por seguridad, debes escribir tu contraseña actual para cambiarla.',
+            'password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
+        ]);
 
         $data = [
             'name' => $validated['name'],

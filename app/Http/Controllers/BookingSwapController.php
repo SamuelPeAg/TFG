@@ -40,9 +40,9 @@ class BookingSwapController extends Controller
             $claseBase = Clase::whereRaw('LOWER(TRIM(nombre)) = ?', [strtolower(trim($pago->nombre_clase))])->first();
         }
 
-        if (!$claseBase) {
-            return response()->json(['error' => 'No se pudo encontrar la configuración de la clase original.'], 404);
-        }
+        // Si no se encuentra la clase base, no abortamos con 404.
+        // Simplemente no podremos filtrar por nivel, pero permitiremos buscar por tipo de clase.
+        $nivelBase = $claseBase ? $claseBase->nivel : null;
 
         // 2. Obtener los tipos de crédito permitidos para la clase original
         $allowedCreditTypeIds = $pago->tiposCredito->pluck('id')->toArray();
@@ -97,7 +97,7 @@ class BookingSwapController extends Controller
                 $claseCand = Clase::where('nombre', $first->nombre_clase)->first();
             }
 
-            if (!$claseCand || $claseCand->nivel !== $claseBase->nivel) {
+            if ($nivelBase && $claseCand && $claseCand->nivel !== $nivelBase) {
                 continue;
             }
 
