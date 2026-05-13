@@ -483,13 +483,13 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xl animate-in fade-in duration-500" onClick={onClose}></div>
-      <div className="relative bg-[#FDFDFF] w-full max-w-4xl h-[90vh] rounded-[3rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 border border-white/50">
+      <div className="relative bg-[#FDFDFF] w-full max-w-4xl h-[95vh] sm:h-[90vh] rounded-[2rem] sm:rounded-[3rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 border border-white/50">
         
-        <div className="relative px-10 pt-10 pb-8 flex items-end justify-between overflow-hidden shrink-0">
+        <div className="relative px-6 sm:px-10 pt-8 sm:pt-10 pb-6 sm:pb-8 flex items-end justify-between overflow-hidden shrink-0">
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-teal-500/5 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl"></div>
 
-            <div className="flex items-center gap-10 relative z-10 w-full pr-12">
+            <div className="flex items-center gap-5 sm:gap-10 relative z-10 w-full pr-12">
                 {(() => {
                     const getImageUrl = (path) => {
                         if (!path) return null;
@@ -501,7 +501,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                     };
                     return (
                         <div 
-                            className="w-28 h-28 rounded-[2.5rem] flex items-center justify-center text-white text-5xl font-black shadow-2xl shadow-teal-200/50 group shrink-0 relative overflow-hidden border-4 border-white"
+                            className="w-20 h-20 sm:w-28 sm:h-28 rounded-2xl sm:rounded-[2.5rem] flex items-center justify-center text-white text-3xl sm:text-5xl font-black shadow-2xl shadow-teal-200/50 group shrink-0 relative overflow-hidden border-4 border-white"
                             style={{ background: 'linear-gradient(135deg, #38C1A3, #2D9B82)' }}
                         >
                             {user?.foto_de_perfil ? (
@@ -521,8 +521,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                     );
                 })()}
                 <div className="flex-1 min-w-0">
-                    <h2 className="text-5xl font-black text-slate-800 tracking-tighter leading-none mb-4 truncate">{user?.name}</h2>
-                    <div className="flex flex-wrap items-center gap-4">
+                    <h2 className="text-3xl sm:text-5xl font-black text-slate-800 tracking-tighter leading-none mb-3 sm:mb-4 truncate">{user?.name}</h2>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                         <span className="flex items-center gap-2.5 px-5 py-2.5 bg-teal-50 text-[#38C1A3] rounded-2xl text-[10px] font-black uppercase tracking-widest border border-teal-100/50 shadow-sm">
                             <i className="fa-solid fa-heart-pulse"></i> FICHA CLÍNICA
                         </span>
@@ -534,20 +534,20 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             </div>
             <button 
                 onClick={onClose} 
-                className="absolute top-8 right-8 w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all hover:rotate-90 shadow-sm border border-slate-100 z-50"
+                className="absolute top-6 right-6 sm:top-8 sm:right-8 w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-xl sm:rounded-2xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all hover:rotate-90 shadow-sm border border-slate-100 z-50"
             >
-                <i className="fa-solid fa-times text-xl"></i>
+                <i className="fa-solid fa-times text-lg sm:text-xl"></i>
             </button>
         </div>
 
-        <div className="px-10 flex gap-10 border-b border-slate-100/60 shrink-0 relative">
+        <div className="px-6 sm:px-10 flex gap-6 sm:gap-10 border-b border-slate-100/60 shrink-0 relative overflow-x-auto scrollbar-hide flex-nowrap">
             {['profile', 'health', 'files', 'subscriptions'].map(tab => {
                 const isActive = activeTab === tab;
                 return (
                     <button 
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`py-6 font-black text-[11px] uppercase tracking-[0.25em] transition-all relative flex items-center gap-3 group ${isActive ? 'text-[#38C1A3]' : 'text-slate-300 hover:text-slate-500'}`}
+                        className={`py-4 sm:py-6 font-black text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.25em] transition-all relative flex items-center gap-2 sm:gap-3 group shrink-0 ${isActive ? 'text-[#38C1A3]' : 'text-slate-300 hover:text-slate-500'}`}
                     >
                         <i className={`fa-solid ${tab === 'profile' ? 'fa-user-gear' : tab === 'health' ? 'fa-heart-pulse' : tab === 'files' ? 'fa-file-shield' : 'fa-credit-card'} ${isActive ? 'scale-110' : 'opacity-30 group-hover:opacity-100'} transition-all text-sm`}></i>
                         <span>
@@ -564,7 +564,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
             })}
         </div>
 
-        <div className="flex-1 overflow-auto p-10 scrollbar-hide bg-gradient-to-b from-white to-slate-50/30">
+        <div className="flex-1 overflow-auto p-6 sm:p-10 scrollbar-hide bg-gradient-to-b from-white to-slate-50/30">
             {loading ? (
                 <div className="h-full flex items-center justify-center">
                     <div className="flex flex-col items-center gap-4">

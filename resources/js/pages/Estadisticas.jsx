@@ -181,7 +181,7 @@ export default function Estadisticas() {
         <PageHeader 
             title="Panel de Gestión"
             subtitle="Estadísticas generales y rendimiento de centros"
-            icon="fa-solid fa-chart-simple"
+            showLogo={true}
             onMenuClick={() => setIsSidebarOpen(true)}
         />
 
@@ -207,7 +207,7 @@ export default function Estadisticas() {
                   { label: 'Ingresos del Mes', value: `${parseFloat(data.kpis.ingresosMes).toLocaleString()}€`, icon: 'fa-euro-sign', color: 'bg-[#53565A]', link: '/facturas' },
                   { label: 'Sesiones Totales', value: data.kpis.sesionesMes, icon: 'fa-calendar-check', color: 'bg-[#EF5D7A]', link: '/calendario' }
                 ].map((kpi, idx) => (
-                  <Link to={kpi.link} key={idx} className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between group hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
+                  <Link to={kpi.link} key={idx} className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between group hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
                     <div className="flex justify-between items-start mb-4">
                       <div className={`w-12 h-12 ${kpi.color} text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-inherit/20`}>
                         <i className={`fa-solid ${kpi.icon}`}></i>
@@ -225,7 +225,7 @@ export default function Estadisticas() {
               {/* Main Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Revenue Comparison */}
-                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px]">
+                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[400px] sm:h-[450px]">
                   <div className="mb-8">
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Ingresos por Centro</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Comparativa histórica de facturación</p>
@@ -236,7 +236,7 @@ export default function Estadisticas() {
                 </div>
 
                 {/* Churn Analysis */}
-                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px]">
+                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[400px] sm:h-[450px]">
                   <div className="mb-8">
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Evolución de Clientes</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Análisis de retención y nuevos usuarios</p>
@@ -250,7 +250,7 @@ export default function Estadisticas() {
               {/* Occupancy and Customer Care */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Occupancy Bar */}
-                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[500px] lg:col-span-2">
+                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px] sm:h-[500px] lg:col-span-2">
                   <div className="mb-8">
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Ocupación de Clases</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Clases con mayor ratio de asistencia</p>
@@ -261,7 +261,7 @@ export default function Estadisticas() {
                 </div>
 
                 {/* Subscription Popularity */}
-                <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[500px]">
+                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px] sm:h-[500px]">
                   <div className="mb-8">
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Distribución de Planes</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Suscripciones más contratadas (Activas)</p>
@@ -297,7 +297,7 @@ export default function Estadisticas() {
               {/* Transactions and Coach Messages */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Last Transactions */}
-                  <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[500px]">
+                  <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px] sm:h-[500px]">
                     <div className="flex justify-between items-center mb-8">
                       <h3 className="text-lg font-black text-[#53565A] tracking-tight">Últimos Pagos</h3>
                       <Link to="/facturas" className="text-[10px] font-black text-[#4BB7AE] uppercase tracking-widest hover:underline transition-colors">Historial</Link>
@@ -357,7 +357,7 @@ export default function Estadisticas() {
                   </div>
 
                   {/* Coach Messages (REINSTATED) */}
-                  <div className="bg-white p-8 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[500px]">
+                  <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px] sm:h-[500px]">
                     <div className="flex justify-between items-center mb-8">
                       <h3 className="text-lg font-black text-[#53565A] tracking-tight">Mensajes del Staff</h3>
                       {data.notificaciones?.filter(n => !n.leido).length > 0 && (

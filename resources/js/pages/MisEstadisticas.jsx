@@ -284,11 +284,11 @@ export default function MisEstadisticas() {
                 <PageHeader 
                     title="Mis Estadísticas"
                     subtitle="Análisis de rendimiento y actividad"
-                    icon="fa-solid fa-chart-simple"
+                    showLogo={true}
                     onMenuClick={() => setIsSidebarOpen(true)}
                 />
 
-                <div className="flex-1 overflow-auto p-6 lg:p-10">
+                <div className="flex-1 overflow-auto p-4 lg:p-10">
                     {loading ? (
                         <div className="h-full flex items-center justify-center">
                             <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-500 rounded-full animate-spin"></div>
@@ -298,7 +298,7 @@ export default function MisEstadisticas() {
                             
                             {/* KPI Cards */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:-translate-y-1 transition-all duration-500">
+                                <div className="bg-white p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:-translate-y-1 transition-all duration-500">
                                     <div className="absolute top-0 right-0 p-8 transform translate-x-4 -translate-y-4 opacity-[0.05] group-hover:scale-125 transition-transform duration-700">
                                         <i className="fa-solid fa-calendar-check text-7xl"></i>
                                     </div>
@@ -309,7 +309,7 @@ export default function MisEstadisticas() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:-translate-y-1 transition-all duration-500">
+                                <div className="bg-white p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:-translate-y-1 transition-all duration-500">
                                     <div className="absolute top-0 right-0 p-8 transform translate-x-4 -translate-y-4 opacity-[0.05] group-hover:scale-125 transition-transform duration-700">
                                         <i className="fa-solid fa-ticket-alt text-7xl"></i>
                                     </div>
@@ -318,7 +318,7 @@ export default function MisEstadisticas() {
                                     <p className="mt-4 text-[9px] font-black text-slate-400 uppercase">Suma de todos tus lotes activos</p>
                                 </div>
 
-                                <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:-translate-y-1 transition-all duration-500">
+                                <div className="bg-white p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:-translate-y-1 transition-all duration-500">
                                     <div className="absolute top-0 right-0 p-8 transform translate-x-4 -translate-y-4 opacity-[0.05] group-hover:scale-125 transition-transform duration-700">
                                         <i className="fa-solid fa-hourglass-half text-7xl"></i>
                                     </div>
@@ -334,7 +334,7 @@ export default function MisEstadisticas() {
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
                                 
                                 {/* Attendance Chart */}
-                                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-[450px] flex flex-col">
+                                <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm min-h-[400px] sm:min-h-[450px] flex flex-col">
                                     <div className="flex items-center justify-between mb-10">
                                         <div>
                                             <h3 className="text-lg font-black text-slate-800 tracking-tight">Progreso de Asistencia</h3>
@@ -350,7 +350,7 @@ export default function MisEstadisticas() {
                                 </div>
 
                                 {/* Session Types Chart */}
-                                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-[450px] flex flex-col items-center">
+                                <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm min-h-[400px] sm:min-h-[450px] flex flex-col items-center">
                                     <div className="w-full flex items-center justify-between mb-10">
                                         <div>
                                             <h3 className="text-lg font-black text-slate-800 tracking-tight">Distribución por Tipo</h3>
@@ -375,7 +375,7 @@ export default function MisEstadisticas() {
                                 </div>
 
                                 {/* Calories vs Training Comparison Chart */}
-                                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-[450px] flex flex-col xl:col-span-2">
+                                <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm min-h-[400px] sm:min-h-[450px] flex flex-col xl:col-span-2">
                                     <div className="flex items-center justify-between mb-10">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center">
@@ -393,7 +393,7 @@ export default function MisEstadisticas() {
                                 </div>
 
                                 {/* Weight & IMC Evolution Chart */}
-                                <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm min-h-[450px] flex flex-col xl:col-span-2">
+                                <div className="bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm min-h-[400px] sm:min-h-[450px] flex flex-col xl:col-span-2">
                                     <div className="flex items-center justify-between mb-10">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">
@@ -427,7 +427,7 @@ export default function MisEstadisticas() {
 
                             {/* Trajectory & Subscription History */}
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                                <div className="lg:col-span-4 bg-[#6366F1] p-10 rounded-[3rem] text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                                <div className="lg:col-span-4 bg-[#6366F1] p-8 sm:p-10 rounded-[2rem] sm:rounded-[3rem] text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
                                     <i className="fa-solid fa-history absolute -bottom-10 -right-10 text-[15rem] opacity-10"></i>
                                     <h3 className="text-xl font-black mb-2 relative z-10">Mi Trayectoria</h3>
                                     <p className="text-indigo-100 text-sm font-bold mb-8 relative z-10 opacity-80">Desde que te uniste a nosotros</p>
@@ -454,7 +454,7 @@ export default function MisEstadisticas() {
                                     </div>
                                 </div>
 
-                                <div className="lg:col-span-8 bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                                <div className="lg:col-span-8 bg-white p-8 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm">
                                     <h3 className="text-lg font-black text-slate-800 tracking-tight mb-8">Historial de Planes</h3>
                                     <div className="space-y-4">
                                         {stats?.subscriptionHistory?.map((h, i) => (
@@ -480,7 +480,7 @@ export default function MisEstadisticas() {
                             </div>
 
                             {/* Credit Batches Detail (linked to DB) */}
-                            <div className="bg-white p-6 sm:p-10 rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
+                            <div className="bg-white p-5 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border border-slate-100 shadow-sm overflow-hidden">
                                 <h3 className="text-lg font-black text-slate-800 tracking-tight mb-8">Detalle de mis Créditos (Activos)</h3>
                                 
                                 {/* Desktop Table */}
