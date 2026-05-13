@@ -13,6 +13,7 @@ export default function MiFicha() {
     // Modals state
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, onConfirm: null, message: '', title: '' });
     const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', title: '', isError: false });
+    const [uploading, setUploading] = useState(false);
 
     // Specialist notes
     const [specialistNotes, setSpecialistNotes] = useState('');
@@ -48,6 +49,7 @@ export default function MiFicha() {
         formData.append('file', file);
         formData.append('nombre', file.name);
 
+        setUploading(true);
         try {
             await axios.post(`/client-profile/${client.id}/upload`, formData);
             fetchFicha();
@@ -58,6 +60,8 @@ export default function MiFicha() {
                 message: 'Error al subir el archivo',
                 isError: true
             });
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -125,15 +129,28 @@ export default function MiFicha() {
                                     <div className="w-14 h-14 rounded-3xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-2xl shadow-inner"><i className="fa-solid fa-folder-tree"></i></div>
                                     <div>
                                         <h3 className="text-xl font-black text-slate-900 tracking-tight">Expediente Digital</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Informes y archivos adjuntos</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Solo imágenes y vídeos</p>
                                     </div>
                                 </div>
-                                <label className="cursor-pointer bg-[#38C1A3] hover:bg-teal-500 text-white px-6 py-4 rounded-2xl flex items-center gap-3 transition-all shadow-lg shadow-teal-500/20 active:scale-95 group-hover:-translate-y-1">
-                                    <i className="fa-solid fa-cloud-arrow-up"></i>
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Subir Archivo</span>
-                                    <input type="file" className="hidden" onChange={handleFileUpload} />
+                                <label className={`cursor-pointer ${uploading ? 'bg-slate-400' : 'bg-[#38C1A3] hover:bg-teal-500'} text-white px-6 py-4 rounded-2xl flex items-center gap-3 transition-all shadow-lg shadow-teal-500/20 active:scale-95 group-hover:-translate-y-1`}>
+                                    {uploading ? (
+                                        <i className="fa-solid fa-spinner fa-spin"></i>
+                                    ) : (
+                                        <i className="fa-solid fa-cloud-arrow-up"></i>
+                                    )}
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{uploading ? 'Subiendo...' : 'Subir Archivo'}</span>
+                                    <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploading} accept="image/*,video/*" />
                                 </label>
                             </div>
+
+                            {uploading && (
+                                <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100 shadow-inner">
+                                        <div className="h-full bg-gradient-to-r from-[#38C1A3] to-teal-400 animate-progress origin-left"></div>
+                                    </div>
+                                    <p className="text-[9px] font-black text-[#38C1A3] uppercase tracking-widest mt-2 text-center animate-pulse">Procesando documento...</p>
+                                </div>
+                            )}
 
                             <div className="flex-1 space-y-4">
                                 {files.length === 0 ? (
@@ -152,8 +169,8 @@ export default function MiFicha() {
                                                 </div>
                                             </div>
                                             <div className="flex gap-2">
-                                                <a href={`/storage/${file.ruta}`} target="_blank" className="p-3 bg-white text-slate-400 hover:text-indigo-500 rounded-xl shadow-sm transition-colors"><i className="fa-solid fa-eye"></i></a>
-                                                <button onClick={() => deleteFile(file.id)} className="p-3 bg-white text-slate-400 hover:text-rose-500 rounded-xl shadow-sm transition-colors opacity-0 group-hover/file:opacity-100"><i className="fa-solid fa-trash-can"></i></button>
+                                                <a href={`/storage/${file.file_path}`} target="_blank" rel="noreferrer" className="p-3 bg-white text-slate-400 hover:text-indigo-500 rounded-xl shadow-sm transition-colors"><i className="fa-solid fa-eye"></i></a>
+                                                <button onClick={() => deleteFile(file.id)} className="p-3 bg-white text-slate-400 hover:text-rose-500 rounded-xl shadow-sm transition-colors"><i className="fa-solid fa-trash-can"></i></button>
                                             </div>
                                         </div>
                                     ))
@@ -209,4 +226,20 @@ export default function MiFicha() {
             />
         </div>
     );
+}
+
+const styles = `
+@keyframes progress {
+    0% { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+}
+.animate-progress {
+    animation: progress 2s infinite ease-in-out;
+}
+`;
+
+if (typeof document !== 'undefined') {
+    const styleSheet = document.createElement("style");
+    styleSheet.innerText = styles;
+    document.head.appendChild(styleSheet);
 }

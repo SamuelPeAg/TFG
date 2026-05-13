@@ -401,7 +401,15 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (file) setPendingFile(file);
+    if (file) {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/svg+xml', 'image/webp', 'video/mp4', 'video/quicktime', 'video/ogg', 'video/webm'];
+        if (!allowedTypes.includes(file.type)) {
+            showAlert('Solo se permiten imágenes y vídeos.', true);
+            e.target.value = null;
+            return;
+        }
+        setPendingFile(file);
+    }
   };
 
   const handleFileUpload = async () => {
@@ -1366,6 +1374,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                         <input 
                             type="file" 
                             onChange={handleFileSelect} 
+                            accept="image/*,video/*"
                             className="absolute inset-0 opacity-0 cursor-pointer z-10" 
                         />
                         <div className={`p-16 border-2 border-dashed rounded-[3rem] text-center transition-all duration-500 ${uploading ? 'bg-slate-50 border-slate-200' : 'bg-white border-slate-100 group-hover:border-teal-400 group-hover:bg-teal-50/30'}`}>
@@ -1381,7 +1390,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                     </div>
                                     <div>
                                         <p className="font-black text-slate-800 text-lg tracking-tight">Carga de Documentación</p>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">PDF, JPG o PNG aceptados (Máximo 10MB)</p>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Solo Imágenes y Vídeos aceptados (Máximo 30MB)</p>
                                     </div>
                                 </div>
                             )}
