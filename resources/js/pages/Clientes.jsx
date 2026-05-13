@@ -240,7 +240,7 @@ export default function Clientes() {
             </div>
         )}
         
-        <div className="flex-1 overflow-auto p-4 sm:p-10 scrollbar-hide">
+        <div className="flex-1 overflow-auto p-4 sm:p-10 pb-24 sm:pb-10 scrollbar-hide">
           <div className="w-full mx-auto space-y-8">
             <div className="bg-white/50 backdrop-blur-md p-1.5 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100/50">
               <UsersTable 
@@ -313,4 +313,13 @@ export default function Clientes() {
       />
     </div>
   );
+}
+
+@media (max-width: 768px) {
+  /* Global scroll fix for mobile browser navigation bars */
+  main .overflow-auto, 
+  .flex-1.overflow-auto,
+  [role="dialog"] .overflow-y-auto {
+    padding-bottom: 6rem !important;
+  }
 }

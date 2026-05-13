@@ -372,7 +372,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
     <div className="fixed inset-0 bg-slate-900/40 z-[9999] flex items-center justify-center p-2 sm:p-6 backdrop-blur-md"
          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       
-      <div className="w-full max-w-4xl bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[95vh]">
+      <div className="w-full max-w-4xl bg-white rounded-[24px] sm:rounded-[32px] overflow-hidden shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[95vh] animate-in fade-in zoom-in-95 duration-300">
         
         {/* Header Premium with Gradient */}
         <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white pt-8 pb-10 text-center relative px-4 shrink-0 shadow-lg">

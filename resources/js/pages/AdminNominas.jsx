@@ -188,7 +188,7 @@ export default function AdminNominas() {
             </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 sm:p-8">
+        <div className="flex-1 overflow-auto p-4 sm:p-8 pb-24 sm:pb-8">
              {toast && (
                 <div className="bg-emerald-50 text-emerald-600 px-4 py-3 rounded-xl mb-6 flex items-center gap-3 border border-emerald-100 shadow-sm animate-in fade-in slide-in-from-top-4 duration-300">
                     <i className="fas fa-check-circle text-lg"></i>

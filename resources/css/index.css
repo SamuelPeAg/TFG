@@ -314,3 +314,12 @@ html, body {
   h2 { font-size: 1.25rem; }
   h3 { font-size: 1.1rem; }
 }
+
+@media (max-width: 768px) {
+  /* Global scroll fix for mobile browser navigation bars */
+  main .overflow-auto, 
+  .flex-1.overflow-auto,
+  [role="dialog"] .overflow-y-auto {
+    padding-bottom: 7rem !important; /* Extra safety for Safari/Chrome UI */
+  }
+}

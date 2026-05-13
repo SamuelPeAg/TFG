@@ -140,7 +140,7 @@ export default function Facturacion() {
             onMenuClick={() => setIsSidebarOpen(true)}
         />
         
-        <div className="flex-1 overflow-auto p-4 sm:p-8">
+        <div className="flex-1 overflow-auto p-4 sm:p-8 pb-24 sm:pb-8">
           <div className="max-w-full mx-auto space-y-6">
             
             {/* Control Panel (Filters) */}

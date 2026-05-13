@@ -198,7 +198,7 @@ export default function ReservaClases() {
           )}
         </header>
 
-        <section className={`flex-1 overflow-auto p-6 ${viewMode === 'calendar' ? 'bg-slate-50/50' : 'bg-transparent'}`}>
+        <section className={`flex-1 overflow-auto p-6 pb-24 sm:pb-6 ${viewMode === 'calendar' ? 'bg-slate-50/50' : 'bg-transparent'}`}>
          <div className={`${viewMode === 'calendar' ? 'bg-white rounded-2xl shadow-sm border border-slate-100 p-4 min-h-[500px] flex flex-col' : 'hidden'}`}>
             {loading ? (
               <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-3">
