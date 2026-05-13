@@ -185,7 +185,7 @@ export default function Estadisticas() {
             onMenuClick={() => setIsSidebarOpen(true)}
         />
 
-        <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 pb-12 pt-6 space-y-8">
+        <div className="flex-1 overflow-auto px-4 sm:px-6 lg:px-8 pb-24 pt-6 space-y-8">
           {loading ? (
              <div className="flex flex-col items-center justify-center py-32 gap-4">
                 <div className="w-12 h-12 border-4 border-teal-100 border-t-teal-500 rounded-full animate-spin"></div>

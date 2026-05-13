@@ -314,12 +314,3 @@ export default function Clientes() {
     </div>
   );
 }
-
-@media (max-width: 768px) {
-  /* Global scroll fix for mobile browser navigation bars */
-  main .overflow-auto, 
-  .flex-1.overflow-auto,
-  [role="dialog"] .overflow-y-auto {
-    padding-bottom: 6rem !important;
-  }
-}
