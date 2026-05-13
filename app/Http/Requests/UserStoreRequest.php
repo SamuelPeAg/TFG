@@ -15,7 +15,7 @@ class UserStoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'name'          => 'required|string|min:3|max:100',
+            'name'          => ['required', 'string', 'min:3', 'max:50', 'regex:/^[\pL\s.\-]+$/u'],
             'email'         => 'required|email|max:150|unique:users,email',
             'password'      => 'nullable|string|min:6|max:64',
             'iban'          => 'nullable|string|unique:users,iban|min:16|max:34|regex:/^[A-Z]{2}[0-9]{2}[A-Z0-9]{12,30}$/i',
@@ -30,6 +30,8 @@ class UserStoreRequest extends FormRequest
         return [
             'name.required'      => 'El nombre es obligatorio.',
             'name.min'           => 'El nombre debe tener al menos 3 caracteres.',
+            'name.max'           => 'El nombre no puede exceder los 50 caracteres.',
+            'name.regex'         => 'El nombre solo puede contener letras, espacios, puntos o guiones.',
             'email.required'     => 'El correo electrónico es obligatorio.',
             'email.unique'       => 'Este correo ya está registrado por otro usuario.',
             'password.min'       => 'La contraseña debe tener al menos 6 caracteres.',

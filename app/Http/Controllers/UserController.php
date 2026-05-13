@@ -409,7 +409,7 @@ class UserController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'name'  => ['required', 'string', 'min:3', 'max:100'],
+            'name'  => ['required', 'string', 'min:3', 'max:50', 'regex:/^[\pL\s.\-]+$/u'],
             'dni'   => ['nullable', 'string', 'regex:/^[0-9]{8}[A-Z]|[XYZ][0-9]{7}[A-Z]$/i'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'ciudad'    => ['nullable', 'string', 'max:100'],
@@ -444,6 +444,8 @@ class UserController extends Controller
             'current_password' => ['nullable', 'string', 'max:64'],
             'password'         => ['nullable', 'string', 'min:6', 'max:64', 'confirmed'],
         ], [
+            'name.max' => 'El nombre no puede exceder los 50 caracteres.',
+            'name.regex' => 'El nombre solo puede contener letras, espacios, puntos o guiones.',
             'current_password.required' => 'Por seguridad, debes escribir tu contraseña actual para cambiarla.',
             'password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
         ]);

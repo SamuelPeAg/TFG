@@ -18,7 +18,7 @@ class UserUpdateRequest extends FormRequest
         $userId = $user ? $user->id : null;
 
         return [
-            'name'          => 'required|string|min:3|max:100',
+            'name'          => ['required', 'string', 'min:3', 'max:50', 'regex:/^[\pL\s.\-]+$/u'],
             'email'         => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($userId)],
             'password'      => 'nullable|string|min:6|max:64',
             'iban'          => [
@@ -42,6 +42,8 @@ class UserUpdateRequest extends FormRequest
     {
         return [
             'name.required'      => 'El nombre es obligatorio.',
+            'name.max'           => 'El nombre no puede exceder los 50 caracteres.',
+            'name.regex'         => 'El nombre solo puede contener letras, espacios, puntos o guiones.',
             'email.unique'       => 'Este correo ya está registrado por otro usuario.',
             'iban.unique'        => 'Este iban ya pertenece a otro usuario.',
             'dni.regex'          => 'El DNI/NIE introducido no tiene un formato válido.',

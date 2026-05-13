@@ -197,12 +197,12 @@ export default function MisComidas() {
             const userRes = await axios.get('/configuracion');
             const userId = userRes.data.user.id;
             const res = await axios.get(`/client-profile/${userId}`);
-            setClientProfile(res.data.client);
-            setPeso(res.data.client?.peso || '');
-            setAltura(res.data.client?.altura ? Math.round(res.data.client.altura * 100) : '');
+            setClientProfile(res.data.user);
+            setPeso(res.data.user?.peso || '');
+            setAltura(res.data.user?.altura ? Math.round(res.data.user.altura * 100) : '');
             setMeasurements(res.data.measurements || []);
             setFiles(res.data.files || []);
-            setSpecialistNotes(res.data.client?.notas_especialista || '');
+            setSpecialistNotes(res.data.user?.notas_especialista || '');
         } catch (error) {
             console.error('Error fetching physical data:', error);
         }
@@ -217,7 +217,7 @@ export default function MisComidas() {
         formData.append('nombre', file.name);
 
         try {
-            await axios.post(`/client-profile/${clientProfile.user_id}/files`, formData);
+            await axios.post(`/client-profile/${clientProfile.id}/upload`, formData);
             fetchFicha();
         } catch (error) {
             showAlert('Error al subir el archivo', true);
@@ -231,7 +231,7 @@ export default function MisComidas() {
             message: "¿Seguro que quieres eliminar este archivo? No se podrá recuperar.",
             onConfirm: async () => {
                 try {
-                    await axios.delete(`/client-profile/files/${fileId}`);
+                    await axios.delete(`/client-profile/file/${fileId}`);
                     fetchFicha();
                     showAlert('Archivo eliminado.');
                 } catch (err) {

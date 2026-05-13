@@ -29,9 +29,9 @@ export default function MiFicha() {
             const userId = userRes.data.user.id;
 
             const res = await axios.get(`/client-profile/${userId}`);
-            setClient(res.data.client);
+            setClient(res.data.user);
             setFiles(res.data.files || []);
-            setSpecialistNotes(res.data.client?.notas_especialista || '');
+            setSpecialistNotes(res.data.user?.notas_especialista || '');
 
         } catch (error) {
             console.error('Error fetching ficha:', error);
@@ -49,7 +49,7 @@ export default function MiFicha() {
         formData.append('nombre', file.name);
 
         try {
-            await axios.post(`/client-profile/${client.user_id}/files`, formData);
+            await axios.post(`/client-profile/${client.id}/upload`, formData);
             fetchFicha();
         } catch (error) {
             setAlertModal({
@@ -68,7 +68,7 @@ export default function MiFicha() {
             message: '¿Seguro que quieres eliminar este archivo?',
             onConfirm: async () => {
                 try {
-                    await axios.delete(`/client-profile/files/${fileId}`);
+                    await axios.delete(`/client-profile/file/${fileId}`);
                     fetchFicha();
                 } catch (error) {
                     setAlertModal({
