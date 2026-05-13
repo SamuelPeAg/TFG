@@ -23,4 +23,29 @@ class CalendarioController extends Controller
         
         return view('app');
     }
+
+    public function userCredits(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user) return response()->json(['success' => false], 401);
+
+        $saldos = [];
+        foreach($user->suscripciones()->where('estado', 'activo')->get() as $su) {
+             foreach($su->saldos_por_tipo as $item) {
+                 $tipoId = $item['tipo_credito']->id;
+                 if (!isset($saldos[$tipoId])) {
+                     $saldos[$tipoId] = [
+                         'nombre' => $item['tipo_credito']->nombre,
+                         'total' => 0
+                     ];
+                 }
+                 $saldos[$tipoId]['total'] += $item['total'];
+             }
+        }
+
+        return response()->json([
+            'success' => true,
+            'credits' => array_values($saldos)
+        ]);
+    }
 }

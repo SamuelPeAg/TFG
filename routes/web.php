@@ -169,6 +169,7 @@ Route::middleware('auth:web,staff')->group(function () {
 
     // Calendario (Vista principal) para todos los usuarios autenticados
     Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario');
+    Route::get('/api/user-credits', [CalendarioController::class, 'userCredits']);
 
     // Gestión de Pagos / Clases (Acciones del Calendario) para todos los usuarios autenticados
     Route::post('/Pagos', [PagosController::class, 'store'])->name('Pagos.store');

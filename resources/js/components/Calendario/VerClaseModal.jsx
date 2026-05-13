@@ -20,6 +20,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
   // Custom Alerts & Confirms
   const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
   const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: null, isDestructive: false });
+  const [userCredits, setUserCredits] = useState([]);
 
   const showAlert = (message, isError = false, title = isError ? "Error" : "Éxito") => {
     setAlertConfig({ isOpen: true, title, message, isError });
@@ -80,9 +81,19 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       setEditSuscripciones(p.suscripciones_permitidas || []);
       setEditCreditos(p.tipos_credito_permitidos || []);
       setEditCapacidad(p.capacidad_maxima || '');
+
+      // Fetch personal credits if client
+      if (window.AppConfig?.user?.role === 'cliente') {
+          axios.get('/api/user-credits')
+               .then(res => {
+                   if (res.data.success) setUserCredits(res.data.credits);
+               })
+               .catch(console.error);
+      }
     } else {
       setLocalProps(null);
       setIsEditing(false);
+      setUserCredits([]);
     }
   }, [isOpen, selectedEvent]);
 
@@ -369,19 +380,19 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
              onClick={onClose}
              className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 hover:scale-110 transition-all border border-white/5"
            >
-             <i className="fa-solid fa-xmark text-lg"></i>
+             <i className="fa-solid fa-xmark text-base sm:text-lg"></i>
            </button>
-           <h3 className="text-[12px] font-black tracking-[0.3em] text-[#38b2ac] mb-2 leading-none uppercase">{dayName}</h3>
-           <div className="flex items-baseline justify-center gap-3">
-               <span className="text-6xl font-black tracking-tighter drop-shadow-md">{dayNum}</span>
-               <span className="text-3xl font-medium text-slate-400">de {monthName}</span>
+           <h3 className="text-[10px] sm:text-[12px] font-black tracking-[0.3em] text-[#38b2ac] mb-2 leading-none uppercase">{dayName}</h3>
+           <div className="flex items-baseline justify-center gap-2 sm:gap-3">
+               <span className="text-4xl sm:text-6xl font-black tracking-tighter drop-shadow-md">{dayNum}</span>
+               <span className="text-xl sm:text-3xl font-medium text-slate-400">de {monthName}</span>
            </div>
         </div>
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
            
            {/* Left Column (Main Info & Attendees) */}
-           <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-white scrollbar-hide">
+           <div className="flex-1 overflow-y-auto p-5 sm:p-10 bg-white scrollbar-hide">
               
               <div className="mb-8">
                   {isEditing ? (
@@ -394,7 +405,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                                       value={editNombre} 
                                       onChange={(e) => setEditNombre(e.target.value)}
                                       maxLength={26}
-                                      className="w-full text-3xl font-black text-[#0f172a] border-b-2 border-slate-100 focus:border-[#38b2ac] outline-none pb-2 bg-transparent transition-all"
+                                      className="w-full text-xl sm:text-3xl font-black text-[#0f172a] border-b-2 border-slate-100 focus:border-[#38b2ac] outline-none pb-2 bg-transparent transition-all"
                                       placeholder="Nombre de la clase"
                                   />
                               </div>
@@ -478,23 +489,23 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                       </div>
                   ) : (
                       <div className="animate-in fade-in duration-500">
-                          <h2 className="text-4xl font-black text-[#0f172a] tracking-tight leading-[1.1] mb-6">
+                          <h2 className="text-2xl sm:text-4xl font-black text-[#0f172a] tracking-tight leading-[1.1] mb-5 sm:mb-6">
                               {localProps.clase_nombre || "Clase sin Nombre"}
                           </h2>
-                          <div className="flex flex-wrap gap-3">
-                              <div className="flex items-center gap-2.5 px-5 py-2.5 bg-[#f1f5f9] rounded-2xl border border-slate-100 shadow-sm">
-                                  <i className="fa-solid fa-clock text-[#38b2ac] text-sm"></i>
-                                  <span className="text-[13px] font-black text-[#1e293b]">{horaFormat}</span>
+                          <div className="flex flex-wrap gap-2 sm:gap-3">
+                              <div className="flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-[#f1f5f9] rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm">
+                                  <i className="fa-solid fa-clock text-[#38b2ac] text-xs sm:text-sm"></i>
+                                  <span className="text-[11px] sm:text-[13px] font-black text-[#1e293b]">{horaFormat}</span>
                               </div>
-                              <div className="flex items-center gap-2.5 px-5 py-2.5 bg-[#f1f5f9] rounded-2xl border border-slate-100 shadow-sm transition-all">
-                                  <i className="fa-solid fa-location-dot text-[#38b2ac] text-sm"></i>
-                                  <span className="text-[13px] font-black text-[#1e293b] uppercase tracking-wide">{localProps.centro}</span>
+                              <div className="flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 bg-[#f1f5f9] rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm transition-all">
+                                  <i className="fa-solid fa-location-dot text-[#38b2ac] text-xs sm:text-sm"></i>
+                                  <span className="text-[11px] sm:text-[13px] font-black text-[#1e293b] uppercase tracking-wide">{localProps.centro}</span>
                               </div>
                               {localProps.tipo_clase && (
-                                  <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border shadow-sm transition-all" 
+                                  <div className="flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border shadow-sm transition-all" 
                                        style={{ backgroundColor: localProps.tipo_color ? localProps.tipo_color + '15' : '#f1f5f9', borderColor: localProps.tipo_color || '#e2e8f0' }}>
-                                      <i className="fa-solid fa-layer-group text-sm" style={{ color: localProps.tipo_color || '#64748b' }}></i>
-                                      <span className="text-[13px] font-black uppercase tracking-wide" style={{ color: localProps.tipo_color || '#475569' }}>
+                                      <i className="fa-solid fa-layer-group text-xs sm:text-sm" style={{ color: localProps.tipo_color || '#64748b' }}></i>
+                                      <span className="text-[11px] sm:text-[13px] font-black uppercase tracking-wide" style={{ color: localProps.tipo_color || '#475569' }}>
                                           {sessionTypeLabel(localProps.tipo_clase)}
                                       </span>
                                   </div>
@@ -506,10 +517,13 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
 
               {/* Credits Area with Premium Visuals */}
               <div className="mb-10">
-                   <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 px-1">
-                      CRÉDITOS CANJEABLES
+                   <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 px-1 flex justify-between items-center">
+                      <span>CRÉDITOS CANJEABLES</span>
+                      {window.AppConfig?.user?.role === 'cliente' && (
+                          <span className="text-[#38b2ac] text-[9px] sm:text-[11px] animate-pulse">MIS CRÉDITOS DISPONIBLES</span>
+                      )}
                    </h4>
-                   <div className={`p-6 rounded-[24px] border transition-all ${isEditing ? 'bg-white border-[#38b2ac] shadow-xl' : 'bg-slate-50/50 border-slate-100'}`}>
+                   <div className={`p-4 sm:p-6 rounded-[20px] sm:rounded-[24px] border transition-all ${isEditing ? 'bg-white border-[#38b2ac] shadow-xl' : 'bg-slate-50/50 border-slate-100'}`}>
                       {isEditing ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
                               {tiposCredito
@@ -559,6 +573,18 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                           </div>
                       )}
                    </div>
+
+                   {/* Personal Balance (Client Only) */}
+                   {window.AppConfig?.user?.role === 'cliente' && userCredits.length > 0 && (
+                       <div className="mt-4 flex flex-wrap gap-2 animate-in slide-in-from-top-2 duration-500">
+                            {userCredits.map((c, idx) => (
+                                <div key={idx} className="bg-gradient-to-r from-[#38b2ac] to-[#2d9a92] text-white px-3 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 shadow-lg shadow-teal-500/20 border border-teal-400/30">
+                                    <i className="fa-solid fa-gem text-[8px]"></i>
+                                    <span>{c.nombre}: {c.total}</span>
+                                </div>
+                            ))}
+                       </div>
+                   )}
               </div>
 
               {/* Attendees List Section */}
@@ -857,7 +883,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
         </div>
 
         {/* Global Modal Bottom Actions */}
-        <div className="px-6 py-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between shrink-0">
+        <div className="px-4 sm:px-6 py-4 sm:py-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between shrink-0">
            <div className="flex-1 flex gap-4">
                {window.IS_ADMIN && (
                    <button 
