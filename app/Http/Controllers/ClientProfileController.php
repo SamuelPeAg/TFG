@@ -265,12 +265,28 @@ class ClientProfileController extends Controller
 
     public function toggleFilePrivacy(ClientFile $file)
     {
+        // Seguridad: El dueño o staff
+        if (Auth::user()->hasRole('cliente') && !Auth::user()->hasRole('admin') && !Auth::user()->hasRole('entrenador')) {
+            if (Auth::id() !== $file->user_id) {
+                \Log::error("Acceso no autorizado a privacidad de archivo por cliente: " . Auth::user()->name . " sobre archivo de ID: " . $file->user_id);
+                return abort(403, 'No tienes permiso para modificar la privacidad de este archivo.');
+            }
+        }
+
         $file->update(['is_private' => !$file->is_private]);
         return response()->json(['message' => 'Privacidad actualizada', 'is_private' => $file->is_private]);
     }
 
     public function deleteFile(ClientFile $file)
     {
+        // Seguridad: El dueño o staff
+        if (Auth::user()->hasRole('cliente') && !Auth::user()->hasRole('admin') && !Auth::user()->hasRole('entrenador')) {
+            if (Auth::id() !== $file->user_id) {
+                \Log::error("Intento de borrado no autorizado por cliente: " . Auth::user()->name . " sobre archivo de usuario ID: " . $file->user_id);
+                return abort(403, 'No tienes permiso para eliminar este archivo.');
+            }
+        }
+
         Storage::disk('public')->delete($file->file_path);
         $file->delete();
         return response()->json(['message' => 'Archivo eliminado']);

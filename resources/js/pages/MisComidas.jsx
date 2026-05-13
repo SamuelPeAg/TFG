@@ -796,9 +796,11 @@ export default function MisComidas() {
                                         files.map(file => (
                                             <div key={file.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-3xl border border-slate-100 hover:bg-white hover:shadow-lg transition-all group/file">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-400 shadow-sm"><i className="fa-solid fa-file-pdf text-xl"></i></div>
+                                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-400 shadow-sm">
+                                                        <i className={`fa-solid ${['mp4', 'mov', 'webm'].includes(file.file_type?.toLowerCase()) ? 'fa-file-video' : 'fa-file-image'} text-xl`}></i>
+                                                    </div>
                                                     <div>
-                                                        <p className="text-sm font-black text-slate-700 truncate max-w-[150px] md:max-w-xs">{file.nombre}</p>
+                                                        <p className="text-sm font-black text-slate-700 truncate max-w-[150px] md:max-w-xs">{file.file_name || file.nombre}</p>
                                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{new Date(file.created_at).toLocaleDateString()}</p>
                                                     </div>
                                                 </div>

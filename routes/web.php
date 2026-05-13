@@ -212,6 +212,12 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::post('/client-profile/{user}/progress', [ClientProfileController::class, 'saveProgress']);
     Route::put('/measurements/{measurement}', [ClientProfileController::class, 'updateMeasurement']);
     Route::delete('/measurements/{measurement}', [ClientProfileController::class, 'deleteMeasurement']);
+    
+    // Gestión de Archivos (Accesible para dueños y staff)
+    Route::prefix('client-profile')->group(function() {
+        Route::post('/file/{file}/toggle-privacy', [ClientProfileController::class, 'toggleFilePrivacy']);
+        Route::delete('/file/{file}', [ClientProfileController::class, 'deleteFile']);
+    });
 
     // Endpoint para que clientes obtengan entrenadores
     Route::get('/api/client/trainers', function() {
@@ -292,10 +298,7 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::post('/users/bulk-send-activation', [UserController::class, 'bulkSendActivation'])->name('users.bulk-send-activation');
 
         // Ficha de Cliente y Archivos (Historia Clínica / Notas) - Escritura y gestión de archivos solo staff
-        Route::prefix('client-profile')->group(function() {
-            Route::post('/file/{file}/toggle-privacy', [ClientProfileController::class, 'toggleFilePrivacy']);
-            Route::delete('/file/{file}', [ClientProfileController::class, 'deleteFile']);
-        });
+        // Movido fuera para permitir acceso a clientes con validación interna
 
         /* RUTAS DE GRUPOS (DESHABILITADAS TEMPORALMENTE)
         Route::post('/users/crear-grupo', [UserController::class, 'storeGroup'])->name('users.group.store');

@@ -1440,8 +1440,8 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                             files.map(file => (
                                 <div key={file.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all duration-500 animate-in slide-in-from-right-4">
                                     <div className="flex items-center gap-6">
-                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-colors ${file.file_type === 'pdf' ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}>
-                                            <i className={file.file_type === 'pdf' ? 'fa-solid fa-file-pdf' : 'fa-solid fa-file-image'}></i>
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl transition-colors ${['mp4', 'mov', 'webm'].includes(file.file_type?.toLowerCase()) ? 'bg-amber-50 text-amber-500' : 'bg-indigo-50 text-indigo-500'}`}>
+                                            <i className={`fa-solid ${['mp4', 'mov', 'webm'].includes(file.file_type?.toLowerCase()) ? 'fa-file-video' : 'fa-file-image'}`}></i>
                                         </div>
                                         <div>
                                             <h4 className="font-black text-slate-800 text-sm tracking-tight">{file.file_name}</h4>
