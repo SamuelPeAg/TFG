@@ -91,7 +91,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
             <div className="reveal">
-              <h2 className="text-brandCoral font-black uppercase tracking-[0.5em] text-xs mb-4">La Transformación</h2>
+              <h2 className="text-brandCoral font-black uppercase tracking-widest text-xs mb-4">La Transformación</h2>
               <h3 className="text-3xl md:text-6xl font-black tracking-tighter mb-8 leading-tight">Del caos del Excel a la gestión viva.</h3>
               <p className="text-xl text-gray-600 leading-relaxed mb-8 font-medium">
                 Antiguamente, la gestión en <strong>Moverte da Vida</strong> se basaba en el intercambio constante de archivos. Un caos de 240 documentos al año donde era imposible cuadrar cobros y horas.
@@ -140,7 +140,7 @@ export default function Home() {
       <section className="py-32 bg-gray-50 rounded-[4rem] mx-4 sm:mx-8 mb-32 relative overflow-hidden border border-gray-100">
         <div className="max-w-7xl mx-auto px-10 relative z-10">
           <div className="text-center mb-24 reveal">
-            <h2 className="text-brandTeal font-black uppercase tracking-[0.4em] text-xs mb-4">Core Benefits</h2>
+            <h2 className="text-brandTeal font-black uppercase tracking-widest text-xs mb-4">Core Benefits</h2>
             <h3 className="text-3xl md:text-7xl font-black tracking-tighter text-gray-900">Todo lo que hacemos por ti.</h3>
           </div>
 
@@ -229,7 +229,7 @@ export default function Home() {
             <div className="w-20 h-20 rounded-3xl bg-teal-500/10 text-teal-600 flex items-center justify-center text-3xl mb-10 shadow-inner">
               <i className="fa-solid fa-brain"></i>
             </div>
-            <h2 className="text-teal-600 font-black uppercase tracking-[0.4em] text-xs mb-6">Innovación Fitness</h2>
+            <h2 className="text-teal-600 font-black uppercase tracking-widest text-xs mb-6">Innovación Fitness</h2>
             <h3 className="text-5xl md:text-7xl font-black tracking-tighter mb-10 leading-[0.95]">
               Tu Nutricionista <span className="text-gradient">IA</span>.
             </h3>

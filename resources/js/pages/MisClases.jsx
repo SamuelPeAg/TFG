@@ -117,7 +117,7 @@ export default function MisClases() {
                             <section className="space-y-6">
                                 <div className="flex items-center gap-3">
                                     <div className="w-1.5 h-6 bg-indigo-500 rounded-full"></div>
-                                    <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Estado de mis Suscripciones</h2>
+                                    <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Estado de mis Suscripciones</h2>
                                 </div>
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
@@ -202,7 +202,7 @@ export default function MisClases() {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="w-1.5 h-6 bg-[#38C1A3] rounded-full"></div>
-                                            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Próximas Sesiones</h2>
+                                            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Próximas Sesiones</h2>
                                         </div>
                                         <span className="text-[10px] font-black bg-teal-50 text-[#38C1A3] px-3 py-1 rounded-full">{upcomingSessions.length} Reservas</span>
                                     </div>
@@ -342,7 +342,7 @@ export default function MisClases() {
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="w-1.5 h-6 bg-slate-300 rounded-full"></div>
-                                            <h2 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Sesiones Anteriores</h2>
+                                            <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Sesiones Anteriores</h2>
                                         </div>
                                     </div>
 
