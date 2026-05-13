@@ -18,7 +18,8 @@ export default function Calendario() {
   const [loading, setLoading] = useState(true);
   
   const user = window.AppConfig?.user;
-  const [viewMode, setViewMode] = useState(user?.role === 'cliente' ? 'cards' : 'calendar');
+  const isMobile = window.innerWidth < 768;
+  const [viewMode, setViewMode] = useState(isMobile ? 'cards' : (user?.role === 'cliente' ? 'cards' : 'calendar'));
 
   // React Modal State
   const [isCrearModalOpen, setIsCrearModalOpen] = useState(false);

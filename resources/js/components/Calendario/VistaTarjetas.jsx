@@ -81,22 +81,22 @@ export default function VistaTarjetas({ centroFiltro, userFiltro, onlyMyClasses,
                                 const isJoined = Array.isArray(props.alumnos) && props.alumnos.some(a => a.id === window.AppConfig?.user?.id);
                                 return (
                                     <div key={ev.groupId} 
-                                         className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-slate-200 transition-all flex flex-col relative overflow-hidden group cursor-pointer"
+                                         className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-slate-200 transition-all flex flex-col relative overflow-hidden group cursor-pointer"
                                          onClick={() => onClickButton(ev)}>
                                         <div className="absolute top-0 left-0 w-2 h-full" style={{backgroundColor: ev.backgroundColor}}></div>
                                         
                                         <div className="flex justify-between items-start mb-3">
-                                            <h4 className="font-bold text-slate-800 text-xl leading-none tracking-tight">{props.clase_nombre}</h4>
+                                            <h4 className="font-bold text-slate-800 text-lg sm:text-xl leading-none tracking-tight">{props.clase_nombre}</h4>
                                             {isJoined && (
                                                 <span className="bg-[#4BB7AE]/10 text-[#4BB7AE] text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider">APUNTADO</span>
                                             )}
                                         </div>
                                         
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            <span className="text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
+                                        <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                                            <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
                                                 <i className="fa-regular fa-clock mr-1 text-slate-400"></i> {props.hora}
                                             </span>
-                                            <span className="text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
+                                            <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 bg-slate-50 px-2 py-1 rounded-lg">
                                                 <i className="fa-solid fa-location-dot mr-1 text-slate-400"></i> {props.centro}
                                             </span>
                                         </div>
