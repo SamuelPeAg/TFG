@@ -40,6 +40,13 @@ export default function Estadisticas() {
   
   const [replyModal, setReplyModal] = useState({ open: false, notifId: null, text: '' });
   const [replyLoading, setReplyLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -154,7 +161,17 @@ export default function Estadisticas() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top', labels: { font: { size: 10, weight: '900' }, usePointStyle: true, boxWidth: 6, color: '#64748b' } },
+      legend: { 
+        position: isMobile ? 'bottom' : 'top', 
+        align: 'center',
+        labels: { 
+          font: { size: isMobile ? 8 : 10, weight: '900' }, 
+          usePointStyle: true, 
+          boxWidth: isMobile ? 4 : 6, 
+          padding: isMobile ? 8 : 10,
+          color: '#64748b' 
+        } 
+      },
       tooltip: { 
         padding: 12, 
         backgroundColor: '#1e293b', 
@@ -164,8 +181,14 @@ export default function Estadisticas() {
       }
     },
     scales: {
-      y: { grid: { display: true, color: '#f1f5f9' }, ticks: { font: { size: 10 }, color: '#94a3b8' } },
-      x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#94a3b8' } }
+      y: { 
+        grid: { display: true, color: '#f1f5f9' }, 
+        ticks: { font: { size: isMobile ? 8 : 10 }, color: '#94a3b8' } 
+      },
+      x: { 
+        grid: { display: false }, 
+        ticks: { font: { size: isMobile ? 8 : 10 }, color: '#94a3b8' } 
+      }
     }
   };
 
@@ -200,7 +223,7 @@ export default function Estadisticas() {
           ) : (
             <>
               {/* KPIs Section */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {[
                   { label: 'Clientes Totales', value: data.kpis.totalClientes, icon: 'fa-users', color: 'bg-[#4BB7AE]', link: '/clientes' },
                   { label: 'Staff / Coaches', value: data.kpis.totalEntrenadores, icon: 'fa-dumbbell', color: 'bg-[#A5EFE2] !text-[#53565A]', link: '/entrenadores' },
@@ -208,15 +231,15 @@ export default function Estadisticas() {
                   { label: 'Sesiones Totales', value: data.kpis.sesionesMes, icon: 'fa-calendar-check', color: 'bg-[#EF5D7A]', link: '/calendario' }
                 ].map((kpi, idx) => (
                   <Link to={kpi.link} key={idx} className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col justify-between group hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-500">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className={`w-12 h-12 ${kpi.color} text-white rounded-2xl flex items-center justify-center text-xl shadow-lg shadow-inherit/20`}>
+                    <div className="flex justify-between items-start mb-2 sm:mb-4">
+                      <div className={`w-8 h-8 sm:w-12 sm:h-12 ${kpi.color} text-white rounded-xl sm:rounded-2xl flex items-center justify-center text-sm sm:text-xl shadow-lg shadow-inherit/20`}>
                         <i className={`fa-solid ${kpi.icon}`}></i>
                       </div>
-                      <i className="fa-solid fa-chevron-right text-slate-200 group-hover:text-slate-400 transition-colors"></i>
+                      <i className="fa-solid fa-chevron-right text-slate-200 group-hover:text-slate-400 transition-colors text-[10px] sm:text-base"></i>
                     </div>
                     <div>
-                      <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-tighter mb-1">{kpi.label}</h3>
-                      <p className="text-3xl font-black text-[#53565A] tracking-tighter">{kpi.value}</p>
+                      <h3 className="text-[9px] sm:text-[11px] font-black text-slate-400 uppercase tracking-tighter mb-0.5 sm:mb-1">{kpi.label}</h3>
+                      <p className="text-xl sm:text-3xl font-black text-[#53565A] tracking-tighter">{kpi.value}</p>
                     </div>
                   </Link>
                 ))}
@@ -225,7 +248,7 @@ export default function Estadisticas() {
               {/* Main Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Revenue Comparison */}
-                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[400px] sm:h-[450px]">
+                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[320px] sm:h-[450px]">
                   <div className="mb-8">
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Ingresos por Centro</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Comparativa histórica de facturación</p>
@@ -236,7 +259,7 @@ export default function Estadisticas() {
                 </div>
 
                 {/* Churn Analysis */}
-                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[400px] sm:h-[450px]">
+                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[320px] sm:h-[450px]">
                   <div className="mb-8">
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Evolución de Clientes</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Análisis de retención y nuevos usuarios</p>
@@ -250,7 +273,7 @@ export default function Estadisticas() {
               {/* Occupancy and Customer Care */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Occupancy Bar */}
-                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px] sm:h-[500px] lg:col-span-2">
+                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[380px] sm:h-[500px] lg:col-span-2">
                   <div className="mb-8">
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Ocupación de Clases</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Clases con mayor ratio de asistencia</p>
@@ -261,7 +284,7 @@ export default function Estadisticas() {
                 </div>
 
                 {/* Subscription Popularity */}
-                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[450px] sm:h-[500px]">
+                <div className="bg-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[3rem] shadow-sm border border-slate-100 flex flex-col h-[380px] sm:h-[500px]">
                   <div className="mb-8">
                     <h3 className="text-lg font-black text-slate-800 tracking-tight">Distribución de Planes</h3>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Suscripciones más contratadas (Activas)</p>
