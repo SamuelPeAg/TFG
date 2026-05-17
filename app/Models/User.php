@@ -83,6 +83,8 @@ class User extends Authenticatable
     public function getPhotoAttribute()
     {
         $path = trim($this->foto_de_perfil ?? '');
-        return !empty($path) ? asset('storage/' . $path) : null;
+        if (empty($path)) return null;
+        if (str_starts_with($path, 'http')) return $path;
+        return asset('storage/' . $path);
     }
 }
