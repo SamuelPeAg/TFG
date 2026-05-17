@@ -84,10 +84,20 @@ class PagosController extends Controller
                     'extendedProps' => [
                         'clase_nombre' => $first->nombre_clase,
                         'centro' => $first->centro,
+                        'tipo_clase' => $first->tipo_clase,
                         'alumnos_count' => $count,
                         'capacidad_maxima' => $max,
+                        'session_key' => [
+                            'fecha_hora' => $first->fecha_registro ? $first->fecha_registro->format('Y-m-d H:i:s') : null,
+                            'nombre_clase' => $first->nombre_clase,
+                            'centro' => $first->centro
+                        ],
+                        'suscripciones_permitidas' => $first->suscripciones->pluck('id')->toArray(),
+                        'suscripciones_detalles' => $first->suscripciones->map(fn($s) => ['id' => $s->id, 'nombre' => $s->nombre])->toArray(),
+                        'tipos_credito_permitidos' => $first->tiposCredito->pluck('id')->toArray(),
+                        'tipos_credito_detalles' => $first->tiposCredito->map(fn($t) => ['id' => $t->id, 'nombre' => $t->nombre])->toArray(),
                         'entrenadores' => $grupo->flatMap->entrenadores->unique('id')->map(fn($t) => ['id' => $t->id, 'name' => $t->name, 'initial' => strtoupper(substr($t->name, 0, 1))])->values(),
-                        'alumnos' => $grupo->filter(fn($p) => $p->user_id !== null)->map(fn($p) => ['id' => $p->user_id, 'nombre' => $p->user->name ?? 'Usuario'])->values()
+                        'alumnos' => $grupo->filter(fn($p) => $p->user_id !== null)->map(fn($p) => ['id' => $p->user_id, 'nombre' => $p->user->name ?? 'Usuario', 'photo' => $p->user->photo ?? null])->values()
                     ]
                 ];
             }

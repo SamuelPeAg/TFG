@@ -4,10 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './app'; // Load bootstrap and select2-init
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
-import { initMetrics } from './utils/metrics'
 import '../css/index.css'
-
-initMetrics();
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
