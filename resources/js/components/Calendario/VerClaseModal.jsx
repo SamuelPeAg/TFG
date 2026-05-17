@@ -122,7 +122,8 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
       }
     } catch (err) {
       console.error(err);
-      alert("Error al añadir entrenador");
+      const serverError = err.response?.data?.error || err.response?.data?.message;
+      showAlert(serverError || "Error al añadir entrenador", true);
     } finally {
       setIsSubmitting(false);
     }
@@ -190,12 +191,12 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
         setClientSearchTerm('');
         setShowClientSuggestions(false);
       } else {
-        alert(res.data.error || "Error al añadir alumno");
+        showAlert(res.data.error || "Error al añadir alumno", true);
       }
     } catch (err) {
       console.error(err);
       const serverError = err.response?.data?.error || err.response?.data?.message;
-      alert(serverError || "Error al añadir alumno");
+      showAlert(serverError || "Error al añadir alumno", true);
     } finally {
       setIsSubmitting(false);
     }

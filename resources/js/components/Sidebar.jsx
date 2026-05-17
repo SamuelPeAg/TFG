@@ -40,9 +40,19 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   }, [location.pathname, setIsOpen]);
 
   const fetchNotifications = async () => {
+    if (!user) return;
     try {
-      const res = await axios.get('/api/user-notifications');
-      setHasUnreadAlerts(res.data.notifications.length > 0);
+      if (user.role === 'admin') {
+        const res = await axios.get('/api/admin/notificaciones');
+        setHasUnreadAlerts(res.data.some(n => !n.leido));
+      } else if (user.role === 'entrenador') {
+        const res = await axios.get('/notificaciones-entrenador');
+        // Unread means leido is false and we are the destinatario, or maybe just any unread in our inbox
+        setHasUnreadAlerts(res.data.some(n => !n.leido && n.destinatario_id === user.id));
+      } else {
+        const res = await axios.get('/api/user-notifications');
+        setHasUnreadAlerts(res.data.notifications.length > 0);
+      }
     } catch (err) {
       console.error('Error fetching notifications for sidebar:', err);
     }

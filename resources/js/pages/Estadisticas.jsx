@@ -325,11 +325,11 @@ export default function Estadisticas() {
                       <h3 className="text-lg font-black text-[#53565A] tracking-tight">Últimos Pagos</h3>
                       <Link to="/facturas" className="text-[10px] font-black text-[#4BB7AE] uppercase tracking-widest hover:underline transition-colors">Historial</Link>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
                       {/* Desktop Table */}
                       <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left">
-                          <thead>
+                          <thead className="sticky top-0 bg-white z-10">
                             <tr className="border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                               <th className="px-4 py-4">Cliente</th>
                               <th className="px-4 py-4">Clase</th>
