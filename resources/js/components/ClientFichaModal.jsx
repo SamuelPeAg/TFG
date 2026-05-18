@@ -741,14 +741,14 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                                         <div key={`${su.id}-${idx}`} className="bg-white px-6 py-5 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-shadow group/item">
                                             <div 
                                                 className="w-14 h-14 rounded-2xl flex flex-col items-center justify-center text-white font-black shadow-lg shadow-teal-100/50 transition-all group-hover/item:scale-110"
-                                                style={{ background: s.saldo > 0 ? 'linear-gradient(135deg, #38C1A3, #2D9B82)' : '#e2e8f0' }}
+                                                style={{ background: s.total > 0 ? 'linear-gradient(135deg, #38C1A3, #2D9B82)' : '#e2e8f0' }}
                                             >
                                                 <i className="fa-solid fa-ticket-alt text-[10px] opacity-70 mb-0.5"></i>
-                                                <span className="text-lg leading-none">{s.saldo}</span>
+                                                <span className="text-lg leading-none">{s.total}</span>
                                             </div>
                                             <div>
                                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{su.suscripcion?.nombre || 'PACK'}</p>
-                                                <p className="text-sm font-black text-slate-700">{s.nombre || 'Clase'}</p>
+                                                <p className="text-sm font-black text-slate-700">{s.tipo_credito?.nombre || 'Crédito'}</p>
                                             </div>
                                         </div>
                                     ));

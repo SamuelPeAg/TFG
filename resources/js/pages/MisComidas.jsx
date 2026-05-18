@@ -203,7 +203,12 @@ export default function MisComidas() {
             setAltura(res.data.user?.altura ? Math.round(res.data.user.altura * 100) : '');
             setMeasurements(res.data.measurements || []);
             setFiles(res.data.files || []);
-            setSpecialistNotes(res.data.user?.notas_especialista || '');
+            const attrs = res.data.user?.additional_attributes || [];
+            const publicNotes = attrs
+                .filter(attr => attr.type === 'note')
+                .map(attr => (attr.key ? `${attr.key.toUpperCase()}:\n` : '') + attr.value)
+                .join('\n\n---\n\n');
+            setSpecialistNotes(publicNotes);
         } catch (error) {
             console.error('Error fetching physical data:', error);
         }

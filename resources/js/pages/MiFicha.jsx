@@ -32,7 +32,12 @@ export default function MiFicha() {
             const res = await axios.get(`/client-profile/${userId}`);
             setClient(res.data.user);
             setFiles(res.data.files || []);
-            setSpecialistNotes(res.data.user?.notas_especialista || '');
+            const attrs = res.data.user?.additional_attributes || [];
+            const publicNotes = attrs
+                .filter(attr => attr.type === 'note')
+                .map(attr => (attr.key ? `${attr.key.toUpperCase()}:\n` : '') + attr.value)
+                .join('\n\n---\n\n');
+            setSpecialistNotes(publicNotes);
 
         } catch (error) {
             console.error('Error fetching ficha:', error);
