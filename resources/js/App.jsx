@@ -73,7 +73,7 @@ function App() {
       <Route path="/suscripciones" element={<Suscripciones />} />
       <Route path="/estadisticas" element={<Estadisticas />} />
       <Route path="/gestion" element={<Gestion />} />
-      <Route path="/admin/errores" element={<SystemLogs />} />
+      {/* <Route path="/admin/errores" element={<SystemLogs />} /> */}
       <Route path="/mis-clases" element={<MisClases />} />
       <Route path="/mis-estadisticas" element={<MisEstadisticas />} />
       <Route path="/notificaciones" element={<Notificaciones />} />
