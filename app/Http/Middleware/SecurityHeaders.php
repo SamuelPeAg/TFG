@@ -19,8 +19,8 @@ class SecurityHeaders
 
         // Añadimos las cabeceras de seguridad
         $csp = "default-src 'self'; " .
-               "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net http://localhost:5173 http://127.0.0.1:5173; " .
-               "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net http://localhost:5173 http://127.0.0.1:5173; " .
+               "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://unpkg.com http://localhost:5173 http://127.0.0.1:5173; " .
+               "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com http://localhost:5173 http://127.0.0.1:5173; " .
                "font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com http://localhost:5173 http://127.0.0.1:5173; " .
                "img-src 'self' data: blob: https: http://localhost:5173 http://127.0.0.1:5173; " .
                "connect-src 'self' ws://localhost:5173 wss://localhost:5173 http://localhost:5173 http://127.0.0.1:5173 https:; " .

@@ -58,15 +58,21 @@ class BookingSwapController extends Controller
         $now = now();
         
         // Obtenemos todos los pagos futuros para agruparlos como sesiones
-        $futurePagos = Pago::with(['user', 'entrenadores', 'tiposCredito'])
+        $query = Pago::with(['user', 'entrenadores', 'tiposCredito'])
             ->where('fecha_registro', '>', $now)
             ->where('centro', $pago->centro)
-            ->where('tipo_clase', $pago->tipo_clase) // Misma familia de clase
-            // Eliminamos el filtro de != nombre_clase para permitir swaps a la misma actividad en otro horario
-            ->whereHas('tiposCredito', function($q) use ($allowedCreditTypeIds) {
+            ->where('tipo_clase', $pago->tipo_clase); // Misma familia de clase
+            
+        // Eliminamos el filtro de != nombre_clase para permitir swaps a la misma actividad en otro horario
+        if (!empty($allowedCreditTypeIds)) {
+            $query->whereHas('tiposCredito', function($q) use ($allowedCreditTypeIds) {
                 $q->whereIn('tipo_credito_id', $allowedCreditTypeIds);
-            })
-            ->get();
+            });
+        } else {
+            $query->doesntHave('tiposCredito');
+        }
+
+        $futurePagos = $query->get();
 
         // Agrupamos por sesión (fecha, nombre, centro)
         $grouped = $futurePagos->groupBy(function($p) {

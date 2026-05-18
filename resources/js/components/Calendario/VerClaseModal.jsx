@@ -518,12 +518,22 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
 
               {/* Credits Area with Premium Visuals */}
               <div className="mb-10">
-                   <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 px-1 flex justify-between items-center">
-                      <span>CRÉDITOS CANJEABLES</span>
-                      {window.AppConfig?.user?.role === 'cliente' && (
-                          <span className="text-[#38b2ac] text-[9px] sm:text-[11px] animate-pulse">MIS CRÉDITOS DISPONIBLES</span>
-                      )}
-                   </h4>
+                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 px-1 gap-2">
+                       <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+                           CRÉDITOS CANJEABLES
+                       </h4>
+                       {window.AppConfig?.user?.role === 'cliente' && userCredits.length > 0 && (
+                           <div className="flex items-center gap-2">
+                               <span className="text-[#38b2ac] text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mr-1">Tus Créditos:</span>
+                               {userCredits.map((c, idx) => (
+                                   <div key={idx} className="bg-gradient-to-r from-[#38b2ac] to-[#2d9a92] text-white px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-1.5 shadow-md shadow-teal-500/20 border border-teal-400/30">
+                                       <i className="fa-solid fa-gem text-[8px]"></i>
+                                       <span>{c.nombre}: {c.total}</span>
+                                   </div>
+                               ))}
+                           </div>
+                       )}
+                   </div>
                    <div className={`p-4 sm:p-6 rounded-[20px] sm:rounded-[24px] border transition-all ${isEditing ? 'bg-white border-[#38b2ac] shadow-xl' : 'bg-slate-50/50 border-slate-100'}`}>
                       {isEditing ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
@@ -575,17 +585,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                       )}
                    </div>
 
-                   {/* Personal Balance (Client Only) */}
-                   {window.AppConfig?.user?.role === 'cliente' && userCredits.length > 0 && (
-                       <div className="mt-4 flex flex-wrap gap-2 animate-in slide-in-from-top-2 duration-500">
-                            {userCredits.map((c, idx) => (
-                                <div key={idx} className="bg-gradient-to-r from-[#38b2ac] to-[#2d9a92] text-white px-3 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 shadow-lg shadow-teal-500/20 border border-teal-400/30">
-                                    <i className="fa-solid fa-gem text-[8px]"></i>
-                                    <span>{c.nombre}: {c.total}</span>
-                                </div>
-                            ))}
-                       </div>
-                   )}
+                   {/* Personal Balance moved to header */}
               </div>
 
               {/* Attendees List Section */}
