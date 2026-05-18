@@ -526,7 +526,7 @@ export default function VerClaseModal({ isOpen, onClose, selectedEvent, centros,
                            <div className="flex items-center gap-2">
                                <span className="text-[#38b2ac] text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mr-1">Tus Créditos:</span>
                                {userCredits.map((c, idx) => (
-                                   <div key={idx} className="bg-gradient-to-r from-[#38b2ac] to-[#2d9a92] text-white px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-1.5 shadow-md shadow-teal-500/20 border border-teal-400/30">
+                                   <div key={idx} className="bg-teal-500 text-white px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-1.5 shadow-md shadow-teal-500/30 border border-teal-400">
                                        <i className="fa-solid fa-gem text-[8px]"></i>
                                        <span>{c.nombre}: {c.total}</span>
                                    </div>

@@ -155,7 +155,7 @@ class BookingSwapController extends Controller
                 'alumnos_count' => $count,
                 'entrenadores' => array_values($entrenadores),
                 'alumnos' => $alumnos,
-                'nivel' => $claseCand->nivel,
+                'nivel' => $claseCand ? $claseCand->nivel : null,
             ];
         }
 
