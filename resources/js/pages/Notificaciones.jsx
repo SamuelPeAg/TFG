@@ -12,7 +12,6 @@ export default function Notificaciones() {
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('system'); // 'system' o 'messages'
     
     // Estados para Mensajería Directa
     const [history, setHistory] = useState([]);
@@ -128,101 +127,6 @@ export default function Notificaciones() {
                 <div className="flex-1 overflow-auto p-4 sm:p-8">
                     <div className="max-w-6xl mx-auto space-y-8">
                         
-                        {/* Tabs Premium */}
-                        <div className="flex flex-col sm:flex-row items-center gap-4 justify-between">
-                            <div className="flex p-1 bg-slate-200/50 rounded-2xl w-fit">
-                                <button 
-                                    onClick={() => setActiveTab('system')}
-                                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'system' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    <i className="fa-solid fa-bolt-lightning"></i>
-                                    Avisos {systemNotifications.length > 0 && <span className="bg-rose-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] animate-pulse">{systemNotifications.length}</span>}
-                                </button>
-                                <button 
-                                    onClick={() => setActiveTab('messages')}
-                                    className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'messages' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                >
-                                    <i className="fa-solid fa-envelope"></i>
-                                    Mensajería
-                                </button>
-                            </div>
-
-                            {activeTab === 'system' && (
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={() => showToast('¡Prueba de notificación exitosa! ✨', 'info')}
-                                        className="px-4 py-2 bg-slate-800 text-white text-[10px] font-black uppercase rounded-xl hover:bg-slate-700 transition-all"
-                                    >
-                                        <i className="fa-solid fa-eye mr-2"></i>
-                                        Probar UI
-                                    </button>
-                                    <button 
-                                        onClick={async () => {
-                                            try {
-                                                await axios.post('/api/user-notifications/toggle-field-alert', {
-                                                    user_id: user.id,
-                                                    field: 'peso',
-                                                    message: '¡Hola! Es hora de actualizar tu peso semanal para que la IA ajuste tu dieta. 🍎'
-                                                });
-                                                showToast('¡Simulación de IA enviada con éxito! 🚀', 'success');
-                                                fetchData();
-                                            } catch (e) { 
-                                                console.error(e); 
-                                                showToast('Error al conectar con el servidor ❌', 'error');
-                                            }
-                                        }}
-                                        className="px-4 py-2 bg-indigo-500 text-white text-[10px] font-black uppercase rounded-xl hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-100"
-                                    >
-                                        <i className="fa-solid fa-vial mr-2"></i>
-                                        Simular Notificación IA
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {activeTab === 'system' ? (
-                            <div className="grid grid-cols-1 gap-4 animate-in fade-in duration-500">
-                                {loadingSystem ? (
-                                    <div className="flex justify-center py-20">
-                                        <div className="w-10 h-10 border-4 border-slate-200 border-t-indigo-500 rounded-full animate-spin"></div>
-                                    </div>
-                                ) : systemNotifications.length === 0 ? (
-                                    <div className="bg-white p-20 rounded-[3rem] border border-dashed border-slate-200 text-center flex flex-col items-center">
-                                        <div className="w-20 h-20 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center text-3xl mb-6">
-                                            <i className="fa-solid fa-check-double"></i>
-                                        </div>
-                                        <p className="text-lg font-black text-slate-400">¡Estás al día!</p>
-                                        <p className="text-sm text-slate-300 font-bold">No tienes avisos pendientes por ahora.</p>
-                                    </div>
-                                ) : (
-                                    systemNotifications.map(notif => {
-                                        const config = getSystemIcon(notif.type);
-                                        return (
-                                            <div key={notif.id} className="group bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all flex items-center gap-6 relative overflow-hidden">
-                                                <div className={`w-16 h-16 ${config.bg} ${config.color} rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                                                    <i className={config.icon}></i>
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-3 mb-1">
-                                                        <span className={`text-[10px] font-black uppercase tracking-widest ${config.color}`}>{config.title}</span>
-                                                        <span className="text-[10px] text-slate-300 font-bold">•</span>
-                                                        <span className="text-[10px] text-slate-400 font-bold">{new Date(notif.created_at).toLocaleDateString()}</span>
-                                                    </div>
-                                                    <p className="text-slate-700 font-bold leading-relaxed">{notif.message}</p>
-                                                </div>
-                                                <button 
-                                                    onClick={() => markAsRead(notif.id)}
-                                                    className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-500 transition-all opacity-0 group-hover:opacity-100"
-                                                    title="Marcar como leída"
-                                                >
-                                                    <i className="fa-solid fa-check"></i>
-                                                </button>
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </div>
-                        ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-500">
                                 
                                 {/* Formulario */}
@@ -310,7 +214,7 @@ export default function Notificaciones() {
                                                                 </p>
                                                             </div>
                                                             {isReceived && (
-                                                                <button onClick={() => {setActiveTab('messages'); setForm({...form, destinatario_id: notif.entrenador_id, titulo: `RE: ${notif.titulo}`}); window.scrollTo({top: 0, behavior: 'smooth'})}} className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center hover:bg-indigo-500 hover:text-white transition-all">
+                                                                <button onClick={() => {setForm({...form, destinatario_id: notif.entrenador_id, titulo: `RE: ${notif.titulo}`}); window.scrollTo({top: 0, behavior: 'smooth'})}} className="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center hover:bg-indigo-500 hover:text-white transition-all">
                                                                     <i className="fa-solid fa-reply"></i>
                                                                 </button>
                                                             )}
@@ -332,7 +236,6 @@ export default function Notificaciones() {
                                 </div>
 
                             </div>
-                        )}
 
                     </div>
                 </div>

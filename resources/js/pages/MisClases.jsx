@@ -98,7 +98,7 @@ export default function MisClases() {
             
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72 relative">
                 <PageHeader 
-                    title="Mis Actividades"
+                    title="Mis Clases"
                     subtitle="Gestión de clases y suscripciones"
                     icon="fa-solid fa-calendar-days"
                     onMenuClick={() => setIsSidebarOpen(true)}
