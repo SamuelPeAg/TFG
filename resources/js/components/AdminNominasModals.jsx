@@ -231,7 +231,7 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess, onError
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Datos Base</h4>
                                 <div className="space-y-1.5 flex flex-col">
                                     <label className="text-[11px] font-bold text-slate-500 uppercase">Horas Trabajadas</label>
-                                    <input type="number" step="0.01" value={detalles.horas_trabajadas} onChange={(e) => setDetalles({...detalles, horas_trabajadas: e.target.value.replace(/[^0-9.]/g, '')})} 
+                                    <input type="number" min="0" step="0.01" value={detalles.horas_trabajadas} onChange={(e) => setDetalles({...detalles, horas_trabajadas: e.target.value.replace(/[^0-9.]/g, '')})} 
                                            className="w-full text-sm font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:border-[#38C1A3] focus:bg-white outline-none" />
                                 </div>
                             </div>
@@ -241,7 +241,7 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess, onError
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Desglose Económico</h4>
                                 <div className="flex items-center justify-between gap-4">
                                     <label className="text-xs font-bold text-slate-600">Salario Bruto (€)</label>
-                                    <input type="number" step="0.01" value={detalles.salario_bruto} onChange={(e) => setDetalles({...detalles, salario_bruto: e.target.value.replace(/[^0-9.]/g, '')})} 
+                                    <input type="number" min="0" step="0.01" value={detalles.salario_bruto} onChange={(e) => setDetalles({...detalles, salario_bruto: e.target.value.replace(/[^0-9.]/g, '')})} 
                                           className="w-32 bg-slate-50 p-2 text-sm rounded-xl border border-slate-200 text-right font-black text-slate-700 outline-none focus:border-[#38C1A3]" />
                                 </div>
                                 <div className="flex items-center justify-between text-rose-500">
@@ -250,7 +250,7 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess, onError
                                 </div>
                                 <div className="flex items-center justify-between text-rose-500">
                                     <label className="text-[11px] font-bold uppercase">- Monto IRPF (€)</label>
-                                    <input type="number" step="0.01" value={detalles.irpf} onChange={(e) => setDetalles({...detalles, irpf: e.target.value.replace(/[^0-9.]/g, '')})} 
+                                    <input type="number" min="0" step="0.01" value={detalles.irpf} onChange={(e) => setDetalles({...detalles, irpf: e.target.value.replace(/[^0-9.]/g, '')})} 
                                           className="w-24 bg-rose-50/50 p-2 text-xs rounded-xl border border-rose-100 text-right font-black outline-none focus:border-rose-300" />
                                 </div>
                             </div>
@@ -269,7 +269,7 @@ export function RevisarNominaModal({ isOpen, onClose, nomina, onSuccess, onError
                                     <div key={idx} className="flex gap-3">
                                         <input type="text" placeholder="Concepto (ej. Bono Objetivos)" value={ex.concepto} onChange={(e) => updateExtra(idx, 'concepto', e.target.value)} 
                                                className="flex-1 px-3 py-2 text-sm font-semibold border border-slate-200 rounded-xl bg-white focus:border-[#38C1A3] outline-none" />
-                                        <input type="number" step="0.01" value={ex.importe} onChange={(e) => updateExtra(idx, 'importe', e.target.value.replace(/[^0-9.]/g, ''))} 
+                                        <input type="number" min="0" step="0.01" value={ex.importe} onChange={(e) => updateExtra(idx, 'importe', e.target.value.replace(/[^0-9.]/g, ''))} 
                                                className="w-28 px-3 py-2 text-sm font-black text-right border border-slate-200 rounded-xl bg-white focus:border-[#38C1A3] outline-none" />
                                         <button type="button" onClick={() => removeExtra(idx)} className="w-10 h-10 shrink-0 flex items-center justify-center bg-white text-rose-400 hover:text-white hover:bg-rose-500 rounded-xl border border-slate-200 transition-colors">
                                             <i className="fas fa-times"></i>

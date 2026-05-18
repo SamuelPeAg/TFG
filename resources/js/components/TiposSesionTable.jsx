@@ -270,12 +270,12 @@ export default function TiposSesionTable({ tipos, centros, onUpdate, tiposCredit
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Capacidad de personas</label>
-                  <input type="number" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold" value={formData.capacidad_personas} onChange={e => setFormData({...formData, capacidad_personas: e.target.value.replace(/[^0-9]/g, '')})} />
+                  <input type="number" min="1" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold" value={formData.capacidad_personas} onChange={e => setFormData({...formData, capacidad_personas: e.target.value.replace(/[^0-9]/g, '')})} />
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">Precio Base (€)</label>
-                  <input type="number" step="0.01" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold" value={formData.precio_base} onChange={e => setFormData({...formData, precio_base: e.target.value.replace(/[^0-9.]/g, '')})} />
+                  <input type="number" min="0" step="0.01" className="w-full px-6 py-4 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-[#4BB7AE] outline-none font-bold" value={formData.precio_base} onChange={e => setFormData({...formData, precio_base: e.target.value.replace(/[^0-9.]/g, '')})} />
                 </div>
 
                 <div className="space-y-2">

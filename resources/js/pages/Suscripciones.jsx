@@ -449,7 +449,7 @@ export default function Suscripciones() {
                                             {/* Precio */}
                                             <div className="space-y-1.5">
                                                 <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Precio (€)</label>
-                                                <input type="number" step="0.01" name="precio" value={form.precio} onChange={handleFormChange}
+                                                <input type="number" min="0" step="0.01" name="precio" value={form.precio} onChange={handleFormChange}
                                                     placeholder="0.00"
                                                     className={`w-full bg-slate-50 border ${formErrors.precio ? 'border-rose-300 focus:border-rose-400' : 'border-slate-200 focus:border-[#38C1A3]'} rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:bg-white`} />
                                                 {formErrors.precio && <p className="text-[10px] text-rose-500 font-bold pl-1">{formErrors.precio}</p>}
@@ -545,7 +545,7 @@ export default function Suscripciones() {
                                     <div className="grid grid-cols-2 gap-5">
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest pl-1">Límite Acumulación</label>
-                                            <input type="number" name="limite_acumulacion" value={form.limite_acumulacion} onChange={handleFormChange}
+                                            <input type="number" min="0" name="limite_acumulacion" value={form.limite_acumulacion} onChange={handleFormChange}
                                                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 outline-none transition-all focus:border-[#38C1A3] focus:bg-white" />
                                             <p className="text-[10px] text-slate-400 font-medium pl-1">0 = sin límite de crédito acumulable</p>
                                         </div>

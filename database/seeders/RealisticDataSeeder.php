@@ -48,6 +48,13 @@ class RealisticDataSeeder extends Seeder
 
         // 2. Generar Ingresos por Suscripciones (Histórico)
         foreach ($clientes as $cliente) {
+            // Siempre suscribir al usuario de prueba "cliente@factomove.com" para demostración en vivo
+            // Para el resto de los clientes, solo suscribir al 25% de ellos para que sea realista
+            $isTestUser = $cliente->email === 'cliente@factomove.com';
+            if (!$isTestUser && rand(1, 100) > 25) {
+                continue; // Queda sin suscripción por defecto
+            }
+
             $plan = $suscripciones->random();
             $fechaInicio = $now->copy()->subMonths($mesesAtras)->startOfMonth();
             
@@ -59,6 +66,16 @@ class RealisticDataSeeder extends Seeder
                 'fecha_vencimiento_suscripcion' => $now->copy()->addDays(20),
                 'dia_recarga' => $fechaInicio->day,
             ]);
+
+            // Asignar créditos iniciales (lotes) correspondientes a la suscripción para que tengan saldo real
+            foreach ($plan->creditos as $c) {
+                $userSub->lotes()->create([
+                    'tipo_credito_id' => $c->tipo_credito_id,
+                    'cantidad_inicial' => $c->cantidad,
+                    'cantidad_actual' => $c->cantidad,
+                    'fecha_vencimiento' => $now->copy()->addDays($c->dias_caducidad),
+                ]);
+            }
 
             // Generar pagos mensuales de esta suscripción
             for ($m = 0; $m <= $mesesAtras; $m++) {

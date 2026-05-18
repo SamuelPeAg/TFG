@@ -583,7 +583,7 @@ export default function CrearClaseModal({ isOpen, onClose, centros = [], entrena
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-xs font-bold text-slate-600 pl-1">Precio Base por Persona (€)</label>
-                                            <input type="number" step="0.01" name="precio_base" value={formData.precio_base} onChange={handleChange} 
+                                            <input type="number" min="0" step="0.01" name="precio_base" value={formData.precio_base} onChange={handleChange} 
                                                 className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm font-bold rounded-xl px-4 py-3.5 outline-none" />
                                         </div>
                                     </div>
