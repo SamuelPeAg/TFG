@@ -9,7 +9,7 @@ export default function MiFicha() {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    
+
     // Modals state
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, onConfirm: null, message: '', title: '' });
     const [alertModal, setAlertModal] = useState({ isOpen: false, message: '', title: '', isError: false });
@@ -32,12 +32,7 @@ export default function MiFicha() {
             const res = await axios.get(`/client-profile/${userId}`);
             setClient(res.data.user);
             setFiles(res.data.files || []);
-            const attrs = res.data.user?.additional_attributes || [];
-            const publicNotes = attrs
-                .filter(attr => attr.type === 'note')
-                .map(attr => (attr.key ? `${attr.key.toUpperCase()}:\n` : '') + attr.value)
-                .join('\n\n---\n\n');
-            setSpecialistNotes(publicNotes);
+            setSpecialistNotes(res.data.user?.notas_especialista || '');
 
         } catch (error) {
             console.error('Error fetching ficha:', error);
@@ -106,12 +101,12 @@ export default function MiFicha() {
     return (
         <div className="flex bg-[#F8FAFC] min-h-screen font-sans text-slate-800 overflow-x-hidden">
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
-            
+
             {isSidebarOpen && <div className="fixed inset-0 bg-slate-900/40 z-30 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />}
 
             <main className="flex-1 lg:ml-72 p-6 md:p-12 transition-all">
                 <div className="max-w-6xl mx-auto space-y-12">
-                    
+
                     {/* Header */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                         <div className="flex items-center gap-5">
@@ -126,7 +121,7 @@ export default function MiFicha() {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                        
+
                         {/* DIGITAL DOSSIER / FILES */}
                         <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl shadow-slate-200/40 flex flex-col group">
                             <div className="flex items-center justify-between mb-10">
@@ -214,7 +209,7 @@ export default function MiFicha() {
                 </div>
             </main>
 
-            <ConfirmModal 
+            <ConfirmModal
                 isOpen={confirmModal.isOpen}
                 onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
                 onConfirm={confirmModal.onConfirm}
@@ -224,7 +219,7 @@ export default function MiFicha() {
                 isDestructive={true}
             />
 
-            <AlertModal 
+            <AlertModal
                 isOpen={alertModal.isOpen}
                 onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
                 title={alertModal.title}

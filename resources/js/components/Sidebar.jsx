@@ -138,7 +138,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
       // Ensure it's not just the root storage path
       const photoUrl = getImageUrl(user.photo);
       const isRootStorage = photoUrl.endsWith('/storage') || photoUrl.endsWith('/storage/');
-      
+
       if (!isRootStorage) {
         return (
           <img
@@ -175,8 +175,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           </Link>
         </div>
 
-        <Link 
-          to="/configuracion" 
+        <Link
+          to="/configuracion"
           onClick={() => setIsOpen(false)}
           className="px-4 sm:px-8 py-4 sm:py-6 mb-2 flex items-center gap-3 sm:gap-4 bg-white/5 hover:bg-white/10 rounded-[32px] mx-3 sm:mx-4 border border-white/10 shadow-inner transition-colors group"
         >
@@ -205,8 +205,8 @@ export default function Sidebar({ isOpen, setIsOpen }) {
               key={link.path}
               to={link.path}
               className={`flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm transition-colors ${isActive(link.path)
-                  ? 'bg-white text-[#38C1A3] shadow-md'
-                  : 'text-white hover:bg-white/10'
+                ? 'bg-white text-[#38C1A3] shadow-md'
+                : 'text-white hover:bg-white/10'
                 }`}
               onClick={() => setIsOpen(false)}
             >

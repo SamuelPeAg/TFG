@@ -16,23 +16,23 @@ export default function MisComidas() {
     const [mealType, setMealType] = useState('almuerzo');
     const [error, setError] = useState(null);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-    
+
     // IMC y Evolución
     const [peso, setPeso] = useState('');
     const [altura, setAltura] = useState('');
     const [measurements, setMeasurements] = useState([]);
     const [submittingProgress, setSubmittingProgress] = useState(false);
     const [senzuMode, setSenzuMode] = useState(false);
-    
+
     // Ficha
     const [clientProfile, setClientProfile] = useState(null);
     const [files, setFiles] = useState([]);
     const [specialistNotes, setSpecialistNotes] = useState('');
-    
+
     const [alertConfig, setAlertConfig] = useState({ isOpen: false, title: '', message: '', isError: false });
-    const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+    const [confirmConfig, setConfirmConfig] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { } });
     const [uploading, setUploading] = useState(false);
-    
+
     const showAlert = (message, isError = false, title = isError ? "Error" : "Éxito") => {
         setAlertConfig({ isOpen: true, title, message, isError });
     };
@@ -42,7 +42,7 @@ export default function MisComidas() {
     const [aiGoal, setAiGoal] = useState('Perder Grasa');
     const [aiRoutine, setAiRoutine] = useState(null);
     const [generatingRoutine, setGeneratingRoutine] = useState(false);
-    
+
     const [trainers, setTrainers] = useState([]);
     const [selectedTrainer, setSelectedTrainer] = useState('');
     const [trainerMessage, setTrainerMessage] = useState('');
@@ -203,12 +203,7 @@ export default function MisComidas() {
             setAltura(res.data.user?.altura ? Math.round(res.data.user.altura * 100) : '');
             setMeasurements(res.data.measurements || []);
             setFiles(res.data.files || []);
-            const attrs = res.data.user?.additional_attributes || [];
-            const publicNotes = attrs
-                .filter(attr => attr.type === 'note')
-                .map(attr => (attr.key ? `${attr.key.toUpperCase()}:\n` : '') + attr.value)
-                .join('\n\n---\n\n');
-            setSpecialistNotes(publicNotes);
+            setSpecialistNotes(res.data.user?.notas_especialista || '');
         } catch (error) {
             console.error('Error fetching physical data:', error);
         }
@@ -263,7 +258,7 @@ export default function MisComidas() {
             });
             setComidas([data.meal, ...comidas]);
             setMealText('');
-            
+
             if (data.is_senzu) {
                 setSenzuMode(true);
                 setTimeout(() => setSenzuMode(false), 5000);
@@ -336,7 +331,7 @@ export default function MisComidas() {
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
             <main className="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 lg:pl-72">
-                <PageHeader 
+                <PageHeader
                     title="Nutrición & Evolución"
                     subtitle="Control inteligente de macros y físico"
                     icon={<span>🍕</span>}
@@ -346,10 +341,10 @@ export default function MisComidas() {
                 <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-10 space-y-12 pb-24 lg:pb-10">
                     <div className="max-w-7xl mx-auto">
                         <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-                            
+
                             {/* Columna Izquierda: Input y Listado */}
                             <div className="xl:col-span-8 space-y-10">
-                                
+
                                 <div className="bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-xl shadow-slate-200/20 border border-slate-100 relative overflow-hidden group">
                                     <div className="absolute -top-12 -right-12 w-32 h-32 bg-teal-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50"></div>
                                     <div className="relative z-10">
@@ -360,7 +355,7 @@ export default function MisComidas() {
                                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">La IA desglosará tus macros automáticamente</p>
                                             </div>
                                         </div>
-                                        
+
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                             <div className="flex flex-col md:flex-row gap-6">
                                                 <div className="relative inline-block w-full md:w-56 group z-50">
@@ -377,22 +372,22 @@ export default function MisComidas() {
                                                 </div>
                                             </div>
                                             <div className="relative">
-                                                <textarea 
-                                                    value={mealText} 
-                                                    onChange={(e) => setMealText(e.target.value)} 
-                                                    placeholder="Ej: He desayunado una tostada de aguacate con 2 huevos revueltos y un café con leche..." 
-                                                    rows="3" 
-                                                    className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-7 text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none resize-none transition-all shadow-inner" 
+                                                <textarea
+                                                    value={mealText}
+                                                    onChange={(e) => setMealText(e.target.value)}
+                                                    placeholder="Ej: He desayunado una tostada de aguacate con 2 huevos revueltos y un café con leche..."
+                                                    rows="3"
+                                                    className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-7 text-sm font-bold text-slate-700 focus:bg-white focus:ring-4 focus:ring-[#38C1A3]/10 focus:border-[#38C1A3] outline-none resize-none transition-all shadow-inner"
                                                 />
                                             </div>
                                             {error && <p className="text-rose-500 text-xs font-black px-4"><i className="fa-solid fa-triangle-exclamation mr-1.5 animate-bounce"></i> {error}</p>}
                                             <div className="flex justify-end">
-                                                <button 
-                                                    type="submit" 
-                                                    disabled={submitting || !mealText.trim()} 
+                                                <button
+                                                    type="submit"
+                                                    disabled={submitting || !mealText.trim()}
                                                     className="bg-slate-900 hover:bg-black text-white px-10 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.25em] transition-all flex items-center gap-3 shadow-xl shadow-slate-900/20 active:scale-95 disabled:opacity-50"
                                                 >
-                                                    {submitting ? <i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i> : <i className="fa-solid fa-wand-magic-sparkles text-[#38C1A3]"></i>} 
+                                                    {submitting ? <i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i> : <i className="fa-solid fa-wand-magic-sparkles text-[#38C1A3]"></i>}
                                                     Analizar Comida
                                                 </button>
                                             </div>
@@ -408,11 +403,11 @@ export default function MisComidas() {
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <div className="relative group">
-                                                <input 
-                                                    type="date" 
-                                                    value={selectedDate} 
-                                                    onChange={(e) => setSelectedDate(e.target.value)} 
-                                                    className="bg-white border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-[0.15em] px-6 py-3 rounded-2xl outline-none focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/5 cursor-pointer shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 w-full sm:w-auto min-w-[160px] text-center" 
+                                                <input
+                                                    type="date"
+                                                    value={selectedDate}
+                                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                                    className="bg-white border border-slate-200 text-slate-700 text-xs font-black uppercase tracking-[0.15em] px-6 py-3 rounded-2xl outline-none focus:border-[#38C1A3] focus:ring-4 focus:ring-[#38C1A3]/5 cursor-pointer shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 w-full sm:w-auto min-w-[160px] text-center"
                                                 />
                                             </div>
                                         </div>
@@ -438,7 +433,7 @@ export default function MisComidas() {
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div>
                                                                 <label className="text-[10px] font-black uppercase text-indigo-500 tracking-widest block mb-2">Hora de comida</label>
-                                                                <input type="time" value={editForm.time} onChange={e => setEditForm({...editForm, time: e.target.value})} className="w-full bg-indigo-50/50 border border-indigo-100 rounded-2xl px-6 py-4 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10 font-black text-slate-700 transition-all text-center" />
+                                                                <input type="time" value={editForm.time} onChange={e => setEditForm({ ...editForm, time: e.target.value })} className="w-full bg-indigo-50/50 border border-indigo-100 rounded-2xl px-6 py-4 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10 font-black text-slate-700 transition-all text-center" />
                                                             </div>
                                                             <div>
                                                                 <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest block mb-2">Calorías Totales (Kcal)</label>
@@ -469,14 +464,14 @@ export default function MisComidas() {
                                             ) : (
                                                 <div key={meal.id} className="bg-white p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] shadow-xl shadow-slate-200/40 border border-slate-100 flex flex-col hover:shadow-2xl hover:-translate-y-1 transition-all group overflow-hidden relative">
                                                     <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-[4rem] transition-all group-hover:bg-teal-50"></div>
-                                                    
+
                                                     <div className="flex justify-between items-start mb-6 relative z-10">
                                                         <div className="flex items-center gap-4">
                                                             <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#38C1A3] flex items-center justify-center text-xl shadow-inner">
                                                                 <span>
-                                                                    {meal.meal_type === 'desayuno' ? '☕' : 
-                                                                     meal.meal_type === 'almuerzo' ? '🥗' : 
-                                                                     meal.meal_type === 'cena' ? '🌙' : '🍎'}
+                                                                    {meal.meal_type === 'desayuno' ? '☕' :
+                                                                        meal.meal_type === 'almuerzo' ? '🥗' :
+                                                                            meal.meal_type === 'cena' ? '🌙' : '🍎'}
                                                                 </span>
                                                             </div>
                                                             <div>
@@ -551,7 +546,7 @@ export default function MisComidas() {
                                                 </div>
                                             </div>
                                             <button onClick={handleGenerateRoutine} disabled={generatingRoutine} className="w-full bg-slate-900 hover:bg-black text-white px-8 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-slate-900/20 transition-all flex justify-center items-center gap-3 disabled:opacity-50">
-                                                {generatingRoutine ? <i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i> : <i className="fa-solid fa-wand-magic-sparkles text-[#38C1A3]"></i>} 
+                                                {generatingRoutine ? <i className="fa-solid fa-spinner fa-spin text-[#38C1A3]"></i> : <i className="fa-solid fa-wand-magic-sparkles text-[#38C1A3]"></i>}
                                                 Generar Circuito IA
                                             </button>
 
@@ -588,12 +583,12 @@ export default function MisComidas() {
                                                     </div>
                                                     <textarea value={trainerMessage} onChange={(e) => setTrainerMessage(e.target.value)} placeholder="Ej: Hola, hoy me gustaría enfocarme en pierna, ¿me pasas una rutina?" rows="3" className="w-full bg-slate-50 border border-slate-100 rounded-[1.5rem] md:rounded-[2rem] p-5 md:p-7 text-sm font-bold text-slate-700 focus:bg-white outline-none resize-none shadow-inner" />
                                                     <button onClick={handleSendToTrainer} disabled={sendingPlan || !trainerMessage.trim()} className="w-full bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-indigo-500/20 transition-all flex justify-center items-center gap-3 disabled:opacity-50">
-                                                        {sendingPlan ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-paper-plane"></i>} 
+                                                        {sendingPlan ? <i className="fa-solid fa-spinner fa-spin"></i> : <i className="fa-solid fa-paper-plane"></i>}
                                                         Solicitar Plan
                                                     </button>
                                                 </>
                                             )}
-                                            
+
                                             {/* Historial de Planes */}
                                             {actionPlans.length > 0 && (
                                                 <div className="mt-8 space-y-6">
@@ -607,7 +602,7 @@ export default function MisComidas() {
                                                             {plan.trainer_response && (
                                                                 <div className="bg-indigo-50/50 rounded-2xl p-5 mt-4">
                                                                     <div className="flex items-center gap-2 mb-3 text-indigo-500 text-xs font-black uppercase tracking-widest"><i className="fa-solid fa-reply"></i> Respuesta del Entrenador</div>
-                                                                    
+
                                                                     {(() => {
                                                                         let isStructured = false;
                                                                         let structuredData = null;
@@ -617,7 +612,7 @@ export default function MisComidas() {
                                                                                 isStructured = true;
                                                                                 structuredData = p;
                                                                             }
-                                                                        } catch(e) {}
+                                                                        } catch (e) { }
 
                                                                         if (isStructured) {
                                                                             return (
@@ -651,7 +646,7 @@ export default function MisComidas() {
                                                                                                                     <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-1">{ex.focus}</p>
                                                                                                                 </div>
                                                                                                             </div>
-                                                                                                            
+
                                                                                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                                                                                                 <div className="bg-white rounded-xl p-3 border border-slate-100 text-center">
                                                                                                                     <span className="block text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">Series</span>
@@ -703,7 +698,7 @@ export default function MisComidas() {
 
                             {/* Columna Derecha: Summaries & Evolución */}
                             <div className="xl:col-span-4 space-y-10">
-                                
+
                                 {/* Resumen Calorías */}
                                 <div className="bg-slate-900 rounded-[2.5rem] md:rounded-[3.5rem] p-6 md:p-10 shadow-2xl text-white relative overflow-hidden group">
                                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#38C1A3] rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity"></div>
@@ -723,15 +718,15 @@ export default function MisComidas() {
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="space-y-4">
                                             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Ajustar Mantenimiento</div>
                                             <div className="flex items-center bg-black/20 rounded-2xl p-2 border border-white/5">
-                                                <input 
-                                                    type="text" 
-                                                    className="w-full bg-transparent text-white text-center font-black text-lg outline-none no-spinner" 
-                                                    value={maintenanceCalories} 
-                                                    onChange={handleMaintenanceChange} 
+                                                <input
+                                                    type="text"
+                                                    className="w-full bg-transparent text-white text-center font-black text-lg outline-none no-spinner"
+                                                    value={maintenanceCalories}
+                                                    onChange={handleMaintenanceChange}
                                                 />
                                                 <span className="pr-4 text-[10px] font-black text-slate-500 uppercase">Kcal</span>
                                             </div>
@@ -744,7 +739,7 @@ export default function MisComidas() {
                                 </div>
 
                                 {/* IMC y Evolución Física - COMPONENTE */}
-                                <PhysicalProgress 
+                                <PhysicalProgress
                                     peso={peso}
                                     setPeso={setPeso}
                                     altura={altura}
@@ -848,7 +843,8 @@ export default function MisComidas() {
                 </div>
             </main>
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 /* 1. Eliminar SOLO la flecha de Select2, manteniendo bordes y fondo */
                 .select2-container .select2-selection__arrow {
                     display: none !important;
@@ -906,12 +902,12 @@ export default function MisComidas() {
                 }
             `}} />
 
-            <AlertModal 
-                isOpen={alertConfig.isOpen} 
-                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })} 
-                title={alertConfig.title} 
-                message={alertConfig.message} 
-                isError={alertConfig.isError} 
+            <AlertModal
+                isOpen={alertConfig.isOpen}
+                onClose={() => setAlertConfig({ ...alertConfig, isOpen: false })}
+                title={alertConfig.title}
+                message={alertConfig.message}
+                isError={alertConfig.isError}
             />
 
             {/* Easter Egg Senzu Mode */}
@@ -925,7 +921,7 @@ export default function MisComidas() {
                     </div>
                 </div>
             )}
-            <ConfirmModal 
+            <ConfirmModal
                 isOpen={confirmConfig.isOpen}
                 onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
                 onConfirm={confirmConfig.onConfirm}
