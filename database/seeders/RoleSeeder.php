@@ -62,14 +62,5 @@ class RoleSeeder extends Seeder
             ]
         );
         $cliente->syncRoles(['cliente']);
-
-        $cliente2 = User::updateOrCreate(
-            ['email' => 'spa0004@alu.medac.es'],
-            [
-                'name' => 'Samuel',
-                'activo' => true,
-            ]
-        );
-        $cliente2->syncRoles(['cliente']);
     }
 }

@@ -37,13 +37,6 @@ class NutritionController extends Controller
         $user = Auth::user();
         $description = $request->meal_description;
 
-        // Easter Egg: Leche de amapolas para Samuel
-        if (stripos($description, 'leche de amapolas') !== false) {
-            return response()->json([
-                'error' => 'Samuel, mi compañero de desarrollo, no me jodas. ¿Leche de amapolas en serio? 😂'
-            ], 400);
-        }
-
         // Easter Egg: Semillas del Ermitaño
         if (stripos($description, 'semilla del ermitaño') !== false || stripos($description, 'semillas del ermitaño') !== false) {
             $targetDate = $request->input('target_date');
