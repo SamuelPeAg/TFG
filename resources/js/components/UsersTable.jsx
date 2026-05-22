@@ -126,21 +126,25 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                           
                           if (saldos.length === 0) {
                             return (
-                              <span key={su.id} className={`px-2 py-0.5 rounded-lg border text-[9px] font-bold ${colorClass}`}>
-                                {su.suscripcion?.nombre || 'PACK'}
-                              </span>
+                              <div key={su.id} className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${colorClass}`}>
+                                <span className="text-[8px] font-bold uppercase truncate max-w-[80px]">{su.suscripcion?.nombre || 'Suscripción'}</span>
+                                <span className="font-black text-[9px] bg-white px-1.5 py-0.5 rounded text-rose-500 shadow-sm">0 CRÉDITOS</span>
+                              </div>
                             );
                           }
 
-                          return saldos.map((s, idx) => (
-                            <div key={`${su.id}-${idx}`} className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${colorClass}`}>
-                              <span className="font-black text-xs">{s.total ?? 0}</span>
-                              <span className="text-[8px] font-bold uppercase truncate max-w-[60px]">{s.tipo_credito?.nombre || 'PACK'}</span>
-                            </div>
-                          ));
+                          return saldos.map((s, idx) => {
+                            const isZero = (s.total === 0 || s.total === '0');
+                            return (
+                              <div key={`${su.id}-${idx}`} className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${colorClass} ${isZero ? 'opacity-75' : ''}`}>
+                                <span className={`font-black text-xs ${isZero ? 'text-rose-500' : ''}`}>{s.total ?? 0}</span>
+                                <span className="text-[8px] font-bold uppercase truncate max-w-[60px]">{s.tipo_credito?.nombre || 'PACK'}</span>
+                              </div>
+                            );
+                          });
                         })
                       ) : (
-                        <span className="text-slate-300 text-[10px] font-bold italic">Sin saldo activo</span>
+                        <span className="text-slate-300 text-[10px] font-bold italic">Sin suscripciones</span>
                       )}
                     </div>
                   </td>
@@ -228,16 +232,20 @@ export default function UsersTable({ users, onEdit, onDelete, onShowFicha, loadi
                         user.suscripciones.map((su) => {
                           const saldos = su.saldos_por_tipo ? Object.values(su.saldos_por_tipo) : [];
                           if (saldos.length === 0) return (
-                            <span key={su.id} className="px-2 py-1 bg-slate-100 text-slate-500 rounded-lg text-[9px] font-black uppercase border border-slate-200">
-                                {su.suscripcion?.nombre || 'PACK'}
-                            </span>
-                          );
-                          return saldos.map((s, idx) => (
-                            <div key={`${su.id}-${idx}`} className="flex items-center gap-1.5 px-2 py-1 bg-teal-50 text-[#38C1A3] rounded-lg border border-teal-100">
-                              <span className="font-black text-[10px]">{s.total ?? 0}</span>
-                              <span className="text-[8px] font-bold uppercase truncate max-w-[80px]">{s.tipo_credito?.nombre}</span>
+                            <div key={su.id} className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 rounded-lg border border-slate-200">
+                                <span className="text-[9px] font-bold uppercase text-slate-500">{su.suscripcion?.nombre || 'Suscripción'}</span>
+                                <span className="font-black text-[9px] bg-white px-1.5 py-0.5 rounded text-rose-500 shadow-sm">0 CRÉDITOS</span>
                             </div>
-                          ));
+                          );
+                          return saldos.map((s, idx) => {
+                            const isZero = (s.total === 0 || s.total === '0');
+                            return (
+                              <div key={`${su.id}-${idx}`} className={`flex items-center gap-1.5 px-2 py-1 bg-teal-50 rounded-lg border border-teal-100 ${isZero ? 'opacity-75' : ''}`}>
+                                <span className={`font-black text-[10px] ${isZero ? 'text-rose-500' : 'text-[#38C1A3]'}`}>{s.total ?? 0}</span>
+                                <span className="text-[8px] font-bold uppercase truncate max-w-[80px] text-[#38C1A3]">{s.tipo_credito?.nombre}</span>
+                              </div>
+                            );
+                          });
                         })
                     ) : (
                         <span className="text-slate-300 text-[10px] font-bold italic">Sin suscripciones activas</span>

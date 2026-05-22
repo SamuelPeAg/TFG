@@ -124,23 +124,13 @@ export default function Contact() {
                            </div>
                            <div>
                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Escríbenos</p>
-                               <a href="mailto:hola@factomove.com" className="text-lg font-bold text-slate-700 hover:text-[#38C1A3] transition-colors">
-                                   hola@factomove.com
+                               <a href="mailto:factomove@arenadaw.com.es" className="text-lg font-bold text-slate-700 hover:text-[#38C1A3] transition-colors">
+                                   factomove@arenadaw.com.es
                                </a>
                            </div>
                        </div>
                        
-                       <div className="flex gap-5 group">
-                           <div className="w-14 h-14 shrink-0 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-xl text-[#eb567a] group-hover:-translate-y-1 transition-transform">
-                               <i className="fa-solid fa-phone"></i>
-                           </div>
-                           <div>
-                               <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Llámanos</p>
-                               <a href="tel:+34912345678" className="text-lg font-bold text-slate-700 hover:text-[#eb567a] transition-colors">
-                                   +34 912 345 678
-                               </a>
-                           </div>
-                       </div>
+
 
                        <div className="flex gap-5 group">
                            <div className="w-14 h-14 shrink-0 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-xl text-slate-800 group-hover:-translate-y-1 transition-transform">

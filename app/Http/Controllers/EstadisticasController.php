@@ -30,7 +30,7 @@ class EstadisticasController extends Controller
 
             // 1. KPIs Generales (Corregidos)
             $totalClientes = User::role('cliente', 'web')->count();
-            $totalEntrenadores = \App\Models\Entrenador::count();
+            $totalEntrenadores = \App\Models\Entrenador::role('entrenador', 'staff')->count();
             $ingresosMes = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])->sum('importe');
             $sesionesMesCount = Pago::whereBetween('fecha_registro', [$startOfMonth, $endOfMonth])
                 ->where('tipo_clase', '!=', 'Suscripción')

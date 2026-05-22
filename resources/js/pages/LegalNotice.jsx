@@ -1,6 +1,7 @@
 export default function LegalNotice() {
   return (
-    <div className="max-w-4xl mx-auto py-20 px-4 sm:px-6 lg:px-8">
+    <div className="bg-white min-h-[calc(100vh-200px)]">
+      <div className="max-w-4xl mx-auto py-20 px-4 sm:px-6 lg:px-8">
 
       <div className="text-center mb-16">
         <img src="/img/logopng.png" 
@@ -12,20 +13,6 @@ export default function LegalNotice() {
       </div>
 
       <div className="prose prose-lg prose-blue max-w-none text-gray-600 space-y-10">
-        
-        <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">1. Datos Identificativos</h2>
-          <p>En cumplimiento con el deber de información recogido en el artículo 10 de la Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y del Comercio Electrónico (LSSI), a continuación se reflejan los siguientes datos:</p>
-          
-          <div className="not-prose bg-gray-50 p-8 rounded-2xl border-2 border-gray-100 shadow-sm mt-4">
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Titular:</span> <span>[Nombre del Titular]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">NIF/CIF:</span> <span>[NIF/CIF]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Domicilio:</span> <span>España</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Contacto:</span> <a href="mailto:contacto@factomove.com" className="text-brandTeal underline">contacto@factomove.com</a></li>
-            </ul>
-          </div>
-        </section>
 
         <section>
           <h2 className="text-3xl font-bold text-gray-900 mb-6">2. Usuarios</h2>
@@ -65,6 +52,7 @@ export default function LegalNotice() {
           <p>La relación entre Factomove y el USUARIO se regirá por la normativa española vigente y cualquier controversia se someterá a los Juzgados y tribunales de la ciudad de [TU CIUDAD, EJ: MADRID], salvo que la ley aplicable disponga otra cosa.</p>
         </section>
 
+      </div>
       </div>
     </div>
   )

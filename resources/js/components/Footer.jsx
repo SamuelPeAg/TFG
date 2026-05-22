@@ -42,15 +42,11 @@ export default function Footer() {
             <h3 className="font-bold text-white mb-4 text-sm sm:text-base">Contacto</h3>
             <ul className="space-y-2 text-gray-400 text-xs sm:text-sm">
               <li>
-                <a href="mailto:hola@factomove.com" className="hover:text-brandTeal transition break-all">
-                  hola@factomove.com
+                <a href="mailto:factomove@arenadaw.com.es" className="hover:text-brandTeal transition break-all">
+                  factomove@arenadaw.com.es
                 </a>
               </li>
-              <li>
-                <a href="tel:+34912345678" className="hover:text-brandTeal transition">
-                  +34 912 345 678
-                </a>
-              </li>
+
             </ul>
           </div>
         </div>

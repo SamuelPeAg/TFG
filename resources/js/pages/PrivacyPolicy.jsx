@@ -2,7 +2,8 @@ export default function PrivacyPolicy() {
   const today = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
   return (
-    <div className="max-w-4xl mx-auto py-20 px-4 sm:px-6 lg:px-8">
+    <div className="bg-white min-h-[calc(100vh-200px)]">
+      <div className="max-w-4xl mx-auto py-20 px-4 sm:px-6 lg:px-8">
 
       <div className="text-center mb-16">
         <img src="/img/logopng.png" 
@@ -19,20 +20,7 @@ export default function PrivacyPolicy() {
         </p>
 
         <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">1. Responsable del Tratamiento</h2>
-          <p>La entidad responsable de tratar tus datos personales es:</p>
-          <div className="not-prose bg-gray-50 p-8 rounded-2xl border-2 border-gray-100 shadow-sm mt-4">
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Titular:</span> <span>[Nombre del Titular]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">NIF/CIF:</span> <span>[NIF/CIF]</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Domicilio social:</span> <span>España</span></li>
-              <li className="flex items-start"><span className="font-bold w-40 shrink-0">Email de contacto:</span> <a href="mailto:contacto@factomove.com" className="text-brandTeal underline">contacto@factomove.com</a></li>
-            </ul>
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">2. ¿Qué datos recopilamos y para qué?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">1. ¿Qué datos recopilamos y para qué?</h2>
           <p>Recopilamos la información mínima necesaria para que Factomove funcione correctamente según tu rol (cliente, entrenador, etc.). Las principales finalidades son:</p>
           <ul>
             <li><strong>Prestación del servicio:</strong> Gestionar tu registro de usuario, permitir el acceso a las funcionalidades de tu rol y asegurar el correcto funcionamiento técnico de la plataforma.</li>
@@ -48,18 +36,18 @@ export default function PrivacyPolicy() {
         </section>
 
         <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">3. Conservación de los datos</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">2. Conservación de los datos</h2>
           <p>Mantendremos tus datos personales activos en nuestros sistemas mientras dure tu relación con nosotros. Los datos de Google Calendar no se almacenan permanentemente en nuestros servidores más allá de lo necesario para realizar la sincronización en tiempo real.</p>
         </section>
 
         <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">4. ¿Con quién compartimos tus datos?</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">3. ¿Con quién compartimos tus datos?</h2>
           <p><strong>Factomove no vende tus datos a terceros ni los comparte con fines publicitarios.</strong></p>
           <p>Solo compartimos información con proveedores de servicios tecnológicos necesarios para el funcionamiento de la app (hosting, envío de emails) y con Google a través de su API para la funcionalidad de calendario solicitada por el usuario.</p>
         </section>
 
         <section>
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">5. Tus Derechos (Derechos ARCO+)</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">4. Tus Derechos (Derechos ARCO+)</h2>
           <p>La normativa te otorga el control sobre tus datos. Puedes ejercer los siguientes derechos de forma gratuita:</p>
           <ul>
             <li><strong>Acceso:</strong> Preguntarnos qué datos tuyos estamos tratando.</li>
@@ -74,12 +62,13 @@ export default function PrivacyPolicy() {
             <div>
               <h4 className="text-lg font-bold text-brandTeal mb-2">Cómo ejercer tus derechos</h4>
               <p className="text-gray-800 m-0">
-                Solo tienes que enviarnos un correo electrónico a <a href="mailto:contacto@factomove.com" className="font-bold text-brandTeal underline">contacto@factomove.com</a> indicando qué derecho quieres ejercer e identificándote correctamente.
+                Solo tienes que enviarnos un correo electrónico a <a href="mailto:factomove@arenadaw.com.es" className="font-bold text-brandTeal underline">factomove@arenadaw.com.es</a> indicando qué derecho quieres ejercer e identificándote correctamente.
               </p>
             </div>
           </div>
         </section>
 
+      </div>
       </div>
     </div>
   )

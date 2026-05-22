@@ -1483,7 +1483,7 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                             onClick={onClose}
                             className="px-8 py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95"
                         >
-                            SALIR SIN GUARDAR
+                            {activeTab === 'profile' ? 'SALIR SIN GUARDAR' : 'CERRAR'}
                         </button>
                         {activeTab === 'profile' && (
                             <button
@@ -1493,6 +1493,15 @@ export default function ClientFichaModal({ isOpen, onClose, user }) {
                             >
                                 {saving ? <i className="fa-solid fa-spinner fa-spin mr-3"></i> : <i className="fa-solid fa-save mr-3"></i>}
                                 GUARDAR EXPEDIENTE
+                            </button>
+                        )}
+                        {activeTab === 'subscriptions' && (
+                            <button
+                                onClick={onClose}
+                                className="px-10 py-4 bg-[#38C1A3] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#2D9B82] transition-all shadow-xl shadow-teal-100 active:scale-95"
+                            >
+                                <i className="fa-solid fa-save mr-3"></i>
+                                GUARDAR CAMBIOS
                             </button>
                         )}
                     </div>

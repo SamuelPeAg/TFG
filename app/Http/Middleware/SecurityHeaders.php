@@ -27,7 +27,8 @@ class SecurityHeaders
                "object-src 'none'; " .
                "base-uri 'self'; " .
                "form-action 'self'; " .
-               "frame-ancestors 'self';";
+               "frame-ancestors 'self'; " .
+               "frame-src 'self' https://www.google.com https://maps.google.com;";
 
         $response->headers->set('Content-Security-Policy', $csp);
         $response->headers->set('X-Content-Type-Options', 'nosniff');

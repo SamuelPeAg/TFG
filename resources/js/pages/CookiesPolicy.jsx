@@ -1,6 +1,7 @@
 export default function CookiesPolicy() {
   return (
-    <div className="max-w-4xl mx-auto py-20 px-4 sm:px-6 lg:px-8">
+    <div className="bg-white min-h-[calc(100vh-200px)]">
+      <div className="max-w-4xl mx-auto py-20 px-4 sm:px-6 lg:px-8">
 
       <div className="text-center mb-16">
         <img src="/img/logopng.png" 
@@ -77,6 +78,7 @@ export default function CookiesPolicy() {
           </ul>
         </section>
 
+      </div>
       </div>
     </div>
   )

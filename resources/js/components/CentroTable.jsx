@@ -79,7 +79,10 @@ export default function CentroTable({ centros, empresas, onUpdate, onAlert, onCo
                 <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
                     <i className="fa-solid fa-hotel text-emerald-400"></i> Gestión de Centros Deportivos
                 </h3>
-                <Button onClick={() => setEditMode('new')} variant="primary" size="sm" icon="fa-plus">AÑADIR</Button>
+                <Button onClick={() => {
+                    setEditMode('new');
+                    setFormData(prev => ({...prev, empresa_id: empresas && empresas.length > 0 ? empresas[0].id : ''}));
+                }} variant="primary" size="sm" icon="fa-plus">AÑADIR</Button>
             </div>
 
             <div className="hidden md:block overflow-x-auto">
@@ -170,10 +173,9 @@ export default function CentroTable({ centros, empresas, onUpdate, onAlert, onCo
                                         <select 
                                             className={`w-full px-4 py-3 bg-slate-50 border rounded-2xl focus:ring-4 focus:ring-emerald-400/10 focus:border-emerald-400 outline-none font-bold text-slate-600 text-xs appearance-none cursor-pointer pr-10 transition-all hover:bg-slate-100 shadow-sm uppercase tracking-tighter ${errors.empresa_id ? 'border-rose-400 bg-rose-50' : 'border-transparent'}`} 
                                             style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
-                                            value={formData.empresa_id || ''} 
+                                            value={formData.empresa_id || (empresas && empresas.length > 0 ? empresas[0].id : '')} 
                                             onChange={e => setFormData({...formData, empresa_id: e.target.value})}
                                         >
-                                            <option value="">Empresa Default...</option>
                                             {empresas.map(emp => (
                                                 <option key={emp.id} value={emp.id}>{emp.nombre}</option>
                                             ))}
