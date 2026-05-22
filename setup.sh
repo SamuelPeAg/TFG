@@ -13,7 +13,7 @@ docker-compose up -d --build
 echo "Esperando a que la base de datos MySQL esté lista y acepte conexiones..."
 until docker-compose exec -T app php -r "
 try {
-    \$pdo = new PDO('mysql:host=db;port=3306;dbname=mi_base_de_datos', 'root', 'root');
+    \$pdo = new PDO('mysql:host=db;port=3306;dbname=davante25_daw16', 'root', 'root');
     exit(0);
 } catch (Exception \$e) {
     exit(1);

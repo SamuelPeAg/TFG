@@ -3,6 +3,10 @@ Write-Host "=== INICIANDO DOCKERIZACIÓN DE LA APLICACIÓN (WINDOWS) ===" -Foreg
 # 1. Levantar los contenedores en segundo plano
 Write-Host "Levantando contenedores de Docker (app, db, web)..." -ForegroundColor Yellow
 docker-compose up -d --build
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error: No se pudieron construir o levantar los contenedores de Docker. Revisa el error de arriba." -ForegroundColor Red
+    exit 1
+}
 
 # 2. Espera inteligente para la base de datos MySQL
 Write-Host "Esperando a que la base de datos MySQL esté lista y acepte conexiones..." -ForegroundColor Yellow
@@ -12,7 +16,7 @@ while (-not $dbReady) {
     # Escapamos la variable PHP con ` para que PowerShell no la interprete como suya
     $null = docker-compose exec -T app php -r "
     try {
-        new PDO('mysql:host=db;port=3306;dbname=mi_base_de_datos', 'root', 'root');
+        new PDO('mysql:host=db;port=3306;dbname=davante25_daw16', 'root', 'root');
         exit(0);
     } catch (Exception `$e) {
         exit(1);
