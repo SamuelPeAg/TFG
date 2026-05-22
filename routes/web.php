@@ -139,17 +139,21 @@ Route::middleware('auth:web,staff')->group(function () {
         return redirect('/');
     });
 
-    // --- NÓMINAS ENTRENADOR (Ruta Mixta/Entrenador) ---
-    Route::get('/mis-nominas', [NominaEntrenadorController::class, 'index'])->name('nominas_e');
-    Route::get('/mis-nominas/{id}/descargar', [NominaEntrenadorController::class, 'descargar'])->name('nominas_e.descargar');
+    // --- NÓMINAS ENTRENADOR (Ruta Mixta/Entrenador - Protegido por módulo) ---
+    Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':payroll')->group(function () {
+        Route::get('/mis-nominas', [NominaEntrenadorController::class, 'index'])->name('nominas_e');
+        Route::get('/mis-nominas/{id}/descargar', [NominaEntrenadorController::class, 'descargar'])->name('nominas_e.descargar');
+    });
 
-    // --- VACACIONES ENTRENADOR ---
-    Route::get('/mis-vacaciones', function() {
-        return view('app');
-    })->name('vacaciones_e');
-    Route::get('/api/vacations', [\App\Http\Controllers\VacationController::class, 'index']);
-    Route::post('/api/vacations', [\App\Http\Controllers\VacationController::class, 'store']);
-    Route::delete('/api/vacations/{id}', [\App\Http\Controllers\VacationController::class, 'destroy']);
+    // --- VACACIONES ENTRENADOR (Protegido por módulo) ---
+    Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':vacations')->group(function () {
+        Route::get('/mis-vacaciones', function() {
+            return view('app');
+        })->name('vacaciones_e');
+        Route::get('/api/vacations', [\App\Http\Controllers\VacationController::class, 'index']);
+        Route::post('/api/vacations', [\App\Http\Controllers\VacationController::class, 'store']);
+        Route::delete('/api/vacations/{id}', [\App\Http\Controllers\VacationController::class, 'destroy']);
+    });
 
     // --- PLANES ENTRENADOR ---
     Route::get('/trainer/planes', function() {
@@ -159,9 +163,11 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::get('/api/trainer/action-plans/{id}/meals', [\App\Http\Controllers\ActionPlanController::class, 'getClientMeals']);
     Route::post('/api/trainer/action-plans/{id}/respond', [\App\Http\Controllers\ActionPlanController::class, 'respond']);
 
-    // --- PDF NÓMINAS (Preview & Download dinámico) ---
-    Route::get('/nominas/{id}/preview', [\App\Http\Controllers\NominaPdfController::class, 'preview'])->name('nominas.preview');
-    Route::get('/nominas/{id}/download', [\App\Http\Controllers\NominaPdfController::class, 'download'])->name('nominas.download');
+    // --- PDF NÓMINAS (Preview & Download dinámico - Protegido por módulo) ---
+    Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':payroll')->group(function () {
+        Route::get('/nominas/{id}/preview', [\App\Http\Controllers\NominaPdfController::class, 'preview'])->name('nominas.preview');
+        Route::get('/nominas/{id}/download', [\App\Http\Controllers\NominaPdfController::class, 'download'])->name('nominas.download');
+    });
 
     // Descarga de archivos de cliente (Visible para dueño del archivo o staff)
     Route::get('/client-file/{file}/download', [ClientProfileController::class, 'downloadFile'])->name('client-file.download');
@@ -196,9 +202,12 @@ Route::middleware('auth:web,staff')->group(function () {
     Route::post('/Pagos/add-client', [PagosController::class, 'addClientToSession'])->name('Pagos.addClient');
     Route::post('/Pagos/remove-client', [PagosController::class, 'removeClientFromSession'])->name('Pagos.removeClient');
     
-    // Intercambio de Clases
-    Route::get('/booking-swap/{pago}/candidates', [\App\Http\Controllers\BookingSwapController::class, 'getCandidates']);
-    Route::post('/booking-swap/execute', [\App\Http\Controllers\BookingSwapController::class, 'executeSwap']);
+    // Intercambio de Clases (Protegido por módulo)
+    Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':booking_swap')->group(function () {
+        Route::get('/booking-swap/{pago}/candidates', [\App\Http\Controllers\BookingSwapController::class, 'getCandidates']);
+        Route::post('/booking-swap/execute', [\App\Http\Controllers\BookingSwapController::class, 'executeSwap']);
+    });
+
 
     // Configuración de Perfil (Para TODOS los usuarios)
     Route::get('/configuracion', [UserController::class, 'configuracion'])->name('configuracion.edit');
@@ -224,12 +233,14 @@ Route::middleware('auth:web,staff')->group(function () {
         return \App\Models\Entrenador::role('entrenador')->select('id', 'name')->get();
     });
 
-    // Módulo de Nutrición AI y Planes de acción
-    Route::get('/nutricion', [\App\Http\Controllers\NutritionController::class, 'index'])->name('nutricion.index');
-    Route::post('/nutricion/log', [\App\Http\Controllers\NutritionController::class, 'store'])->name('nutricion.store');
-    Route::put('/nutricion/log/{id}', [\App\Http\Controllers\NutritionController::class, 'update'])->name('nutricion.update');
-    Route::delete('/nutricion/log/{id}', [\App\Http\Controllers\NutritionController::class, 'destroy'])->name('nutricion.destroy');
-    Route::post('/nutricion/routine', [\App\Http\Controllers\NutritionController::class, 'generateRoutine'])->name('nutricion.routine');
+    // Módulo de Nutrición AI (Protegido por módulo)
+    Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':nutrition')->group(function () {
+        Route::get('/nutricion', [\App\Http\Controllers\NutritionController::class, 'index'])->name('nutricion.index');
+        Route::post('/nutricion/log', [\App\Http\Controllers\NutritionController::class, 'store'])->name('nutricion.store');
+        Route::put('/nutricion/log/{id}', [\App\Http\Controllers\NutritionController::class, 'update'])->name('nutricion.update');
+        Route::delete('/nutricion/log/{id}', [\App\Http\Controllers\NutritionController::class, 'destroy'])->name('nutricion.destroy');
+        Route::post('/nutricion/routine', [\App\Http\Controllers\NutritionController::class, 'generateRoutine'])->name('nutricion.routine');
+    });
     Route::post('/api/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'store']);
     Route::get('/api/action-plans', [\App\Http\Controllers\ActionPlanController::class, 'indexClient']);
 
@@ -313,16 +324,20 @@ Route::middleware('auth:web,staff')->group(function () {
     */
     Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
         
-        // Vista de Estadísticas
-        Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'index'])->name('estadisticas.index');
+        // Vista de Estadísticas (Protegido por módulo)
+        Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':statistics')->group(function () {
+            Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'index'])->name('estadisticas.index');
+        });
         
         // Vista de Gestión
         Route::get('/gestion', [GestionController::class, 'index'])->name('gestion.index');
 
         // Rutas de Datos / Gestión API
         Route::prefix('api')->group(function () {
-            // Datos de Estadísticas
-            Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'data'])->name('api.estadisticas.data');
+            // Datos de Estadísticas (Protegido por módulo)
+            Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':statistics')->group(function () {
+                Route::get('/estadisticas', [\App\Http\Controllers\EstadisticasController::class, 'data'])->name('api.estadisticas.data');
+            });
             
             // Datos de Gestión
             Route::get('/gestion', [GestionController::class, 'data'])->name('api.gestion.data');
@@ -377,20 +392,24 @@ Route::middleware('auth:web,staff')->group(function () {
         Route::get('/entrenadores/{id}/permissions', [EntrenadorController::class, 'getPermissions']);
         Route::post('/entrenadores/{id}/permissions', [EntrenadorController::class, 'syncPermissions']);
 
-        // --- NÓMINAS (Admin) ---
-        Route::get('/admin/nominas', [NominaAdminController::class, 'index'])->name('admin.nominas');
-        Route::post('/admin/nominas/generar', [NominaAdminController::class, 'generar'])->name('admin.nominas.generar');
-        Route::put('/admin/nominas/{id}', [NominaAdminController::class, 'update'])->name('admin.nominas.update');
-        Route::post('/admin/nominas/{id}/pagar', [NominaAdminController::class, 'marcarPagado'])->name('admin.nominas.pagar');
-        Route::delete('/admin/nominas/{id}', [NominaAdminController::class, 'destroy'])->name('admin.nominas.destroy');
-        Route::get('/admin/nominas/calcular/{user_id}', [NominaAdminController::class, 'calcularNomina'])->name('admin.nominas.calcular');
+        // --- NÓMINAS (Admin - Protegido por módulo) ---
+        Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':payroll')->group(function () {
+            Route::get('/admin/nominas', [NominaAdminController::class, 'index'])->name('admin.nominas');
+            Route::post('/admin/nominas/generar', [NominaAdminController::class, 'generar'])->name('admin.nominas.generar');
+            Route::put('/admin/nominas/{id}', [NominaAdminController::class, 'update'])->name('admin.nominas.update');
+            Route::post('/admin/nominas/{id}/pagar', [NominaAdminController::class, 'marcarPagado'])->name('admin.nominas.pagar');
+            Route::delete('/admin/nominas/{id}', [NominaAdminController::class, 'destroy'])->name('admin.nominas.destroy');
+            Route::get('/admin/nominas/calcular/{user_id}', [NominaAdminController::class, 'calcularNomina'])->name('admin.nominas.calcular');
+        });
 
-        // --- VACACIONES ADMIN ---
-        Route::get('/admin/vacaciones', function() {
-            return view('app');
-        })->name('admin.vacaciones');
-        Route::get('/api/admin/vacations', [\App\Http\Controllers\VacationController::class, 'adminIndex']);
-        Route::put('/api/admin/vacations/{id}/status', [\App\Http\Controllers\VacationController::class, 'updateStatus']);
+        // --- VACACIONES ADMIN (Protegido por módulo) ---
+        Route::middleware(\App\Http\Middleware\EnsureModuleIsEnabled::class . ':vacations')->group(function () {
+            Route::get('/admin/vacaciones', function() {
+                return view('app');
+            })->name('admin.vacaciones');
+            Route::get('/api/admin/vacations', [\App\Http\Controllers\VacationController::class, 'adminIndex']);
+            Route::put('/api/admin/vacations/{id}/status', [\App\Http\Controllers\VacationController::class, 'updateStatus']);
+        });
     });
 
 });

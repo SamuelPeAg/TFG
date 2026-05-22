@@ -3,27 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Factomove - Conecta tu movimiento</title>
+    <title>{{ config('branding.name', 'Factomove') }} - Conecta tu movimiento</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- Favicon dinámico -->
+    <link rel="icon" type="image/x-icon" href="{{ asset(config('branding.logos.favicon', '/favicon.ico')) }}">
+    
+    <!-- Fuentes Google Fonts Dinámicas en Caliente -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family={{ urlencode(config('branding.typography.font_family', 'Outfit')) }}:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Tailwind CDN para config rápida -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Tailwind Config -->
+    <!-- Tailwind Config Dinámica -->
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
             colors: {
-              brandTeal: '#4BB7AE',
-              brandCoral: '#EF5D7A',
-              brandAqua: '#A5EFE2',
+              brandTeal: '{{ config("branding.colors.primary", "#4BB7AE") }}',
+              brandCoral: '{{ config("branding.colors.secondary", "#EF5D7A") }}',
+              brandAqua: '{{ config("branding.colors.accent", "#A5EFE2") }}',
+              brandPrimary: '{{ config("branding.colors.primary", "#4BB7AE") }}',
+              brandSecondary: '{{ config("branding.colors.secondary", "#EF5D7A") }}',
+              brandAccent: '{{ config("branding.colors.accent", "#A5EFE2") }}',
               darkText: '#2D3748',
             },
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['{{ config("branding.typography.font_family", "Outfit") }}', 'sans-serif'],
             }
           }
         }
@@ -65,6 +76,14 @@
           'photo' => $user->photo,
           'permissions' => ($role === 'admin') ? ['*'] : (($user && method_exists($user, 'getAllPermissions')) ? $user->getAllPermissions()->pluck('name')->toArray() : [])
         ] : null) !!},
+        modules: {!! json_encode([
+          'nutrition' => config('modules.nutrition', true),
+          'payroll' => config('modules.payroll', true),
+          'vacations' => config('modules.vacations', true),
+          'statistics' => config('modules.statistics', true),
+          'booking_swap' => config('modules.booking_swap', true),
+        ]) !!},
+        branding: {!! json_encode(config('branding')) !!},
         flash: {
           error: '{{ session("error") }}',
           success: '{{ session("success") }}'
