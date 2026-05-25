@@ -77,7 +77,7 @@ class PagosController extends Controller
                 $events[] = [
                     'id' => $first->id,
                     'title' => strtoupper($first->nombre_clase) . " ($count" . ($max ? "/$max" : "") . ")",
-                    'start' => $first->fecha_registro->toIso8601String(),
+                    'start' => $first->fecha_registro->format('Y-m-d\TH:i:s'),
                     'backgroundColor' => $color,
                     'borderColor' => $color,
                     'textColor' => '#ffffff',
@@ -753,10 +753,13 @@ class PagosController extends Controller
         $oldFecha = Carbon::parse($request->old_fecha_hora);
         $newFecha = Carbon::parse($request->new_fecha_hora);
 
-        // Find all payments that belong to this "session"
-        $pagos = Pago::where('fecha_registro', $oldFecha)
-            ->where('nombre_clase', $request->old_nombre_clase)
-            ->where('centro', $request->old_centro)
+        $oldFechaStart = $oldFecha->copy()->startOfMinute();
+        $oldFechaEnd = $oldFecha->copy()->endOfMinute();
+
+        // Buscar todos los pagos asociados a esta sesión usando un rango de minuto robusto
+        $pagos = Pago::whereBetween('fecha_registro', [$oldFechaStart, $oldFechaEnd])
+            ->whereRaw('LOWER(TRIM(nombre_clase)) = ?', [strtolower(trim($request->old_nombre_clase))])
+            ->whereRaw('LOWER(TRIM(centro)) = ?', [strtolower(trim($request->old_centro))])
             ->get();
 
         if ($pagos->isEmpty()) {
@@ -805,11 +808,13 @@ class PagosController extends Controller
         }
 
         $fecha = \Carbon\Carbon::parse($request->fecha_hora);
+        $fechaStart = $fecha->copy()->startOfMinute();
+        $fechaEnd = $fecha->copy()->endOfMinute();
 
-        // Borrar todos los pagos que coinciden con la sesión
-        $deletedCount = Pago::where('fecha_registro', $fecha)
-            ->where('nombre_clase', $request->nombre_clase)
-            ->where('centro', $request->centro)
+        // Borrar todos los pagos que coinciden con la sesión usando un rango de minuto robusto
+        $deletedCount = Pago::whereBetween('fecha_registro', [$fechaStart, $fechaEnd])
+            ->whereRaw('LOWER(TRIM(nombre_clase)) = ?', [strtolower(trim($request->nombre_clase))])
+            ->whereRaw('LOWER(TRIM(centro)) = ?', [strtolower(trim($request->centro))])
             ->delete();
 
         if ($deletedCount === 0) {
