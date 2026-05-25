@@ -63,6 +63,30 @@ class NutritionController extends Controller
             ]);
         }
 
+        if ($request->input('is_manual')) {
+            $targetDate = $request->input('target_date');
+            $loggedAt = $targetDate ? \Carbon\Carbon::parse($targetDate)->format('Y-m-d H:i:s') : now();
+
+            $meal = MealLog::create([
+                'user_id' => $user->id,
+                'meal_type' => $request->meal_type,
+                'meal_description' => $description,
+                'calories_est' => 0,
+                'macros_est' => [
+                    'protein' => 0,
+                    'carbs' => 0,
+                    'fats' => 0,
+                ],
+                'ai_feedback' => 'Registro manual. Edita los macros si lo necesitas.',
+                'logged_at' => $loggedAt,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'meal' => $meal
+            ]);
+        }
+
         $apiKey = config('services.gemini.key');
 
         if (!$apiKey) {

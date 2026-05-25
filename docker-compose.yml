@@ -22,7 +22,7 @@ services:
     container_name: laravel_db
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       MYSQL_DATABASE: davante25_daw16
       MYSQL_ROOT_PASSWORD: root

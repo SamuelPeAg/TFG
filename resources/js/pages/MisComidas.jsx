@@ -270,6 +270,28 @@ export default function MisComidas() {
         }
     };
 
+    const handleManualSubmit = async (e) => {
+        e.preventDefault();
+        if (!mealText.trim()) return;
+        setSubmitting(true);
+        setError(null);
+        try {
+            const { data } = await axios.post('/nutricion/log', {
+                meal_type: mealType,
+                meal_description: mealText,
+                target_date: selectedDate,
+                is_manual: true
+            });
+            setComidas([data.meal, ...comidas]);
+            setMealText('');
+            showAlert('Comida registrada manualmente. Puedes editar los macros más tarde.');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Error al guardar la comida.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const handleDeleteMeal = (mealId) => {
         setConfirmConfig({
             isOpen: true,
@@ -381,7 +403,16 @@ export default function MisComidas() {
                                                 />
                                             </div>
                                             {error && <p className="text-rose-500 text-xs font-black px-4"><i className="fa-solid fa-triangle-exclamation mr-1.5 animate-bounce"></i> {error}</p>}
-                                            <div className="flex justify-end">
+                                            <div className="flex justify-end gap-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleManualSubmit}
+                                                    disabled={submitting || !mealText.trim()}
+                                                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-4 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                                                >
+                                                    <i className="fa-solid fa-pen"></i>
+                                                    Apuntar
+                                                </button>
                                                 <button
                                                     type="submit"
                                                     disabled={submitting || !mealText.trim()}
