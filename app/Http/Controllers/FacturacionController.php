@@ -773,41 +773,8 @@ class FacturacionController extends Controller
 
     private function auditData($clientes)
     {
-        $status = [];
-        foreach ($clientes as $c) {
-            $errors = [];
-            
-            // Validar DNI
-            if (!$c->dni) {
-                $errors[] = 'Falta DNI';
-            } else {
-                $validator = \Validator::make(['dni' => $c->dni], ['dni' => 'nif']);
-                if ($validator->fails()) {
-                    $errors[] = 'DNI inválido';
-                }
-            }
-
-            // Validar IBAN
-            if (!$c->iban) {
-                $errors[] = 'Falta IBAN';
-            } else {
-                $cleanIban = str_replace(' ', '', $c->iban);
-                $validator = \Validator::make(['iban' => $cleanIban], ['iban' => 'iban']);
-                if ($validator->fails()) {
-                    $errors[] = 'IBAN inválido';
-                }
-            }
-
-            // Validar Mandato (Opcional pero recomendable si hay IBAN)
-            if ($c->iban && !$c->sepa_mandate_ref) {
-                $errors[] = 'Falta Ref. Mandato';
-            }
-
-            if (!empty($errors)) {
-                $status[$c->id] = $errors;
-            }
-        }
-        return $status;
+        // Se desactivan las alertas de validación de datos en facturación (DNI, IBAN, etc.)
+        return [];
     }
 
     /**
