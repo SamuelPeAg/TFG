@@ -245,7 +245,7 @@ class FacturacionController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
         $todosLosEntrenadores = \App\Models\Entrenador::orderBy('name')->get(['id', 'name']);
-        $suscripciones = \App\Models\Suscripcion::orderBy('nombre')->get(['id', 'nombre', 'precio']);
+        $suscripciones = \App\Models\Suscripcion::orderBy('nombre')->get(['id', 'nombre', 'precio', 'domiciliacion']);
 
         $data = [
             'centros' => $centros,
