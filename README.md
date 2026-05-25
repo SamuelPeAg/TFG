@@ -95,18 +95,3 @@ Si entras a `localhost:8000`, la pestaña carga pero no se ve absolutamente NADA
 * *Solución:* Ve a la carpeta `public` de tu proyecto y **busca un archivo que se llame exactamente `hot` (sin extensión) y BÓRRALO**. Refresca la página en tu navegador (F5) y ¡magia!, aparecerá el diseño.
 
 ---
-
-## 💡 6. Tips de desarrollo del día a día
-
-* **Si necesitas programar y ver los cambios de React/Diseño en vivo:**
-  ```bash
-  docker-compose exec app npm run dev
-  ```
-* **Si necesitas ejecutar comandos de Laravel (sin instalar PHP en tu PC):**
-  ```bash
-  docker-compose exec app php artisan make:controller MiControlador
-  ```
-* **Para apagar todo cuando termines de trabajar:**
-  ```bash
-  docker-compose down
-  ```
