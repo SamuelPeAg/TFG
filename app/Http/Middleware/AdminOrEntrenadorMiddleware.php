@@ -30,9 +30,17 @@ class AdminOrEntrenadorMiddleware
                 abort(403, 'No tienes permiso para acceder a Facturación.');
             }
 
-            // Rutas de Suscripciones
-            if (str_contains($path, 'suscripciones') && !$user->can('acceder_suscripciones')) {
-                abort(403, 'No tienes permiso para acceder a Suscripciones.');
+            // Rutas de Suscripciones (Catálogo)
+            // Bloqueamos el acceso al panel web (GET no-ajax) y modificaciones (POST, PUT, DELETE) 
+            // a la ruta /suscripciones si no tiene el permiso.
+            // Permitimos /suscripciones-usuarios y GET ajax a /suscripciones para que los entrenadores puedan vincular planes a clientes.
+            if ($request->is('suscripciones') || $request->is('suscripciones/*')) {
+                if (in_array($request->method(), ['POST', 'PUT', 'DELETE']) && !$user->can('acceder_suscripciones')) {
+                    abort(403, 'No tienes permiso para modificar el catálogo de Suscripciones.');
+                }
+                if ($request->method() === 'GET' && !$request->ajax() && !$request->wantsJson() && !$user->can('acceder_suscripciones')) {
+                    abort(403, 'No tienes permiso para acceder al panel de Suscripciones.');
+                }
             }
 
             return $next($request);
